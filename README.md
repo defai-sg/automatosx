@@ -81,13 +81,14 @@ automatosx validate
 Optional providers:
 
 ```bash
-# Google Gemini CLI
-npm install -g @google/generative-ai-cli
-gemini auth login
+# Gemini CLI (requires custom setup)
+# Note: You need to create a 'gemini' command wrapper for Google AI
+# Then enable: automatosx config enable gemini
 
 # Codex CLI (OpenAI)
 npm install -g codex-cli
 codex login
+# Then enable: automatosx config enable codex
 ```
 
 ### First Task
