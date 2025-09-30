@@ -3,11 +3,11 @@
 This document chronicles the evolution of AutomatosX from its inception as a customer automation solution
 to becoming an open-source AI agent orchestration platform.
 
-## 🚀 Project Origins (October 2024)
+## 🚀 Project Origins (November 2024)
 
 ### AutomatosX Genesis at Tokyo AI Expo
 AutomatosX was born from a specific customer request for **LLM-powered automation solutions**.
-As DEFAI prepared for the **Tokyo AI Expo in October 2024**, the team recognized an opportunity
+As DEFAI prepared for the **Tokyo AI Expo in November 2024**, the team recognized an opportunity
 to showcase practical AI automation capabilities.
 
 **Initial Customer Requirements:**
@@ -23,7 +23,7 @@ The project made its public debut at the Tokyo AI Expo, demonstrating:
 - LLM integration for business processes
 - Live demonstrations of AI agent collaboration
 
-## 🔧 Version 1.0 Architecture (October 2024)
+## 🔧 Version 1.0 Architecture (November 2024)
 
 ### Python-Based Foundation
 The initial AutomatosX v1.0 was built using a **Python-centric architecture**:
