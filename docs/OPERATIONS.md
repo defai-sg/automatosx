@@ -58,16 +58,28 @@ npm start run backend "Design a REST API for user authentication"
 
 ### Available Agents
 
-| Agent | Role | Specializations | Use For |
-|-------|------|-----------------|---------|
-| **backend** | Backend Engineer | APIs, databases, server architecture | Server-side development |
-| **frontend** | Frontend Developer | UI/UX, client-side, responsive design | User interface development |
-| **security** | Security Analyst | Vulnerability assessment, secure coding | Security reviews and fixes |
-| **devops** | DevOps Engineer | Infrastructure, deployment, monitoring | Deployment and operations |
-| **architect** | System Architect | System design, technical strategy | Architecture decisions |
-| **quality** | QA Engineer | Testing, validation, quality assurance | Code quality and testing |
-| **data** | Data Scientist | Analytics, ML, data processing | Data analysis and modeling |
-| **product** | Product Manager | Requirements, user stories, planning | Product planning and specs |
+| Agent | Persona | Role | Specializations | Use For |
+|-------|---------|------|-----------------|---------|
+| **algorithm** | Alex | Algorithm Specialist | Complexity analysis, optimization | Algorithm design and performance |
+| **analyst** | Anna | Business Analyst | Market research, KPI frameworks | Business analysis and metrics |
+| **architect** | Adrian | Software Architect | Systems design, integration strategy | Architecture decisions |
+| **backend** | Bob | Backend Engineer | APIs, databases, service reliability | Server-side development |
+| **ceo** | Eric | Chief Executive Officer | Vision, portfolio planning, strategy | Strategic planning |
+| **cfo** | Flora | Chief Financial Officer | Forecasting, pricing, financial controls | Financial planning |
+| **cto** | Tony | Chief Technology Officer | Technology roadmaps, org design | Technology strategy |
+| **data** | Daisy | Data Professional | Analytics pipelines, ML, experimentation | Data analysis and modeling |
+| **design** | Debbee | UX Designer | Experience strategy, accessibility | User experience design |
+| **devops** | Oliver | DevOps Engineer | CI/CD, infrastructure, observability | Deployment and operations |
+| **docs** | Doris | Documentation Specialist | API docs, tutorials, information architecture | Documentation |
+| **edge** | Emily | Edge Computing Engineer | Edge deployments, IoT pipelines | Edge computing |
+| **frontend** | Frank | Frontend Developer | UI systems, accessibility, responsive design | User interface development |
+| **legal** | Louis | Legal Counsel | Compliance, policy drafting, risk | Legal and compliance |
+| **marketer** | Maggie | Marketing Strategist | GTM, positioning, campaign analytics | Marketing and promotion |
+| **network** | Nicolas | Network Engineer | Networking, resiliency, diagnostics | Network infrastructure |
+| **product** | Paris | Product Manager | Roadmaps, discovery, stakeholder alignment | Product planning and specs |
+| **quality** | Queenie | Quality Professional | Test strategy, automation, release gating | Code quality and testing |
+| **quantum** | Quian | Quantum Computing Engineer | Quantum algorithms, hybrid compute | Quantum computing |
+| **security** | Steve | Security Engineer | Threat modelling, secure coding | Security reviews and fixes |
 
 > **Understanding Agents**: Learn about the three-layer agent architecture in **[CONCEPTS.md](CONCEPTS.md#three-layer-agent-architecture)**
 > and see the technical implementation in **[ARCHITECTURE.md](ARCHITECTURE.md#core-components)**.
