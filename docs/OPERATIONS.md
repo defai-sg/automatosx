@@ -54,6 +54,54 @@ npm start run backend "Design a REST API for user authentication"
 
 > **Note**: This guide shows commands for **global installation** by default. Development commands are indicated separately where different.
 
+## 📋 Complete Command Reference
+
+| Category | Command | Description |
+|----------|---------|-------------|
+| **Agent Execution** | `automatosx run <agent> "<task>"` | Execute task with specific agent |
+| | `automatosx run <agent> "<task>" --stage <stage>` | Execute specific workflow stage |
+| | `automatosx run <agent> "<task>" --workflow` | Run complete agent workflow |
+| | `automatosx agents` | List all available agents |
+| | `automatosx agents --detailed` | Show detailed agent information |
+| **Memory Operations** | `automatosx memory search "<query>"` | Search conversation history |
+| | `automatosx memory search "<query>" --agent <agent>` | Search specific agent history |
+| | `automatosx memory show <conversation-id>` | View conversation details |
+| | `automatosx memory history <agent>` | Get agent conversation history |
+| | `automatosx memory recent` | Show recent conversations |
+| | `automatosx memory stats` | Memory usage statistics |
+| | `automatosx memory clear all` | Clear all memory layers |
+| | `automatosx memory clear practical` | Clear practical memory store |
+| | `automatosx memory clear milvus` | Clear vector database |
+| | `automatosx memory cleanup` | Advanced cleanup options |
+| | `automatosx memory:test` | Test memory connectivity |
+| **System Health** | `automatosx status` | System and provider status |
+| | `automatosx validate` | Validate configuration |
+| | `automatosx health` | Comprehensive health check |
+| | `automatosx optimize` | Performance analysis |
+| **Provider Management** | `automatosx config status` | Provider configuration status |
+| | `automatosx config enable <provider>` | Enable provider (gemini/codex) |
+| | `automatosx config disable <provider>` | Disable provider |
+| | `automatosx config priority <provider> <num>` | Set provider priority |
+| | `automatosx config test` | Test all enabled providers |
+| | `automatosx config setup` | Interactive provider setup |
+| **Filesystem** | `automatosx filesystem:validate` | Validate filesystem integrity |
+| | `automatosx filesystem:stats` | Show file statistics |
+| | `automatosx filesystem:backup` | Create backup |
+| **Reset Operations** | `automatosx factory-reset` | Safe factory reset with backup |
+| | `automatosx factory-reset:dry-run` | Preview reset changes |
+| | `automatosx factory-reset:no-backup` | Fast reset without backup |
+| | `automatosx reset:config` | Reset configuration only |
+| | `automatosx reset:memory` | Clear memory only |
+| | `automatosx reset:workspace` | Clean workspaces only |
+| | `automatosx reset:providers` | Reset provider configuration |
+| | `automatosx reset:all` | Complete system reset |
+| | `automatosx reset:status` | Show reset options |
+| **System Management** | `automatosx init` | Initialize/reinitialize system |
+| | `automatosx upgrade:validate <version>` | Validate upgrade |
+| **Workflow Operations** | `automatosx workflow <pattern> "<description>"` | Execute workflow pattern |
+| | `automatosx workflow --list` | List available patterns |
+| | `automatosx workflow --status <id>` | Check workflow status |
+
 ## 🎯 Agent Operations
 
 ### Available Agents
