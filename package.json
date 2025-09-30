@@ -99,6 +99,6 @@
   "homepage": "https://github.com/defai-sg/automatosx",
   "repository": {
     "type": "git",
-    "url": "https://github.com/defai-sg/automatosx.git"
+    "url": "git+https://github.com/defai-sg/automatosx.git"
   }
 }
