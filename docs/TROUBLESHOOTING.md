@@ -1,7 +1,7 @@
 # AutomatosX Troubleshooting Guide
 
 This guide provides solutions to common problems you might encounter while using AutomatosX. If your issue isn't
-listed here, consider running `npm run health` for a detailed diagnostic.
+listed here, consider running `automatosx health` for a detailed diagnostic.
 
 ## Installation & Setup Issues
 
@@ -48,12 +48,12 @@ listed here, consider running `npm run health` for a detailed diagnostic.
 
 * **Solution 1:** The memory system or its connection to the vector database might be down. Run the memory test script:
     ```bash
-    npm run memory:test
+    automatosx memory:test
     ```
 * **Solution 2:** If search results look stale, clear the vector store and re-load profiles:
     ```bash
-    npm start memory clear milvus
-    node src/scripts/dynamic-init.js full
+    automatosx memory clear milvus
+    # Note: Profile reloading is automatic in global installation
     ```
 * **Solution 3:** If the memory is corrupted and unsalvageable, you can clear it. **Warning: This is a destructive operation.**
     ```bash

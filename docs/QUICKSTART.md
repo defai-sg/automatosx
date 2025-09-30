@@ -2,38 +2,44 @@
 
 Get AutomatosX v3.1.4 running in minutes and run your first agent tasks.
 
-## 1. Install Prerequisites
-- Node.js 18+ (`node -v`)
-- Git
-- Claude Code CLI (free provider)
+## 1. Install AutomatosX
 
+**For End Users (Recommended):**
 ```bash
+# Install AutomatosX globally
+npm install -g automatosx
+
+# Install Claude Code CLI (free provider)
 npm install -g @anthropic-ai/claude-code
 claude auth login
 ```
 
-## 2. Clone and Install AutomatosX
+**For Developers:**
 ```bash
+# Clone for development
 git clone https://github.com/defai-digital/automatosx.git
-cd automatosx
-npm install
+cd automatosx && npm install
+
+# Install Claude Code CLI
+npm install -g @anthropic-ai/claude-code
+claude auth login
 ```
 
-## 3. Verify the CLI
+## 2. Verify Installation
 ```bash
-npm run status             # Provider checks + system summary
-npm run agents --detailed  # List all 21 agents and workflows
+automatosx status             # Provider checks + system summary
+automatosx agents --detailed  # List all 21 agents and workflows
 ```
 
 You should see Claude marked `✅ Available` before proceeding.
 
-## 4. Run Your First Tasks
+## 3. Run Your First Tasks
 ```bash
 # Ask the backend engineer to draft an API
-npm start run backend "Design an auth API for a task tracker"
+automatosx run backend "Design an auth API for a task tracker"
 
 # Let the designer plan a quick UI flow
-npm start run design "Create a 3-screen onboarding flow for a mobile app"
+automatosx run design "Create a 3-screen onboarding flow for a mobile app"
 ```
 
 Add `--workflow` to trigger the full multi-stage lifecycle defined in each agent profile.
@@ -48,6 +54,15 @@ Generated artifacts are stored under `.defai/workspaces/`.
 > transcripts retained locally.
 
 ## 6. Reset If Needed
+
+**For Global Installation:**
+```bash
+automatosx reset:status        # Show configurable reset options
+automatosx reset:config        # Restore default configuration
+automatosx reset:workspace     # Clean workspaces (keeps structure)
+```
+
+**For Development Setup:**
 ```bash
 npm run reset:status        # Show configurable reset options
 npm run reset:config        # Restore default configuration
@@ -57,4 +72,4 @@ npm run reset:workspace     # Clean workspaces (keeps structure)
 ## 7. Next Steps
 - Explore command references in `docs/OPERATIONS.md`.
 - Review each agent’s abilities in `docs/AGENT-ROLES.md`.
-- Configure additional providers via `src/config/providers.json` and `npm run status`.
+- Configure additional providers and check status with `automatosx status`.

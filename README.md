@@ -52,15 +52,14 @@ codex exec    # Always uses OpenAI's latest recommended model
 **System Requirements**: Node.js 18+ and one AI CLI tool
 
 ```bash
-# 1. Clone and install
-git clone https://github.com/your-org/automatosx.git
-cd automatosx && npm install
+# 1. Install AutomatosX
+npm install -g automatosx
 
 # 2. Install Claude Code CLI (free, recommended)
 npm install -g @anthropic-ai/claude-code
 claude auth login
 
-# 3. Install additional AI providers (enabled by default)
+# 3. Install additional AI providers (optional)
 # Gemini CLI for Google AI
 gcloud auth application-default login
 
@@ -69,7 +68,7 @@ npm install -g codex-cli
 codex login
 
 # 4. Verify installation
-npm run status
+automatosx status
 ```
 
 ✅ **Success when you see "Provider Status: ✅ Connected"!**
@@ -78,13 +77,60 @@ npm run status
 
 ```bash
 # Let backend expert Bob design an API
-npm start run backend "Create complete design for user authentication API"
+automatosx run backend "Create complete design for user authentication API"
 
 # Let UI designer Luna create interface
-npm start run design "Design clean login page user experience"
+automatosx run design "Design clean login page user experience"
 
 # View all available professional agents
-npm run agents --detailed
+automatosx agents --detailed
+```
+
+### 🛠️ Developer Installation
+
+**For contributors and developers who want to modify AutomatosX:**
+
+```bash
+# 1. Clone and setup development environment
+git clone https://github.com/defai-digital/automatosx.git
+cd automatosx && npm install
+
+# 2. Install AI providers (same as above)
+npm install -g @anthropic-ai/claude-code && claude auth login
+
+# 3. Verify development setup
+npm run status
+npm run validate
+
+# 4. Run from source
+npm start run backend "test task"
+```
+
+### 🗑️ Uninstallation
+
+**To remove AutomatosX completely:**
+
+```bash
+# 1. Remove the global package
+npm uninstall -g automatosx
+
+# 2. Remove AI provider CLIs (optional)
+npm uninstall -g @anthropic-ai/claude-code
+npm uninstall -g codex-cli
+
+# 3. Clean up user data (optional)
+# Note: This removes all conversation history and workspaces
+rm -rf ~/.defai/
+rm -rf ~/.claude/memory/ax/
+```
+
+**For development installations:**
+```bash
+# 1. Remove local installation
+cd automatosx && npm run uninstall:clean
+
+# 2. Remove directory
+cd .. && rm -rf automatosx
 ```
 
 🎉 **Congratulations! You now have an AI development team with 20 experts!**
@@ -102,7 +148,7 @@ npm run agents --detailed
 ### 🆘 Need Help?
 
 - 🚨 **Installation Issues**: Check [Troubleshooting Guide](docs/TROUBLESHOOTING.md)
-- 🤔 **Usage Questions**: Run `npm run examples` to see practical examples
+- 🤔 **Usage Questions**: Run `automatosx examples` to see practical examples
 - 💬 **Community Support**: Ask questions in GitHub Issues
 
 ---
@@ -206,34 +252,34 @@ Each AutomatosX agent combines three powerful layers to deliver specialized expe
 ### Basic Task Execution
 ```bash
 # Backend development
-npm start run backend "Design REST API for e-commerce platform"
+automatosx run backend "Design REST API for e-commerce platform"
 
 # Frontend development
-npm start run frontend "Create responsive dashboard with dark mode"
+automatosx run frontend "Create responsive dashboard with dark mode"
 
 # DevOps tasks
-npm start run devops "Set up CI/CD pipeline for Node.js application"
+automatosx run devops "Set up CI/CD pipeline for Node.js application"
 
 # Security auditing
-npm start run security "Audit application for security vulnerabilities"
+automatosx run security "Audit application for security vulnerabilities"
 ```
 
 ### Multi-Stage Workflows
 ```bash
 # Execute complete workflow with all stages
-npm start run architect "Design microservices architecture" --workflow
+automatosx run architect "Design microservices architecture" --workflow
 
 # Product development workflow
-npm start run ceo "Develop investor pitch for AI startup" --workflow
+automatosx run ceo "Develop investor pitch for AI startup" --workflow
 ```
 
 ### Chat History & Knowledge Management
 ```bash
 # Search conversation history
-npm start history "database optimization" --role backend
+automatosx history "database optimization" --role backend
 
 # View system usage statistics
-npm start history --stats
+automatosx history --stats
 
 # Clear chat history
 node src/scripts/memory-clear.js
@@ -242,13 +288,13 @@ node src/scripts/memory-clear.js
 ### System Management
 ```bash
 # Validate agent profiles
-npm run validate
+automatosx validate
 
 # Check provider connectivity
-npm run status
+automatosx status
 
 # List all agents with details
-npm run agents --detailed
+automatosx agents --detailed
 
 # Test agent routing
 node src/scripts/agent-router.js --list-agents
@@ -287,13 +333,13 @@ npm run reset:memory               # Clear all memory and chat history
 npm run reset:workspace            # Reset workspace directories
 
 # Backup Operations
-npm run backup:config              # Backup current configuration
-npm run backup:uninstall           # Create backup before uninstall
+automatosx backup:config              # Backup current configuration
+automatosx backup:uninstall           # Create backup before uninstall
 
-# Uninstall (Use with caution)
-npm run uninstall:status           # Show uninstall status
-npm run uninstall:global           # Uninstall global package only
-npm run uninstall:clean            # Complete uninstall (⚠️ removes all data)
+# Uninstall (Use with caution - for development setups only)
+# For end users: Use "npm uninstall -g automatosx" instead
+automatosx uninstall:status           # Show uninstall status
+automatosx uninstall:clean            # Complete uninstall (⚠️ removes all data)
 ```
 
 ### Privacy & Storage
@@ -903,5 +949,5 @@ traditional platforms.
 
 ---
 
-**Ready to orchestrate AI agents like never before?** Start with `npm start run backend "your first task"` and experience
+**Ready to orchestrate AI agents like never before?** Start with `automatosx run backend "your first task"` and experience
 the future of AI collaboration.

@@ -10,18 +10,49 @@ It covers essential operations for both AI systems and human users.
 - **Claude Code CLI** (recommended) or other provider CLI tools
 
 ### Installation
+
+**For End Users (Recommended):**
 ```bash
+# Install globally via npm
+npm install -g automatosx
+
+# Install Claude Code CLI
+npm install -g @anthropic-ai/claude-code
+claude auth login
+
+# Verify installation
+automatosx validate
+```
+
+**For Developers/Contributors:**
+```bash
+# Clone repository for development
 git clone <repository-url>
-cd automatosx
-npm install
+cd automatosx && npm install
+
+# Install Claude Code CLI
+npm install -g @anthropic-ai/claude-code
+claude auth login
+
+# Verify development setup
 npm run validate
 ```
 
 ### First Task
+
+**Global Installation:**
+```bash
+# Execute a task with a specific agent
+automatosx run backend "Design a REST API for user authentication"
+```
+
+**Development Setup:**
 ```bash
 # Execute a task with a specific agent
 npm start run backend "Design a REST API for user authentication"
 ```
+
+> **Note**: This guide shows commands for **global installation** by default. Development commands are indicated separately where different.
 
 ## 🎯 Agent Operations
 
@@ -45,13 +76,13 @@ npm start run backend "Design a REST API for user authentication"
 
 ```bash
 # Single agent tasks
-npm start run <agent> "<task description>"
+automatosx run <agent> "<task description>"
 
 # Examples
-npm start run backend "Create user authentication endpoints"
-npm start run frontend "Build responsive dashboard with dark mode"
-npm start run security "Analyze this API for security vulnerabilities"
-npm start run devops "Setup CI/CD pipeline for Node.js application"
+automatosx run backend "Create user authentication endpoints"
+automatosx run frontend "Build responsive dashboard with dark mode"
+automatosx run security "Analyze this API for security vulnerabilities"
+automatosx run devops "Setup CI/CD pipeline for Node.js application"
 ```
 
 ### Advanced Agent Operations
@@ -64,7 +95,7 @@ node src/index.js run backend "Review checkout API design" --stage review
 node src/index.js run backend "Design ecommerce checkout" --workflow
 
 # List all available agents (summary)
-npm run agents
+automatosx agents
 
 # Inspect personas, stages, and specializations
 node src/index.js agents --detailed
@@ -78,30 +109,30 @@ AutomatosX automatically stores and retrieves conversation history for context:
 
 ```bash
 # Search conversation history
-npm start memory search "API design patterns"
-npm start memory search "authentication" --agent backend
+automatosx memory search "API design patterns"
+automatosx memory search "authentication" --agent backend
 
 # View conversation details
-npm start memory show <conversation-id>
+automatosx memory show <conversation-id>
 
 # Get agent conversation history
-npm start memory history backend
-npm start memory recent
+automatosx memory history backend
+automatosx memory recent
 
 # Memory statistics
-npm start memory stats
+automatosx memory stats
 ```
 
 ### Memory Management
 
 ```bash
 # Clear specific memory types
-npm start memory clear all        # Clear every memory layer
-npm start memory clear practical  # Clear the practical memory store
-npm start memory clear milvus     # Clear the embedded vector database
+automatosx memory clear all        # Clear every memory layer
+automatosx memory clear practical  # Clear the practical memory store
+automatosx memory clear milvus     # Clear the embedded vector database
 
 # Cleanup helpers
-npm start memory cleanup          # View advanced cleanup options
+automatosx memory cleanup          # View advanced cleanup options
 ```
 
 ## 🔧 System Operations
@@ -110,9 +141,9 @@ npm start memory cleanup          # View advanced cleanup options
 
 ```bash
 # System status and health
-npm run status                    # Check all system components
-npm run validate                  # Validate configuration and setup
-npm run health                    # Detailed health check
+automatosx status                    # Check all system components
+automatosx validate                  # Validate configuration and setup
+automatosx health                    # Detailed health check
 
 # Component-specific validation
 npm run filesystem:validate      # Filesystem integrity
@@ -152,12 +183,12 @@ Execute complex tasks involving multiple agents:
 
 ```bash
 # Predefined workflow patterns
-npm start workflow security-fix "authentication system"
-npm start workflow feature-development "user profile management"
+automatosx workflow security-fix "authentication system"
+automatosx workflow feature-development "user profile management"
 
 # Workflow management
-npm start workflow --list         # List available patterns
-npm start workflow --status <id>  # Check workflow status
+automatosx workflow --list         # List available patterns
+automatosx workflow --status <id>  # Check workflow status
 ```
 
 ### Custom Workflows
@@ -166,9 +197,9 @@ Define and execute custom multi-agent workflows:
 
 ```bash
 # Execute custom workflow sequence
-npm start run architect "Design system" \
-  | npm start run backend "Implement API" \
-  | npm start run quality "Create tests"
+automatosx run architect "Design system" \
+  | automatosx run backend "Implement API" \
+  | automatosx run quality "Create tests"
 ```
 
 ## ⚙️ Configuration Operations
@@ -177,7 +208,7 @@ npm start run architect "Design system" \
 
 ```bash
 # Check provider status and failover health (includes CLI checks)
-npm run status
+automatosx status
 
 # Manage provider configuration
 node src/scripts/config-manager.js status
@@ -267,22 +298,22 @@ AutomatosX provides MCP servers for Claude Code:
 
 **System Won't Start**:
 ```bash
-npm run validate              # Check system integrity
-npm run health               # Detailed diagnostics
-npm run factory-reset        # Reset to clean state
+automatosx validate              # Check system integrity
+automatosx health               # Detailed diagnostics
+automatosx factory-reset        # Reset to clean state
 ```
 
 **Memory Issues**:
 ```bash
-npm run memory:test          # Test memory connectivity
-npm start memory clear practical  # Clear corrupted memory
-npm run filesystem:backup    # Backup before major changes
+automatosx memory:test          # Test memory connectivity
+automatosx memory clear practical  # Clear corrupted memory
+automatosx filesystem:backup    # Backup before major changes
 ```
 
 **Provider Failures**:
 ```bash
-npm run status                       # Check provider health and failover
-node src/scripts/config-manager.js test   # Verify provider CLIs
+automatosx status                       # Check provider health and failover
+# Note: CLI verification is built into status command for global installation
 node src/scripts/config-manager.js setup  # Re-run interactive provider setup
 ```
 
@@ -297,19 +328,19 @@ node src/scripts/dynamic-init.js full        # Force complete regeneration of as
 
 ```bash
 # System health and status
-npm run health
-npm run status
+automatosx health
+automatosx status
 
 # Performance analysis
-npm run optimize
-node src/scripts/performance-benchmark.js
+automatosx optimize
+# Note: Detailed performance benchmarks available in development setup
 
 # Memory inspection
-npm start memory stats
-npm start memory recent
+automatosx memory stats
+automatosx memory recent
 
 # Filesystem verification
-npm run filesystem:validate
+automatosx filesystem:validate
 ```
 
 ## 📊 Monitoring and Metrics
@@ -317,24 +348,23 @@ npm run filesystem:validate
 Keep AutomatosX healthy with these built-in checks:
 
 ```bash
-npm run status                         # Provider health and profile summary
-npm run optimize                       # Provider routing analysis
-node src/scripts/performance-benchmark.js  # Optional benchmark snapshot
-npm start memory stats                 # Memory usage counters
+automatosx status                         # Provider health and profile summary
+automatosx optimize                       # Provider routing analysis
+automatosx memory stats                  # Memory usage counters
 ```
 
 ### Health Monitoring
 
 ```bash
-npm run health                         # Comprehensive health check
-watch -n 60 'npm run status'           # Re-check status every minute (macOS/Linux)
+automatosx health                         # Comprehensive health check
+watch -n 60 'automatosx status'           # Re-check status every minute (macOS/Linux)
 ```
 
 ## 🔐 Security Operations
 
 ```bash
-npm start run security "Audit authentication service for OWASP risks"
-npm run filesystem:validate            # Confirm filesystem integrity before resets
+automatosx run security "Audit authentication service for OWASP risks"
+automatosx filesystem:validate            # Confirm filesystem integrity before resets
 ```
 
 ## 📝 Logging and Auditing

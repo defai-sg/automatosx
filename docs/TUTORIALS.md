@@ -13,7 +13,7 @@ This tutorial will guide you through running a simple task with the `backend` ag
 Before starting, ensure AutomatosX is installed correctly.
 
 ```bash
-npm run health
+automatosx health
 ```
 You should see a series of checks passing. If not, refer to the
 **[TROUBLESHOOTING.md](TROUBLESHOOTING.md#installation--setup-issues)** guide.
@@ -22,7 +22,7 @@ You should see a series of checks passing. If not, refer to the
 Now, let's give the `backend` agent, whose persona is "Bob", a task.
 
 ```bash
-npm start run backend "Design a REST API endpoint to fetch a user by their ID"
+automatosx run backend "Design a REST API endpoint to fetch a user by their ID"
 ```
 
 **Step 3: Analyze the Output**
@@ -42,8 +42,8 @@ AutomatosX agents have memory. They remember past interactions to inform future 
 Give the agents more information to remember. Try these:
 
 ```bash
-npm start run frontend "Suggest a color palette for a modern web application"
-npm start run security "What are the top 3 security risks for a Node.js API?"
+automatosx run frontend "Suggest a color palette for a modern web application"
+automatosx run security "What are the top 3 security risks for a Node.js API?"
 ```
 
 **Step 2: Search the Memory**
@@ -51,7 +51,7 @@ Now, imagine you want to recall the information about API security. You can use 
 semantic search across all conversations.
 
 ```bash
-npm start memory search "API security risks"
+automatosx memory search "API security risks"
 ```
 
 **Step 3: Review the Results**
@@ -60,7 +60,7 @@ ID of the conversation. You can then view the full conversation if needed:
 
 ```bash
 # Use the ID from the search results
-npm start memory show <conversation-id>
+automatosx memory show <conversation-id>
 ```
 This demonstrates how the system builds a persistent, searchable knowledge base from its interactions.
 
@@ -110,7 +110,7 @@ Or, if using the Claude Code integration:
 Now, ask the agent a question related to the knowledge you just added.
 
 ```bash
-npm start run backend "What are the best practices for paginating an API response?"
+automatosx run backend "What are the best practices for paginating an API response?"
 ```
 
 The agent should now be able to answer this question accurately, incorporating the information you added directly into

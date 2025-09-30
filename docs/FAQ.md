@@ -25,7 +25,7 @@ cost reduction while maximizing performance**, so the **default configuration** 
 
 ```bash
 # Check your provider setup
-npm run status
+automatosx status
 
 # Enable/disable providers as needed
 node src/scripts/config-manager.js enable gemini
