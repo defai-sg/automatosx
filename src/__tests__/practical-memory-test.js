@@ -17,7 +17,6 @@ const testConversations = [
         timestamp: new Date('2024-01-15T10:00:00Z').toISOString(),
         metadata: {
             provider: 'claude-code',
-            model: 'sonnet',
             responseTime: 1200
         }
     },
@@ -29,7 +28,6 @@ const testConversations = [
         timestamp: new Date('2024-01-15T14:30:00Z').toISOString(),
         metadata: {
             provider: 'gemini-cli',
-            model: 'gemini-2.0-flash',
             responseTime: 800
         }
     },
@@ -41,7 +39,6 @@ const testConversations = [
         timestamp: new Date('2024-01-15T16:45:00Z').toISOString(),
         metadata: {
             provider: 'claude-code',
-            model: 'sonnet',
             responseTime: 950
         }
     },
@@ -53,7 +50,6 @@ const testConversations = [
         timestamp: new Date('2024-01-16T09:15:00Z').toISOString(),
         metadata: {
             provider: 'openai-cli',
-            model: 'gpt-4',
             responseTime: 1100
         }
     },
@@ -65,7 +61,6 @@ const testConversations = [
         timestamp: new Date('2024-01-16T11:30:00Z').toISOString(),
         metadata: {
             provider: 'claude-code',
-            model: 'sonnet',
             responseTime: 1400
         }
     }

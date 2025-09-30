@@ -30,19 +30,11 @@ export async function loadConfig(projectPath = process.cwd()) {
             },
             'gemini-cli': {
                 enabled: true,
-                priority: 2,
-                models: {
-                    'gemini-2.0-flash-exp': true,
-                    'gemini-1.5-pro': true
-                }
+                priority: 2
             },
             'openai-cli': {
                 enabled: true,
-                priority: 3,
-                models: {
-                    'gpt-4': true,
-                    'gpt-4-turbo': true
-                }
+                priority: 3
             }
         },
         memory: {

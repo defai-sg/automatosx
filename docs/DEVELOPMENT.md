@@ -89,6 +89,35 @@ npm run health:auto-fix       # Auto-fix issues
 **Provider-Agnostic**: Multiple AI provider support
 **User-Data Safe**: Never destructive to user work
 **AI-Friendly**: Structured for AI system understanding
+**Model-Agnostic**: CLI tools manage their own model selection
+
+### Model Management Strategy
+
+**AutomatosX deliberately avoids specifying AI models**, instead letting each CLI provider use its default/latest model.
+
+**Problem Solved**:
+- AI providers frequently change model names (e.g., `claude-3-sonnet` → `claude-3-5-sonnet` → `claude-4-sonnet`)
+- Managing model configurations across 3+ providers becomes a maintenance nightmare
+- Outdated model names cause runtime errors
+
+**Solution**:
+```bash
+# Instead of: claude --model claude-3-5-sonnet-20241022
+claude             # Uses Anthropic's current default
+
+# Instead of: gemini --model gemini-2.0-flash-exp
+gemini            # Uses Google's current default
+
+# Instead of: codex --model gpt-4-turbo-2024-04-09
+codex exec        # Uses OpenAI's current default
+```
+
+**Benefits**:
+- ✅ **Zero model maintenance** - No configurations to update
+- ✅ **Automatic access to latest models** - Each provider handles updates
+- ✅ **Fewer bugs** - No outdated model name errors
+- ✅ **Provider expertise** - Each provider chooses optimal defaults
+- ✅ **Simplified configuration** - Focus on functionality, not model versions
 
 ### Code Organization Patterns
 

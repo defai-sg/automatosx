@@ -36,17 +36,7 @@ export class ClaudeCodeProvider {
         return validation.sanitizedInput;
     }
 
-    validateModel(model) {
-        const allowedModels = ['sonnet', 'haiku', 'opus'];
-        const sanitized = String(model).toLowerCase().replace(/[^a-z0-9-]/g, '');
-
-        if (!allowedModels.includes(sanitized)) {
-            console.warn(chalk.yellow(`⚠️  Unknown model '${model}', using 'sonnet'`));
-            return 'sonnet';
-        }
-
-        return sanitized;
-    }
+    // Model validation removed - using CLI default model
 
     validateNumber(value, min, max, defaultValue) {
         const num = parseFloat(value);
@@ -79,16 +69,11 @@ export class ClaudeCodeProvider {
             throw new Error('Claude Code CLI not available');
         }
 
-        const { model = 'sonnet', maxTokens = 2000, temperature = 0.3 } = options;
-
         try {
             // Enhanced input validation and sanitization
             const sanitizedPrompt = await this.sanitizeInput(prompt);
-            const sanitizedModel = this.validateModel(model);
-            const sanitizedMaxTokens = this.validateNumber(maxTokens, 100, 4000, 2000);
-            const sanitizedTemperature = this.validateNumber(temperature, 0, 1, 0.3);
 
-            console.log(chalk.blue(`🤖 Executing with Claude Code`));
+            console.log(chalk.blue(`🤖 Executing with Claude Code (default model)`));
 
             // Check prompt length and use file-based approach for large prompts
             const promptLength = sanitizedPrompt.length;

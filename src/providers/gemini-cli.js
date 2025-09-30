@@ -36,15 +36,11 @@ export class GeminiCLIProvider {
             throw new Error('Gemini CLI not available');
         }
 
-        const { model = '2.5-pro', maxTokens = 2000, temperature = 0.3 } = options;
-
         try {
-            // Use Gemini CLI command (format may vary based on actual CLI)
-            const command = `gemini generate --model gemini-${model} --max-tokens ${maxTokens} --temperature ${temperature}`;
+            // Use Gemini CLI with default model (no model specification needed)
+            console.log(chalk.magenta(`🤖 Executing with Gemini CLI (default model)`));
 
-            console.log(chalk.magenta(`🤖 Executing with Gemini CLI: ${model}`));
-
-            const result = execSync(command, {
+            const result = execSync('gemini', {
                 input: prompt,
                 encoding: 'utf8',
                 timeout: 45000,  // 45 second timeout

@@ -506,3 +506,26 @@ export function listAgents() {
         title: profile.title
     }));
 }
+
+/**
+ * Build agent prompt with personality context
+ */
+export function buildAgentPrompt(agentName, task, basePrompt) {
+    const agent = AGENT_PROFILES[agentName];
+    if (!agent) {
+        return basePrompt;
+    }
+    const agentContext = `
+You are ${agent.name}, a ${agent.title}.
+**Your Personality**: ${agent.personality}
+**Your Specializations**: ${agent.specializations.join(', ')}
+
+**Task**: ${task}
+
+${basePrompt}
+
+Remember to stay in character as ${agent.name} and apply your expertise to this task.
+${agent.catchphrase}
+`;
+    return agentContext;
+}

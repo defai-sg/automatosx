@@ -18,10 +18,7 @@
     "GEMINI.md",
     "LICENSE",
     "package.json",
-    "package-lock.json",
-    "automatosx.config.yaml",
-    ".markdownlint.json",
-    ".markdownlintignore"
+    "automatosx.config.yaml"
   ],
   "scripts": {
     "start": "node src/index.js",
@@ -90,7 +87,6 @@
     "fs-extra": "^11.2.0",
     "glob": "^11.0.3",
     "inquirer": "^9.0.0",
-    "openai": "^4.28.0",
     "yaml": "^2.8.1"
   },
   "devDependencies": {

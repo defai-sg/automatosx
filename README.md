@@ -14,9 +14,33 @@ profiles, real-time chat history tracking, and zero-cost access through CLI auth
 - 🔄 **Dynamic Role Loading** - Intelligent caching system with 40-80ms initial load, <1ms cached performance
 - 🛡️ **CLI-First Security** - Zero stored API keys, uses CLI authentication only
 - 📊 **Chat History Tracking** - Embedded Milvus with SQLite/file fallback for semantic search
-- 🎯 **Multi-Provider Routing** - Automatic fallback across Claude Code, OpenAI Codex CLI, and Gemini CLI
+- 🎯 **Multi-Provider Routing** - Automatic failover across Claude Code CLI, Gemini CLI, and Codex CLI
+- 🔧 **Model-Agnostic Design** - CLI tools handle model selection automatically (no model configuration needed)
 - 🏗️ **Workspace Isolation** - Role-based workspace management for clean execution environments
 - ⚡ **Performance Optimized** - Parallel loading, intelligent caching, and circuit breaker protection
+
+## 🔧 Smart Model Management
+
+**AutomatosX eliminates model configuration complexity** by using CLI default models.
+
+**Why This Matters**:
+```bash
+# Traditional approach (high maintenance):
+claude --model claude-3-5-sonnet-20241022  # Breaks when model names change
+gemini --model gemini-2.0-flash-exp-0827   # Constant updates needed
+codex --model gpt-4-turbo-2024-04-09       # Configuration management nightmare
+
+# AutomatosX approach (zero maintenance):
+claude        # Always uses Anthropic's latest recommended model
+gemini        # Always uses Google's latest recommended model
+codex exec    # Always uses OpenAI's latest recommended model
+```
+
+**Benefits**:
+- ✅ **Zero model updates** needed when providers release new models
+- ✅ **Automatic access** to latest AI capabilities
+- ✅ **No configuration errors** from outdated model names
+- ✅ **Provider expertise** ensures optimal model selection
 
 ## 🚀 Quick Start: Experience AI Agent Team in 15 Minutes
 
@@ -36,8 +60,11 @@ cd automatosx && npm install
 npm install -g @anthropic-ai/claude-code
 claude auth login
 
-# 3. (Optional) Install additional AI providers for fallback
-# Codex CLI for advanced coding tasks
+# 3. Install additional AI providers (enabled by default)
+# Gemini CLI for Google AI
+gcloud auth application-default login
+
+# Codex CLI for OpenAI Codex capabilities
 npm install -g codex-cli
 codex login
 
@@ -60,7 +87,7 @@ npm start run design "Design clean login page user experience"
 npm run agents --detailed
 ```
 
-🎉 **Congratulations! You now have an AI development team with 13 experts!**
+🎉 **Congratulations! You now have an AI development team with 20 experts!**
 
 ### 📚 Complete Learning Path
 
@@ -80,7 +107,7 @@ npm run agents --detailed
 
 ---
 
-## 🎭 AutomatosX Agent Team (13 Specialists)
+## 🎭 AutomatosX Agent Team (20 Specialists)
 
 Each AutomatosX agent combines three powerful layers to deliver specialized expertise:
 

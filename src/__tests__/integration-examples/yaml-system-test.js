@@ -29,7 +29,7 @@ async function demonstrateInheritance() {
         // 2. Load and display global defaults
         console.log(chalk.yellow.bold('2. GLOBAL DEFAULTS'));
         const globalDefaults = await manager.loadConfig('global-defaults');
-        console.log(`   📋 Default models: ${JSON.stringify(globalDefaults.default_models, null, 2).slice(0, 100)}...`);
+        console.log(`   📋 Default providers: ${JSON.stringify(globalDefaults.default_providers || globalDefaults.default_models, null, 2).slice(0, 100)}...`);
         console.log(`   🧠 Memory settings: retrieval_limit=${globalDefaults.default_memory.retrieval_limit}, context_window=${globalDefaults.default_memory.context_window}`);
         console.log(`   🏢 Common stages defined: ${Object.keys(globalDefaults.common_stages).join(', ')}\n`);
 

@@ -89,7 +89,6 @@ class OptimizedMemoryUsageExample {
                 category: 'api',
                 metadata: {
                     provider: 'claude-code',
-                    model: 'claude-3-sonnet',
                     responseTime: 1250,
                     tokensUsed: 420
                 }
@@ -101,7 +100,6 @@ class OptimizedMemoryUsageExample {
                 category: 'ui',
                 metadata: {
                     provider: 'claude-code',
-                    model: 'claude-3-sonnet',
                     responseTime: 980,
                     tokensUsed: 350
                 }
@@ -113,7 +111,6 @@ class OptimizedMemoryUsageExample {
                 category: 'security',
                 metadata: {
                     provider: 'claude-code',
-                    model: 'claude-3-sonnet',
                     responseTime: 2100,
                     tokensUsed: 580
                 }

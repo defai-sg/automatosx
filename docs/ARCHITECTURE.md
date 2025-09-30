@@ -27,7 +27,7 @@ AutomatosX follows a modular, CLI-first architecture with clear separation of co
           │
 ┌─────────▼─────────────────────────────────┐
 │           Provider System                  │
-│ • Claude Code CLI  • OpenAI CLI  • Gemini │
+│ • Claude Code CLI  • Gemini CLI  • Codex CLI │
 └───────────────────────────────────────────┘
 ```
 
@@ -56,6 +56,7 @@ src/
 │   └── write-queue-manager.js # Concurrent access management
 ├── providers/            # AI provider integrations
 │   ├── claude-code.js        # Primary provider
+│   ├── gemini-cli.js         # Secondary provider
 │   ├── openai-cli.js         # Fallback provider
 │   └── provider-manager.js   # Provider selection and health
 └── scripts/              # Operational scripts
@@ -151,7 +152,7 @@ Manages multiple AI provider integrations with automatic failover:
 **Provider Priority**:
 1. **Claude Code CLI** (Primary) - Zero-cost, CLI-authenticated
 2. **Gemini CLI** (Secondary) - Google AI via gcloud
-3. **OpenAI CLI** (Fallback) - Codex integration
+3. **Codex CLI** (Fallback) - OpenAI Codex integration via `codex` command
 
 **Circuit Breaker Pattern**:
 - Health monitoring for each provider
@@ -232,6 +233,7 @@ model_tiers:
     temperature: 0.1
     providers:
       claude-code: "claude-3-sonnet"
+      gemini-cli: "gemini-2.0-flash"
       openai-cli: "gpt-4"
 ```
 

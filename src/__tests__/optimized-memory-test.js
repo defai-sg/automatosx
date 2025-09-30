@@ -295,7 +295,6 @@ class OptimizedMemoryTest {
                 importance: Math.random() * 0.5 + 0.5, // 0.5 to 1.0
                 metadata: {
                     provider: 'test',
-                    model: 'test-model',
                     responseTime: Math.random() * 1000 + 100,
                     tokensUsed: Math.random() * 500 + 100
                 }
@@ -321,8 +320,7 @@ class OptimizedMemoryTest {
                 category: 'general',
                 importance: Math.random() * 0.4, // Lower importance for archiving
                 metadata: {
-                    provider: 'test',
-                    model: 'test-model'
+                    provider: 'test'
                 }
             });
         }

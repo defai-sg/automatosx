@@ -7,7 +7,7 @@ Understanding these concepts is essential for both AI systems and humans to work
 
 **AutomatosX transforms general AI capabilities into specialized professional roles.**
 
-Instead of a single general AI assistant, AutomatosX provides 21 specialized AI agents,
+Instead of a single general AI assistant, AutomatosX provides 20 specialized AI agents,
 each with distinct expertise, personality, and workflow patterns - like having a complete software development team.
 
 ## 🏗️ Three-Layer Agent Architecture
@@ -127,10 +127,29 @@ Based on these insights, AutomatosX pivoted to CLI-only integration:
 - **Cost predictability**: Leverages existing subscription plans
 - **Version stability**: CLI handles model updates transparently
 
-### Fallback Providers
-- **OpenAI CLI**: Codex integration through official CLI
-- **Gemini CLI**: Google AI integration via gcloud CLI
+### Provider System
+- **Claude Code CLI**: Primary provider (zero-cost, official Anthropic CLI via `claude` command)
+- **Gemini CLI**: Secondary provider (Google AI integration via `gemini` command)
+- **Codex CLI**: Fallback provider (OpenAI Codex integration via `codex` command)
 - **Circuit Breaker**: Automatic failover between CLI providers
+
+### Model Management Philosophy
+
+**AutomatosX uses CLI default models rather than specific model selection.**
+
+**Why this approach?**
+- **Reduced Maintenance**: AI providers frequently change model names (claude-3-sonnet → claude-3-5-sonnet → claude-4-sonnet)
+- **Automatic Updates**: Each CLI automatically uses the latest/best available model for the provider
+- **Zero Configuration**: No need to track or update model names across three different providers
+- **Fewer Bugs**: Eliminates errors from outdated model configurations
+- **Provider Expertise**: Let each provider choose their optimal default model
+
+**Implementation**:
+- `claude` → Uses Anthropic's recommended default model
+- `gemini` → Uses Google's recommended default model
+- `codex` → Uses OpenAI's recommended default model
+
+This "hands-off" approach reduces system complexity while ensuring access to the latest AI capabilities.
 
 ### Benefits of CLI-First Approach
 - **No API key management**: Zero stored credentials security model

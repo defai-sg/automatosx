@@ -72,7 +72,7 @@ async function testChatHistory() {
         'backend',
         'Test conversation',
         'Test response',
-        { provider: 'test', model: 'test' }
+{ provider: 'test' }
     );
 
     if (!conversationId) return false;

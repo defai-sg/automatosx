@@ -191,7 +191,8 @@ tmp/
 temp/
 .tmp/
 
-# Backup files
+# Backup files and directories
+backup/
 *.bak
 *.backup
 *.old

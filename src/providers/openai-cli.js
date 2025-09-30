@@ -37,17 +37,15 @@ export class OpenAICLIProvider {
             throw new Error('Codex CLI not available');
         }
 
-        const { model = 'gpt-5-codex', maxTokens = 2000, temperature = 0.3 } = options;
-
         try {
-            // Use Codex CLI exec command for non-interactive execution
-            console.log(chalk.green(`🤖 Executing with Codex CLI: ${model}`));
+            // Use Codex CLI with default model (no model specification needed)
+            console.log(chalk.green(`🤖 Executing with Codex CLI (default model)`));
 
             // Use Codex exec command with prompt (secure approach using spawn)
             const { spawn } = await import('child_process');
             const child = spawn('codex', ['exec'], {
                 timeout: 60000,
-                env: { ...process.env, CODEX_MODEL: model },
+                env: { ...process.env },
                 stdio: ['pipe', 'pipe', 'pipe']
             });
 

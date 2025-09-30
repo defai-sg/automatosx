@@ -9,13 +9,13 @@ This document answers the most common questions about AutomatosX design decision
 **A:** AutomatosX is designed with flexibility in mind. The **minimum requirement** is:
 - **Claude Code Pro account** - Our primary provider for optimal performance
 
-You can disable other providers (Gemini CLI and OpenAI CLI) if needed. However, our **design philosophy emphasizes
-cost reduction while maximizing performance**, so we **strongly recommend** following our complete provider setup:
+**All three providers are enabled by default**, but you can disable Gemini CLI and/or Codex CLI if needed. Our **design philosophy emphasizes
+cost reduction while maximizing performance**, so the **default configuration** includes our complete provider setup:
 
 **Recommended Configuration:**
-1. **Claude Code CLI** (Primary) - Best performance, zero API costs
-2. **Gemini CLI** (Secondary) - Google AI fallback via gcloud
-3. **OpenAI CLI** (Tertiary) - Codex integration for specialized tasks
+1. **Claude Code CLI** (Primary) - Best performance, zero API costs via `claude` command
+2. **Gemini CLI** (Secondary) - Google AI fallback via `gemini` command
+3. **Codex CLI** (Tertiary) - OpenAI Codex integration via `codex` command
 
 **Why Multiple Providers?**
 - **Reliability**: Automatic failover when one provider is down
@@ -30,6 +30,7 @@ npm run status
 # Enable/disable providers as needed
 node src/scripts/config-manager.js enable gemini
 node src/scripts/config-manager.js disable openai
+node src/scripts/config-manager.js enable codex
 ```
 
 ### Q: Can I use AutomatosX with just one provider?

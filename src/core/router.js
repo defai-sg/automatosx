@@ -115,14 +115,14 @@ export class AutomatosXRouter {
      */
     getProviderChain(taskType, role) {
         const routes = {
-            // Code Path: Claude Code (required) → OpenAI CLI (optional) → Gemini CLI (optional)
-            coding: ['claude-code:sonnet', 'openai-cli:gpt-4', 'gemini-cli:2.5-pro'],
+            // Code Path: Claude Code (primary) → Gemini CLI (secondary) → OpenAI CLI (fallback)
+            coding: ['claude-code', 'gemini-cli', 'openai-cli'],
 
-            // QA / Analysis Path: OpenAI CLI (optional) → Gemini CLI (optional) → Claude Code (required)
-            qa: ['openai-cli:gpt-4', 'gemini-cli:2.5-pro', 'claude-code:sonnet'],
+            // QA / Analysis Path: Claude Code (primary) → OpenAI CLI (secondary) → Gemini CLI (fallback)
+            qa: ['claude-code', 'openai-cli', 'gemini-cli'],
 
-            // Creative / Strategy Path: Gemini CLI (optional) → Claude Code (required) → OpenAI CLI (optional)
-            creative: ['gemini-cli:2.5-pro', 'claude-code:sonnet', 'openai-cli:gpt-4']
+            // Creative / Strategy Path: Gemini CLI (primary) → Claude Code (secondary) → OpenAI CLI (fallback)
+            creative: ['gemini-cli', 'claude-code', 'openai-cli']
         };
 
         // Role-based task categorization
@@ -154,8 +154,7 @@ export class AutomatosXRouter {
         const fullChain = routes[resolvedCategory];
 
         // Filter out unavailable providers
-        return fullChain.filter(providerSpec => {
-            const [providerName] = providerSpec.split(':');
+        return fullChain.filter(providerName => {
             const provider = this.providers[providerName];
             return provider && provider.available;
         });
@@ -172,8 +171,7 @@ export class AutomatosXRouter {
         console.log(chalk.blue(`🎯 Routing ${role} task through: ${providerChain.join(' → ')}`));
 
         for (let i = 0; i < providerChain.length; i++) {
-            const providerSpec = providerChain[i];
-            const [providerName, model] = providerSpec.split(':');
+            const providerName = providerChain[i];
 
             // Check if provider is available and circuit breaker allows it
             const provider = this.providers[providerName];
@@ -184,12 +182,12 @@ export class AutomatosXRouter {
 
             const circuitBreaker = this.circuitBreakers[providerName];
             if (circuitBreaker.state === 'OPEN') {
-                console.log(chalk.yellow(`⚠️  Provider ${providerSpec} circuit breaker open, skipping`));
+                console.log(chalk.yellow(`⚠️  Provider ${providerName} circuit breaker open, skipping`));
                 continue;
             }
 
             try {
-                console.log(chalk.green(`🔄 Attempting with ${providerSpec} (${i + 1}/${providerChain.length})`));
+                console.log(chalk.green(`🔄 Attempting with ${providerName} (${i + 1}/${providerChain.length})`));
 
                 const provider = this.providers[providerName];
                 const prompt = this.buildRolePrompt(role, task, projectContext, relevantMemory);
@@ -199,7 +197,6 @@ export class AutomatosXRouter {
                 // Use circuit breaker to execute with timeout protection
                 const result = await circuitBreaker.call(async () => {
                     return await provider.execute(prompt, {
-                        model: model,
                         role: role,
                         maxTokens: this.getMaxTokensForRole(role),
                         temperature: this.getTemperatureForRole(role)
@@ -207,23 +204,23 @@ export class AutomatosXRouter {
                 });
 
                 const duration = Date.now() - startTime;
-                this.lastUsedProvider = providerSpec;
-                this.lastRequestCost = await this.estimateCost(providerSpec, prompt, result);
+                this.lastUsedProvider = providerName;
+                this.lastRequestCost = await this.estimateCost(providerName, prompt, result);
 
                 // Store successful interaction in memory
                 await this.memory.storeInteraction(role, task, result, {
-                    provider: providerSpec,
+                    provider: providerName,
                     duration: duration,
                     cost: this.lastRequestCost,
                     context: projectContext
                 });
 
-                console.log(chalk.green(`✅ Success with ${providerSpec} (${duration}ms, $${this.lastRequestCost.toFixed(4)})`));
+                console.log(chalk.green(`✅ Success with ${providerName} (${duration}ms, $${this.lastRequestCost.toFixed(4)})`));
 
                 return {
                     result: result,
                     metadata: {
-                        provider: providerSpec,
+                        provider: providerName,
                         duration: duration,
                         cost: this.lastRequestCost,
                         fallbacksUsed: i,
@@ -232,7 +229,7 @@ export class AutomatosXRouter {
                 };
 
             } catch (error) {
-                console.log(chalk.red(`❌ Provider ${providerSpec} failed: ${error.message}`));
+                console.log(chalk.red(`❌ Provider ${providerName} failed: ${error.message}`));
 
                 if (i === providerChain.length - 1) {
                     throw new Error(`All providers in chain failed. Last error: ${error.message}`);

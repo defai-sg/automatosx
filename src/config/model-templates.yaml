@@ -1,5 +1,6 @@
-# Model Configuration Templates - Ultra Think Optimization v3.1.1
-# Five-tier precision allocation based on complexity, importance, and context requirements
+# Provider Configuration Templates - Model-Agnostic v3.1.4
+# Five-tier provider allocation based on complexity, importance, and context requirements
+# Each provider uses its optimal default model automatically
 
 model_templates:
 
@@ -8,12 +9,10 @@ model_templates:
   tier_supreme_executive:
     primary:
       provider: claude-code
-      model: opus
       temperature: 0.25
       max_tokens: 20480  # 20K tokens - Maximum strategic context
     fallback:
       provider: gemini-cli
-      model: gemini-2.5-pro
       temperature: 0.3
       max_tokens: 16384  # 16K tokens
 
@@ -22,12 +21,10 @@ model_templates:
   tier_advanced_strategic:
     primary:
       provider: gemini-cli
-      model: gemini-2.5-pro
       temperature: 0.3
       max_tokens: 14336  # 14K tokens
     fallback:
       provider: claude-code
-      model: opus
       temperature: 0.35
       max_tokens: 12288  # 12K tokens
 
@@ -36,12 +33,10 @@ model_templates:
   tier_core_technical:
     primary:
       provider: claude-code
-      model: opus
       temperature: 0.2
       max_tokens: 12288  # 12K tokens
     fallback:
       provider: openai-cli
-      model: gpt-5-codex
       temperature: 0.25
       max_tokens: 10240  # 10K tokens
 

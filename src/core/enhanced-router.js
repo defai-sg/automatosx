@@ -187,32 +187,19 @@ export class EnhancedAutomatosXRouter {
     /**
      * Execute with intelligent fallback across providers
      */
-    async executeWithFallback(modelConfig, prompt, context = {}) {
-        const models = [
-            modelConfig?.primary,
-            modelConfig?.fallback,
-            modelConfig?.fallback2,
-            'claude-code:sonnet' // Ultimate fallback
+    async executeWithFallback(providerConfig, prompt, context = {}) {
+        // Use provider priority order instead of model specifications
+        const providers = [
+            providerConfig?.primary || 'claude-code',
+            providerConfig?.fallback || 'gemini-cli',
+            providerConfig?.fallback2 || 'openai-cli',
+            'claude-code' // Ultimate fallback to primary provider
         ].filter(Boolean);
 
         let lastError;
 
-        for (const model of models) {
+        for (const provider of providers) {
             try {
-                let provider, modelName;
-
-                if (typeof model === 'string') {
-                    // Legacy format: 'provider:model'
-                    [provider, modelName] = model.split(':');
-                } else if (typeof model === 'object' && model.provider && model.model) {
-                    // New format: object with provider and model properties
-                    provider = model.provider;
-                    modelName = model.model;
-                } else {
-                    console.log(chalk.yellow(`⚠️  Invalid model configuration: ${JSON.stringify(model)}`));
-                    continue;
-                }
-
                 // Check circuit breaker
                 const circuitBreaker = this.circuitBreakers[provider];
                 if (circuitBreaker && !circuitBreaker.canExecute()) {
@@ -220,12 +207,16 @@ export class EnhancedAutomatosXRouter {
                     continue;
                 }
 
-                // Execute request
+                // Check if provider is available
+                if (!this.providers[provider]) {
+                    console.log(chalk.yellow(`⚠️  Provider ${provider} not available, skipping...`));
+                    continue;
+                }
+
+                // Execute request with provider's default model
                 const result = await this.providers[provider].call({
-                    model: modelName,
                     prompt,
-                    context,
-                    ...(typeof model === 'object' ? { temperature: model.temperature, max_tokens: model.max_tokens } : {})
+                    context
                 });
 
                 // Record success in circuit breaker

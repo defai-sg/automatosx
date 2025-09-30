@@ -37,7 +37,6 @@ async function quickTest() {
             category: 'api',
             metadata: {
                 provider: 'test',
-                model: 'test-model',
                 responseTime: 1000,
                 tokensUsed: 400
             }

@@ -64,7 +64,7 @@ class EnhancedConfigTester {
                 const profile = yaml.load(content);
 
                 // Validate required fields
-                const requiredFields = ['role', 'name', 'title', 'description', 'personality', 'stages', 'models', 'memory'];
+                const requiredFields = ['role', 'name', 'title', 'description', 'personality', 'stages', 'memory'];
                 for (const field of requiredFields) {
                     if (!profile[field]) {
                         throw new Error(`Required field '${field}' missing in ${role}.yaml`);
@@ -74,6 +74,11 @@ class EnhancedConfigTester {
                 // Validate enhanced structure
                 if (!profile.personality.traits || !profile.personality.specializations) {
                     throw new Error(`Enhanced personality structure missing in ${role}.yaml`);
+                }
+
+                // Validate that no deprecated model fields exist
+                if (profile.models) {
+                    console.warn(`⚠️  Deprecated 'models' field found in ${role}.yaml - should use provider-based configuration`);
                 }
             }
 
@@ -103,33 +108,32 @@ class EnhancedConfigTester {
             return `Validated consistency across ${Object.keys(AGENT_PROFILES).length} agent profiles`;
         });
 
-        // Test 3: Validate model fallback configurations
-        await this.runTest('profiles', 'Model Fallback Configuration', async () => {
+        // Test 3: Validate provider configurations (model-agnostic approach)
+        await this.runTest('profiles', 'Provider Configuration', async () => {
             const profiles = await this.loadAllYamlProfiles();
 
             for (const [role, profile] of Object.entries(profiles)) {
-                if (!profile.stages || !profile.models) continue;
+                if (!profile.stages) continue;
 
-                for (const stage of profile.stages) {
-                    const primaryModel = profile.models[stage];
-                    const fallbackModel = profile.models[`${stage}_fallback`];
-                    const fallback2Model = profile.models[`${stage}_fallback_2`];
+                // Check if profile has provider configuration
+                if (profile.providers) {
+                    for (const stage of profile.stages) {
+                        const stageProviders = profile.providers[stage];
 
-                    if (!primaryModel) {
-                        throw new Error(`Missing primary model for ${role}:${stage}`);
-                    }
+                        if (stageProviders) {
+                            if (!stageProviders.primary) {
+                                throw new Error(`Missing primary provider for ${role}:${stage}`);
+                            }
 
-                    if (!fallbackModel) {
-                        throw new Error(`Missing fallback model for ${role}:${stage}`);
-                    }
-
-                    if (!fallback2Model) {
-                        throw new Error(`Missing fallback_2 model for ${role}:${stage}`);
+                            if (!stageProviders.fallback) {
+                                throw new Error(`Missing fallback provider for ${role}:${stage}`);
+                            }
+                        }
                     }
                 }
             }
 
-            return `Validated fallback models for ${Object.keys(profiles).length} profiles`;
+            return `Validated provider configurations for ${Object.keys(profiles).length} profiles`;
         });
 
         console.log('✅ Profile structure tests completed\n');
