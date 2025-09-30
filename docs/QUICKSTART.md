@@ -1,6 +1,6 @@
 # AutomatosX Quickstart
 
-Get AutomatosX v3.1.4 running in minutes and run your first agent tasks.
+Get AutomatosX v3.1.5 running in minutes and run your first agent tasks.
 
 ## 1. Install AutomatosX
 

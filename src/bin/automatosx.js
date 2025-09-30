@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * AutomatosX v3.1.1 CLI Tool
+ * AutomatosX v3.1.5 CLI Tool
  * Enhanced AI agent orchestration with multi-provider routing and CLI-first architecture
  *
  * Copyright 2025 DEFAI Limited (https://defai.digital/)
@@ -102,7 +102,7 @@ const VERSION = JSON.parse(await fs.readFile(path.join(PACKAGE_ROOT, 'package.js
 
 program
     .name('automatosx')
-    .description('AutomatosX v3.1.1 - Enhanced AI agent orchestration with multi-provider routing and CLI-first architecture')
+    .description('AutomatosX v3.1.5 - Enhanced AI agent orchestration with multi-provider routing and CLI-first architecture')
     .version(VERSION);
 
 // Default command (init)
@@ -161,7 +161,7 @@ async function initCommand(options = {}) {
     const currentDir = process.cwd();
     const { force, verbose } = options;
 
-    console.log(chalk.blue('🚀 AutomatosX v3.1.1 Initialization\n'));
+    console.log(chalk.blue('🚀 AutomatosX v3.1.5 Initialization\n'));
 
     if (verbose) {
         console.log(chalk.gray(`Package root: ${PACKAGE_ROOT}`));
@@ -196,7 +196,7 @@ async function initCommand(options = {}) {
         await validateSystemIntegrity(currentDir, verbose);
 
         // Success message
-        console.log(chalk.green('\n✅ AutomatosX v3.1.1 successfully initialized!'));
+        console.log(chalk.green('\n✅ AutomatosX v3.1.5 successfully initialized!'));
         console.log(chalk.blue('\n🎯 Next steps:'));
         console.log(chalk.gray('1. Open your project in Claude Code'));
         console.log(chalk.gray('2. Try: /ax:help'));

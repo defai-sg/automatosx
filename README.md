@@ -1,6 +1,6 @@
-# AutomatosX v3.1.4 - AI Agent Orchestration Platform
+# AutomatosX v3.1.5 - AI Agent Orchestration Platform
 
-[![Version](https://img.shields.io/badge/version-3.1.4-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-3.1.5-blue.svg)](package.json)
 [![Node.js](https://img.shields.io/badge/node.js-18+-green.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
