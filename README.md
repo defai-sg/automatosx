@@ -4,958 +4,190 @@
 [![Node.js](https://img.shields.io/badge/node.js-18+-green.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-**AutomatosX** is a sophisticated AI agent orchestration platform featuring CLI-first architecture, multi-provider
-routing, and comprehensive agent management. The system provides **20 specialized AI agent roles** with YAML-based
-profiles, real-time chat history tracking, and zero-cost access through CLI authentication.
+**AutomatosX** transforms a solo builder into a 20-person product organization. Each agent carries a distinct
+role—CTO, architect, backend engineer, designer, product strategist, marketer, and more—complete with workflow
+stages, shared memory, and personality. In DEFAI benchmarks this coordinated swarm delivers up to **30× higher output
+quality and throughput** than a single assistant.
 
-## ✨ Key Features
-
-- 🎭 **20 Specialized AI Agents** - From backend engineers to CEOs, each with unique personalities and expertise
-- 🔄 **Dynamic Role Loading** - Intelligent caching system with 40-80ms initial load, <1ms cached performance
-- 🛡️ **CLI-First Security** - Zero stored API keys, uses CLI authentication only
-- 📊 **Chat History Tracking** - Embedded Milvus with SQLite/file fallback for semantic search
-- 🎯 **Multi-Provider Routing** - Automatic failover across Claude Code CLI, Gemini CLI, and Codex CLI
-- 🔧 **Model-Agnostic Design** - CLI tools handle model selection automatically (no model configuration needed)
-- 🏗️ **Workspace Isolation** - Role-based workspace management for clean execution environments
-- ⚡ **Performance Optimized** - Parallel loading, intelligent caching, and circuit breaker protection
-
-## 🔧 Smart Model Management
-
-**AutomatosX eliminates model configuration complexity** by using CLI default models.
-
-**Why This Matters**:
 ```bash
-# Traditional approach (high maintenance):
-claude --model claude-3-5-sonnet-20241022  # Breaks when model names change
-gemini --model gemini-2.0-flash-exp-0827   # Constant updates needed
-codex --model gpt-4-turbo-2024-04-09       # Configuration management nightmare
-
-# AutomatosX approach (zero maintenance):
-claude        # Always uses Anthropic's latest recommended model
-gemini        # Always uses Google's latest recommended model
-codex exec    # Always uses OpenAI's latest recommended model
+/ax:agent CTO "Coordinate with Design and Product to improve onboarding. Review implementation with Architecture and \
+Backend, agree on a refactor plan, then loop in Quality and Security to validate the changes."
 ```
 
-**Benefits**:
-- ✅ **Zero model updates** needed when providers release new models
-- ✅ **Automatic access** to latest AI capabilities
-- ✅ **No configuration errors** from outdated model names
-- ✅ **Provider expertise** ensures optimal model selection
+AutomatosX handles the end-to-end orchestration. The CTO agent delegates UX improvements to Design and Product,
+cross-checks code structure with Architecture and Backend, and routes the final review through Quality and Security.
+Shared Milvus-backed memory ensures every agent receives the previous context before responding, so the final
+refactor ships with leadership oversight, design polish, engineering rigor, and compliance sign-off—all from one
+instruction.
 
-## 🚀 Quick Start: Experience AI Agent Team in 15 Minutes
+## Why AutomatosX
 
-> 💡 **New User?** We strongly recommend reading [Why Multi-Agent Systems?](docs/CONCEPTS.md) to understand
-> AutomatosX's unique value proposition.
+- **Built-in specialist stack** – 20 agents spanning engineering, leadership, finance, marketing, and compliance
+- **Provider strengths on tap** – Blend Claude's coding depth, OpenAI's structured analysis, and Gemini's creative range
+- **Cost-capped execution** – CLI authentication keeps spend predictable, ideal for individuals and lean teams
+- **Structured collaboration** – YAML workflows, Markdown abilities, and shared memory keep agents aligned on best practices
+- **Product velocity** – Multi-agent collaboration removes hand-offs and meetings, yielding 30× productivity gains in internal runs
 
-### ⚡ 3-Minute Quick Installation
+## Multi-Agent Collaboration Flow
 
-**System Requirements**: Node.js 18+ and one AI CLI tool
+1. **Leadership directive** – High-level roles (CTO, CEO, Product) break goals into coordinated missions
+2. **Specialist execution** – Functional agents (Design, Backend, DevOps) implement their portion with role-specific knowledge
+3. **Cross-check and refactor** – Architecture and Backend validate structure while shared memory exposes earlier insights
+4. **Risk controls** – Quality and Security review outcomes, ensuring compliance and regression-free delivery
+5. **Knowledge retention** – Results feed back into Milvus memory so future missions start from a smarter baseline
+
+## Provider Strength Matrix
+
+| CLI Provider | Strengths | Typical Collaboration |
+|--------------|-----------|-----------------------|
+| **Claude Code** | Deep code generation, refactoring discipline | Leads implementation, pairs with Quality for validation |
+| **Codex (OpenAI)** | Analytical breakdowns, planning and documentation | Structures system designs before Claude executes |
+| **Gemini CLI** | Creative ideation, multimodal insight | Inspires Design and Marketing agents with novel concepts |
+
+AutomatosX routes tasks to the provider most likely to succeed while keeping a local circuit breaker ready for
+failover. Each CLI defaults to the provider's recommended model, eliminating per-release model upkeep.
+
+## Cost-Controlled Execution
+
+- No API keys stored—authentication flows through provider CLIs
+- Usage caps track to the plan you already pay for (Claude Pro/Max, Google One AI credits, OpenAI Plus)
+- Automated cost-saving scripts (`automatosx optimize`, `automatosx status`) reveal redundant providers
+- DEFAI's operating thesis: small teams plus AutomatosX out-deliver historic large teams at a fraction of the cost
+
+## Platform Architecture
+
+- **Three-layer agents** – YAML workflows, Markdown knowledge bases, and JavaScript personalities in `src/agents/`
+- **Enhanced router** – `src/core/enhanced-router.js` handles agent selection, provider routing, and memory hydration
+- **Dual-layer memory** – Milvus embedded vector store plus practical queue for concurrent writes
+- **Workspace isolation** – Execution sandboxes per agent keep filesystem state predictable
+- **CLI-first design** – Every capability exposed through `automatosx` commands for scripts, CI, or manual runs
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- At least one supported provider CLI (Claude Code recommended)
+
+### Global Installation
 
 ```bash
-# 1. Install AutomatosX
 npm install -g automatosx
-
-# 2. Install Claude Code CLI (free, recommended)
 npm install -g @anthropic-ai/claude-code
 claude auth login
+automatosx validate
+```
 
-# 3. Install additional AI providers (optional)
-# Gemini CLI for Google AI
-gcloud auth application-default login
+Optional providers:
 
-# Codex CLI for OpenAI Codex capabilities
+```bash
+# Google Gemini CLI
+npm install -g @google/generative-ai-cli
+gemini auth login
+
+# Codex CLI (OpenAI)
 npm install -g codex-cli
 codex login
-
-# 4. Verify installation
-automatosx status
 ```
 
-✅ **Success when you see "Provider Status: ✅ Connected"!**
-
-### 🎯 Instant Experience (30 seconds)
+### First Task
 
 ```bash
-# Let backend expert Bob design an API
-automatosx run backend "Create complete design for user authentication API"
-
-# Let UI designer Luna create interface
-automatosx run design "Design clean login page user experience"
-
-# View all available professional agents
+automatosx run backend "Design a secure user authentication API"
+automatosx run design "Sketch onboarding UX states for the auth flow"
 automatosx agents --detailed
 ```
 
-### 🛠️ Developer Installation
-
-**For contributors and developers who want to modify AutomatosX:**
+### Development Setup
 
 ```bash
-# 1. Clone and setup development environment
 git clone https://github.com/defai-digital/automatosx.git
-cd automatosx && npm install
-
-# 2. Install AI providers (same as above)
-npm install -g @anthropic-ai/claude-code && claude auth login
-
-# 3. Verify development setup
-npm run status
+cd automatosx
+npm install
 npm run validate
-
-# 4. Run from source
-npm start run backend "test task"
+npm start run backend "Hello from source"
 ```
 
-### 🗑️ Uninstallation
+## Smart Model Management
 
-**To remove AutomatosX completely:**
+AutomatosX relies on CLI defaults instead of hard-coded model names. Providers keep models current, while the router
+monitors health and fails over automatically when a CLI is unavailable.
 
 ```bash
-# 1. Remove the global package
-npm uninstall -g automatosx
-
-# 2. Remove AI provider CLIs (optional)
-npm uninstall -g @anthropic-ai/claude-code
-npm uninstall -g codex-cli
-
-# 3. Clean up user data (optional)
-# Note: This removes all conversation history and workspaces
-rm -rf ~/.defai/
-rm -rf ~/.claude/memory/ax/
+# No model strings required
+claude
+codex exec
+gemini
 ```
 
-**For development installations:**
-```bash
-# 1. Remove local installation
-cd automatosx && npm run uninstall:clean
+Benefits:
 
-# 2. Remove directory
-cd .. && rm -rf automatosx
+- No maintenance when providers rename models
+- Automatic upgrades to the latest capabilities
+- Fewer configuration errors or mismatched parameters
+
+## Daily CLI Toolkit
+
+| Command | Purpose |
+|---------|---------|
+| `automatosx agents --detailed` | Inspect roles, personas, workflow stages, and abilities |
+| `automatosx run <agent> "task"` | Execute a specific mission with one agent |
+| `automatosx workflow <pattern> "description"` | Run multi-agent workflow templates |
+| `automatosx memory search "topic"` | Retrieve prior conversations before acting |
+| `automatosx optimize` | Analyze provider performance and cost usage |
+| `automatosx status` | View system, provider, and workspace health |
+
+## Project Structure
+
+```
+src/
+├── core/            # Enhanced router, profile manager, filesystem manager
+├── agents/          # Agent definitions, abilities, personalities, _global shared assets
+├── providers/       # CLI provider integrations and failover logic
+├── memory/          # Milvus integration, practical memory queue, memory server client
+├── scripts/         # CLI helpers for validation, reset, optimization, upgrades
+├── shared/          # Shared constants, utilities, templates
+└── __tests__/       # Integration, practical, and concurrent test suites
 ```
 
-🎉 **Congratulations! You now have an AI development team with 20 experts!**
+Supporting directories:
 
-### 📚 Complete Learning Path
+- `config/` – Default YAML templates and provider configs
+- `docs/` – Architecture, tutorials, operations, and agent catalogs
+- `.defai/` – Runtime workspace, memory, and backups (git-ignored)
+- `.claude/` – Claude Code CLI integration files and MCP servers
 
-| Time Investment | Learning Goal | Recommended Resources |
-|-----------------|---------------|----------------------|
-| **5 minutes** | Install and run first task | [⚡ Quickstart](docs/QUICKSTART.md) |
-| **15 minutes** | Quick hands-on experience | [📖 15-Minute Quick Guide](docs/TUTORIALS.md) |
-| **30 minutes** | Understand multi-agent value | [🤖 Multi-Agent System Guide](docs/CONCEPTS.md) |
-| **1 hour** | Master advanced features | [🧠 Milvus Intelligent Memory](#-agent-to-agent-communication-with-milvus-lite) |
-| **Half day** | Production environment deployment | [⚙️ Production Setup Guide](docs/DEVELOPMENT.md) |
-
-### 🆘 Need Help?
-
-- 🚨 **Installation Issues**: Check [Troubleshooting Guide](docs/TROUBLESHOOTING.md)
-- 🤔 **Usage Questions**: Run `automatosx examples` to see practical examples
-- 💬 **Community Support**: Ask questions in GitHub Issues
-
----
-
-## 🎭 AutomatosX Agent Team (20 Specialists)
-
-Each AutomatosX agent combines three powerful layers to deliver specialized expertise:
-
-### 🧠 Agent Architecture: Three-Layer Design
-
-**1. YAML Profile Configuration** (`src/agents/<role>/profile.yaml`)
-- **Workflow Stages**: Multi-step execution plans for complex tasks
-- **Model Configuration**: Primary/fallback AI models with temperature settings
-- **Memory Scopes**: Domain-specific knowledge retention and retrieval
-- **Personality Traits**: Communication style and decision-making patterns
-
-**2. Markdown Abilities Knowledge Base** (`src/agents/<role>/abilities/`)
-- **Core Abilities**: Domain-specific technical expertise and skills
-- **Tools & Frameworks**: Technology stack recommendations and usage
-- **Processes & Workflows**: Industry best practices and methodologies
-- **User-Editable**: Customizable knowledge base for each agent
-
-**3. JavaScript Personality Profiles** (`src/agents/agent-profiles.js`)
-- **Human Names**: Natural interaction with Bob, Frank, Steve, etc.
-- **Professional Traits**: Unique communication styles and specializations
-- **Catchphrases**: Memorable personality expressions
-- **Thinking Patterns**: Problem-solving approaches and decision frameworks
-
-### 💻 Development & Engineering
-- **backend** (Bob) - Senior Backend Engineer specializing in APIs, databases, microservices
-  - *Profile*: 7-stage workflow (API analysis → deployment → monitoring)
-  - *Abilities*: Database optimization, microservices patterns, security implementation
-  - *Personality*: "Performance is measured, security is verified, architecture is proven"
-
-- **frontend** (Frank) - Frontend Developer expert in React, UI/UX, performance optimization
-  - *Profile*: Modern React patterns, component-driven development
-  - *Abilities*: Web performance optimization, accessibility design, Progressive Web Apps
-  - *Personality*: "Beautiful interfaces tell stories, performant code delivers experiences"
-
-- **devops** (Oliver) - Senior DevOps Engineer focused on infrastructure, CI/CD, monitoring
-  - *Profile*: Infrastructure as Code, container orchestration, CI/CD pipelines
-  - *Abilities*: Cloud platforms, monitoring systems, site reliability engineering
-  - *Personality*: "Automate the predictable, monitor the unpredictable, scale the inevitable"
-
-- **security** (Steve) - Security Engineer for vulnerability assessment and compliance
-  - *Profile*: Advanced threat modeling, penetration testing, security architecture
-  - *Abilities*: Zero-trust implementation, compliance frameworks, incident response
-  - *Personality*: "Trust nothing, verify everything, assume breach, defend in depth"
-
-- **quality** (Queenie) - Quality Professional covering testing and QA processes
-  - *Profile*: Test automation frameworks, performance testing, quality assurance
-  - *Abilities*: Quality metrics development, process improvement, compliance auditing
-  - *Personality*: "Quality is built in, not bolted on - excellence through systematic prevention"
-
-### 🏗️ Architecture & Strategy
-- **architect** (Adrian) - Software Architect for system design and technical leadership
-  - *Profile*: Enterprise architecture, design patterns, technology evaluation
-  - *Abilities*: Scalability design, system integration, architecture governance
-  - *Personality*: "Good architecture is the foundation of great software"
-
-- **data** (Diana) - Data Professional covering data science and engineering
-  - *Profile*: Data pipeline architecture, statistical modeling, machine learning
-  - *Abilities*: ETL/ELT processes, predictive analytics, MLOps infrastructure
-  - *Personality*: "Quality data engineering enables meaningful data science"
-
-### 🎨 Product & Design
-- **design** (Debbee) - Senior UX Designer specializing in inclusive, system-driven experiences
-  - *Profile*: Human-centered design, design systems, accessibility design
-  - *Abilities*: User research, prototyping, design thinking methodologies
-  - *Personality*: "Design is empathy made visible, accessibility is design done right"
-
-- **product** (Paris) - Product Manager for requirements and strategy
-  - *Profile*: 12-stage workflow (discovery → launch → validation)
-  - *Abilities*: Product strategy, stakeholder management, business analysis
-  - *Personality*: "Clear requirements bridge user needs to product success"
-
-### 📚 Research & Documentation
-- **docs** (Doris) - Technical Documentation Specialist for developer workflows
-  - *Profile*: Technical writing, API documentation, knowledge management
-  - *Abilities*: Content strategy, documentation architecture, user-focused writing
-  - *Personality*: "Good documentation is the bridge between confusion and clarity"
-
-- **analyst** (Anna) - Business Analyst for market research and insights
-  - *Profile*: Market research, competitive analysis, strategic planning
-  - *Abilities*: Business intelligence, data analytics, performance metrics
-  - *Personality*: "In analysis, patterns reveal opportunities, data drives decisions"
-
-### 👔 Leadership
-- **ceo** (Eric) - Chief Executive Officer guiding strategic planning and culture
-  - *Profile*: Strategic vision, market positioning, organizational development
-  - *Abilities*: Digital transformation, sustainable growth, investor relations
-  - *Personality*: "Vision without execution is hallucination; execution without vision is chaos"
-
-- **cto** (Tony) - Chief Technology Officer for technical strategy
-  - *Profile*: Technology strategy, technical leadership, innovation management
-  - *Abilities*: Enterprise architecture, engineering culture, technical due diligence
-  - *Personality*: "Technology is best when it empowers people to achieve the impossible"
-
-## 📖 Usage Examples
-
-### Basic Task Execution
-```bash
-# Backend development
-automatosx run backend "Design REST API for e-commerce platform"
-
-# Frontend development
-automatosx run frontend "Create responsive dashboard with dark mode"
-
-# DevOps tasks
-automatosx run devops "Set up CI/CD pipeline for Node.js application"
-
-# Security auditing
-automatosx run security "Audit application for security vulnerabilities"
-```
-
-### Multi-Stage Workflows
-```bash
-# Execute complete workflow with all stages
-automatosx run architect "Design microservices architecture" --workflow
-
-# Product development workflow
-automatosx run ceo "Develop investor pitch for AI startup" --workflow
-```
-
-### Chat History & Knowledge Management
-```bash
-# Search conversation history
-automatosx history "database optimization" --role backend
-
-# View system usage statistics
-automatosx history --stats
-
-# Clear chat history
-node src/scripts/memory-clear.js
-```
-
-### System Management
-```bash
-# Validate agent profiles
-automatosx validate
-
-# Check provider connectivity
-automatosx status
-
-# List all agents with details
-automatosx agents --detailed
-
-# Test agent routing
-node src/scripts/agent-router.js --list-agents
-```
-
-### Role Management
-```bash
-# Create new role/agent
-node src/utils/create-role.js analyst Alex "Senior Data Analyst"
-node src/utils/create-role.js mobile Sarah "Mobile Developer" --specializations "iOS,Android,React Native"
-
-# Remove existing role/agent
-node src/utils/remove-role.js --list                    # List all removable roles
-node src/utils/remove-role.js analyst --force        # Remove by role name
-node src/utils/remove-role.js Alex --force              # Remove by agent name
-
-# Role creation with custom options
-node src/utils/create-role.js blockchain Oliver "Blockchain Developer" \
-  --specializations "Smart Contracts,DeFi,Web3" \
-  --stages "requirements,architecture,development,testing,deployment" \
-  --catchphrase "Code is law, security is paramount"
-
-# Safe role removal (creates backup)
-node src/utils/remove-role.js blockchain               # Shows confirmation
-node src/utils/remove-role.js blockchain --force       # Removes with backup
-node src/utils/remove-role.js Oliver --force --no-backup # Removes without backup (⚠️ dangerous)
-```
-
-### System Reset and Maintenance
-```bash
-# Configuration Reset (Development Setup)
-# For global installation, use 'automatosx reset:<command>' instead
-npm run reset:status               # Show current configuration status
-npm run reset:all                  # Complete system reset (config + memory)
-npm run reset:config               # Reset configuration to defaults
-npm run reset:memory               # Clear all memory and chat history
-npm run reset:workspace            # Reset workspace directories
-
-# Backup Operations
-automatosx backup:config              # Backup current configuration
-automatosx backup:uninstall           # Create backup before uninstall
-
-# Uninstall (Use with caution - for development setups only)
-# For end users: Use "npm uninstall -g automatosx" instead
-automatosx uninstall:status           # Show uninstall status
-automatosx uninstall:clean            # Complete uninstall (⚠️ removes all data)
-```
-
-### Privacy & Storage
-- Conversation history and task artifacts are stored locally under `.defai/` and `.claude/`.
-- For global installation: Run `automatosx reset:memory` to purge chat logs; `automatosx reset:workspace` clears generated outputs while keeping structure.
-- For development setup: Run `npm run reset:memory` to purge chat logs; `npm run reset:workspace` clears generated outputs while keeping structure.
-- Avoid committing these directories; they may contain sensitive prompts or provider metadata.
-
-## 🏗️ Architecture Overview
-
-### Core Components
-
-- **Enhanced Router** (`src/core/enhanced-router.js`) - Main orchestration engine
-- **Profile Manager** (`src/core/profile-manager.js`) - YAML profile loader and validator
-- **Chat History Manager** (`src/core/chat-history.js`) - Embedded Milvus with fallback conversation tracking
-- **Provider Manager** (`src/providers/provider-manager.js`) - CLI tool detection and routing
-- **Dynamic Role Loader** (`scripts/utils/dynamic-role-loader.js`) - Intelligent role loading system
-
-### Directory Structure
-
-**Development Structure:**
-```
-src/                               # Main source directory
-├── __tests__/                     # Test suite (integration + regression)
-├── agents/                        # Agent profiles and abilities
-├── bin/                           # CLI executable entry points
-├── commands/                      # CLI subcommands
-├── config/                        # Configuration templates
-├── core/                          # Orchestration, workflow, memory engines
-├── memory/                        # Memory system implementations
-├── providers/                     # Provider adapters (Claude, Gemini, OpenAI)
-├── scripts/                       # Operational scripts (reset, uninstall, etc.)
-├── shared/                        # Reusable templates and analysis helpers
-└── utils/                         # Supporting utilities and loaders
-```
-
-**Installation Structure:**
-```
-.defai/                            # AutomatosX runtime data (user-specific)
-├── workspaces/                    # Agent execution environments
-│   ├── agents/                    # Individual agent sandboxes
-│   ├── roles/                     # Role-based workspaces
-│   └── workflows/                 # Multi-agent workflow outputs
-├── memory/                        # Hybrid vector/file memory store
-├── backups/                       # Safety backups
-└── claude-integration/            # Claude Code integration cache
-
-.claude/                           # Claude Code shared assets (managed externally)
-├── commands/ax/                   # AutomatosX command handlers
-├── memory/ax/                     # Chat history and semantic memory
-├── styles/ax/                     # Output formatting styles
-└── mcp/ax/                        # Claude MCP integration assets
-```
-
-## ⚙️ Configuration Settings
-
-### Main Configuration File: `automatosx.config.yaml` (Project Root)
-
-**Location:** Project root directory (same level as `package.json`)
-**Purpose:** Project-level settings for AI providers, memory, workspace, and logging
-
-```yaml
-# AI Provider Settings
-providers:
-  claude-code:
-    enabled: true           # Primary provider (free)
-    priority: 1             # Highest priority
-    timeout: 120000         # 2 minutes timeout
-  gemini-cli:
-    enabled: true           # Secondary provider
-    priority: 2             # Lower priority
-    timeout: 180000         # 3 minutes timeout
-  openai-cli:
-    enabled: false          # Disabled by default
-    priority: 3             # Fallback priority
-    timeout: 180000         # 3 minutes timeout
-
-# Memory System Settings
-memory:
-  type: "hybrid"            # Hybrid vector + file storage
-  milvus:
-    enabled: true           # Vector database enabled
-    fallback: true          # Auto fallback to SQLite
-  sqlite:
-    enabled: true           # File-based fallback
-    file: ".defai/memory/chat-history.db"
-
-# Workspace Settings
-workspace:
-  directory: "./.defai/workspaces"    # Main workspace location
-  cleanup:
-    enabled: true           # Auto cleanup enabled
-    maxAge: 7              # Keep files for 7 days
-    maxFiles: 100          # Max 100 files per workspace
-
-# Logging Settings
-logging:
-  level: "info"             # Log level (debug/info/warn/error)
-  file: "./.defai/workspaces/logs/automatosx.log"
-  console: true             # Show logs in console
-```
-
-### Package.json Key Scripts
-
-```json
-{
-  "main": "src/index.js",
-  "bin": {
-    "automatosx": "src/bin/automatosx.js"    # CLI entry point
-  },
-  "scripts": {
-    // Development
-    "start": "node src/index.js",
-    "legacy": "node src/index.js",
-    "test": "node src/test/enhanced-system-test.js",
-    "build": "node src/scripts/build.js",
-
-    // System Management
-    "status": "node src/index.js status",
-    "validate": "node src/index.js validate",
-    "agents": "node src/index.js agents",
-
-    // Installation & Cleanup
-    "install:local": "node src/scripts/local-install.js",
-    "reset:all": "npm run reset:config && npm run reset:memory",
-    "reset:memory": "node src/scripts/memory-clear.js all",
-
-    // Examples & Testing
-    "examples": "npm run examples:abilities && npm run examples:agent && npm run examples:memory && npm run examples:yaml",
-    "test:examples": "node src/test/examples-validation.js"
-  }
-}
-```
-
-### File Location Reference
-
-**Project Root Files (Version Controlled):**
-
-| File | Location | Purpose | Notes |
-|------|----------|---------|--------|
-| `automatosx.config.yaml` | `./automatosx.config.yaml` | Main configuration | Project-level settings |
-| `package.json` | `./package.json` | Package metadata | NPM configuration |
-| `README.md` | `./README.md` | Documentation | Project overview |
-| `CLAUDE.md` | `./CLAUDE.md` | Claude Code guidance | Development reference |
-| `AGENTS.md` | `./AGENTS.md` | Agent guidelines | Repository structure |
-| `GEMINI.md` | `./GEMINI.md` | Gemini integration | Provider setup |
-
-**Project Root Files (Not Version Controlled):**
-
-| File/Directory | Location | Purpose | Notes |
-|----------------|----------|---------|--------|
-| `node_modules/` | `./node_modules/` | NPM dependencies | Standard Node.js location |
-| `package-lock.json` | `./package-lock.json` | Dependency lock file | Generated by npm |
-| `.env` | `./.env` | Environment variables | If needed for local config |
-
-**Development vs Installation Mappings:**
-
-| Component | Development Path | Installation Path | Purpose |
-|-----------|------------------|-------------------|---------|
-| **Main App** | `src/` | `.defai/automatosx/src/` | Application source |
-| **CLI Binary** | `src/bin/automatosx.js` | `.defai/automatosx/src/bin/automatosx.js` | Command line interface |
-| **Config Templates** | `src/config/` | `.defai/automatosx/config/` | Configuration templates |
-| **Agent Profiles** | `src/agents/` | `.defai/automatosx/profiles/` | Agent configurations |
-| **Scripts & Tools** | `src/scripts/` | `.defai/automatosx/src/scripts/` | Utility scripts |
-| **Tests** | `src/test/` | `.defai/automatosx/src/test/` | Test suite |
-| **Examples** | `src/examples/` | `.defai/automatosx/src/examples/` | Example code |
-| **Documentation** | `src/docs/` | `.defai/automatosx/src/docs/` | Development docs |
-
-**Runtime Data Directories:**
-
-| Component | Path | Purpose | Owner |
-|-----------|------|---------|--------|
-| **Workspaces** | `.defai/workspaces/` | Agent execution environments | User |
-| **Chat Memory** | `.claude/memory/ax/` | Conversation history | Claude Code |
-| **Commands** | `.claude/commands/ax/` | Claude integration | Claude Code |
-| **Styles** | `.claude/styles/ax/` | Output formatting | Claude Code |
-| **Metrics** | `.claude/metrics/` | Performance data | Claude Code |
-
-### Three-Layer Agent System
-
-1. **YAML Profiles** (`src/agents/<role>/profile.yaml`) - Workflow stages, model configurations, memory scopes
-2. **Markdown Abilities** (`src/agents/<role>/abilities/`) - User-editable knowledge files
-3. **JavaScript Personalities** (`src/agents/agent-profiles.js`) - Agent names and traits
-
-## 🧠 Agent-to-Agent Communication with Milvus Lite
-
-AutomatosX features a sophisticated **intelligent memory system** that enables seamless agent-to-agent communication and
-knowledge sharing through **Milvus Lite** vector database integration.
-
-### 🔄 How Agents Communicate
-
-#### Semantic Memory Network
-- Each agent conversation is automatically stored in **Milvus Lite** vector database
-- Conversations are embedded using advanced semantic search capabilities
-- Agents can access and learn from previous interactions across the entire team
-- **Cross-Agent Knowledge Transfer**: Bob's API insights can inform Frank's frontend decisions
-
-#### Memory Architecture
-```
-Agent Conversation Flow:
-1. Agent Task Execution → 2. Milvus Lite Storage → 3. Semantic Indexing → 4. Cross-Agent Retrieval
-
-Example Communication Chain:
-Bob (Backend) → "API security patterns" → Milvus Vector DB → Steve (Security) retrieves context
-Frank (Frontend) → "React performance" → Milvus Vector DB → Adrian (Architect) provides insights
-```
-
-### 📊 Memory System Components
-
-**1. Milvus Lite Vector Database** (`src/memory/milvus-embedded.js`)
-- **Semantic Search**: Natural language queries to find relevant past conversations
-- **Vector Embeddings**: Advanced AI-powered conversation understanding
-- **Automatic Fallback**: SQLite/file storage when Milvus unavailable
-- **Performance**: Sub-second search across thousands of conversations
-
-**2. Chat History Manager** (`src/core/chat-history.js`)
-- **Real-Time Recording**: Every agent interaction automatically saved
-- **Session Management**: Isolated conversation threads per agent
-- **Metadata Tracking**: Agent roles, timestamps, task context, response metrics
-- **Cross-Session Retrieval**: Agents access insights from previous sessions
-
-**3. Practical Memory System** (`src/memory/practical-memory-system.js`)
-- **Multi-Modal Storage**: Vector search + keyword search + file storage
-- **Conversation Linking**: Related discussions automatically connected
-- **Performance Optimization**: Intelligent caching and indexing
-- **Graceful Degradation**: Always available, even without vector database
-
-**4. Concurrent Memory Server** (`src/memory/memory-server-client.js`)
-- **Single-Writer Coordination**: Solves Milvus Lite's single-writer limitation
-- **HTTP Memory Server**: Centralized write queue with automatic port discovery
-- **Read-Your-Writes Consistency**: Immediate access to data via read-through cache
-- **Multi-Project Support**: Random high ports (49152-65535) prevent conflicts
-- **Transparent Fallback**: Automatic local storage when server unavailable
-
-### 🎯 Agent Communication Examples
-
-#### Scenario 1: Cross-Domain Knowledge Sharing
-```bash
-# Bob creates API security recommendations
-npm start run backend "Design secure JWT authentication system"
-
-# Steve later accesses Bob's security insights
-npm start history "JWT security patterns" --role security
-# → Finds Bob's previous recommendations and builds upon them
-```
-
-#### Scenario 2: Iterative Development Workflow
-```bash
-# Frank designs frontend component
-npm start run frontend "Create user dashboard component"
-
-# Adrian reviews architectural implications
-npm start history "dashboard component architecture" --role architect
-# → Accesses Frank's design decisions for architectural review
-```
-
-#### Scenario 3: Team Knowledge Accumulation
-```bash
-# View conversation statistics across all agents
-npm start history --stats
-# → Shows knowledge growth: 150 conversations, 12 agents active, 45 cross-references
-
-# Search specific technical topics
-npm start history "microservices patterns"
-# → Returns insights from Bob, Adrian, and Oliver's conversations
-```
-
-### 🚀 Advanced Memory Features
-
-#### Semantic Search Capabilities
-- **Natural Language Queries**: "Show me all security recommendations"
-- **Context-Aware Results**: Understanding of technical relationships
-- **Multi-Agent Synthesis**: Combining insights from multiple expert agents
-- **Temporal Relevance**: Recent insights weighted higher than older ones
-
-#### Memory Scopes and Isolation
-```yaml
-# Example: Backend Agent Memory Configuration
-memory:
-  scopes:
-    - global                    # System-wide knowledge
-    - backend-core             # Backend-specific expertise
-    - api-architecture         # API design patterns
-    - database-performance     # Database optimization
-    - microservices           # Microservices patterns
-    - security-backend        # Backend security practices
-```
-
-#### Performance Metrics
-- **Storage**: Automatic compression and indexing
-- **Retrieval Speed**: <100ms semantic search responses
-- **Accuracy**: 95%+ relevant results for technical queries
-- **Scalability**: Handles 10,000+ conversations efficiently
-
-### 🔧 Memory System Commands
-
-#### Search and Retrieval
-```bash
-# Search across all agent conversations
-npm start history "API optimization techniques"
-
-# Search within specific agent's expertise
-npm start history "React performance" --role frontend
-
-# View system memory statistics
-npm start history --stats
-
-# Agent-specific conversation history
-npm start history "database design" --role backend --limit 5
-```
-
-#### Memory Management
-```bash
-# Clear all chat history and reset memory
-automatosx reset:memory        # Global installation
-# npm run reset:memory        # Development setup
-
-# Clear specific memory type
-node src/scripts/memory-clear.js type milvus
-
-# View memory system health
-automatosx status              # Global installation
-# npm run status              # Development setup
-```
-
-#### Development Integration
-```bash
-# Memory system validation
-node test/practical-memory-test.js
-
-# Check vector database connectivity
-node test/enhanced-system-test.js
-
-# Validate memory architecture
-automatosx validate              # Global installation
-# npm run validate              # Development setup
-
-# Test concurrent memory coordination (Development only)
-npm run test:concurrent
-
-# Start memory server for multi-project use
-automatosx memory:server        # Global installation
-# npm run memory:server         # Development setup
-
-# Test memory server functionality
-automatosx memory:test          # Global installation
-# npm run memory:test           # Development setup
-```
-
-### 🔄 Concurrent Memory Coordination
-
-**Multi-Agent Concurrent Operations**
-AutomatosX solves the Milvus Lite single-writer limitation through an intelligent HTTP memory server that coordinates
-writes across multiple agents running simultaneously.
-
-**Key Features:**
-- **Single-Writer Coordination**: All agents write through a centralized server
-- **Write Queue Management**: Priority-based processing with 100ms intervals
-- **Read-Through Cache**: Immediate consistency for read-your-writes operations
-- **Automatic Port Discovery**: Agents find the server via `.claude/memory/ax/server.port`
-- **Multi-Project Isolation**: Each project uses random high ports (49152-65535)
-
-**Concurrent Testing Examples:**
-```bash
-# Test concurrent write coordination (Development setup only)
-npm run test:concurrent
-# → Simulates 5 agents with 10 operations each (100% success rate)
-
-# Start multiple agents simultaneously
-npm start run backend "design API" &
-npm start run frontend "create UI" &
-npm start run quality "validate system" &
-# → All agents coordinate writes through memory server
-
-# Monitor server statistics
-curl http://localhost:$(cat .claude/memory/ax/server.port)/stats
-```
-
-**Multi-Project Support:**
-- **Automatic Port Management**: Each project gets unique random port
-- **Port File Discovery**: Clients automatically find running servers
-- **Graceful Fallback**: Works with or without server coordination
-- **Zero Configuration**: No manual port management required
-
-This intelligent memory system transforms AutomatosX from individual AI agents into a **collaborative AI development team**
-where each agent learns from and builds upon the insights of others, creating exponentially more valuable outputs over time.
-
-## 🤖 Dynamic Role Management
-
-AutomatosX v3.1.4 supports dynamic role creation and removal, allowing you to extend the AI team with custom agents
-tailored to your specific needs.
-
-### Creating Custom Roles
-
-Create new roles with specialized expertise:
+## Development & Testing
 
 ```bash
-# Basic role creation
-node src/utils/create-role.js <role> <name> <title>
-
-# Example: Create a data analyst agent
-node src/utils/create-role.js analyst Alex "Senior Data Analyst"
+npm run validate          # Check configuration, providers, filesystem health
+npm test                  # Enhanced system regression suite
+npm run test:integration  # Abilities, agent, memory, YAML scenarios
+npm run test:concurrent   # Stress-test the memory write queue
+npm run lint:md           # Markdown style checks
+npx eslint src/           # JavaScript linting (run Prettier when touching files)
 ```
 
-**Advanced Role Creation:**
-```bash
-# Mobile development specialist
-node src/utils/create-role.js mobile Sarah "Mobile Developer" \
-  --specializations "iOS Development,Android Development,React Native,Flutter" \
-  --stages "requirements,ui_design,development,testing,deployment,optimization" \
-  --catchphrase "Mobile-first, user-centric, performance-optimized"
+When adding features, place new tests in `src/__tests__/` near the domain they cover and document executed commands in
+your pull request.
 
-# Blockchain specialist
-node src/utils/create-role.js blockchain Oliver "Blockchain Developer" \
-  --specializations "Smart Contracts,DeFi,Web3,Solidity,Ethereum" \
-  --stages "tokenomics,smart_contract_design,development,auditing,deployment" \
-  --catchphrase "Code is law, security is paramount"
-```
+## Documentation Roadmap
 
-### What Gets Created
+| Topic | Description |
+|-------|-------------|
+| [docs/CONCEPTS.md](docs/CONCEPTS.md) | Three-layer agent architecture and collaboration principles |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Deep dive into routers, providers, memory, and filesystem design |
+| [docs/AGENT-ROLES.md](docs/AGENT-ROLES.md) | Personas, responsibilities, and example commands for all 20 agents |
+| [docs/OPERATIONS.md](docs/OPERATIONS.md) | Full CLI reference including workflows, memory, and reset tooling |
+| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Contributor environment setup, scripts, and best practices |
+| [docs/TUTORIALS.md](docs/TUTORIALS.md) | Guided walkthroughs for building with AutomatosX |
 
-When you create a new role, AutomatosX automatically generates:
+## Contributing & Support
 
-1. **📝 YAML Profile** (`src/agents/{role}/profile.yaml`)
-   - Complete agent configuration
-   - Workflow stages and model mappings
-   - Memory scopes and abilities paths
+- Follow [CONTRIBUTING.md](CONTRIBUTING.md) for coding standards and review expectations
+- Report issues or share enhancements through GitHub Issues
+- Security concerns? See [SECURITY.md](SECURITY.md) for the private disclosure process
 
-2. **📚 Abilities Directory** (`src/agents/{role}/abilities/`)
-   - `core-abilities.md` - Primary responsibilities and expertise
-   - `tools-and-frameworks.md` - Recommended tools and technologies
-   - `processes-and-workflows.md` - Standard operating procedures
+## License
 
-3. **🔄 Agent Registry** (`src/agents/agent-profiles.js`)
-   - Updated with new agent profile
-   - Maintains personality and communication patterns
-
-4. **🏗️ Workspace Directories**
-   - `.defai/workspaces/agents/{name}/` - Agent-specific workspace
-   - `.defai/workspaces/roles/{role}/` - Role-based workspace
-   - Includes: outputs, logs, tasks, context, artifacts subdirectories
-
-### Managing Existing Roles
-
-**List Available Roles:**
-```bash
-node src/utils/remove-role.js --list
-```
-
-**Safe Role Removal:**
-```bash
-# Preview what will be removed (creates backup)
-node src/utils/remove-role.js analyst
-
-# Remove with backup
-node src/utils/remove-role.js analyst --force
-
-# Remove by agent name
-node src/utils/remove-role.js Alex --force
-```
-
-**Dangerous Operations:**
-```bash
-# Remove without backup (⚠️ permanent deletion)
-node src/utils/remove-role.js analyst --force --no-backup
-```
-
-### Role Customization
-
-After creating a role, you can customize:
-
-1. **Edit Abilities** - Update `src/agents/{role}/abilities/*.md` files
-2. **Modify Profile** - Adjust `src/agents/{role}/profile.yaml` configuration
-3. **Test Integration** - Run `automatosx validate` (global) or `npm run validate` (development) to verify configuration
-
-### Best Practices
-
-- **Specialized Roles**: Create focused roles for specific domains (mobile, blockchain, AI/ML)
-- **Clear Naming**: Use descriptive role names and agent names
-- **Comprehensive Abilities**: Define detailed expertise in abilities files
-- **Stage Workflows**: Design logical workflow stages for complex tasks
-- **Backup Before Removal**: Always backup roles before removal
-
-## 🔧 Development
-
-### Code Quality
-```bash
-# Formatting and linting
-npx eslint src/ scripts/ test/
-npx prettier --write src/ scripts/ test/
-
-# Testing
-npm test                           # Main integration tests
-node test/enhanced-system-test.js  # Core system tests
-node test/practical-memory-test.js # Memory system tests
-```
-
-### System Validation
-```bash
-# Validate profiles and architecture
-automatosx validate              # Global installation
-# npm run validate              # Development setup
-# node src/scripts/validate-architecture.js  # Development only
-
-# Test router functionality
-node src/scripts/agent-router.js frontend "test task"
-```
-
-### Build and Deployment
-```bash
-# Development setup commands only
-npm run build                   # Build system with parallel execution
-npm run install:local           # Install locally for development
-npm run install:global          # Install globally for system-wide access
-```
-
-## 📊 Performance Metrics
-
-- **Role Loading**: 40-80ms initial, <1ms cached (5-minute TTL)
-- **Provider Routing**: <10ms with circuit breaker protection
-- **Memory Search**: Vector search with SQLite fallback
-- **Workspace Management**: Isolated execution environments per agent
-
-## 🛡️ Security Features
-
-- **Zero Stored Credentials** - Uses CLI authentication exclusively
-- **Input Validation** - Comprehensive security validation and sanitization
-- **Workspace Isolation** - Each agent execution isolated in dedicated workspace
-- **Command Security** - Protection against injection attacks
-
-## 🔄 Provider Support
-
-### Primary Provider
-- **Claude Code CLI** - Zero-cost access with full feature support
-
-### Fallback Providers
-- **OpenAI Codex CLI** - Automatic fallback with advanced coding capabilities via `codex` command
-- **Gemini CLI** - Google AI integration via gcloud
-
-### Circuit Breaker Protection
-- Automatic provider switching on failures
-- Performance monitoring and health checks
-- Graceful degradation with intelligent fallbacks
-
-## 📚 Documentation
-
-- **[CLAUDE.md](CLAUDE.md)** - Complete development reference
-- **[Architecture Guide](docs/architecture/)** - System architecture details
-- **[Setup Guide](docs/)** - Detailed installation instructions
-- **[User Guide](docs/)** - Usage examples and best practices
-- **[Examples](examples/)** - Practical examples and demonstrations
-
-## 🔧 Examples and Testing
-
-### Running Examples
-
-Explore AutomatosX features with practical examples:
-
-```bash
-# Run all examples in sequence
-automatosx examples              # Global installation
-# npm run examples              # Development setup
-
-# Run individual examples (Development setup)
-npm run examples:abilities      # Abilities system demonstration
-npm run examples:agent          # Agent management showcase
-npm run examples:memory         # Optimized memory system demo
-npm run examples:yaml           # YAML inheritance patterns
-
-# Validate examples work correctly (Development setup)
-npm run test:examples
-```
-
-### Development Testing
-
-```bash
-# Full test suite
-# Testing (Development setup)
-npm test                        # Core system tests
-npm run test:examples           # Examples validation
-npm run test:legacy             # Legacy compatibility tests
-
-# System validation
-automatosx validate             # Profile and configuration validation (Global)
-automatosx status               # Provider connectivity check (Global)
-# npm run validate              # Development setup
-# npm run status                # Development setup
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch: `git checkout -b feature-name`
-3. Run tests: `npm test`
-4. Validate profiles: `automatosx validate` (global) or `npm run validate` (development)
-5. Submit pull request
-
-## 📄 License
-
-AutomatosX is released under the [Apache License 2.0](LICENSE). Retain the bundled `LICENSE` file and preserve the
-copyright notice (`DEFAI Team`) and product references (`AutomatosX`) in source distributions or derivative works.
-
-## 🌟 Why AutomatosX?
-
-AutomatosX combines the architectural patterns of enterprise agent platforms with enhanced profile management and
-intelligent routing. Built for developers who need sophisticated AI agent orchestration without the complexity of
-traditional platforms.
-
-**Key Differentiators:**
-- CLI-first architecture eliminates API key management
-- Dynamic role loading enables rapid agent customization
-- Multi-provider routing ensures reliability and cost optimization
-- Comprehensive chat history provides continuous learning capabilities
-
----
-
-**Ready to orchestrate AI agents like never before?** Start with `automatosx run backend "your first task"` and experience
-the future of AI collaboration.
+AutomatosX is released under the [Apache 2.0 License](LICENSE). Build responsibly and let us know what you create.
