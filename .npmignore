@@ -1,0 +1,223 @@
+# NPM Ignore File
+# Files and directories to exclude from NPM package
+# Following same standards as .gitignore for GitHub
+
+# =============================================================================
+# VERSION CONTROL AND CI/CD
+# =============================================================================
+.git/
+.gitignore
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+.codecov.yml
+
+# =============================================================================
+# NODE.JS / NPM DEVELOPMENT
+# =============================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+coverage/
+.nyc_output/
+
+# =============================================================================
+# TESTING AND BUILD
+# =============================================================================
+test-system.js
+simple-test.js
+__tests__/
+*.test.js
+*.spec.js
+test/
+tests/
+spec/
+jest.config.*
+.jest/
+
+# =============================================================================
+# ENVIRONMENT AND SECRETS
+# =============================================================================
+.env
+.env.*
+config/local.yaml
+secrets/
+*.pem
+*.key
+*.crt
+
+# =============================================================================
+# DATABASES AND STORAGE (exclude from npm package)
+# =============================================================================
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+*.faiss
+milvus_data/
+chroma_data/
+dump.rdb
+
+# =============================================================================
+# LOGGING AND MONITORING
+# =============================================================================
+logs/
+*.log
+*.log.*
+prometheus_data/
+grafana_data/
+
+# =============================================================================
+# AI AND ML ARTIFACTS (exclude from npm package)
+# =============================================================================
+models/
+*.bin
+*.safetensors
+*.onnx
+*.pt
+*.pth
+embeddings/
+.embeddings_cache/
+vector_cache/
+runs/
+wandb/
+mlruns/
+
+# =============================================================================
+# DEVELOPMENT TOOLS AND IDE
+# =============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+.ipynb_checkpoints/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# =============================================================================
+# DOCKER AND CONTAINERIZATION
+# =============================================================================
+docker-data/
+docker-compose.override.yml
+*.tar
+Dockerfile.dev
+docker-compose.dev.yml
+
+# =============================================================================
+# TEMPORARY FILES AND BACKUPS
+# =============================================================================
+tmp/
+temp/
+.tmp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*~
+
+# =============================================================================
+# PROJECT-SPECIFIC (exclude sensitive/user data)
+# =============================================================================
+.defai/
+.claude/
+memory/
+workspaces/
+workspace_data/
+generated/
+outputs/
+.cache/
+cache/
+config/local/
+profiles/custom/
+**/agent.md
+agent.md
+docs/_build/
+site/
+
+# =============================================================================
+# CLOUD AND DEPLOYMENT
+# =============================================================================
+*.tfstate
+*.tfstate.*
+.terraform/
+*.yaml.tmp
+*.yml.tmp
+.aws/
+.gcp/
+.azure/
+
+# =============================================================================
+# PYTHON (if any python files exist)
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.conda/
+
+# =============================================================================
+# INCLUDE ESSENTIAL FILES
+# =============================================================================
+# Make sure to include these even if they match ignore patterns
+!package.json
+!package-lock.json
+!src/
+!README.md
+!LICENSE
+!*.md
+!.env.example
+!config/examples/
+!docs/examples/
+
+# =============================================================================
+# LOCAL TESTING AND DEVELOPMENT
+# =============================================================================
+test-project/
+example-project/
+.test-concurrent-*
+.example-memory
+backup/

@@ -1,0 +1,3 @@
+workspaces/
+src/agents/**/abilities/
+src/shared/templates/abilities/

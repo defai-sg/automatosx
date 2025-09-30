@@ -1,0 +1,174 @@
+# AutomatosX Optimized Memory System Configuration
+# Configure the memory system for optimal performance and accuracy
+
+# Memory System Configuration
+memory_system:
+  # Active Memory Tier (Hot Storage)
+  active_tier:
+    max_memories: 15000                    # Maximum memories in active tier
+    retention_days: 30                     # Days to keep in active before archiving
+    relevance_threshold: 0.3               # Minimum relevance score to keep
+    index_type: "hybrid"                   # "hybrid", "keyword", "semantic"
+    compression_enabled: true              # Enable compression for active storage
+
+  # Archive Tier (Warm Storage)
+  archive_tier:
+    enabled: true                          # Enable archiving system
+    compression_level: 6                   # Compression level (1-9)
+    batch_size: 100                        # Memories per archive file
+    index_rebuild_interval: "24h"          # How often to rebuild indexes
+    max_search_results: 50                 # Maximum results from archive search
+
+  # Vector Store Configuration
+  vector_store:
+    enabled: true                          # Enable semantic search
+    provider: "milvus"                     # "milvus", "chroma", "weaviate", "qdrant"
+    dimensions: 256                        # Embedding dimensions
+    index_type: "IVF_PQ"                   # Vector index type
+    segments:
+      by_agent: true                       # Segment by agent role
+      by_time_range: "30d"                 # Time-based segmentation
+      max_segment_size: 100000             # Max memories per segment
+    compression:
+      enabled: true                        # Enable vector compression
+      type: "PQ"                           # Product Quantization
+      compression_ratio: 4                 # Compression ratio
+
+# Performance Configuration
+performance:
+  enable_tracking: true                    # Enable performance monitoring
+  max_search_results: 20                   # Default search result limit
+  compression_interval: "6h"               # How often to run compression
+  semantic_search_weight: 0.7              # Weight for semantic search
+  keyword_search_weight: 0.3               # Weight for keyword search
+
+# Relevance Scoring Configuration
+relevance:
+  threshold: 0.3                           # Global relevance threshold
+  temporal_decay_factor: 0.1               # How fast old memories decay
+  agent_specificity_boost: 0.15            # Boost for agent-specific matches
+  recency_boost: 0.25                      # Boost for recent memories
+  importance_threshold: 0.3                # Minimum importance to consider
+  max_context_items: 10                    # Maximum items in agent context
+
+# Adaptive Weights for Relevance Calculation
+adaptive_weights:
+  semantic_similarity: 0.4                 # Text semantic similarity
+  contextual_relevance: 0.3                # Context and agent matching
+  temporal_relevance: 0.2                  # Time-based relevance
+  frequency_relevance: 0.1                 # Pattern frequency
+  agent_specific: 0.15                     # Agent-specific boost
+
+# Memory Lifecycle Management
+lifecycle:
+  archive_threshold: 50000                 # Total memories before archiving
+  cleanup_interval: "24h"                  # How often to clean up
+  max_memory_age: "90d"                    # Maximum age before archiving
+  low_relevance_threshold: 0.2             # Threshold for low-relevance archiving
+
+# Monitoring and Alerting
+monitoring:
+  performance_thresholds:
+    max_search_time: 100                   # Maximum search time (ms)
+    max_store_time: 50                     # Maximum store time (ms)
+    min_relevance_score: 0.5               # Minimum average relevance
+    max_error_rate: 0.01                   # Maximum error rate (1%)
+    min_cache_hit_rate: 0.8                # Minimum cache hit rate (80%)
+
+  alert_conditions:
+    critical_search_time: 200              # Alert if search > 200ms
+    critical_relevance: 0.3                # Alert if relevance < 0.3
+    high_error_rate: 0.05                  # Alert if error rate > 5%
+    low_cache_performance: 0.6             # Alert if cache hit < 60%
+
+# Deployment Configurations
+deployment_configs:
+  development:
+    active_tier:
+      max_memories: 1000
+      retention_days: 7
+    vector_store:
+      enabled: false
+    performance:
+      enable_tracking: true
+
+  staging:
+    active_tier:
+      max_memories: 5000
+      retention_days: 14
+    vector_store:
+      enabled: true
+      dimensions: 128
+    performance:
+      enable_tracking: true
+
+  production:
+    active_tier:
+      max_memories: 20000
+      retention_days: 45
+    archive_tier:
+      enabled: true
+      compression_level: 9
+    vector_store:
+      enabled: true
+      dimensions: 256
+      compression:
+        enabled: true
+    performance:
+      enable_tracking: true
+
+  high_volume:
+    active_tier:
+      max_memories: 50000
+      retention_days: 60
+    archive_tier:
+      enabled: true
+      compression_level: 9
+    vector_store:
+      enabled: true
+      dimensions: 256
+      segments:
+        max_segment_size: 50000
+      compression:
+        enabled: true
+        compression_ratio: 8
+    performance:
+      compression_interval: "1h"
+      enable_tracking: true
+
+# Security and Privacy
+security:
+  encryption:
+    enabled: true                          # Enable encryption for archived data
+    algorithm: "AES-256"                   # Encryption algorithm
+
+  access_control:
+    role_based: true                       # Enable role-based access
+    audit_logging: true                    # Log all memory operations
+
+  data_retention:
+    max_retention_days: 365                # Maximum data retention
+    auto_deletion: true                    # Enable automatic deletion
+    anonymization: true                    # Remove PII from old memories
+
+  privacy_compliance:
+    gdpr_enabled: true                     # Enable GDPR compliance
+    data_minimization: true                # Store only necessary data
+    right_to_be_forgotten: true            # Support deletion requests
+
+# Backup and Recovery
+backup:
+  enabled: true                            # Enable backup system
+  interval: "24h"                          # Backup interval
+  retention: "30d"                         # Backup retention period
+  compression: true                        # Compress backup files
+  verify_integrity: true                   # Verify backup integrity
+
+# Advanced Features
+advanced:
+  agent_behavior_profiling: true           # Learn agent preferences
+  query_pattern_optimization: true         # Optimize common patterns
+  feedback_integration: true               # Use user feedback for improvement
+  adaptive_learning: true                  # Adapt scoring over time
+  predictive_caching: true                 # Cache likely queries
+  smart_preloading: true                   # Preload related memories

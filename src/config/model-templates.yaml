@@ -1,0 +1,187 @@
+# Model Configuration Templates - Ultra Think Optimization v3.1.1
+# Five-tier precision allocation based on complexity, importance, and context requirements
+
+model_templates:
+
+  # Tier S: Supreme Executive (Maximum Strategic Context)
+  # CEO, CTO - Ultimate decision makers requiring maximum strategic context
+  tier_supreme_executive:
+    primary:
+      provider: claude-code
+      model: opus
+      temperature: 0.25
+      max_tokens: 20480  # 20K tokens - Maximum strategic context
+    fallback:
+      provider: gemini-cli
+      model: gemini-2.5-pro
+      temperature: 0.3
+      max_tokens: 16384  # 16K tokens
+
+  # Tier A: Advanced Strategic (High Strategic Context)
+  # CFO, Legal, Architect - Complex strategic and governance roles
+  tier_advanced_strategic:
+    primary:
+      provider: gemini-cli
+      model: gemini-2.5-pro
+      temperature: 0.3
+      max_tokens: 14336  # 14K tokens
+    fallback:
+      provider: claude-code
+      model: opus
+      temperature: 0.35
+      max_tokens: 12288  # 12K tokens
+
+  # Tier B: Core Technical (High Technical Context)
+  # Backend, Algorithm, Security, Data, Quantum - Core technical complexity
+  tier_core_technical:
+    primary:
+      provider: claude-code
+      model: opus
+      temperature: 0.2
+      max_tokens: 12288  # 12K tokens
+    fallback:
+      provider: openai-cli
+      model: gpt-5-codex
+      temperature: 0.25
+      max_tokens: 10240  # 10K tokens
+
+  # Tier C: Professional Implementation (Medium-High Context)
+  # Frontend, DevOps, Quality, Network, Edge - Professional implementation roles
+  tier_professional_implementation:
+    primary:
+      provider: openai-cli
+      model: gpt-5-codex
+      temperature: 0.3
+      max_tokens: 9216   # 9K tokens
+    fallback:
+      provider: gemini-cli
+      model: gemini-2.5-pro
+      temperature: 0.35
+      max_tokens: 7168   # 7K tokens
+
+  # Tier D: Creative Communication (Medium Context)
+  # Design, Product, Docs, Marketer - Creative and communication roles
+  tier_creative_communication:
+    primary:
+      provider: gemini-cli
+      model: gemini-2.5-pro
+      temperature: 0.4
+      max_tokens: 7168   # 7K tokens
+    fallback:
+      provider: claude-code
+      model: opus
+      temperature: 0.5
+      max_tokens: 5632   # 5.5K tokens
+
+  # Legacy templates (maintained for backward compatibility)
+  # Updated with latest models but reduced priority
+  simple:
+    primary:
+      provider: claude-code
+      model: opus
+      temperature: 0.3
+      max_tokens: 4096
+    fallback:
+      provider: gemini-cli
+      model: gemini-2.5-pro
+      temperature: 0.4
+      max_tokens: 3072
+
+  complex:
+    primary:
+      provider: claude-code
+      model: opus
+      temperature: 0.2
+      max_tokens: 8192
+    fallback:
+      provider: openai-cli
+      model: gpt-5-codex
+      temperature: 0.3
+      max_tokens: 6144
+
+  precision:
+    primary:
+      provider: claude-code
+      model: opus
+      temperature: 0.1
+      max_tokens: 4096
+    fallback:
+      provider: openai-cli
+      model: gpt-5-codex
+      temperature: 0.2
+      max_tokens: 3072
+
+  creative:
+    primary:
+      provider: gemini-cli
+      model: gemini-2.5-pro
+      temperature: 0.5
+      max_tokens: 4096
+    fallback:
+      provider: claude-code
+      model: opus
+      temperature: 0.6
+      max_tokens: 3072
+
+  large_context:
+    primary:
+      provider: claude-code
+      model: opus
+      temperature: 0.2
+      max_tokens: 16384
+    fallback:
+      provider: gemini-cli
+      model: gemini-2.5-pro
+      temperature: 0.3
+      max_tokens: 12288
+
+# Agent Tier Mapping - Ultra Think Classification
+# Based on complexity, importance, and context requirements
+agent_tier_mapping:
+  # Tier S: Supreme Executive (20K tokens)
+  tier_supreme_executive:
+    - ceo
+    - cto
+
+  # Tier A: Advanced Strategic (14K tokens)
+  tier_advanced_strategic:
+    - cfo
+    - legal
+    - architect
+    - analyst
+
+  # Tier B: Core Technical (12K tokens)
+  tier_core_technical:
+    - backend
+    - algorithm
+    - security
+    - data
+    - quantum
+
+  # Tier C: Professional Implementation (9K tokens)
+  tier_professional_implementation:
+    - frontend
+    - devops
+    - quality
+    - network
+    - edge
+
+  # Tier D: Creative Communication (7K tokens)
+  tier_creative_communication:
+    - design
+    - product
+    - docs
+    - marketer
+
+# Legacy Stage Model Mapping (Updated with new templates)
+stage_model_mapping:
+  analysis: precision
+  design: tier_creative_communication
+  implementation: tier_core_technical
+  testing: tier_professional_implementation
+  documentation: tier_creative_communication
+  review: precision
+  strategy: tier_advanced_strategic
+  planning: tier_advanced_strategic
+  optimization: tier_core_technical
+  validation: tier_professional_implementation

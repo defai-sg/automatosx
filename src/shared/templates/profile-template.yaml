@@ -1,0 +1,101 @@
+# AutomatosX Agent Profile Template
+# This template provides the standard structure for agent profiles
+# Copy and customize this template when creating new roles
+
+role: ${ROLE_NAME}                    # Unique role identifier (lowercase, no spaces)
+name: ${AGENT_NAME}                   # Agent's human name (e.g., "Bob", "Sarah")
+title: ${PROFESSIONAL_TITLE}          # Professional title (e.g., "Senior Backend Engineer")
+description: >
+  ${DESCRIPTION}                      # Detailed description of the agent's expertise and focus areas
+  # Example: "Senior Backend Engineer specializing in server-side architecture,
+  # API design patterns, database performance optimization, and microservices."
+
+personality:
+  traits: ${PERSONALITY_TRAITS}       # Comma-separated traits (e.g., "methodical, performance-obsessed")
+  catchphrase: "${CATCHPHRASE}"       # Agent's signature phrase
+  communication_style: ${COMM_STYLE}  # Options: technical_precision, professional_guidance,
+                                     # data_driven_storytelling, clear_and_direct, creative_collaborative
+  decision_making: ${DECISION_STYLE}  # Options: data_and_metrics_driven, evidence_based_strategic,
+                                     # analytical_and_systematic, user_centric_iterative
+  specializations:                   # List of specific expertise areas
+    - ${SPECIALIZATION_1}
+    - ${SPECIALIZATION_2}
+    - ${SPECIALIZATION_3}
+
+# Workflow stages define the agent's work process
+stages:
+  - ${STAGE_1}                       # e.g., requirements_analysis
+  - ${STAGE_2}                       # e.g., solution_design
+  - ${STAGE_3}                       # e.g., implementation_planning
+  - ${STAGE_4}                       # e.g., execution
+  - ${STAGE_5}                       # e.g., testing_validation
+  - ${STAGE_6}                       # e.g., documentation
+  - ${STAGE_7}                       # e.g., review_optimization
+
+# Memory configuration for conversation and knowledge management
+memory:
+  scopes:                           # Memory scopes for knowledge categorization
+    - global                        # Shared across all agents
+    - ${ROLE_NAME}-core            # Role-specific core knowledge
+    - ${ROLE_NAME}-specialized     # Advanced role knowledge
+    - ${ROLE_NAME}-tools           # Tool and framework knowledge
+  abilities_path: ./abilities       # Path to abilities directory
+  memory_path: ./memory             # Path to memory storage
+  personality_path: ./personality.js # Path to personality extensions
+
+# Expertise areas define what the agent knows and does
+expertise_areas:
+  primary:                          # Main areas of expertise
+    - ${PRIMARY_EXPERTISE_1}
+    - ${PRIMARY_EXPERTISE_2}
+    - ${PRIMARY_EXPERTISE_3}
+  secondary:                        # Supporting areas of expertise
+    - ${SECONDARY_EXPERTISE_1}
+    - ${SECONDARY_EXPERTISE_2}
+    - ${SECONDARY_EXPERTISE_3}
+
+# Thinking patterns guide the agent's problem-solving approach
+thinking_patterns:
+  - ${THINKING_PATTERN_1}           # e.g., "Always consider scalability implications"
+  - ${THINKING_PATTERN_2}           # e.g., "Security by design, not by addition"
+  - ${THINKING_PATTERN_3}           # e.g., "Performance bottlenecks hide in plain sight"
+
+# Model configuration for AI provider routing
+models:
+  template: ${MODEL_TEMPLATE}        # Options: tier_core_technical, tier_creative_communication,
+                                   # precision, complex, simple, large_context
+  stage_mapping:                    # Map stages to specific model templates
+    ${STAGE_1}: ${MODEL_TEMPLATE}   # Use consistent template or customize per stage
+    ${STAGE_2}: ${MODEL_TEMPLATE}
+    ${STAGE_3}: ${MODEL_TEMPLATE}
+    ${STAGE_4}: ${MODEL_TEMPLATE}
+    ${STAGE_5}: ${MODEL_TEMPLATE}
+    ${STAGE_6}: ${MODEL_TEMPLATE}
+    ${STAGE_7}: ${MODEL_TEMPLATE}
+
+# Metadata for tracking and management
+metadata:
+  last_updated: ${CURRENT_DATE}      # ISO date format
+  capability_score: ${SCORE}         # 1-10 rating of agent capability
+  specialization_depth: ${DEPTH}     # Options: beginner, intermediate, advanced, expert
+  created_by: ${CREATOR}             # Who created this profile
+  version: "1.0"                     # Profile version for tracking updates
+
+# Optional: Advanced configuration
+advanced:
+  context_window: ${CONTEXT_SIZE}    # Preferred context window size
+  temperature: ${TEMPERATURE}        # AI temperature setting (0.0-1.0)
+  max_tokens: ${MAX_TOKENS}         # Maximum response length
+  fallback_roles:                   # Roles that can substitute if needed
+    - ${FALLBACK_ROLE_1}
+    - ${FALLBACK_ROLE_2}
+  collaboration_patterns:           # How this agent works with others
+    works_well_with:
+      - ${COMPATIBLE_ROLE_1}
+      - ${COMPATIBLE_ROLE_2}
+    provides_input_to:
+      - ${DOWNSTREAM_ROLE_1}
+      - ${DOWNSTREAM_ROLE_2}
+    receives_input_from:
+      - ${UPSTREAM_ROLE_1}
+      - ${UPSTREAM_ROLE_2}

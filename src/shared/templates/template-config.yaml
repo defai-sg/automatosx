@@ -1,0 +1,235 @@
+# AutomatosX Role Template Configuration
+# This file defines available options and examples for role creation
+
+# Profile Template Variables
+profile_variables:
+  # Basic Information
+  ROLE_NAME: "Unique role identifier (lowercase, no spaces)"
+  AGENT_NAME: "Agent's human name (e.g., 'Bob', 'Sarah')"
+  PROFESSIONAL_TITLE: "Professional title (e.g., 'Senior Backend Engineer')"
+  DESCRIPTION: "Detailed description of expertise and focus areas"
+
+  # Personality Configuration
+  PERSONALITY_TRAITS: "Comma-separated personality traits"
+  CATCHPHRASE: "Agent's signature phrase or motto"
+  COMM_STYLE: "Communication style from predefined options"
+  DECISION_STYLE: "Decision-making approach from predefined options"
+
+  # Workflow and Expertise
+  SPECIALIZATION_1: "Primary area of expertise"
+  SPECIALIZATION_2: "Secondary area of expertise"
+  SPECIALIZATION_3: "Tertiary area of expertise"
+  STAGE_1: "First workflow stage"
+  # ... additional stages
+
+  # Model Configuration
+  MODEL_TEMPLATE: "AI model template for this role"
+  CURRENT_DATE: "Current date in ISO format"
+  SCORE: "Capability score (1-10)"
+  DEPTH: "Specialization depth level"
+  CREATOR: "Who created this profile"
+
+# Communication Styles
+communication_styles:
+  technical_precision:
+    description: "Focus on accuracy, technical details, and precise terminology"
+    best_for: ["backend", "security", "devops", "architect"]
+
+  professional_guidance:
+    description: "Professional, helpful, and instructive communication"
+    best_for: ["product", "analyst", "quality", "docs"]
+
+  data_driven_storytelling:
+    description: "Use data and evidence to tell compelling stories"
+    best_for: ["analyst", "data", "marketer", "ceo"]
+
+  clear_and_direct:
+    description: "Straightforward, concise, and actionable communication"
+    best_for: ["cto", "architect", "devops", "security"]
+
+  creative_collaborative:
+    description: "Encourage collaboration and creative problem-solving"
+    best_for: ["design", "frontend", "product", "marketer"]
+
+# Decision-Making Styles
+decision_making_styles:
+  data_and_metrics_driven:
+    description: "Base decisions on quantitative data and performance metrics"
+    best_for: ["backend", "data", "analyst", "quality"]
+
+  evidence_based_strategic:
+    description: "Use research and evidence for strategic decisions"
+    best_for: ["analyst", "ceo", "cto", "architect"]
+
+  analytical_and_systematic:
+    description: "Methodical approach with systematic analysis"
+    best_for: ["architect", "security", "devops", "quality"]
+
+  user_centric_iterative:
+    description: "Focus on user needs with iterative improvements"
+    best_for: ["design", "frontend", "product", "docs"]
+
+# Model Templates
+model_templates:
+  tier_core_technical:
+    description: "High-complexity technical tasks (12K tokens)"
+    token_limit: 12288
+    temperature: 0.2
+    best_for: ["backend", "security", "architect", "devops"]
+
+  tier_creative_communication:
+    description: "Creative and communication-focused tasks (9K tokens)"
+    token_limit: 9216
+    temperature: 0.35
+    best_for: ["design", "frontend", "marketer", "docs"]
+
+  precision:
+    description: "High-precision, focused tasks (4K tokens)"
+    token_limit: 4096
+    temperature: 0.1
+    best_for: ["security", "quality", "analyst", "data"]
+
+  complex:
+    description: "Complex multi-step tasks (8K tokens)"
+    token_limit: 8192
+    temperature: 0.2
+    best_for: ["architect", "cto", "product", "analyst"]
+
+  simple:
+    description: "Standard tasks (4K tokens)"
+    token_limit: 4096
+    temperature: 0.3
+    best_for: ["docs", "quality", "devops", "frontend"]
+
+  large_context:
+    description: "Large context tasks (16K tokens)"
+    token_limit: 16384
+    temperature: 0.2
+    best_for: ["architect", "ceo", "data", "analyst"]
+
+# Specialization Depth Levels
+specialization_depths:
+  beginner:
+    description: "Basic understanding and fundamental skills"
+    capability_score: "1-3"
+
+  intermediate:
+    description: "Solid understanding with practical experience"
+    capability_score: "4-6"
+
+  advanced:
+    description: "Deep expertise with complex problem-solving ability"
+    capability_score: "7-8"
+
+  expert:
+    description: "Mastery level with innovation and leadership capability"
+    capability_score: "9-10"
+
+# Common Workflow Stage Patterns
+workflow_patterns:
+  technical_development:
+    stages: ["requirements_analysis", "solution_design", "implementation_planning", "execution", "testing_validation", "documentation", "review_optimization"]
+    best_for: ["backend", "frontend", "devops", "security"]
+
+  strategic_planning:
+    stages: ["market_analysis", "strategy_formulation", "planning", "execution", "monitoring", "evaluation", "optimization"]
+    best_for: ["ceo", "cto", "product", "analyst"]
+
+  design_process:
+    stages: ["research", "ideation", "prototyping", "design", "testing", "refinement", "delivery"]
+    best_for: ["design", "frontend", "product"]
+
+  data_science:
+    stages: ["data_collection", "data_cleaning", "analysis", "modeling", "validation", "deployment", "monitoring"]
+    best_for: ["data", "analyst"]
+
+  content_creation:
+    stages: ["research", "planning", "writing", "editing", "review", "publishing", "optimization"]
+    best_for: ["docs", "marketer"]
+
+# Role Examples by Domain
+role_examples:
+  mobile_development:
+    role: "mobile"
+    name: "Sarah"
+    title: "Mobile Developer"
+    specializations: ["iOS Development", "Android Development", "React Native", "Flutter"]
+    communication_style: "technical_precision"
+    decision_making: "user_centric_iterative"
+    model_template: "tier_creative_communication"
+    workflow_pattern: "technical_development"
+
+  blockchain_development:
+    role: "blockchain"
+    name: "Oliver"
+    title: "Blockchain Developer"
+    specializations: ["Smart Contracts", "DeFi", "Web3", "Solidity", "Ethereum"]
+    communication_style: "technical_precision"
+    decision_making: "analytical_and_systematic"
+    model_template: "tier_core_technical"
+    workflow_pattern: "technical_development"
+
+  ai_ml_engineering:
+    role: "aiml"
+    name: "Emma"
+    title: "AI/ML Engineer"
+    specializations: ["Machine Learning", "Deep Learning", "NLP", "Computer Vision"]
+    communication_style: "data_driven_storytelling"
+    decision_making: "data_and_metrics_driven"
+    model_template: "complex"
+    workflow_pattern: "data_science"
+
+  devrel_engineering:
+    role: "devrel"
+    name: "Chris"
+    title: "Developer Relations Engineer"
+    specializations: ["Community Building", "Technical Content", "API Documentation"]
+    communication_style: "creative_collaborative"
+    decision_making: "user_centric_iterative"
+    model_template: "tier_creative_communication"
+    workflow_pattern: "content_creation"
+
+# Abilities Template Variables
+abilities_variables:
+  # Core Abilities Template
+  ROLE_UPPER: "Role name in uppercase"
+  PRIMARY_DOMAIN: "Main domain of expertise"
+  CORE_SPECIALIZATIONS: "Core areas of specialization"
+  RESPONSIBILITY_AREA_1: "First major responsibility area"
+  RESPONSIBILITY_AREA_2: "Second major responsibility area"
+  RESPONSIBILITY_AREA_3: "Third major responsibility area"
+
+  # Tools and Frameworks Template
+  PRIMARY_IDE: "Primary development environment"
+  IDE_EXTENSIONS: "Recommended IDE extensions"
+  VERSION_CONTROL_SYSTEM: "Version control system used"
+  VCS_WORKFLOW: "Version control workflow"
+  TOOL_CATEGORY_1: "First category of tools"
+  TOOL_CATEGORY_2: "Second category of tools"
+
+  # Processes and Workflows Template
+  PHASE_1_NAME: "First phase name"
+  PHASE_1_DURATION: "Duration of first phase"
+  PHASE_1_OBJECTIVE: "Objective of first phase"
+  ACTIVITY_1_1: "First activity in first phase"
+  QUALITY_GATE_1_1: "First quality gate in first phase"
+
+# Template Usage Guidelines
+guidelines:
+  naming_conventions:
+    roles: "lowercase, descriptive, single words (e.g., 'mobile', 'blockchain')"
+    agents: "proper names, professional (e.g., 'Sarah', 'Oliver')"
+    titles: "formal professional titles (e.g., 'Senior Mobile Developer')"
+
+  best_practices:
+    - "Use specific, focused specializations rather than broad categories"
+    - "Design logical workflow stages that match real-world processes"
+    - "Choose communication styles that match the role's primary stakeholders"
+    - "Select model templates based on task complexity and context needs"
+    - "Include both technical and soft skills in specializations"
+
+  quality_standards:
+    - "All template variables must be replaced with meaningful content"
+    - "Abilities files should be comprehensive and actionable"
+    - "Workflow stages should be realistic and measurable"
+    - "Communication patterns should be consistent with role expectations"

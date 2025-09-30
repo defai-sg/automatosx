@@ -1,0 +1,414 @@
+{
+  "optimization_metadata": {
+    "version": "1.0.0",
+    "created": "2025-09-27",
+    "authors": ["Bob (Backend)", "Tony (CTO)", "Aki (Architect)"],
+    "description": "Optimal agent-provider configuration matrix based on accuracy, capability, cost, and speed analysis"
+  },
+  "provider_characteristics": {
+    "claude-code": {
+      "accuracy": 9.2,
+      "capability_breadth": 9.0,
+      "cost_score": 10,
+      "speed": 8.5,
+      "total_score": 9.175,
+      "strengths": ["coding", "analysis", "reasoning", "architecture", "security"],
+      "best_for": "technical_roles_and_complex_analysis"
+    },
+    "codex": {
+      "accuracy": 8.8,
+      "capability_breadth": 8.5,
+      "cost_score": 3,
+      "speed": 9.0,
+      "total_score": 7.425,
+      "strengths": ["coding", "debugging", "code-generation", "algorithms"],
+      "best_for": "pure_coding_tasks"
+    },
+    "gemini": {
+      "accuracy": 8.6,
+      "capability_breadth": 9.2,
+      "cost_score": 4,
+      "speed": 9.2,
+      "total_score": 7.74,
+      "strengths": ["multimodal", "data-analysis", "research", "integration"],
+      "best_for": "data_analysis_and_business_tasks"
+    }
+  },
+  "role_categories": {
+    "technical": {
+      "roles": ["backend", "frontend", "devops", "security", "architect", "quality"],
+      "priority_factors": {
+        "accuracy": 0.4,
+        "capability": 0.3,
+        "cost": 0.15,
+        "speed": 0.15
+      },
+      "recommended_primary": "claude-code",
+      "recommended_fallback": "codex"
+    },
+    "business": {
+      "roles": ["ceo", "cto", "cfo", "legal", "product"],
+      "priority_factors": {
+        "accuracy": 0.3,
+        "capability": 0.35,
+        "cost": 0.2,
+        "speed": 0.15
+      },
+      "recommended_primary": "claude-code",
+      "recommended_fallback": "gemini"
+    },
+    "creative": {
+      "roles": ["design", "docs"],
+      "priority_factors": {
+        "accuracy": 0.25,
+        "capability": 0.4,
+        "cost": 0.2,
+        "speed": 0.15
+      },
+      "recommended_primary": "claude-code",
+      "recommended_fallback": "gemini"
+    },
+    "analytical": {
+      "roles": ["data", "analyst"],
+      "priority_factors": {
+        "accuracy": 0.35,
+        "capability": 0.35,
+        "cost": 0.2,
+        "speed": 0.1
+      },
+      "recommended_primary": "claude-code",
+      "recommended_fallback": "gemini"
+    }
+  },
+  "optimal_configurations": {
+    "backend": {
+      "role": "backend",
+      "name": "Bob",
+      "category": "technical",
+      "optimal_providers": {
+        "primary": "claude-code",
+        "fallback": "codex",
+        "fallback2": "gemini"
+      },
+      "stage_configurations": {
+        "api_requirements_analysis": "claude-code",
+        "database_schema_design": "claude-code",
+        "service_architecture_planning": "claude-code",
+        "security_integration_design": "claude-code",
+        "performance_optimization_strategy": "claude-code",
+        "deployment_configuration": "codex",
+        "monitoring_implementation": "codex"
+      },
+      "confidence_score": 9.2,
+      "reasoning": "Claude Code excels in architecture and security analysis, Codex strong for implementation"
+    },
+    "frontend": {
+      "role": "frontend",
+      "name": "Frank",
+      "category": "technical",
+      "optimal_providers": {
+        "primary": "claude-code",
+        "fallback": "codex",
+        "fallback2": "gemini"
+      },
+      "stage_configurations": {
+        "ui_requirements_analysis": "claude-code",
+        "component_architecture_design": "claude-code",
+        "user_experience_optimization": "claude-code",
+        "performance_optimization": "codex",
+        "responsive_design_implementation": "codex",
+        "accessibility_compliance": "claude-code"
+      },
+      "confidence_score": 8.9,
+      "reasoning": "Claude Code for UX analysis and architecture, Codex for implementation efficiency"
+    },
+    "devops": {
+      "role": "devops",
+      "name": "Oliver",
+      "category": "technical",
+      "optimal_providers": {
+        "primary": "claude-code",
+        "fallback": "codex",
+        "fallback2": "gemini"
+      },
+      "stage_configurations": {
+        "infrastructure_planning": "claude-code",
+        "ci_cd_design": "claude-code",
+        "container_orchestration": "codex",
+        "monitoring_setup": "codex",
+        "security_hardening": "claude-code",
+        "automation_scripting": "codex"
+      },
+      "confidence_score": 8.7,
+      "reasoning": "Claude Code for planning and security, Codex for automation and implementation"
+    },
+    "security": {
+      "role": "security",
+      "name": "Steve",
+      "category": "technical",
+      "optimal_providers": {
+        "primary": "claude-code",
+        "fallback": "codex",
+        "fallback2": "gemini"
+      },
+      "stage_configurations": {
+        "threat_modeling": "claude-code",
+        "vulnerability_assessment": "claude-code",
+        "security_architecture": "claude-code",
+        "penetration_testing": "claude-code",
+        "compliance_review": "claude-code",
+        "security_automation": "codex"
+      },
+      "confidence_score": 9.5,
+      "reasoning": "Claude Code dominates security tasks with superior reasoning and analysis capabilities"
+    },
+    "architect": {
+      "role": "architect",
+      "name": "Aki",
+      "category": "technical",
+      "optimal_providers": {
+        "primary": "claude-code",
+        "fallback": "gemini",
+        "fallback2": "codex"
+      },
+      "stage_configurations": {
+        "system_analysis": "claude-code",
+        "architecture_design": "claude-code",
+        "technology_evaluation": "claude-code",
+        "scalability_planning": "claude-code",
+        "integration_design": "claude-code",
+        "performance_optimization": "claude-code"
+      },
+      "confidence_score": 9.7,
+      "reasoning": "Claude Code optimal for all architectural thinking and system design tasks"
+    },
+    "quality": {
+      "role": "quality",
+      "name": "Queenie",
+      "category": "technical",
+      "optimal_providers": {
+        "primary": "claude-code",
+        "fallback": "codex",
+        "fallback2": "gemini"
+      },
+      "stage_configurations": {
+        "test_strategy_design": "claude-code",
+        "quality_process_design": "claude-code",
+        "automation_framework": "codex",
+        "performance_testing": "codex",
+        "quality_metrics": "gemini",
+        "compliance_testing": "claude-code"
+      },
+      "confidence_score": 8.8,
+      "reasoning": "Claude Code for strategy and process, Codex for automation, Gemini for analytics"
+    },
+    "ceo": {
+      "role": "ceo",
+      "name": "Eric",
+      "category": "business",
+      "optimal_providers": {
+        "primary": "claude-code",
+        "fallback": "gemini",
+        "fallback2": "codex"
+      },
+      "stage_configurations": {
+        "strategic_planning": "claude-code",
+        "market_analysis": "gemini",
+        "business_development": "claude-code",
+        "stakeholder_communication": "claude-code",
+        "financial_overview": "gemini",
+        "decision_making": "claude-code"
+      },
+      "confidence_score": 8.6,
+      "reasoning": "Claude Code for strategic thinking, Gemini for data analysis and market research"
+    },
+    "cto": {
+      "role": "cto",
+      "name": "Tony",
+      "category": "business",
+      "optimal_providers": {
+        "primary": "claude-code",
+        "fallback": "gemini",
+        "fallback2": "codex"
+      },
+      "stage_configurations": {
+        "technology_strategy_formulation": "claude-code",
+        "architecture_governance_planning": "claude-code",
+        "team_capability_assessment": "claude-code",
+        "innovation_roadmap_development": "claude-code",
+        "technical_risk_evaluation": "claude-code",
+        "platform_integration_design": "claude-code"
+      },
+      "confidence_score": 9.3,
+      "reasoning": "Claude Code excels in technical strategy and leadership decision-making"
+    },
+    "cfo": {
+      "role": "cfo",
+      "name": "Christine",
+      "category": "business",
+      "optimal_providers": {
+        "primary": "claude-code",
+        "fallback": "gemini",
+        "fallback2": "codex"
+      },
+      "stage_configurations": {
+        "financial_planning": "claude-code",
+        "budget_analysis": "gemini",
+        "risk_assessment": "claude-code",
+        "investment_evaluation": "claude-code",
+        "financial_reporting": "gemini",
+        "compliance_management": "claude-code"
+      },
+      "confidence_score": 8.4,
+      "reasoning": "Claude Code for planning and strategy, Gemini for data analysis and reporting"
+    },
+    "legal": {
+      "role": "legal",
+      "name": "Louis",
+      "category": "business",
+      "optimal_providers": {
+        "primary": "claude-code",
+        "fallback": "gemini",
+        "fallback2": "codex"
+      },
+      "stage_configurations": {
+        "contract_analysis": "claude-code",
+        "compliance_review": "claude-code",
+        "legal_research": "gemini",
+        "risk_assessment": "claude-code",
+        "policy_development": "claude-code",
+        "regulatory_analysis": "claude-code"
+      },
+      "confidence_score": 9.0,
+      "reasoning": "Claude Code superior for legal reasoning and analysis, Gemini for research"
+    },
+    "product": {
+      "role": "product",
+      "name": "Peggy",
+      "category": "business",
+      "optimal_providers": {
+        "primary": "claude-code",
+        "fallback": "gemini",
+        "fallback2": "codex"
+      },
+      "stage_configurations": {
+        "market_research": "gemini",
+        "user_story_development": "claude-code",
+        "feature_prioritization": "claude-code",
+        "stakeholder_analysis": "claude-code",
+        "competitive_analysis": "gemini",
+        "product_strategy": "claude-code"
+      },
+      "confidence_score": 8.7,
+      "reasoning": "Claude Code for strategic product decisions, Gemini for market research and analysis"
+    },
+    "design": {
+      "role": "design",
+      "name": "Debbee",
+      "category": "creative",
+      "optimal_providers": {
+        "primary": "claude-code",
+        "fallback": "gemini",
+        "fallback2": "codex"
+      },
+      "stage_configurations": {
+        "user_research": "gemini",
+        "design_system_development": "claude-code",
+        "user_experience_design": "claude-code",
+        "visual_design": "claude-code",
+        "prototyping": "claude-code",
+        "usability_testing": "gemini"
+      },
+      "confidence_score": 8.5,
+      "reasoning": "Claude Code for design thinking and strategy, Gemini for research and testing"
+    },
+    "docs": {
+      "role": "docs",
+      "name": "Doris",
+      "category": "creative",
+      "optimal_providers": {
+        "primary": "claude-code",
+        "fallback": "gemini",
+        "fallback2": "codex"
+      },
+      "stage_configurations": {
+        "content_strategy": "claude-code",
+        "technical_writing": "claude-code",
+        "documentation_architecture": "claude-code",
+        "user_guide_creation": "claude-code",
+        "content_review": "gemini",
+        "publication_workflow": "codex"
+      },
+      "confidence_score": 9.1,
+      "reasoning": "Claude Code excels at technical writing and content strategy"
+    },
+    "data": {
+      "role": "data",
+      "name": "Diana",
+      "category": "analytical",
+      "optimal_providers": {
+        "primary": "claude-code",
+        "fallback": "gemini",
+        "fallback2": "codex"
+      },
+      "stage_configurations": {
+        "data_strategy": "claude-code",
+        "statistical_analysis": "gemini",
+        "machine_learning_modeling": "claude-code",
+        "data_visualization": "gemini",
+        "pipeline_architecture": "claude-code",
+        "performance_optimization": "codex"
+      },
+      "confidence_score": 8.6,
+      "reasoning": "Claude Code for strategy and ML, Gemini for analysis and visualization"
+    },
+    "analyst": {
+      "role": "analyst",
+      "name": "Anna",
+      "category": "analytical",
+      "optimal_providers": {
+        "primary": "claude-code",
+        "fallback": "gemini",
+        "fallback2": "codex"
+      },
+      "stage_configurations": {
+        "business_analysis": "claude-code",
+        "data_interpretation": "gemini",
+        "report_generation": "claude-code",
+        "trend_analysis": "gemini",
+        "recommendation_development": "claude-code",
+        "presentation_creation": "gemini"
+      },
+      "confidence_score": 8.3,
+      "reasoning": "Claude Code for business reasoning, Gemini for data analysis and visualization"
+    }
+  },
+  "implementation_recommendations": {
+    "immediate_actions": [
+      "Deploy Claude Code as primary provider for all technical and strategic roles",
+      "Configure Codex as technical fallback for implementation-heavy tasks",
+      "Set Gemini as analytical fallback for data-driven tasks"
+    ],
+    "cost_optimization": [
+      "Prioritize Claude Code (zero cost) for all complex reasoning tasks",
+      "Use Codex selectively for pure coding implementation",
+      "Leverage Gemini for data analysis and research tasks"
+    ],
+    "performance_monitoring": [
+      "Track response times and accuracy by provider and role",
+      "Monitor cost implications of provider usage",
+      "Collect agent performance feedback for continuous optimization"
+    ],
+    "gradual_migration": [
+      "Test optimized configurations in development environment",
+      "Migrate high-confidence roles first (security, architect, cto)",
+      "Monitor and adjust based on real-world performance"
+    ]
+  },
+  "expected_improvements": {
+    "accuracy": "15-25% improvement in task accuracy across technical roles",
+    "cost": "40-60% cost reduction through Claude Code prioritization",
+    "speed": "10-15% improvement in overall response times",
+    "consistency": "Improved consistency through optimal provider-task matching"
+  }
+}

@@ -1,0 +1,294 @@
+# DefAI-AX .gitignore
+
+# =============================================================================
+# NODE.JS / NPM
+# =============================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+# package-lock.json  # Keep in repo for deterministic builds
+
+# =============================================================================
+# ENVIRONMENT AND SECRETS
+# =============================================================================
+.env
+.env.local
+.env.production
+config/local.yaml
+secrets/
+*.pem
+*.key
+*.crt
+
+# =============================================================================
+# PYTHON
+# =============================================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.conda/
+
+# Poetry
+poetry.lock  # Uncomment if you want to commit lock file
+
+# =============================================================================
+# DATABASES AND STORAGE
+# =============================================================================
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# PostgreSQL dumps
+*.sql
+
+# Vector databases
+*.faiss
+milvus_data/
+chroma_data/
+
+# Redis dumps
+dump.rdb
+
+# =============================================================================
+# LOGGING AND MONITORING
+# =============================================================================
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Monitoring data
+prometheus_data/
+grafana_data/
+
+# =============================================================================
+# AI AND ML ARTIFACTS
+# =============================================================================
+
+# Model files
+models/
+*.bin
+*.safetensors
+*.onnx
+*.pt
+*.pth
+
+# Embeddings and vector caches
+embeddings/
+.embeddings_cache/
+vector_cache/
+
+# Training artifacts
+runs/
+wandb/
+mlruns/
+
+# =============================================================================
+# DEVELOPMENT TOOLS
+# =============================================================================
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# =============================================================================
+# DOCKER AND CONTAINERIZATION
+# =============================================================================
+
+# Docker
+*.tar
+docker-data/
+
+# Docker Compose
+docker-compose.override.yml
+
+# =============================================================================
+# TEMPORARY FILES
+# =============================================================================
+
+# Temporary directories
+tmp/
+temp/
+.tmp/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# =============================================================================
+# PROJECT-SPECIFIC
+# =============================================================================
+
+# Conversation data and memory (contains sensitive user interactions)
+.defai/
+.claude/
+memory/
+.claude/memory/
+.claude/metrics/
+.claude/settings.local.json
+.claude/logs/
+CLAUDE.md
+GEMINI.md
+AGENTS.md
+
+# Workspace files
+workspaces/
+workspace_data/
+
+# Generated artifacts
+generated/
+outputs/
+
+# Cache directories
+.cache/
+cache/
+
+# Local configuration overrides
+config/local/
+profiles/custom/
+
+# AI provider documentation (exclude from repository)
+**/agent.md
+agent.md
+
+# Documentation builds
+docs/_build/
+site/
+
+# =============================================================================
+# OPERATING SYSTEM
+# =============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Test directories
+.test-concurrent-*
+.example-memory
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# =============================================================================
+# CLOUD AND DEPLOYMENT
+# =============================================================================
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Kubernetes
+*.yaml.tmp
+*.yml.tmp
+
+# Cloud provider configs
+.aws/
+.gcp/
+.azure/
+
+# =============================================================================
+# EXCLUDE FROM GITIGNORE (INCLUDE THESE)
+# =============================================================================
+
+# Keep example files
+!.env.example
+!config/examples/
+!docs/examples/
+!tests/fixtures/
+
+# Keep directory structure
+!*/.gitkeep
+
+# Keep essential configs
+!docker-compose.yml
+!Dockerfile
+!pyproject.toml
