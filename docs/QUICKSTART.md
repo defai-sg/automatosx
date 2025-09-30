@@ -16,7 +16,7 @@ claude auth login
 **For Developers (Source Installation):**
 ```bash
 # Clone for development
-git clone https://github.com/defai-digital/automatosx.git
+git clone https://github.com/defai-sg/automatosx.git
 cd automatosx && npm install
 
 # Install Claude Code CLI

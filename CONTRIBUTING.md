@@ -7,7 +7,7 @@ workflow below so we can review and merge changes quickly.
 1. Install Node.js 18+ and the Claude Code CLI (`npm install -g @anthropic-ai/claude-code`).
 2. Clone the repository and install dependencies:
    ```bash
-   git clone https://github.com/defai-digital/automatosx.git
+   git clone https://github.com/defai-sg/automatosx.git
    cd automatosx
    npm install
    ```

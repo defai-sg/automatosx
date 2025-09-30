@@ -129,7 +129,7 @@ limitations under the License.
 **Code Contributions:**
 ```bash
 # If you modify the source code, please contribute back:
-git clone https://github.com/defai-digital/automatosx
+git clone https://github.com/defai-sg/automatosx
 # Make your improvements
 git push origin your-feature-branch
 # Submit a pull request
@@ -147,7 +147,7 @@ git push origin your-feature-branch
 - **Sponsorship** - Support specific features or maintenance
 
 **How to Get Started:**
-1. Check our [GitHub Issues](https://github.com/defai-digital/automatosx/issues)
+1. Check our [GitHub Issues](https://github.com/defai-sg/automatosx/issues)
 2. Join our community discussions
 3. Read **[DEVELOPMENT.md](DEVELOPMENT.md)** for technical contribution guidelines
 
@@ -263,14 +263,14 @@ See **[DEVELOPMENT.md](DEVELOPMENT.md#adding-new-providers)** for detailed instr
 **Priority order for getting help:**
 
 1. **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Solve common issues
-2. **[GitHub Discussions](https://github.com/defai-digital/automatosx/discussions)** - Community support
-3. **[GitHub Issues](https://github.com/defai-digital/automatosx/issues)** - Report bugs
+2. **[GitHub Discussions](https://github.com/defai-sg/automatosx/discussions)** - Community support
+3. **[GitHub Issues](https://github.com/defai-sg/automatosx/issues)** - Report bugs
 4. **System Diagnostics** - Run `automatosx health` for automated help
 
 ### Q: How can I stay updated on AutomatosX development?
 
 **Stay Connected:**
-- ⭐ **Star** our [GitHub repository](https://github.com/defai-digital/automatosx)
+- ⭐ **Star** our [GitHub repository](https://github.com/defai-sg/automatosx)
 - 👀 **Watch** for release notifications
 - 📖 **Read** our **[ROADMAP.md](ROADMAP.md)** for upcoming features
 - 💬 **Join** community discussions
@@ -279,5 +279,5 @@ See **[DEVELOPMENT.md](DEVELOPMENT.md#adding-new-providers)** for detailed instr
 
 **Have a question not covered here?**
 
-Please check our **[GitHub Discussions](https://github.com/defai-digital/automatosx/discussions)** or create a new discussion.
+Please check our **[GitHub Discussions](https://github.com/defai-sg/automatosx/discussions)** or create a new discussion.
 We actively monitor and respond to community questions.

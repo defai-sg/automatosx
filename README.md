@@ -136,7 +136,7 @@ automatosx agents --detailed
 ### Development Setup
 
 ```bash
-git clone https://github.com/defai-digital/automatosx.git
+git clone https://github.com/defai-sg/automatosx.git
 cd automatosx
 npm install
 npm run validate

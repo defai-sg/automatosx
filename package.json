@@ -96,9 +96,9 @@
   },
   "author": "DEFAI Team",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/defai-digital/automatosx",
+  "homepage": "https://github.com/defai-sg/automatosx",
   "repository": {
     "type": "git",
-    "url": "https://github.com/defai-digital/automatosx.git"
+    "url": "https://github.com/defai-sg/automatosx.git"
   }
 }
