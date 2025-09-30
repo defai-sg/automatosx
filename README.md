@@ -1,6 +1,6 @@
-# AutomatosX v3.1.2 - AI Agent Orchestration Platform
+# AutomatosX v3.1.3 - AI Agent Orchestration Platform
 
-[![Version](https://img.shields.io/badge/version-3.1.2-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-3.1.3-blue.svg)](package.json)
 [![Node.js](https://img.shields.io/badge/node.js-18+-green.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
@@ -650,7 +650,7 @@ where each agent learns from and builds upon the insights of others, creating ex
 
 ## 🤖 Dynamic Role Management
 
-AutomatosX v3.1.2 supports dynamic role creation and removal, allowing you to extend the AI team with custom agents
+AutomatosX v3.1.3 supports dynamic role creation and removal, allowing you to extend the AI team with custom agents
 tailored to your specific needs.
 
 ### Creating Custom Roles

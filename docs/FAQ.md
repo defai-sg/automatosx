@@ -175,7 +175,7 @@ git push origin your-feature-branch
 
 ### Q: Why JavaScript/Node.js instead of Python?
 
-**A:** AutomatosX v3.1.2+ uses JavaScript because:
+**A:** AutomatosX v3.1.3+ uses JavaScript because:
 - **Claude Code Integration** - Native JavaScript ecosystem
 - **CLI Tool Compatibility** - Better integration with modern CLI tools
 - **Async Performance** - Superior for I/O-heavy AI operations
