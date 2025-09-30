@@ -9,11 +9,19 @@
   },
   "files": [
     "src/",
+    "docs/",
     "README.md",
+    "CLAUDE.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "RELEASE.md",
+    "GEMINI.md",
     "LICENSE",
     "package.json",
     "package-lock.json",
-    "automatosx.config.yaml"
+    "automatosx.config.yaml",
+    ".markdownlint.json",
+    ".markdownlintignore"
   ],
   "scripts": {
     "start": "node src/index.js",
