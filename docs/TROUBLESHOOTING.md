@@ -58,7 +58,7 @@ listed here, consider running `automatosx health` for a detailed diagnostic.
 * **Solution 3:** If the memory is corrupted and unsalvageable, you can clear it. **Warning: This is a destructive operation.**
     ```bash
     # Back up your project state
-    npm run filesystem:backup
+    automatosx filesystem:backup
 
     # Clear every memory layer
     npm start memory clear all
@@ -106,8 +106,8 @@ listed here, consider running `automatosx health` for a detailed diagnostic.
     ```
 * **Solution 3:** For persistent performance issues, check the memory server status:
     ```bash
-    npm run memory:test      # Test memory server connectivity
-    npm run memory:server    # Restart memory server if needed
+    automatosx memory:test      # Test memory server connectivity
+    automatosx memory:server    # Restart memory server if needed
     ```
 
 **Symptom:** Agent responses are inconsistent or seem to ignore recent conversations.
@@ -116,7 +116,7 @@ listed here, consider running `automatosx health` for a detailed diagnostic.
     ```bash
     npm start memory stats                 # Check memory statistics
     npm start memory history backend         # Inspect recent conversations for a role
-    npm run filesystem:validate              # Validate file system integrity
+    automatosx filesystem:validate              # Validate file system integrity
     ```
 
 ## Advanced Memory System Issues
@@ -131,7 +131,7 @@ listed here, consider running `automatosx health` for a detailed diagnostic.
 * **Solution 2:** If vector search is completely broken, reset the vector store and reload agent data:
     ```bash
     # Backup first (important!)
-    npm run filesystem:backup
+    automatosx filesystem:backup
 
     # Clear only the vector database, keep chat history
     npm start memory clear milvus
@@ -142,8 +142,8 @@ listed here, consider running `automatosx health` for a detailed diagnostic.
 * **Solution 3:** For persistent vector database issues, check if the Milvus service is running:
     ```bash
     # The embedded Milvus should start automatically, but you can verify:
-    npm run memory:server
-    npm run memory:test
+    automatosx memory:server
+    automatosx memory:test
     ```
 
 **Symptom:** Memory search returns irrelevant results or no results for queries that should match.
@@ -166,12 +166,12 @@ listed here, consider running `automatosx health` for a detailed diagnostic.
     ```
 * **Solution 2:** Check for YAML syntax errors in agent profiles:
     ```bash
-    npm run validate               # Validate all agent profiles
+    automatosx validate               # Validate all agent profiles
     node src/scripts/dynamic-init.js validate  # Validate profiles and abilities
     ```
 * **Solution 3:** If profile changes aren't being loaded, check file permissions and paths:
     ```bash
-    npm run filesystem:validate    # Check file system integrity
+    automatosx filesystem:validate    # Check file system integrity
     ls -la src/agents/*/profile.yaml  # Verify profile files exist and are readable
     ```
 
@@ -181,7 +181,7 @@ listed here, consider running `automatosx health` for a detailed diagnostic.
 
 ```bash
 # Aggregate health + provider check
-npm run health
+automatosx health
 npm run status
 
 # Performance snapshots
@@ -196,7 +196,7 @@ npm start memory recent
 node src/scripts/config-manager.js test
 
 # Filesystem integrity
-npm run filesystem:validate
+automatosx filesystem:validate
 ```
 
 **Log Analysis:**
@@ -218,11 +218,11 @@ npm run filesystem:backup
 # Optionally archive .defai/memory and .claude/memory for safekeeping
 
 # 2. Complete factory reset
-npm run factory-reset
+automatosx factory-reset
 
 # 3. Verify clean state
-npm run validate
-npm run health
+automatosx validate
+automatosx health
 
 # 4. Restore user data if needed
 # (Factory reset preserves user data by default, but backup is always safer)
@@ -234,25 +234,25 @@ For less drastic recovery, try these progressive steps:
 
 ```bash
 # Step 1: Reset configurations only
-npm run reset:config
+automatosx reset:config
 
 # Step 2: If that doesn't work, reset memory
-npm run reset:memory
+automatosx reset:memory
 
 # Step 3: If still issues, reset providers
-npm run reset:providers
+automatosx reset:providers
 
 # Step 4: Nuclear option - reset everything
-npm run reset:all
+automatosx reset:all
 ```
 
 ## Getting Additional Help
 
 If your issue isn't covered here:
 
-1. **Check System Health**: Run `npm run health` for automated diagnostics
+1. **Check System Health**: Run `automatosx health` for automated diagnostics
 2. **Review Architecture**: See **[ARCHITECTURE.md](ARCHITECTURE.md)** for system internals
 3. **Performance Issues**: See **[OPERATIONS.md](OPERATIONS.md#monitoring-and-metrics)** for monitoring commands
 4. **Development Issues**: See **[DEVELOPMENT.md](DEVELOPMENT.md#debugging-and-testing)** for development troubleshooting
 
-> **Pro Tip**: When reporting issues, always include the output of `npm run health` and `npm run status` for faster diagnosis.
+> **Pro Tip**: When reporting issues, always include the output of `automatosx health` and `automatosx status` for faster diagnosis.

@@ -146,21 +146,21 @@ automatosx validate                  # Validate configuration and setup
 automatosx health                    # Detailed health check
 
 # Component-specific validation
-npm run filesystem:validate      # Filesystem integrity
-npm run memory:test              # Memory system connectivity
+automatosx filesystem:validate      # Filesystem integrity
+automatosx memory:test              # Memory system connectivity
 ```
 
 ### Factory Reset and Recovery
 
 ```bash
 # Safe factory reset (preserves user data)
-npm run factory-reset             # Full reset with backup
-npm run factory-reset:dry-run     # Preview what would be reset
-npm run factory-reset:no-backup   # Fast reset without backup
+automatosx factory-reset             # Full reset with backup
+automatosx factory-reset:dry-run     # Preview what would be reset
+automatosx factory-reset:no-backup   # Fast reset without backup
 
 # Filesystem management
-npm run filesystem:stats          # Show file statistics
-npm run filesystem:backup         # Create backup
+automatosx filesystem:stats          # Show file statistics
+automatosx filesystem:backup         # Create backup
 ```
 
 ### Version and Upgrade Management
@@ -172,7 +172,7 @@ npm run version:current           # Show current version
 # Upgrade preparation
 npm run upgrade:prepare 3.1.4     # Prepare for version upgrade
 npm run upgrade:prepare 3.1.4 --dry-run  # Preview upgrade changes
-npm run upgrade:validate 3.1.4    # Validate completed upgrade
+automatosx upgrade:validate 3.1.4    # Validate completed upgrade
 ```
 
 ## 🔄 Workflow Operations
@@ -431,7 +431,7 @@ jobs:
           # Add authentication command here, using secrets.
 
       - name: Run Security Agent Scan
-        run: npm start run security "Scan the entire codebase for potential security vulnerabilities and provide a summary report."
+        run: automatosx run security "Scan the entire codebase for potential security vulnerabilities and provide a summary report."
 ```
 
 ## Related Documentation

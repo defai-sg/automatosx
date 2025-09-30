@@ -50,7 +50,7 @@ Generated artifacts are stored under `.defai/workspaces/`.
 - `roles/<role>/logs/` captures execution metadata.
 
 > ⚠️ Privacy Note: `.defai/chat-history/` stores past prompts and responses so agents can
-> reuse context. Delete the directory or run `npm run reset:memory` if you do not want
+> reuse context. Delete the directory or run `automatosx reset:memory` if you do not want
 > transcripts retained locally.
 
 ## 6. Reset If Needed

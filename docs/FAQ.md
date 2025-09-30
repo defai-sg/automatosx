@@ -230,15 +230,15 @@ node src/scripts/config-manager.js test
 **Examples**:
 ```bash
 # Bob (backend) - methodical, security-conscious
-npm start run backend "Design user authentication"
+automatosx run backend "Design user authentication"
 # → Will focus on security, performance, and scalability
 
 # Frank (frontend) - user-focused, creative
-npm start run frontend "Create user login form"
+automatosx run frontend "Create user login form"
 # → Will focus on UX, accessibility, and visual design
 
 # Steve (security) - paranoid (in a good way)
-npm start run security "Review this authentication system"
+automatosx run security "Review this authentication system"
 # → Will find potential vulnerabilities and security gaps
 ```
 
@@ -265,7 +265,7 @@ See **[DEVELOPMENT.md](DEVELOPMENT.md#adding-new-providers)** for detailed instr
 1. **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Solve common issues
 2. **[GitHub Discussions](https://github.com/defai-digital/automatosx/discussions)** - Community support
 3. **[GitHub Issues](https://github.com/defai-digital/automatosx/issues)** - Report bugs
-4. **System Diagnostics** - Run `npm run health` for automated help
+4. **System Diagnostics** - Run `automatosx health` for automated help
 
 ### Q: How can I stay updated on AutomatosX development?
 

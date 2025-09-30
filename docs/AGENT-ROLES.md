@@ -11,33 +11,33 @@ Quick reference guide for all available AI agents in AutomatosX.
 
 ## 🚀 Quick Usage
 ```bash
-npm start run <agent-role> "<task description>"
+automatosx run <agent-role> "<task description>"
 ```
 
 ## 📚 Full Role Directory
 
 | Agent | Persona | Title | Focus | Example Command |
 |-------|---------|-------|-------|-----------------|
-| **algorithm** | Alex | Senior Algorithm Specialist | Complexity analysis, optimization | `npm start run algorithm "Review pathfinding algorithm complexity"` |
-| **analyst** | Anna | Senior Business Analyst | Market research, KPI frameworks | `npm start run analyst "Outline product analytics KPIs"` |
-| **architect** | Adrian | Software Architect | Systems design, integration strategy | `npm start run architect "Design multi-region SaaS architecture"` |
-| **backend** | Bob | Senior Backend Engineer | APIs, databases, service reliability | `npm start run backend "Implement user profile API"` |
-| **ceo** | Eric | Chief Executive Officer | Vision, portfolio planning, strategy | `npm start run ceo "Draft strategic vision for AutomatosX"` |
-| **cfo** | Flora | Chief Financial Officer | Forecasting, pricing, financial controls | `npm start run cfo "Evaluate subscription pricing model"` |
-| **cto** | Tony | Chief Technology Officer | Technology roadmaps, org design | `npm start run cto "Plan engineering modernization initiative"` |
-| **data** | Daisy | Senior Data Professional | Analytics pipelines, ML, experimentation | `npm start run data "Design event analytics pipeline"` |
-| **design** | Debbee | Senior UX Designer | Experience strategy, accessibility | `npm start run design "Map onboarding experience flow"` |
-| **devops** | Oliver | Senior DevOps Engineer | CI/CD, infrastructure, observability | `npm start run devops "Propose Kubernetes deployment plan"` |
-| **docs** | Doris | Technical Documentation Specialist | API docs, tutorials, information architecture | `npm start run docs "Document authentication API"` |
-| **edge** | Emily | Senior Edge Computing Engineer | Edge deployments, IoT pipelines | `npm start run edge "Plan edge rollout for telemetry service"` |
-| **frontend** | Frank | Senior Frontend Developer | UI systems, accessibility, responsive design | `npm start run frontend "Build responsive dashboard layout"` |
-| **legal** | Louis | Senior Legal Counsel | Compliance, policy drafting, risk | `npm start run legal "Review data retention policy"` |
-| **marketer** | Maggie | Senior Digital Marketing Strategist | GTM, positioning, campaign analytics | `npm start run marketer "Outline product launch campaign"` |
-| **network** | Nicolas | Senior Network Engineering Expert | Networking, resiliency, diagnostics | `npm start run network "Troubleshoot multi-region latency"` |
-| **product** | Paris | Senior Product Manager & Requirements Specialist | Roadmaps, discovery, stakeholder alignment | `npm start run product "Define MVP scope for reporting module"` |
-| **quality** | Queenie | Senior Quality Professional | Test strategy, automation, release gating | `npm start run quality "Plan regression suite for auth service"` |
-| **quantum** | Quian | Senior Quantum Computing Engineer | Quantum algorithms, hybrid compute | `npm start run quantum "Assess feasibility of quantum optimizer"` |
-| **security** | Steve | Senior Security Engineer | Threat modelling, secure coding | `npm start run security "Perform auth threat assessment"` |
+| **algorithm** | Alex | Senior Algorithm Specialist | Complexity analysis, optimization | `automatosx run algorithm "Review pathfinding algorithm complexity"` |
+| **analyst** | Anna | Senior Business Analyst | Market research, KPI frameworks | `automatosx run analyst "Outline product analytics KPIs"` |
+| **architect** | Adrian | Software Architect | Systems design, integration strategy | `automatosx run architect "Design multi-region SaaS architecture"` |
+| **backend** | Bob | Senior Backend Engineer | APIs, databases, service reliability | `automatosx run backend "Implement user profile API"` |
+| **ceo** | Eric | Chief Executive Officer | Vision, portfolio planning, strategy | `automatosx run ceo "Draft strategic vision for AutomatosX"` |
+| **cfo** | Flora | Chief Financial Officer | Forecasting, pricing, financial controls | `automatosx run cfo "Evaluate subscription pricing model"` |
+| **cto** | Tony | Chief Technology Officer | Technology roadmaps, org design | `automatosx run cto "Plan engineering modernization initiative"` |
+| **data** | Daisy | Senior Data Professional | Analytics pipelines, ML, experimentation | `automatosx run data "Design event analytics pipeline"` |
+| **design** | Debbee | Senior UX Designer | Experience strategy, accessibility | `automatosx run design "Map onboarding experience flow"` |
+| **devops** | Oliver | Senior DevOps Engineer | CI/CD, infrastructure, observability | `automatosx run devops "Propose Kubernetes deployment plan"` |
+| **docs** | Doris | Technical Documentation Specialist | API docs, tutorials, information architecture | `automatosx run docs "Document authentication API"` |
+| **edge** | Emily | Senior Edge Computing Engineer | Edge deployments, IoT pipelines | `automatosx run edge "Plan edge rollout for telemetry service"` |
+| **frontend** | Frank | Senior Frontend Developer | UI systems, accessibility, responsive design | `automatosx run frontend "Build responsive dashboard layout"` |
+| **legal** | Louis | Senior Legal Counsel | Compliance, policy drafting, risk | `automatosx run legal "Review data retention policy"` |
+| **marketer** | Maggie | Senior Digital Marketing Strategist | GTM, positioning, campaign analytics | `automatosx run marketer "Outline product launch campaign"` |
+| **network** | Nicolas | Senior Network Engineering Expert | Networking, resiliency, diagnostics | `automatosx run network "Troubleshoot multi-region latency"` |
+| **product** | Paris | Senior Product Manager & Requirements Specialist | Roadmaps, discovery, stakeholder alignment | `automatosx run product "Define MVP scope for reporting module"` |
+| **quality** | Queenie | Senior Quality Professional | Test strategy, automation, release gating | `automatosx run quality "Plan regression suite for auth service"` |
+| **quantum** | Quian | Senior Quantum Computing Engineer | Quantum algorithms, hybrid compute | `automatosx run quantum "Assess feasibility of quantum optimizer"` |
+| **security** | Steve | Senior Security Engineer | Threat modelling, secure coding | `automatosx run security "Perform auth threat assessment"` |
 
 ## 💡 Quick Tips
 
@@ -51,8 +51,8 @@ npm start run <agent-role> "<task description>"
 
 **Be Specific**:
 ```bash
-# ❌ Vague: npm start run backend "help with API"
-# ✅ Clear: npm start run backend "Design REST API for user management"
+# ❌ Vague: automatosx run backend "help with API"
+# ✅ Clear: automatosx run backend "Design REST API for user management"
 ```
 
 **Combine Agents for Complex Tasks**:
