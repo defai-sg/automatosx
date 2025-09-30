@@ -47,6 +47,18 @@ instruction.
 AutomatosX routes tasks to the provider most likely to succeed while keeping a local circuit breaker ready for
 failover. Each CLI defaults to the provider's recommended model, eliminating per-release model upkeep.
 
+## Claude Code MCP Integration
+
+**AutomatosX delivers its best experience through Claude Code's MCP (Model Context Protocol) integration:**
+
+- **Native Memory Sharing** – Agents access shared Milvus vector database directly within Claude Code
+- **Seamless Agent Handoffs** – `/ax:agent backend` → `/ax:agent security` maintains full conversation context
+- **Rich File Operations** – MCP servers provide direct workspace and memory file access
+- **Zero Context Loss** – Multi-agent workflows preserve state across agent transitions
+- **Real-time Collaboration** – Agents work together in the same Claude Code session
+
+This MCP integration makes AutomatosX feel like a native Claude Code feature rather than an external tool.
+
 ## Cost-Controlled Execution
 
 - No API keys stored—authentication flows through provider CLIs
@@ -64,21 +76,41 @@ failover. Each CLI defaults to the provider's recommended model, eliminating per
 
 ## Quick Start
 
-### Prerequisites
+### Option 1: Claude Code Integration (Recommended)
 
-- Node.js 18+
-- At least one supported provider CLI (Claude Code recommended)
-
-### Global Installation
+**Best experience with MCP integration, native slash commands, and shared memory:**
 
 ```bash
+# 1. Install AutomatosX
+npm install -g automatosx
+
+# 2. Initialize in Claude Code
+/ax:init
+
+# 3. Use agents directly in Claude Code
+/ax:agent backend "Design user authentication API with JWT tokens"
+/ax:agent design "Create mobile-first login screen with accessibility"
+/ax:agent security "Review auth implementation for OWASP compliance"
+```
+
+### Option 2: Terminal Usage
+
+**For automation, scripts, and CI/CD:**
+
+```bash
+# 1. Install AutomatosX and Claude Code CLI
 npm install -g automatosx
 npm install -g @anthropic-ai/claude-code
 claude auth login
 automatosx validate
+
+# 2. Use via terminal commands
+automatosx run backend "Design user authentication API with JWT tokens"
+automatosx run design "Create mobile-first login screen with accessibility"
+automatosx run security "Review auth implementation for OWASP compliance"
 ```
 
-Optional providers:
+### Optional Additional Providers
 
 ```bash
 # Gemini CLI (requires custom setup)
@@ -91,9 +123,11 @@ codex login
 # Then enable: automatosx config enable codex
 ```
 
-### First Task
+### Example Multi-Agent Workflow
 
+**Claude Code (Interactive):**
 ```bash
+/ax:agent CTO "Plan mobile app architecture review involving Design, Backend, and Security teams"
 automatosx run backend "Design a secure user authentication API"
 automatosx run design "Sketch onboarding UX states for the auth flow"
 automatosx agents --detailed
