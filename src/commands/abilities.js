@@ -130,7 +130,7 @@ export const abilitiesCommands = {
         console.log(chalk.blue('🔍 Validating abilities files...'));
 
         const abilities = await getAgentAbilities();
-        const allRoles = ['global', ...getAllRoles()];
+        const allRoles = ['_global', ...getAllRoles()];
 
         let totalFiles = 0;
         let validFiles = 0;

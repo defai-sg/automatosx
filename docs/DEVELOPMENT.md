@@ -113,6 +113,32 @@ src/
 
 ## 🔧 Development Workflows
 
+### Agent Directory Structure
+
+#### The `_global` Directory
+**IMPORTANT**: The `src/agents/_global/` directory is **NOT an agent role**. It serves as a shared resource directory:
+
+- **Purpose**: Contains shared abilities and frameworks that can be inherited by all agent roles
+- **Why underscore prefix**: The `_` prefix clearly indicates this is a special system directory, not a regular agent role
+- **No profile.yaml**: Unlike agent roles, `_global` does not contain a `profile.yaml` file
+- **Inheritance**: Other agents can inherit abilities from `_global` through the abilities system
+- **Agent count**: When counting agents, `_global` should be excluded as it's infrastructure, not a role
+
+**Directory Contents**:
+```
+src/agents/_global/
+└── abilities/
+    ├── core-abilities.md          # Shared core abilities
+    ├── tools-and-frameworks.md    # Common tools and frameworks
+    └── processes-and-workflows.md # Standard processes
+```
+
+**Do NOT**:
+- Create a profile.yaml in `_global`
+- Register `_global` in agent-profiles.js
+- Count `_global` as an agent role
+- Use `_global` as a target for agent commands
+
 ### Adding New Agents
 
 1. **Create Agent Structure**:

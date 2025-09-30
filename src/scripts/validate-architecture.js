@@ -27,7 +27,7 @@ async function validateArchitecture() {
             const entryPath = join(agentsDir, entry);
             try {
                 const entryStats = await stat(entryPath);
-                if (entryStats.isDirectory() && entry !== 'global') {
+                if (entryStats.isDirectory() && entry !== '_global') {
                     agentRoles.push(entry);
                 }
             } catch (error) {
@@ -47,7 +47,7 @@ async function validateArchitecture() {
                 const abilitiesPath = join(entryPath, 'abilities');
                 const abilitiesStats = await stat(abilitiesPath);
                 if (abilitiesStats.isDirectory()) {
-                    if (entry !== 'global') {
+                    if (entry !== '_global') {
                         abilityRoles.push(entry);
                     }
                 }
@@ -144,7 +144,7 @@ async function collectRoles(rootPaths) {
         }
     }
 
-    return Array.from(roles).filter(role => role !== 'global').sort();
+    return Array.from(roles).filter(role => role !== '_global').sort();
 }
 
 // Run validation

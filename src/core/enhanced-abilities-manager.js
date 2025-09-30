@@ -56,7 +56,7 @@ export class EnhancedAbilitiesManager {
      */
     async buildRoleAbilities(roleId) {
         const rolePath = path.join(this.agentsRoot, roleId, 'abilities');
-        const globalPath = path.join(this.agentsRoot, 'global', 'abilities');
+        const globalPath = path.join(this.agentsRoot, '_global', 'abilities');
 
         const abilities = {
             role: roleId,
@@ -117,7 +117,7 @@ export class EnhancedAbilitiesManager {
             return this.cache.get(cacheKey);
         }
 
-        const globalPath = path.join(this.agentsRoot, 'global', 'abilities');
+        const globalPath = path.join(this.agentsRoot, '_global', 'abilities');
         const globalAbilities = {
             core_abilities: [],
             tools_and_frameworks: [],

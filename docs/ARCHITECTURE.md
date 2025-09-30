@@ -45,7 +45,9 @@ src/
 │   └── filesystem-manager.js # File management system
 ├── agents/               # Agent definitions
 │   ├── agent-profiles.js     # Personality layer (JavaScript)
-│   └── {role}/               # Per-agent directories
+│   ├── _global/              # Shared abilities (NOT an agent role)
+│   │   └── abilities/*.md    # Common abilities inherited by all agents
+│   └── {role}/               # Per-agent directories (20 active roles)
 │       ├── profile.yaml      # Workflow layer (YAML)
 │       └── abilities/*.md    # Knowledge layer (Markdown)
 ├── memory/               # Memory and persistence

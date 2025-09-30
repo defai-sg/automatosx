@@ -2,6 +2,13 @@
 
 Quick reference guide for all available AI agents in AutomatosX.
 
+## 📊 Agent Count Overview
+
+**Active Agent Roles**: 20 specialized AI agents
+**Special Directories**: 1 (`_global` - shared abilities, not a role)
+
+> **Note**: The `src/agents/_global/` directory contains shared abilities for all agents but is **NOT an agent role itself**. It has no profile.yaml and cannot be used as a target for agent commands.
+
 ## 🚀 Quick Usage
 ```bash
 npm start run <agent-role> "<task description>"

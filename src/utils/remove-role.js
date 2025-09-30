@@ -328,7 +328,7 @@ export function listAgents() {
         const roles = [];
 
         for (const dir of roleDirectories) {
-            if (dir === 'agent-profiles.js' || dir === 'global') continue;
+            if (dir === 'agent-profiles.js' || dir === '_global') continue;
 
             const profilePath = path.join(this.agentsDir, dir, 'profile.yaml');
             if (await fs.pathExists(profilePath)) {

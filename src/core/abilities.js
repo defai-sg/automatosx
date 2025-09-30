@@ -59,7 +59,7 @@ export class AgentAbilities {
     async createDefaultAbilities() {
         // Create default abilities directories and files if they don't exist
         const profileRoles = new Set(Object.values(AGENT_PROFILES).map(agent => agent.role));
-        const roles = ['global', ...Array.from(profileRoles).sort()];
+        const roles = ['_global', ...Array.from(profileRoles).sort()];
 
         for (const role of roles) {
             const roleBasePath = path.join(this.agentsRoot, role);
