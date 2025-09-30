@@ -5,7 +5,7 @@ to becoming an open-source AI agent orchestration platform.
 
 ## 🚀 Project Origins (October 2024)
 
-### Genesis at Tokyo AI Expo
+### AutomatosX Genesis at Tokyo AI Expo
 AutomatosX was born from a specific customer request for **LLM-powered automation solutions**.
 As DEFAI prepared for the **Tokyo AI Expo in October 2024**, the team recognized an opportunity
 to showcase practical AI automation capabilities.
