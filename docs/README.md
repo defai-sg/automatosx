@@ -42,10 +42,10 @@ AutomatosX provides **21 specialized AI agent roles** (backend, frontend, securi
 
 ```bash
 # Essential commands
-npm run validate              # System validation
-npm run factory-reset         # Safe system reset
-npm run filesystem:stats      # System information
-/ax:init                      # Claude Code initialization
+automatosx validate              # System validation
+automatosx factory-reset         # Safe system reset
+automatosx filesystem:stats      # System information
+/ax:init                         # Claude Code initialization
 ```
 
 This documentation is designed to be **minimal but complete** - enabling both AI systems and humans

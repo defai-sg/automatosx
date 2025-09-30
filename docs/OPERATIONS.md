@@ -89,16 +89,16 @@ automatosx run devops "Setup CI/CD pipeline for Node.js application"
 
 ```bash
 # Execute a specific workflow stage
-node src/index.js run backend "Review checkout API design" --stage review
+automatosx run backend "Review checkout API design" --stage review
 
 # Run every stage defined in an agent profile
-node src/index.js run backend "Design ecommerce checkout" --workflow
+automatosx run backend "Design ecommerce checkout" --workflow
 
 # List all available agents (summary)
 automatosx agents
 
 # Inspect personas, stages, and specializations
-node src/index.js agents --detailed
+automatosx agents --detailed
 ```
 
 ## 🧠 Memory and Context Operations
@@ -211,26 +211,34 @@ automatosx run architect "Design system" \
 automatosx status
 
 # Manage provider configuration
-node src/scripts/config-manager.js status
-node src/scripts/config-manager.js enable gemini
-node src/scripts/config-manager.js priority claude 1
+automatosx config status             # Provider configuration status
+automatosx config enable gemini      # Enable Gemini CLI provider
+automatosx config disable openai     # Disable OpenAI provider
+automatosx config priority claude 1  # Set provider priority
 
-# Test enabled providers directly from the config manager
-node src/scripts/config-manager.js test
+# Test enabled providers
+automatosx config test               # Test all enabled providers
+
+# Development setup alternative:
+# node src/scripts/config-manager.js status
+# node src/scripts/config-manager.js enable gemini
 ```
 
 ### Agent Customization
 
 ```bash
 # Modify agent abilities (edit Markdown files)
-# Files located at: src/agents/{role}/abilities/*.md
+# User files: .defai/agents/{role}/abilities/*.md
 
 # Update agent profiles (edit YAML files)
-# Files located at: src/agents/{role}/profile.yaml
+# User files: .defai/agents/{role}/profile.yaml
 
 # After modifications, reinitialize generated assets
-node src/scripts/dynamic-init.js full
-/ax:init  # Equivalent Claude slash command
+automatosx init                          # Reinitialize system (Global installation)
+/ax:init                                 # Equivalent Claude slash command
+
+# Development setup alternative:
+# node src/scripts/dynamic-init.js full
 ```
 
 ## 📁 Workspace Operations
@@ -313,15 +321,21 @@ automatosx filesystem:backup    # Backup before major changes
 **Provider Failures**:
 ```bash
 automatosx status                       # Check provider health and failover
-# Note: CLI verification is built into status command for global installation
-node src/scripts/config-manager.js setup  # Re-run interactive provider setup
+automatosx config setup                 # Re-run interactive provider setup
+
+# Development setup alternative:
+# node src/scripts/config-manager.js setup
 ```
 
 **Agent Configuration Issues**:
 ```bash
-node src/scripts/dynamic-init.js validate   # Validate agent profiles and abilities
+automatosx validate                          # Validate agent profiles and abilities
+automatosx init                              # Force complete regeneration of assets
 /ax:init                                     # Reinitialize via Claude Code
-node src/scripts/dynamic-init.js full        # Force complete regeneration of assets
+
+# Development setup alternative:
+# node src/scripts/dynamic-init.js validate
+# node src/scripts/dynamic-init.js full
 ```
 
 ### Advanced Diagnostics

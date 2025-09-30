@@ -14,11 +14,15 @@ each with distinct expertise, personality, and workflow patterns - like having a
 
 AutomatosX agents are built using a three-layer architecture that separates different types of information:
 
-### Layer 1: YAML Profiles (`src/agents/{role}/profile.yaml`)
+### Layer 1: YAML Profiles
+**Locations**:
+- **System defaults**: Built into AutomatosX package
+- **User customizations**: `.defai/agents/{role}/profile.yaml` (user-editable overrides)
+
 **Purpose**: Workflow and execution patterns
 **Contains**:
 - Multi-stage workflow definitions
-- Model selection and token limits
+- Provider selection and token limits
 - Memory scope and context management
 - Performance optimization settings
 
@@ -26,7 +30,11 @@ AutomatosX agents are built using a three-layer architecture that separates diff
 
 > **Implementation Details**: See **[ARCHITECTURE.md](ARCHITECTURE.md#profile-manager)** for technical details.
 
-### Layer 2: Markdown Abilities (`src/agents/{role}/abilities/*.md`)
+### Layer 2: Markdown Abilities
+**Locations**:
+- **System defaults**: Built into AutomatosX package
+- **User customizations**: `.defai/agents/{role}/abilities/*.md` (user-editable overrides)
+
 **Purpose**: Knowledge and expertise
 **Contains**:
 - Technical knowledge and best practices
@@ -36,7 +44,11 @@ AutomatosX agents are built using a three-layer architecture that separates diff
 
 **Example**: Backend abilities include API design patterns, database optimization, security practices.
 
-### Layer 3: JavaScript Personalities (`src/agents/agent-profiles.js`)
+### Layer 3: JavaScript Personalities
+**Locations**:
+- **System defaults**: Built into AutomatosX package
+- **User customizations**: `.defai/agents/agent-profiles.js` (user-editable overrides)
+
 **Purpose**: Communication and decision-making patterns
 **Contains**:
 - Human names and titles (Bob the Backend Engineer)

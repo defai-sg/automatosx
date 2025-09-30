@@ -28,9 +28,13 @@ cost reduction while maximizing performance**, so the **default configuration** 
 automatosx status
 
 # Enable/disable providers as needed
-node src/scripts/config-manager.js enable gemini
-node src/scripts/config-manager.js disable openai
-node src/scripts/config-manager.js enable codex
+automatosx config enable gemini       # Preferred method (Global installation)
+automatosx config disable openai      # Preferred method (Global installation)
+automatosx config enable codex        # Preferred method (Global installation)
+
+# Alternative for development setup:
+# node src/scripts/config-manager.js enable gemini
+# node src/scripts/config-manager.js disable openai
 ```
 
 ### Q: Can I use AutomatosX with just one provider?

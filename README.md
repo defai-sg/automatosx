@@ -325,7 +325,8 @@ node src/utils/remove-role.js Oliver --force --no-backup # Removes without backu
 
 ### System Reset and Maintenance
 ```bash
-# Configuration Reset
+# Configuration Reset (Development Setup)
+# For global installation, use 'automatosx reset:<command>' instead
 npm run reset:status               # Show current configuration status
 npm run reset:all                  # Complete system reset (config + memory)
 npm run reset:config               # Reset configuration to defaults
@@ -344,7 +345,8 @@ automatosx uninstall:clean            # Complete uninstall (⚠️ removes all d
 
 ### Privacy & Storage
 - Conversation history and task artifacts are stored locally under `.defai/` and `.claude/`.
-- Run `npm run reset:memory` to purge chat logs; `npm run reset:workspace` clears generated outputs while keeping structure.
+- For global installation: Run `automatosx reset:memory` to purge chat logs; `automatosx reset:workspace` clears generated outputs while keeping structure.
+- For development setup: Run `npm run reset:memory` to purge chat logs; `npm run reset:workspace` clears generated outputs while keeping structure.
 - Avoid committing these directories; they may contain sensitive prompts or provider metadata.
 
 ## 🏗️ Architecture Overview
@@ -653,13 +655,15 @@ npm start history "database design" --role backend --limit 5
 #### Memory Management
 ```bash
 # Clear all chat history and reset memory
-npm run reset:memory
+automatosx reset:memory        # Global installation
+# npm run reset:memory        # Development setup
 
 # Clear specific memory type
 node src/scripts/memory-clear.js type milvus
 
 # View memory system health
-npm run status
+automatosx status              # Global installation
+# npm run status              # Development setup
 ```
 
 #### Development Integration
@@ -671,16 +675,19 @@ node test/practical-memory-test.js
 node test/enhanced-system-test.js
 
 # Validate memory architecture
-npm run validate
+automatosx validate              # Global installation
+# npm run validate              # Development setup
 
-# Test concurrent memory coordination
+# Test concurrent memory coordination (Development only)
 npm run test:concurrent
 
 # Start memory server for multi-project use
-npm run memory:server
+automatosx memory:server        # Global installation
+# npm run memory:server         # Development setup
 
 # Test memory server functionality
-npm run memory:test
+automatosx memory:test          # Global installation
+# npm run memory:test           # Development setup
 ```
 
 ### 🔄 Concurrent Memory Coordination
@@ -698,7 +705,7 @@ writes across multiple agents running simultaneously.
 
 **Concurrent Testing Examples:**
 ```bash
-# Test concurrent write coordination
+# Test concurrent write coordination (Development setup only)
 npm run test:concurrent
 # → Simulates 5 agents with 10 operations each (100% success rate)
 
@@ -807,7 +814,7 @@ After creating a role, you can customize:
 
 1. **Edit Abilities** - Update `src/agents/{role}/abilities/*.md` files
 2. **Modify Profile** - Adjust `src/agents/{role}/profile.yaml` configuration
-3. **Test Integration** - Run `npm run validate` to verify configuration
+3. **Test Integration** - Run `automatosx validate` (global) or `npm run validate` (development) to verify configuration
 
 ### Best Practices
 
@@ -834,8 +841,9 @@ node test/practical-memory-test.js # Memory system tests
 ### System Validation
 ```bash
 # Validate profiles and architecture
-npm run validate
-node src/scripts/validate-architecture.js
+automatosx validate              # Global installation
+# npm run validate              # Development setup
+# node src/scripts/validate-architecture.js  # Development only
 
 # Test router functionality
 node src/scripts/agent-router.js frontend "test task"
@@ -843,14 +851,10 @@ node src/scripts/agent-router.js frontend "test task"
 
 ### Build and Deployment
 ```bash
-# Build system with parallel execution
-npm run build
-
-# Install locally for development
-npm run install:local
-
-# Install globally for system-wide access
-npm run install:global
+# Development setup commands only
+npm run build                   # Build system with parallel execution
+npm run install:local           # Install locally for development
+npm run install:global          # Install globally for system-wide access
 ```
 
 ## 📊 Performance Metrics
@@ -897,15 +901,16 @@ Explore AutomatosX features with practical examples:
 
 ```bash
 # Run all examples in sequence
-npm run examples
+automatosx examples              # Global installation
+# npm run examples              # Development setup
 
-# Run individual examples
-npm run examples:abilities    # Abilities system demonstration
-npm run examples:agent        # Agent management showcase
-npm run examples:memory       # Optimized memory system demo
-npm run examples:yaml         # YAML inheritance patterns
+# Run individual examples (Development setup)
+npm run examples:abilities      # Abilities system demonstration
+npm run examples:agent          # Agent management showcase
+npm run examples:memory         # Optimized memory system demo
+npm run examples:yaml           # YAML inheritance patterns
 
-# Validate examples work correctly
+# Validate examples work correctly (Development setup)
 npm run test:examples
 ```
 
@@ -913,13 +918,16 @@ npm run test:examples
 
 ```bash
 # Full test suite
-npm test                      # Core system tests
-npm run test:examples         # Examples validation
-npm run test:legacy           # Legacy compatibility tests
+# Testing (Development setup)
+npm test                        # Core system tests
+npm run test:examples           # Examples validation
+npm run test:legacy             # Legacy compatibility tests
 
 # System validation
-npm run validate              # Profile and configuration validation
-npm run status                # Provider connectivity check
+automatosx validate             # Profile and configuration validation (Global)
+automatosx status               # Provider connectivity check (Global)
+# npm run validate              # Development setup
+# npm run status                # Development setup
 ```
 
 ## 🤝 Contributing
@@ -927,7 +935,7 @@ npm run status                # Provider connectivity check
 1. Fork the repository
 2. Create feature branch: `git checkout -b feature-name`
 3. Run tests: `npm test`
-4. Validate profiles: `npm run validate`
+4. Validate profiles: `automatosx validate` (global) or `npm run validate` (development)
 5. Submit pull request
 
 ## 📄 License
