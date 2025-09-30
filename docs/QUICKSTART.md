@@ -1,6 +1,6 @@
 # AutomatosX Quickstart
 
-Get AutomatosX v3.1.3 running in minutes and run your first agent tasks.
+Get AutomatosX v3.1.4 running in minutes and run your first agent tasks.
 
 ## 1. Install Prerequisites
 - Node.js 18+ (`node -v`)

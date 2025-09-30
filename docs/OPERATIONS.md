@@ -139,9 +139,9 @@ npm run filesystem:backup         # Create backup
 npm run version:current           # Show current version
 
 # Upgrade preparation
-npm run upgrade:prepare 3.1.3     # Prepare for version upgrade
-npm run upgrade:prepare 3.1.3 --dry-run  # Preview upgrade changes
-npm run upgrade:validate 3.1.3    # Validate completed upgrade
+npm run upgrade:prepare 3.1.4     # Prepare for version upgrade
+npm run upgrade:prepare 3.1.4 --dry-run  # Preview upgrade changes
+npm run upgrade:validate 3.1.4    # Validate completed upgrade
 ```
 
 ## 🔄 Workflow Operations

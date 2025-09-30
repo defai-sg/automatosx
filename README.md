@@ -1,16 +1,16 @@
-# AutomatosX v3.1.3 - AI Agent Orchestration Platform
+# AutomatosX v3.1.4 - AI Agent Orchestration Platform
 
-[![Version](https://img.shields.io/badge/version-3.1.3-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-3.1.4-blue.svg)](package.json)
 [![Node.js](https://img.shields.io/badge/node.js-18+-green.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 **AutomatosX** is a sophisticated AI agent orchestration platform featuring CLI-first architecture, multi-provider
-routing, and comprehensive agent management. The system provides **13 specialized AI agent roles** with YAML-based
+routing, and comprehensive agent management. The system provides **20 specialized AI agent roles** with YAML-based
 profiles, real-time chat history tracking, and zero-cost access through CLI authentication.
 
 ## ✨ Key Features
 
-- 🎭 **13 Specialized AI Agents** - From backend engineers to CEOs, each with unique personalities and expertise
+- 🎭 **20 Specialized AI Agents** - From backend engineers to CEOs, each with unique personalities and expertise
 - 🔄 **Dynamic Role Loading** - Intelligent caching system with 40-80ms initial load, <1ms cached performance
 - 🛡️ **CLI-First Security** - Zero stored API keys, uses CLI authentication only
 - 📊 **Chat History Tracking** - Embedded Milvus with SQLite/file fallback for semantic search
@@ -230,12 +230,12 @@ node src/scripts/agent-router.js --list-agents
 ### Role Management
 ```bash
 # Create new role/agent
-node src/utils/create-role.js translator Alex "Senior Translator"
+node src/utils/create-role.js analyst Alex "Senior Data Analyst"
 node src/utils/create-role.js mobile Sarah "Mobile Developer" --specializations "iOS,Android,React Native"
 
 # Remove existing role/agent
 node src/utils/remove-role.js --list                    # List all removable roles
-node src/utils/remove-role.js translator --force        # Remove by role name
+node src/utils/remove-role.js analyst --force        # Remove by role name
 node src/utils/remove-role.js Alex --force              # Remove by agent name
 
 # Role creation with custom options
@@ -650,7 +650,7 @@ where each agent learns from and builds upon the insights of others, creating ex
 
 ## 🤖 Dynamic Role Management
 
-AutomatosX v3.1.3 supports dynamic role creation and removal, allowing you to extend the AI team with custom agents
+AutomatosX v3.1.4 supports dynamic role creation and removal, allowing you to extend the AI team with custom agents
 tailored to your specific needs.
 
 ### Creating Custom Roles
@@ -661,8 +661,8 @@ Create new roles with specialized expertise:
 # Basic role creation
 node src/utils/create-role.js <role> <name> <title>
 
-# Example: Create a translator agent
-node src/utils/create-role.js translator Alex "Senior Translator"
+# Example: Create a data analyst agent
+node src/utils/create-role.js analyst Alex "Senior Data Analyst"
 ```
 
 **Advanced Role Creation:**
@@ -713,10 +713,10 @@ node src/utils/remove-role.js --list
 **Safe Role Removal:**
 ```bash
 # Preview what will be removed (creates backup)
-node src/utils/remove-role.js translator
+node src/utils/remove-role.js analyst
 
 # Remove with backup
-node src/utils/remove-role.js translator --force
+node src/utils/remove-role.js analyst --force
 
 # Remove by agent name
 node src/utils/remove-role.js Alex --force
@@ -725,7 +725,7 @@ node src/utils/remove-role.js Alex --force
 **Dangerous Operations:**
 ```bash
 # Remove without backup (⚠️ permanent deletion)
-node src/utils/remove-role.js translator --force --no-backup
+node src/utils/remove-role.js analyst --force --no-backup
 ```
 
 ### Role Customization

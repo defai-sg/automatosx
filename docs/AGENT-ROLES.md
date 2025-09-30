@@ -31,7 +31,6 @@ npm start run <agent-role> "<task description>"
 | **quality** | Queenie | Senior Quality Professional | Test strategy, automation, release gating | `npm start run quality "Plan regression suite for auth service"` |
 | **quantum** | Quian | Senior Quantum Computing Engineer | Quantum algorithms, hybrid compute | `npm start run quantum "Assess feasibility of quantum optimizer"` |
 | **security** | Steve | Senior Security Engineer | Threat modelling, secure coding | `npm start run security "Perform auth threat assessment"` |
-| **translator** | Taylor | Senior Translator | Localization, language QA, cross-cultural comms | `npm start run translator "Localize release notes to Japanese"` |
 
 ## 💡 Quick Tips
 
@@ -40,7 +39,7 @@ npm start run <agent-role> "<task description>"
 - 🔒 Security concerns → `security`
 - 🎨 Experience & product shaping → `design`, `product`
 - 📊 Decision support → `data`, `analyst`, `cfo`
-- 📝 Documentation & localization → `docs`, `translator`
+- 📝 Documentation → `docs`
 - 🏗️ Strategy & leadership → `architect`, `cto`, `ceo`
 
 **Be Specific**:
