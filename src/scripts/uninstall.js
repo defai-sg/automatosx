@@ -76,11 +76,12 @@ class UninstallSystem {
             errors: []
         };
 
-        // Only clean up Claude Code integration directories
+        // Clean up all Claude Code integration directories (global and project-level)
         try {
             await this.cleanupClaudeIntegration();
+            await this.cleanupProjectClaudeDirectories();
             results.claudeCleanup = true;
-            console.log(chalk.green('✅ Claude Code integration removed'));
+            console.log(chalk.green('✅ Claude Code integration removed (global and project-level)'));
         } catch (error) {
             results.errors.push(`Claude cleanup failed: ${error.message}`);
             console.warn(chalk.yellow('⚠️  Claude cleanup failed:'), error.message);
@@ -239,22 +240,19 @@ class UninstallSystem {
     async cleanupData() {
         console.log(chalk.blue('🔄 Cleaning up AutomatosX data directories...'));
 
-        // Only clean specific directories as requested
-        const dirsToClean = [
-            { path: this.cleanupPaths.defaiWorkspaces, name: '.defai/workspaces' }
-        ];
-
-        // Clean local directories
-        for (const { path: dirPath, name } of dirsToClean) {
-            if (await fs.pathExists(dirPath)) {
-                try {
-                    await fs.remove(dirPath);
-                    console.log(chalk.gray(`   🗂️  Removed ${name}/`));
-                } catch (error) {
-                    console.warn(chalk.yellow(`   ⚠️  Could not remove ${name}: ${error.message}`));
-                }
+        // Remove entire .defai directory
+        const defaiDir = this.cleanupPaths.defaiData;
+        if (await fs.pathExists(defaiDir)) {
+            try {
+                await fs.remove(defaiDir);
+                console.log(chalk.gray(`   🗂️  Removed .defai/`));
+            } catch (error) {
+                console.warn(chalk.yellow(`   ⚠️  Could not remove .defai: ${error.message}`));
             }
         }
+
+        // Clean up project-level Claude directories (.claude/*/ax)
+        await this.cleanupProjectClaudeDirectories();
 
         // Global Claude Code integration directories
         await this.cleanupClaudeIntegration();
@@ -281,6 +279,33 @@ class UninstallSystem {
         }
 
         console.log(chalk.gray('   ✅ Preserved other Claude Code integrations'));
+    }
+
+    async cleanupProjectClaudeDirectories() {
+        console.log(chalk.blue('🔄 Cleaning up project-level Claude directories...'));
+
+        // Clean up project-level .claude/*/ax directories
+        const projectClaudeDir = path.join(this.projectPath, '.claude');
+
+        if (!await fs.pathExists(projectClaudeDir)) {
+            console.log(chalk.gray('   ✅ No project-level .claude directory found'));
+            return;
+        }
+
+        const subDirs = ['commands', 'mcp', 'styles'];
+        for (const subDir of subDirs) {
+            const axPath = path.join(projectClaudeDir, subDir, 'ax');
+            if (await fs.pathExists(axPath)) {
+                try {
+                    await fs.remove(axPath);
+                    console.log(chalk.gray(`   🔌 Removed .claude/${subDir}/ax/`));
+                } catch (error) {
+                    console.warn(chalk.yellow(`   ⚠️  Could not remove .claude/${subDir}/ax: ${error.message}`));
+                }
+            }
+        }
+
+        console.log(chalk.gray('   ✅ Project-level Claude directories cleaned'));
     }
 
     async cleanupConfig() {
@@ -332,6 +357,7 @@ class UninstallSystem {
                 break;
             case 'claude':
                 await this.cleanupClaudeIntegration();
+                await this.cleanupProjectClaudeDirectories();
                 console.log(chalk.green('✅ Claude Code integration cleaned'));
                 break;
             case 'config':
@@ -370,11 +396,14 @@ class UninstallSystem {
 
         console.log(`${globalInstalled ? chalk.red('🟥 INSTALLED') : chalk.green('✅ NOT INSTALLED')} Global Package`);
 
-        // Check data directories - only show what will actually be cleaned
+        // Check data directories - show complete .defai directory
         const checks = [
-            { name: 'DEFAI Workspaces', path: this.cleanupPaths.defaiWorkspaces },
-            { name: 'Claude Commands/AX', path: this.cleanupPaths.claudeCommandsAx },
-            { name: 'Claude MCP/AX', path: this.cleanupPaths.claudeMcpAx },
+            { name: 'DEFAI Directory', path: this.cleanupPaths.defaiData },
+            { name: 'Global Claude Commands/AX', path: this.cleanupPaths.claudeCommandsAx },
+            { name: 'Global Claude MCP/AX', path: this.cleanupPaths.claudeMcpAx },
+            { name: 'Project .claude/commands/ax', path: path.join(this.projectPath, '.claude/commands/ax') },
+            { name: 'Project .claude/mcp/ax', path: path.join(this.projectPath, '.claude/mcp/ax') },
+            { name: 'Project .claude/styles/ax', path: path.join(this.projectPath, '.claude/styles/ax') },
             { name: 'Node Modules', path: this.cleanupPaths.nodeModules }
         ];
 
