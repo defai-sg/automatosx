@@ -228,6 +228,7 @@ cache/
 # Local configuration overrides
 config/local/
 profiles/custom/
+automatosx.config.yaml
 
 # AI provider documentation (exclude from repository)
 **/agent.md
