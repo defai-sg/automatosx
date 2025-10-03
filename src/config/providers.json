@@ -2,19 +2,16 @@
   "claude-code": {
     "enabled": true,
     "priority": 1,
-    "timeout": 30000,
-    "retries": 2
+    "timeout": 120000
   },
   "gemini-cli": {
     "enabled": true,
     "priority": 2,
-    "timeout": 30000,
-    "retries": 2
+    "timeout": 180000
   },
   "openai-cli": {
-    "enabled": true,
+    "enabled": false,
     "priority": 3,
-    "timeout": 30000,
-    "retries": 2
+    "timeout": 180000
   }
 }

@@ -72,6 +72,15 @@ class UninstallSystem {
             errors: []
         };
 
+        // Stop all running processes first
+        try {
+            await this.stopAllProcesses();
+            console.log(chalk.green('✅ All processes stopped'));
+        } catch (error) {
+            results.errors.push(`Failed to stop processes: ${error.message}`);
+            console.warn(chalk.yellow('⚠️  Could not stop all processes:'), error.message);
+        }
+
         // Clean up project-level data
         try {
             await this.cleanupData();
@@ -233,10 +242,33 @@ class UninstallSystem {
                 try {
                     await fs.remove(axPath);
                     console.log(chalk.gray(`   🔌 Removed .claude/${subDir}/ax/`));
+
+                    // Clean up empty parent directory
+                    const parentPath = path.join(projectClaudeDir, subDir);
+                    if (await fs.pathExists(parentPath)) {
+                        const files = await fs.readdir(parentPath);
+                        if (files.length === 0) {
+                            await fs.remove(parentPath);
+                            console.log(chalk.gray(`   🧹 Removed empty .claude/${subDir}/`));
+                        }
+                    }
                 } catch (error) {
                     console.warn(chalk.yellow(`   ⚠️  Could not remove .claude/${subDir}/ax: ${error.message}`));
                 }
             }
+        }
+
+        // Clean up .claude directory if empty
+        try {
+            if (await fs.pathExists(projectClaudeDir)) {
+                const files = await fs.readdir(projectClaudeDir);
+                if (files.length === 0) {
+                    await fs.remove(projectClaudeDir);
+                    console.log(chalk.gray('   🧹 Removed empty .claude/'));
+                }
+            }
+        } catch (error) {
+            console.warn(chalk.yellow(`   ⚠️  Could not check .claude directory: ${error.message}`));
         }
 
         console.log(chalk.gray('   ✅ Project-level Claude directories cleaned'));
