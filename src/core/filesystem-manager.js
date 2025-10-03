@@ -71,12 +71,13 @@ export class FilesystemManager {
             await this.backupUserData();
         }
 
-        // Step 2: Remove system files
-        const systemFiles = await this.getFilesByCategory('system_core');
-        const claudeFiles = await this.getFilesByCategory('claude_integration');
-        const runtimeFiles = await this.getFilesByCategory('runtime_generated');
+        // Step 2: Collect files to remove based on operation categories
+        const filesToRemove = [];
 
-        const filesToRemove = [...systemFiles, ...claudeFiles, ...runtimeFiles];
+        for (const category of operations.remove_categories) {
+            const files = await this.getFilesByCategory(category);
+            filesToRemove.push(...files);
+        }
 
         console.log(chalk.cyan(`📋 Found ${filesToRemove.length} files to remove`));
 
