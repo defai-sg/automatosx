@@ -22,19 +22,14 @@ class UninstallSystem {
         this.projectPath = projectPath;
         this.packageJson = null;
 
-        // Paths to clean up
+        // Paths to clean up (project-level only)
         this.cleanupPaths = {
-            // Project directories - only what should be cleaned
+            // Project directories
+            defaiData: path.join(projectPath, '.defai'),
             defaiWorkspaces: path.join(projectPath, '.defai/workspaces'),
             backup: path.join(projectPath, 'backup'),
 
-            // Global Claude Code integration directories - only ax subdirs for commands and mcp
-            globalClaude: path.join(process.env.HOME || process.env.USERPROFILE, '.claude'),
-            claudeCommandsAx: path.join(process.env.HOME || process.env.USERPROFILE, '.claude/commands/ax'),
-            claudeMcpAx: path.join(process.env.HOME || process.env.USERPROFILE, '.claude/mcp/ax'),
-
-            // Keep these for backward compatibility but don't use in main cleanup
-            defaiData: path.join(projectPath, '.defai'),
+            // Project-level Claude Code integration
             claudeData: path.join(projectPath, '.claude'),
 
             // Configuration files
@@ -68,23 +63,24 @@ class UninstallSystem {
     }
 
     async uninstallComplete() {
-        console.log(chalk.red('🗑️  Bob: Removing AutomatosX Claude Code integration...'));
-        console.log(chalk.gray('💭 "Only cleaning Claude integration, keeping your project intact."'));
+        console.log(chalk.red('🗑️  Bob: Removing AutomatosX project data...'));
+        console.log(chalk.gray('💭 "Cleaning project-level data and Claude integration."'));
 
         const results = {
+            dataCleanup: false,
             claudeCleanup: false,
             errors: []
         };
 
-        // Clean up all Claude Code integration directories (global and project-level)
+        // Clean up project-level data
         try {
-            await this.cleanupClaudeIntegration();
-            await this.cleanupProjectClaudeDirectories();
+            await this.cleanupData();
+            results.dataCleanup = true;
             results.claudeCleanup = true;
-            console.log(chalk.green('✅ Claude Code integration removed (global and project-level)'));
+            console.log(chalk.green('✅ Project data and Claude integration removed'));
         } catch (error) {
-            results.errors.push(`Claude cleanup failed: ${error.message}`);
-            console.warn(chalk.yellow('⚠️  Claude cleanup failed:'), error.message);
+            results.errors.push(`Cleanup failed: ${error.message}`);
+            console.warn(chalk.yellow('⚠️  Cleanup failed:'), error.message);
         }
 
         return results;
@@ -145,42 +141,6 @@ class UninstallSystem {
         return info;
     }
 
-    async uninstallGlobal() {
-        await this.loadPackageInfo();
-
-        if (this.packageJson && this.packageJson.name) {
-            const packageName = this.packageJson.name;
-
-            try {
-                // Check if globally installed
-                const { stdout } = await execAsync(`npm list -g ${packageName} --depth=0`, { encoding: 'utf8' });
-                if (stdout.includes(packageName)) {
-                    console.log(chalk.blue(`🔄 Uninstalling global package: ${packageName}`));
-                    execSync(`npm uninstall -g ${packageName}`, { stdio: 'inherit' });
-                    console.log(chalk.green(`✅ Global package ${packageName} uninstalled`));
-                } else {
-                    console.log(chalk.gray(`📝 Package ${packageName} was not globally installed`));
-                }
-            } catch (error) {
-                // Package might not be globally installed, which is fine
-                console.log(chalk.gray(`📝 Package was not globally installed or already removed`));
-            }
-        }
-
-        // Also try to uninstall with common package names
-        const possibleNames = ['automatosx', 'defai-ax'];
-        for (const name of possibleNames) {
-            try {
-                const { stdout } = await execAsync(`npm list -g ${name} --depth=0`, { encoding: 'utf8' });
-                if (stdout.includes(name)) {
-                    execSync(`npm uninstall -g ${name}`, { stdio: 'inherit' });
-                    console.log(chalk.green(`✅ Global package ${name} uninstalled`));
-                }
-            } catch (error) {
-                // Ignore errors - package might not exist
-            }
-        }
-    }
 
     async stopAllProcesses() {
         console.log(chalk.blue('🔄 Stopping AutomatosX processes...'));
@@ -253,32 +213,6 @@ class UninstallSystem {
 
         // Clean up project-level Claude directories (.claude/*/ax)
         await this.cleanupProjectClaudeDirectories();
-
-        // Global Claude Code integration directories
-        await this.cleanupClaudeIntegration();
-    }
-
-    async cleanupClaudeIntegration() {
-        console.log(chalk.blue('🔄 Cleaning up Claude Code integration directories...'));
-
-        // Only clean the specific directories requested: commands/ax and mcp/ax
-        const claudeDirs = [
-            { path: this.cleanupPaths.claudeCommandsAx, name: '.claude/commands/ax' },
-            { path: this.cleanupPaths.claudeMcpAx, name: '.claude/mcp/ax' }
-        ];
-
-        for (const { path: dirPath, name } of claudeDirs) {
-            if (await fs.pathExists(dirPath)) {
-                try {
-                    await fs.remove(dirPath);
-                    console.log(chalk.gray(`   🔌 Removed ${name}/`));
-                } catch (error) {
-                    console.warn(chalk.yellow(`   ⚠️  Could not remove ${name}: ${error.message}`));
-                }
-            }
-        }
-
-        console.log(chalk.gray('   ✅ Preserved other Claude Code integrations'));
     }
 
     async cleanupProjectClaudeDirectories() {
@@ -347,16 +281,11 @@ class UninstallSystem {
         console.log(chalk.blue(`🗑️  Bob: Cleaning up ${type}...`));
 
         switch (type.toLowerCase()) {
-            case 'global':
-                await this.uninstallGlobal();
-                console.log(chalk.green('✅ Global package uninstalled'));
-                break;
             case 'data':
                 await this.cleanupData();
                 console.log(chalk.green('✅ Data directories cleaned'));
                 break;
             case 'claude':
-                await this.cleanupClaudeIntegration();
                 await this.cleanupProjectClaudeDirectories();
                 console.log(chalk.green('✅ Claude Code integration cleaned'));
                 break;
@@ -381,26 +310,9 @@ class UninstallSystem {
         console.log(chalk.red('\n🗑️  AutomatosX Uninstall Status'));
         console.log(chalk.gray('━'.repeat(50)));
 
-        await this.loadPackageInfo();
-
-        // Check global installation
-        let globalInstalled = false;
-        if (this.packageJson) {
-            try {
-                const { stdout } = await execAsync(`npm list -g ${this.packageJson.name} --depth=0`, { encoding: 'utf8' });
-                globalInstalled = stdout.includes(this.packageJson.name);
-            } catch (error) {
-                // Not installed globally
-            }
-        }
-
-        console.log(`${globalInstalled ? chalk.red('🟥 INSTALLED') : chalk.green('✅ NOT INSTALLED')} Global Package`);
-
-        // Check data directories - show complete .defai directory
+        // Check project-level directories
         const checks = [
             { name: 'DEFAI Directory', path: this.cleanupPaths.defaiData },
-            { name: 'Global Claude Commands/AX', path: this.cleanupPaths.claudeCommandsAx },
-            { name: 'Global Claude MCP/AX', path: this.cleanupPaths.claudeMcpAx },
             { name: 'Project .claude/commands/ax', path: path.join(this.projectPath, '.claude/commands/ax') },
             { name: 'Project .claude/mcp/ax', path: path.join(this.projectPath, '.claude/mcp/ax') },
             { name: 'Project .claude/styles/ax', path: path.join(this.projectPath, '.claude/styles/ax') },
@@ -423,11 +335,11 @@ class UninstallSystem {
     }
 
     async confirmUninstall() {
-        console.log(chalk.yellow('\n⚠️  WARNING: This will remove AutomatosX Claude Code integration!'));
+        console.log(chalk.yellow('\n⚠️  WARNING: This will remove AutomatosX project data!'));
         console.log(chalk.yellow('The following will be removed:'));
-        console.log(chalk.yellow('  • .claude/commands/ax directory'));
-        console.log(chalk.yellow('  • .claude/mcp/ax directory'));
-        console.log(chalk.cyan('\n✅ Your project files and dependencies will remain intact.'));
+        console.log(chalk.yellow('  • .defai directory'));
+        console.log(chalk.yellow('  • .claude/*/ax directories'));
+        console.log(chalk.cyan('\n✅ Your source code and dependencies will remain intact.'));
 
         // Note: In a real CLI, you might want to add interactive confirmation
         // For this implementation, we'll add a safety check
@@ -453,19 +365,19 @@ async function main() {
                     console.log(chalk.red('\n❌ Some operations failed:'));
                     results.errors.forEach(error => console.log(chalk.red(`  • ${error}`)));
                 } else {
-                    console.log(chalk.green('\n🎉 AutomatosX Claude Code integration removed!'));
+                    console.log(chalk.green('\n🎉 AutomatosX project data removed!'));
                 }
 
-                console.log(chalk.cyan('\n🎭 Bob: "Claude integration removed rock-solid!"'));
+                console.log(chalk.cyan('\n🎭 Bob: "Project data removed rock-solid!"'));
             } else {
                 console.log(chalk.gray('❌ Uninstall cancelled'));
             }
         } else if (args[0] === 'type' && args[1]) {
             const type = args[1];
 
-            if (!['global', 'data', 'claude', 'config', 'dependencies', 'backup'].includes(type)) {
+            if (!['data', 'claude', 'config', 'dependencies', 'backup'].includes(type)) {
                 console.log(chalk.red(`❌ Invalid type: ${type}`));
-                console.log('Usage: node uninstall.js type <global|data|claude|config|dependencies|backup>');
+                console.log('Usage: node uninstall.js type <data|claude|config|dependencies|backup>');
                 process.exit(1);
             }
 
@@ -479,16 +391,15 @@ async function main() {
             console.log('  node uninstall.js               # Show uninstall status');
             console.log('  node uninstall.js status        # Show uninstall status');
             console.log('  node uninstall.js all           # Complete uninstall');
-            console.log('  node uninstall.js type global   # Uninstall specific type');
+            console.log('  node uninstall.js type data     # Uninstall specific type');
             console.log('  node uninstall.js backup        # Create backup only');
-            console.log('\nAvailable types: global, data, claude, config, dependencies, backup');
-            console.log('  • global       - Remove global npm package');
-            console.log('  • data         - Remove local data directories (.defai)');
-            console.log('  • claude       - Remove Claude Code integration (~/.claude/*/ax)');
+            console.log('\nAvailable types: data, claude, config, dependencies, backup');
+            console.log('  • data         - Remove project data directories (.defai and .claude/*/ax)');
+            console.log('  • claude       - Remove Claude Code integration (.claude/*/ax)');
             console.log('  • config       - Remove configuration files');
             console.log('  • dependencies - Remove node_modules and package-lock.json');
             console.log('  • backup       - Create backup only');
-            console.log(chalk.yellow('\n⚠️  WARNING: "all" will completely remove AutomatosX!'));
+            console.log(chalk.yellow('\n⚠️  WARNING: "all" will remove all project data!'));
         }
     } catch (error) {
         console.error(chalk.red('❌ Uninstall failed:'), error.message);

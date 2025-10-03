@@ -22,9 +22,7 @@
   ],
   "scripts": {
     "start": "node src/index.js",
-    "install:global": "npm install -g .",
-    "install:local": "node src/scripts/local-install.js",
-    "uninstall:global": "npm uninstall -g automatosx",
+    "postinstall": "node src/scripts/post-install.js",
     "uninstall:clean": "node src/scripts/uninstall.js all",
     "uninstall:status": "node src/scripts/uninstall.js status",
     "test": "node src/__tests__/enhanced-system-test.js",

@@ -286,17 +286,36 @@ export class ModelTemplateResolver {
         }
 
         const errors = [];
+        const CLI_PROVIDERS = ['claude-code', 'gemini-cli', 'openai-cli'];
 
         // Check required fields
         if (!template.primary) {
             errors.push('Missing primary model configuration');
         } else {
-            if (!template.primary.provider) errors.push('Missing provider in primary config');
-            if (!template.primary.model) errors.push('Missing model in primary config');
+            if (!template.primary.provider) {
+                errors.push('Missing provider in primary config');
+            } else {
+                // Model field is optional for CLI providers (they use default models)
+                const isCLIProvider = CLI_PROVIDERS.includes(template.primary.provider);
+                if (!isCLIProvider && !template.primary.model) {
+                    errors.push('Missing model in primary config');
+                }
+            }
         }
 
         if (!template.fallback) {
             errors.push('Missing fallback model configuration');
+        } else {
+            // Validate fallback provider exists
+            if (!template.fallback.provider) {
+                errors.push('Missing provider in fallback config');
+            } else {
+                // Model field is optional for CLI providers
+                const isCLIProvider = CLI_PROVIDERS.includes(template.fallback.provider);
+                if (!isCLIProvider && !template.fallback.model) {
+                    errors.push('Missing model in fallback config');
+                }
+            }
         }
 
         return {

@@ -193,12 +193,17 @@ class SystemHealthChecker {
         console.log(chalk.cyan('⚙️  Checking configuration...'));
 
         const configFiles = [
-            'package.json',
-            'automatosx.config.yaml'
+            { name: 'package.json', required: true },
+            { name: 'automatosx.config.yaml', required: false }  // Optional user configuration
         ];
 
         let healthyConfigs = 0;
-        for (const configFile of configFiles) {
+        let requiredConfigs = 0;
+        let healthyRequiredConfigs = 0;
+
+        for (const { name: configFile, required } of configFiles) {
+            if (required) requiredConfigs++;
+
             const configPath = path.join(this.projectPath, configFile);
             if (await fs.pathExists(configPath)) {
                 try {
@@ -208,16 +213,17 @@ class SystemHealthChecker {
                         await fs.readFile(configPath, 'utf8');
                     }
                     healthyConfigs++;
+                    if (required) healthyRequiredConfigs++;
                 } catch (error) {
                     this.healthReport.errors.push(`Invalid ${configFile}: ${error.message}`);
                 }
-            } else {
-                this.healthReport.warnings.push(`Missing configuration file: ${configFile}`);
+            } else if (required) {
+                this.healthReport.warnings.push(`Missing required configuration file: ${configFile}`);
             }
         }
 
-        this.healthReport.checks.configuration = healthyConfigs === configFiles.length ? 'healthy' : 'warning';
-        console.log(chalk.green(`✅ ${healthyConfigs}/${configFiles.length} configuration files are valid`));
+        this.healthReport.checks.configuration = healthyRequiredConfigs === requiredConfigs ? 'healthy' : 'warning';
+        console.log(chalk.green(`✅ ${healthyConfigs}/${configFiles.length} configuration files are valid (${healthyRequiredConfigs}/${requiredConfigs} required)`));
     }
 
     async checkPortFileConsistency() {

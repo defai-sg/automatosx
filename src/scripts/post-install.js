@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * AutomatosX Local Installation Script
- * Creates local development installation
+ * AutomatosX Post-Install Script
+ * Automatically sets up project-level installation after npm install
  *
  * Copyright 2025 DEFAI Team
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,58 +18,47 @@
 
 import fs from 'fs-extra';
 import path from 'path';
-import { spawn } from 'child_process';
 import chalk from 'chalk';
 
-async function localInstall() {
-    console.log(chalk.blue('🎭 AutomatosX Local Installation'));
-    console.log(chalk.blue('==============================\n'));
+async function postInstall() {
+    console.log(chalk.blue('🎭 AutomatosX Post-Install Setup'));
+    console.log(chalk.blue('================================\n'));
 
     try {
-        // Ensure necessary directories
-        const workspaceDir = path.join(process.cwd(), '.defai', 'workspaces');
-        const memoryDir = path.join(process.cwd(), '.defai/memory');
-        const defaiDir = path.join(process.cwd(), '.defai');
+        const projectRoot = process.cwd();
 
-        // Global Claude Code integration directories
-        const homeDir = process.env.HOME || process.env.USERPROFILE;
-        const globalClaudeDir = path.join(homeDir, '.claude');
-        const claudeCommandsAxDir = path.join(homeDir, '.claude/commands/ax');
-        const claudeMcpAxDir = path.join(homeDir, '.claude/mcp/ax');
+        // Project-level directories
+        const defaiDir = path.join(projectRoot, '.defai');
+        const workspaceDir = path.join(projectRoot, '.defai/workspaces');
+        const memoryDir = path.join(projectRoot, '.defai/memory');
 
+        // Project-level Claude Code integration directories
+        const claudeCommandsAxDir = path.join(projectRoot, '.claude/commands/ax');
+        const claudeMcpAxDir = path.join(projectRoot, '.claude/mcp/ax');
+        const claudeStylesAxDir = path.join(projectRoot, '.claude/styles/ax');
+
+        // Create .defai directories
+        await fs.ensureDir(defaiDir);
         await fs.ensureDir(workspaceDir);
         await fs.ensureDir(memoryDir);
-        await fs.ensureDir(defaiDir);
-
-        // Create global Claude Code integration directories
-        await fs.ensureDir(claudeCommandsAxDir);
-        await fs.ensureDir(claudeMcpAxDir);
-
-        // Copy Claude commands to global directory
-        const localCommandsDir = path.join(process.cwd(), '.claude/commands');
-        if (await fs.pathExists(localCommandsDir)) {
-            await fs.copy(localCommandsDir, claudeCommandsAxDir);
-            console.log(chalk.green('✅ Copied Claude commands to global directory'));
-        }
-
-        // Copy MCP files to global directory if they exist
-        const localMcpDir = path.join(process.cwd(), '.claude/mcp');
-        if (await fs.pathExists(localMcpDir)) {
-            await fs.copy(localMcpDir, claudeMcpAxDir);
-            console.log(chalk.green('✅ Copied MCP files to global directory'));
-        }
 
         console.log(chalk.green('✅ Created workspace and memory directories'));
         console.log(chalk.gray(`   Workspaces: ${workspaceDir}`));
         console.log(chalk.gray(`   Memory: ${memoryDir}`));
         console.log(chalk.gray(`   DEFAI: ${defaiDir}`));
 
+        // Create project-level Claude Code integration directories
+        await fs.ensureDir(claudeCommandsAxDir);
+        await fs.ensureDir(claudeMcpAxDir);
+        await fs.ensureDir(claudeStylesAxDir);
+
         console.log(chalk.green('✅ Created Claude Code integration directories'));
         console.log(chalk.gray(`   Commands: ${claudeCommandsAxDir}`));
         console.log(chalk.gray(`   MCP: ${claudeMcpAxDir}`));
+        console.log(chalk.gray(`   Styles: ${claudeStylesAxDir}`));
 
         // Validate configuration
-        const profilesDir = path.join(process.cwd(), 'profiles');
+        const profilesDir = path.join(projectRoot, 'src/agents');
         if (await fs.pathExists(profilesDir)) {
             console.log(chalk.green('✅ Agent profiles found'));
         } else {
@@ -77,7 +66,7 @@ async function localInstall() {
         }
 
         // Check provider configuration
-        const configDir = path.join(process.cwd(), 'config');
+        const configDir = path.join(projectRoot, 'src/config');
         if (await fs.pathExists(configDir)) {
             console.log(chalk.green('✅ Configuration directory found'));
         } else {
@@ -85,16 +74,16 @@ async function localInstall() {
             console.log(chalk.green('✅ Created configuration directory'));
         }
 
-        console.log(chalk.green('\n🎉 Local installation completed successfully!'));
+        console.log(chalk.green('\n🎉 Post-install setup completed successfully!'));
         console.log(chalk.blue('\n📝 Next steps:'));
         console.log('   npm run validate    # Validate configuration');
         console.log('   npm run status      # Check system health');
         console.log('   npm start           # Start the system');
 
     } catch (error) {
-        console.error(chalk.red('❌ Installation failed:'), error.message);
+        console.error(chalk.red('❌ Post-install setup failed:'), error.message);
         process.exit(1);
     }
 }
 
-localInstall().catch(console.error);
+postInstall().catch(console.error);
