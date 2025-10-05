@@ -1,0 +1,86 @@
+/**
+ * Agent Types - Agent Profile and Execution Context
+ */
+
+import type { Provider } from './provider.js';
+import type { MemoryEntry } from './memory.js';
+
+/**
+ * Agent Profile - Loaded from YAML
+ */
+export interface AgentProfile {
+  // Metadata
+  name: string;
+  role: string;
+  description: string;
+
+  // Behavior
+  systemPrompt: string;
+  abilities: string[];  // List of ability file names
+
+  // Provider preferences
+  provider?: string;    // Preferred provider (claude, gemini, openai)
+  model?: string;       // Preferred model
+  temperature?: number; // Temperature (0-1)
+  maxTokens?: number;   // Max response tokens
+
+  // Optional
+  tags?: string[];
+  version?: string;
+}
+
+/**
+ * Execution Context - Everything needed to execute an agent
+ */
+export interface ExecutionContext {
+  // Agent info
+  agent: AgentProfile;
+  task: string;
+
+  // Memory (injected from MemoryManager)
+  memory: MemoryEntry[];
+
+  // Paths (from PathResolver)
+  projectDir: string;
+  workingDir: string;
+  agentWorkspace: string;
+
+  // Provider (selected from Router)
+  provider: Provider;
+
+  // Abilities (from AbilitiesManager)
+  abilities: string;
+
+  // Timestamp
+  createdAt: Date;
+}
+
+/**
+ * Context creation options
+ */
+export interface ContextOptions {
+  provider?: string;      // Override provider
+  model?: string;         // Override model
+  skipMemory?: boolean;   // Skip memory injection
+  memoryLimit?: number;   // Limit memory entries
+}
+
+/**
+ * Agent validation error
+ */
+export class AgentValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AgentValidationError';
+  }
+}
+
+/**
+ * Agent not found error
+ */
+export class AgentNotFoundError extends Error {
+  constructor(agentName: string) {
+    super(`Agent not found: ${agentName}`);
+    this.name = 'AgentNotFoundError';
+  }
+}

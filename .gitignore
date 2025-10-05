@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+
+# Testing
+coverage/
+.nyc_output/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files and internal development artifacts
+tmp/
+temp/
+*.tmp
+
+# AutomatosX runtime (created by CLI)
+.automatosx/
+.automatosx-backups/
+
+# Internal development docs (not for public repo)
+PRD/archive/
+.claude/
+
+# AI assistant files (internal only)
+AGENTS.md
+CLAUDE.md
+GEMINI.md

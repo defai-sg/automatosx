@@ -1,0 +1,75 @@
+{
+  "name": "automatosx",
+  "version": "4.0.0-alpha.1",
+  "description": "AI Agent Orchestration Platform",
+  "type": "module",
+  "bin": {
+    "automatosx": "./dist/index.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx src/cli/index.ts",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:all": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest watch",
+    "typecheck": "tsc --noEmit",
+    "prototype:path": "tsx tmp/phase0-prototypes/03-path-resolution-poc.ts",
+    "prototype:sqlite": "tsx tmp/phase0-prototypes/01-sqlite-vec-poc.ts",
+    "prototype:ts": "tsx tmp/phase0-prototypes/02-typescript-migration-poc.ts",
+    "prototype:provider": "tsx tmp/phase0-prototypes/04-provider-abstraction-poc.ts"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/inquirer": "^9.0.9",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.10.0",
+    "@types/yargs": "^17.0.33",
+    "@vitest/coverage-v8": "^1.6.1",
+    "tsup": "^8.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.4.1",
+    "boxen": "^8.0.1",
+    "chalk": "^5.6.2",
+    "cli-table3": "^0.6.5",
+    "find-up": "^7.0.0",
+    "inquirer": "^12.9.6",
+    "js-yaml": "^4.1.0",
+    "ora": "^9.0.0",
+    "sqlite-vec": "^0.1.7-alpha.2",
+    "yargs": "^17.7.2"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "orchestration",
+    "automation",
+    "llm",
+    "claude",
+    "gemini",
+    "openai",
+    "vector-search",
+    "sqlite",
+    "typescript",
+    "ai-agents"
+  ],
+  "author": "AutomatosX Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/automatosx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/automatosx/issues"
+  },
+  "homepage": "https://docs.automatosx.dev"
+}
