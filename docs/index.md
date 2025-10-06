@@ -116,12 +116,6 @@ npx automatosx config --set providers.claude.apiKey --value "your-api-key"
 npx automatosx run assistant "What is the weather like?"
 ```
 
-### 5. Interactive Chat
-
-```bash
-npx automatosx chat assistant
-```
-
 </div>
 
 ## Community

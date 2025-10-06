@@ -101,11 +101,10 @@ AI Agent Orchestration Platform
 Commands:
   automatosx init [options]          Initialize project
   automatosx run <agent> <prompt>    Run agent
-  automatosx chat <agent>            Start interactive chat
   automatosx list <type>             List available agents
-  automatosx memory <command>        Search memory
-  automatosx config [options]        View configuration
-  automatosx status [options]        Check status
+  automatosx memory <command>        Memory operations
+  automatosx config [options]        Configuration management
+  automatosx status [options]        System status
 
 Global Options:
   --debug, -d    Enable debug mode with verbose output

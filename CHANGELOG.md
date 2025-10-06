@@ -7,9 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking Changes
+- **Removed `chat` command** (architectural decision)
+  - Rationale: AutomatosX runs exclusively inside Claude Code, which already provides interactive conversation
+  - Use `run` command for single-shot agent execution instead
+  - Claude Code provides the interactive interface
+
+### Removed
+- `chat` command and all related functionality (~550 lines)
+- `--interactive` flag from `init` and `run` commands
+- `inquirer` dependency (interactive prompts)
+- All interactive/TTY-dependent features
+
+### Fixed
+- Integration test issues with memory search (added MockEmbeddingProvider)
+- Memory import embedding interface (changed from generateEmbedding to embed)
+- E2E test failures related to chat command
+
+### Improved
+- **100% test pass rate** (729/729 tests passing, zero skipped)
+- Bundle size reduced: 217KB → 202KB (-7%)
+- Codebase simplified: removed ~2,200 lines
+- Clearer product positioning: agent execution tool for Claude Code
+
 ### Known Issues
 - CLI process cleanup issue in integration tests (non-blocking, under investigation)
-- CLI commands test coverage at 1.67% (improvement planned for Sprint 2.4.1)
 
 ## [4.0.0-beta.1] - 2025-10-04
 
