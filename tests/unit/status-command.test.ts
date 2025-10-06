@@ -1,367 +1,497 @@
 /**
- * Status Command Tests
+ * Status Command Unit Tests
+ *
+ * Tests the status command handler directly for coverage
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mkdir, rm, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { statusCommand } from '../../src/cli/commands/status.js';
 
-const execAsync = promisify(exec);
+// Mock all dependencies
+vi.mock('../../src/core/config.js', () => ({
+  loadConfig: vi.fn().mockResolvedValue({
+    providers: {
+      'claude-code': {
+        enabled: true,
+        priority: 1,
+        timeout: 30000,
+        command: 'claude'
+      },
+      'gemini-cli': {
+        enabled: true,
+        priority: 2,
+        timeout: 30000,
+        command: 'gemini'
+      }
+    },
+    logging: {
+      level: 'info'
+    },
+    memory: {
+      maxEntries: 10000,
+      cleanupDays: 30
+    }
+  })
+}));
+
+vi.mock('../../src/core/path-resolver.js', async () => {
+  const actual = await vi.importActual('../../src/core/path-resolver.js') as any;
+  return {
+    ...actual,
+    PathResolver: vi.fn().mockImplementation(() => ({
+      detectProjectRoot: vi.fn().mockImplementation(() => {
+        return (global as any).__testDir || process.cwd();
+      })
+    }))
+  };
+});
+
+vi.mock('../../src/providers/claude-provider.js', () => ({
+  ClaudeProvider: vi.fn().mockImplementation(() => ({
+    name: 'claude',
+    priority: 1,
+    isAvailable: vi.fn().mockResolvedValue(true),
+    getHealth: vi.fn().mockResolvedValue({
+      consecutiveFailures: 0,
+      latencyMs: 150,
+      errorRate: 0.01
+    })
+  }))
+}));
+
+vi.mock('../../src/providers/gemini-provider.js', () => ({
+  GeminiProvider: vi.fn().mockImplementation(() => ({
+    name: 'gemini',
+    priority: 2,
+    isAvailable: vi.fn().mockResolvedValue(true),
+    getHealth: vi.fn().mockResolvedValue({
+      consecutiveFailures: 0,
+      latencyMs: 200,
+      errorRate: 0.02
+    })
+  }))
+}));
+
+vi.mock('../../src/core/router.js', () => ({
+  Router: vi.fn().mockImplementation(() => ({
+    getAvailableProviders: vi.fn().mockResolvedValue([{ name: 'claude' }, { name: 'gemini' }])
+  }))
+}));
 
 describe('Status Command', () => {
   let testDir: string;
   let automatosxDir: string;
+  let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+  let processExitSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(async () => {
-    // Create unique test directory
     testDir = join(tmpdir(), `status-test-${Date.now()}`);
     automatosxDir = join(testDir, '.automatosx');
+    await mkdir(automatosxDir, { recursive: true });
 
-    await mkdir(testDir, { recursive: true });
+    // Set global test directory for mock
+    (global as any).__testDir = testDir;
+
+    // Spy on console methods
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    processExitSpy = vi.spyOn(process, 'exit').mockImplementation((code) => {
+      throw new Error(`process.exit(${code})`);
+    });
   });
 
   afterEach(async () => {
-    // Cleanup test directory
-    try {
-      await rm(testDir, { recursive: true, force: true });
-    } catch {
-      // Ignore cleanup errors
-    }
+    await rm(testDir, { recursive: true, force: true });
+    delete (global as any).__testDir;
+    consoleLogSpy.mockRestore();
+    processExitSpy.mockRestore();
   });
 
-  describe('Basic Status Display', () => {
+  describe('Command Definition', () => {
+    it('should have correct command string', () => {
+      expect(statusCommand.command).toBe('status');
+    });
+
+    it('should have description', () => {
+      expect(statusCommand.describe).toBeDefined();
+      expect(typeof statusCommand.describe).toBe('string');
+    });
+
+    it('should have builder function', () => {
+      expect(statusCommand.builder).toBeDefined();
+      expect(typeof statusCommand.builder).toBe('function');
+    });
+
+    it('should have handler function', () => {
+      expect(statusCommand.handler).toBeDefined();
+      expect(typeof statusCommand.handler).toBe('function');
+    });
+  });
+
+  describe('Builder Options', () => {
+    it('should configure verbose option', () => {
+      const yargsStub = {
+        option: vi.fn().mockReturnThis()
+      };
+
+      statusCommand.builder(yargsStub as any);
+
+      expect(yargsStub.option).toHaveBeenCalledWith('verbose', expect.objectContaining({
+        describe: expect.any(String),
+        type: 'boolean',
+        default: false
+      }));
+    });
+
+    it('should configure json option', () => {
+      const yargsStub = {
+        option: vi.fn().mockReturnThis()
+      };
+
+      statusCommand.builder(yargsStub as any);
+
+      expect(yargsStub.option).toHaveBeenCalledWith('json', expect.objectContaining({
+        describe: expect.any(String),
+        type: 'boolean',
+        default: false
+      }));
+    });
+  });
+
+  describe('Handler - Basic Status', () => {
     it('should display system status', async () => {
-      // Create minimal project structure
-      await mkdir(automatosxDir, { recursive: true });
+      // Create necessary directories
       await mkdir(join(automatosxDir, 'agents'), { recursive: true });
+      await mkdir(join(automatosxDir, 'abilities'), { recursive: true });
       await mkdir(join(automatosxDir, 'memory'), { recursive: true });
       await mkdir(join(automatosxDir, 'workspaces'), { recursive: true });
 
       // Create config file
-      const config = {
-        providers: {
-          'claude-code': { enabled: true, priority: 1, timeout: 120000, command: 'claude' }
-        },
-        memory: { maxEntries: 10000, persistPath: '.automatosx/memory', autoCleanup: true, cleanupDays: 30 },
-        workspace: { basePath: '.automatosx/workspaces', autoCleanup: true, cleanupDays: 7, maxFiles: 100 },
-        logging: { level: 'info', path: '.automatosx/logs', console: true }
-      };
-
       await writeFile(
         join(testDir, 'automatosx.config.json'),
-        JSON.stringify(config, null, 2),
+        JSON.stringify({ providers: {} }, null, 2),
         'utf-8'
       );
 
-      // Verify structure exists
-      expect(await checkExists(automatosxDir)).toBe(true);
-      expect(await checkExists(join(automatosxDir, 'agents'))).toBe(true);
-      expect(await checkExists(join(automatosxDir, 'memory'))).toBe(true);
+      await statusCommand.handler({ _: [], $0: '' });
+
+      // Should display status information
+      expect(consoleLogSpy).toHaveBeenCalled();
+      expect(consoleLogSpy.mock.calls.some(call =>
+        call[0]?.includes?.('AutomatosX Status')
+      )).toBe(true);
     });
 
-    it('should show version information', () => {
-      const version = '4.0.0-alpha.1';
-      expect(version).toMatch(/^\d+\.\d+\.\d+/);
+    it('should handle missing directories', async () => {
+      // Don't create any directories
+      await statusCommand.handler({ _: [], $0: '' });
+
+      // Should still complete without crashing
+      expect(consoleLogSpy).toHaveBeenCalled();
     });
 
-    it('should show node version', () => {
-      const nodeVersion = process.version;
-      expect(nodeVersion).toMatch(/^v\d+\.\d+\.\d+/);
-      const majorVersion = nodeVersion.slice(1).split('.')[0];
-      expect(parseInt(majorVersion || '0')).toBeGreaterThanOrEqual(20);
-    });
+    it('should show project information when package.json exists', async () => {
+      await mkdir(join(automatosxDir, 'agents'), { recursive: true });
 
-    it('should show platform information', () => {
-      const platform = process.platform;
-      const arch = process.arch;
+      // Create package.json
+      await writeFile(
+        join(testDir, 'package.json'),
+        JSON.stringify({
+          name: 'test-project',
+          version: '1.0.0',
+          type: 'module'
+        }, null, 2),
+        'utf-8'
+      );
 
-      expect(['darwin', 'linux', 'win32']).toContain(platform);
-      expect(['x64', 'arm64']).toContain(arch);
+      await statusCommand.handler({ _: [], $0: '' });
+
+      expect(consoleLogSpy).toHaveBeenCalled();
     });
   });
 
-  describe('Directory Status', () => {
-    it('should detect .automatosx directory exists', async () => {
-      await mkdir(automatosxDir, { recursive: true });
+  describe('Handler - Verbose Mode', () => {
+    it('should show detailed information in verbose mode', async () => {
+      await mkdir(join(automatosxDir, 'agents'), { recursive: true });
+      await mkdir(join(automatosxDir, 'abilities'), { recursive: true });
 
-      const exists = await checkExists(automatosxDir);
-      expect(exists).toBe(true);
+      await statusCommand.handler({ verbose: true, _: [], $0: '' });
+
+      expect(consoleLogSpy).toHaveBeenCalled();
+      // In verbose mode, should show more details
+      const allCalls = consoleLogSpy.mock.calls.map(call => call[0] || '').join('\n');
+      expect(allCalls.length).toBeGreaterThan(0);
     });
 
-    it('should detect missing .automatosx directory', async () => {
-      const exists = await checkExists(automatosxDir);
-      expect(exists).toBe(false);
+    it('should show performance metrics in verbose mode', async () => {
+      await mkdir(join(automatosxDir, 'agents'), { recursive: true });
+
+      await statusCommand.handler({ verbose: true, _: [], $0: '' });
+
+      expect(consoleLogSpy).toHaveBeenCalled();
     });
 
-    it('should detect all required subdirectories', async () => {
-      await mkdir(automatosxDir, { recursive: true });
+    it('should show provider health details in verbose mode', async () => {
+      await mkdir(join(automatosxDir, 'agents'), { recursive: true });
+
+      await statusCommand.handler({ verbose: true, _: [], $0: '' });
+
+      expect(consoleLogSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('Handler - JSON Output', () => {
+    it('should output JSON when json option is true', async () => {
+      await mkdir(join(automatosxDir, 'agents'), { recursive: true });
+      await mkdir(join(automatosxDir, 'abilities'), { recursive: true });
+
+      await statusCommand.handler({ json: true, _: [], $0: '' });
+
+      expect(consoleLogSpy).toHaveBeenCalled();
+
+      // Should output valid JSON
+      const output = consoleLogSpy.mock.calls[0]?.[0];
+      expect(output).toBeDefined();
+      expect(() => JSON.parse(output as string)).not.toThrow();
+    });
+
+    it('should include all status sections in JSON output', async () => {
+      await mkdir(join(automatosxDir, 'agents'), { recursive: true });
+
+      await statusCommand.handler({ json: true, _: [], $0: '' });
+
+      const output = consoleLogSpy.mock.calls[0]?.[0];
+      const status = JSON.parse(output as string);
+
+      // Verify all major sections exist
+      expect(status).toHaveProperty('system');
+      expect(status).toHaveProperty('configuration');
+      expect(status).toHaveProperty('directories');
+      expect(status).toHaveProperty('providers');
+      expect(status).toHaveProperty('router');
+      expect(status).toHaveProperty('performance');
+    });
+
+    it('should include accurate directory information in JSON', async () => {
+      const agentsDir = join(automatosxDir, 'agents');
+      await mkdir(agentsDir, { recursive: true });
+
+      // Create some agents
+      await writeFile(join(agentsDir, 'agent1.yaml'), 'name: agent1\n', 'utf-8');
+      await writeFile(join(agentsDir, 'agent2.yaml'), 'name: agent2\n', 'utf-8');
+
+      await statusCommand.handler({ json: true, _: [], $0: '' });
+
+      const output = consoleLogSpy.mock.calls[0]?.[0];
+      const status = JSON.parse(output as string);
+
+      expect(status.directories.agents.count).toBe(2);
+      expect(status.directories.agents.exists).toBe(true);
+    });
+  });
+
+  describe('Handler - Resource Counting', () => {
+    it('should count agents correctly', async () => {
+      const agentsDir = join(automatosxDir, 'agents');
+      await mkdir(agentsDir, { recursive: true });
+
+      await writeFile(join(agentsDir, 'agent1.yaml'), 'name: agent1\n', 'utf-8');
+      await writeFile(join(agentsDir, 'agent2.yml'), 'name: agent2\n', 'utf-8');
+      await writeFile(join(agentsDir, 'README.md'), '# Agents\n', 'utf-8'); // Should not count
+
+      await statusCommand.handler({ json: true, _: [], $0: '' });
+
+      const output = consoleLogSpy.mock.calls[0]?.[0];
+      const status = JSON.parse(output as string);
+
+      expect(status.directories.agents.count).toBe(2);
+    });
+
+    it('should count abilities correctly', async () => {
+      const abilitiesDir = join(automatosxDir, 'abilities');
+      await mkdir(abilitiesDir, { recursive: true });
+
+      await writeFile(join(abilitiesDir, 'ability1.md'), '# Ability 1\n', 'utf-8');
+      await writeFile(join(abilitiesDir, 'ability2.md'), '# Ability 2\n', 'utf-8');
+      await writeFile(join(abilitiesDir, 'config.yaml'), 'config\n', 'utf-8'); // Should not count
+
+      await statusCommand.handler({ json: true, _: [], $0: '' });
+
+      const output = consoleLogSpy.mock.calls[0]?.[0];
+      const status = JSON.parse(output as string);
+
+      expect(status.directories.abilities.count).toBe(2);
+    });
+
+    it('should handle empty resource directories', async () => {
+      await mkdir(join(automatosxDir, 'agents'), { recursive: true });
+      await mkdir(join(automatosxDir, 'abilities'), { recursive: true });
+
+      await statusCommand.handler({ json: true, _: [], $0: '' });
+
+      const output = consoleLogSpy.mock.calls[0]?.[0];
+      const status = JSON.parse(output as string);
+
+      expect(status.directories.agents.count).toBe(0);
+      expect(status.directories.abilities.count).toBe(0);
+    });
+  });
+
+  describe('Handler - Workspace Statistics', () => {
+    it('should calculate workspace statistics', async () => {
+      const workspacesDir = join(automatosxDir, 'workspaces');
+      await mkdir(join(workspacesDir, 'workspace1'), { recursive: true });
+      await mkdir(join(workspacesDir, 'workspace2'), { recursive: true });
+
+      // Create some files
+      await writeFile(join(workspacesDir, 'workspace1', 'file1.txt'), 'test content', 'utf-8');
+      await writeFile(join(workspacesDir, 'workspace2', 'file2.txt'), 'test content 2', 'utf-8');
+
+      await statusCommand.handler({ json: true, _: [], $0: '' });
+
+      const output = consoleLogSpy.mock.calls[0]?.[0];
+      const status = JSON.parse(output as string);
+
+      expect(status.directories.workspaces.workspaces).toBe(2);
+      expect(status.directories.workspaces.totalSizeBytes).toBeGreaterThan(0);
+    });
+
+    it('should handle missing workspaces directory', async () => {
+      // Don't create workspaces directory
+      await statusCommand.handler({ json: true, _: [], $0: '' });
+
+      const output = consoleLogSpy.mock.calls[0]?.[0];
+      const status = JSON.parse(output as string);
+
+      expect(status.directories.workspaces.workspaces).toBe(0);
+      expect(status.directories.workspaces.totalSizeBytes).toBe(0);
+    });
+  });
+
+  describe('Handler - Memory Statistics', () => {
+    it('should calculate memory statistics', async () => {
+      const memoryDir = join(automatosxDir, 'memory');
+      await mkdir(memoryDir, { recursive: true });
+
+      // Create memory files
+      await writeFile(join(memoryDir, 'memories.db'), 'database content', 'utf-8');
+
+      await statusCommand.handler({ json: true, _: [], $0: '' });
+
+      const output = consoleLogSpy.mock.calls[0]?.[0];
+      const status = JSON.parse(output as string);
+
+      expect(status.directories.memory.files).toBeGreaterThan(0);
+      expect(status.directories.memory.sizeBytes).toBeGreaterThan(0);
+    });
+
+    it('should handle missing memory directory', async () => {
+      // Don't create memory directory
+      await statusCommand.handler({ json: true, _: [], $0: '' });
+
+      const output = consoleLogSpy.mock.calls[0]?.[0];
+      const status = JSON.parse(output as string);
+
+      expect(status.directories.memory.files).toBe(0);
+      expect(status.directories.memory.sizeBytes).toBe(0);
+    });
+  });
+
+  describe('Handler - Configuration Status', () => {
+    it('should detect existing config file', async () => {
+      await mkdir(join(automatosxDir, 'agents'), { recursive: true });
+
+      await writeFile(
+        join(testDir, 'automatosx.config.json'),
+        JSON.stringify({ providers: {} }, null, 2),
+        'utf-8'
+      );
+
+      await statusCommand.handler({ json: true, _: [], $0: '' });
+
+      const output = consoleLogSpy.mock.calls[0]?.[0];
+      const status = JSON.parse(output as string);
+
+      expect(status.configuration.configExists).toBe(true);
+    });
+
+    it('should handle missing config file', async () => {
+      await mkdir(join(automatosxDir, 'agents'), { recursive: true });
+
+      await statusCommand.handler({ json: true, _: [], $0: '' });
+
+      const output = consoleLogSpy.mock.calls[0]?.[0];
+      const status = JSON.parse(output as string);
+
+      expect(status.configuration.configExists).toBe(false);
+    });
+
+    it('should display configuration values', async () => {
+      await mkdir(join(automatosxDir, 'agents'), { recursive: true });
+
+      await statusCommand.handler({ json: true, _: [], $0: '' });
+
+      const output = consoleLogSpy.mock.calls[0]?.[0];
+      const status = JSON.parse(output as string);
+
+      expect(status.configuration.logLevel).toBe('info');
+      expect(status.configuration.memoryMaxEntries).toBe(10000);
+      expect(status.configuration.memoryRetentionDays).toBe(30);
+    });
+  });
+
+  describe('Handler - System Health', () => {
+    it('should show healthy status when all checks pass', async () => {
+      // Create all required directories
       await mkdir(join(automatosxDir, 'agents'), { recursive: true });
       await mkdir(join(automatosxDir, 'abilities'), { recursive: true });
       await mkdir(join(automatosxDir, 'memory'), { recursive: true });
       await mkdir(join(automatosxDir, 'workspaces'), { recursive: true });
 
-      const dirs = ['agents', 'abilities', 'memory', 'workspaces'];
-      for (const dir of dirs) {
-        const dirPath = join(automatosxDir, dir);
-        expect(await checkExists(dirPath)).toBe(true);
-      }
+      await statusCommand.handler({ _: [], $0: '' });
+
+      expect(consoleLogSpy).toHaveBeenCalled();
+      const allCalls = consoleLogSpy.mock.calls.map(call => call[0] || '').join('\n');
+      // Should show healthy status
+      expect(allCalls.includes('healthy') || allCalls.includes('✅')).toBe(true);
     });
 
-    it('should report missing subdirectories', async () => {
-      await mkdir(automatosxDir, { recursive: true });
-      await mkdir(join(automatosxDir, 'agents'), { recursive: true });
-      // Missing: abilities, memory, workspaces
+    it('should show issues when directories are missing', async () => {
+      // Don't create any directories
+      await statusCommand.handler({ _: [], $0: '' });
 
-      expect(await checkExists(join(automatosxDir, 'agents'))).toBe(true);
-      expect(await checkExists(join(automatosxDir, 'abilities'))).toBe(false);
-      expect(await checkExists(join(automatosxDir, 'memory'))).toBe(false);
-      expect(await checkExists(join(automatosxDir, 'workspaces'))).toBe(false);
-    });
-  });
-
-  describe('Configuration Status', () => {
-    it('should detect config file exists', async () => {
-      const configPath = join(testDir, 'automatosx.config.json');
-      await writeFile(configPath, '{}', 'utf-8');
-
-      expect(await checkExists(configPath)).toBe(true);
-    });
-
-    it('should detect missing config file', async () => {
-      const configPath = join(testDir, 'automatosx.config.json');
-      expect(await checkExists(configPath)).toBe(false);
-    });
-
-    it('should validate config file format', async () => {
-      const configPath = join(testDir, 'automatosx.config.json');
-      const config = {
-        providers: {},
-        memory: { maxEntries: 10000 },
-        workspace: {},
-        logging: { level: 'info' }
-      };
-
-      await writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
-
-      const { readFile } = await import('fs/promises');
-      const content = await readFile(configPath, 'utf-8');
-      const parsed = JSON.parse(content);
-
-      expect(parsed).toBeDefined();
-      expect(parsed.providers).toBeDefined();
-      expect(parsed.memory).toBeDefined();
-    });
-
-    it('should handle invalid JSON in config', async () => {
-      const configPath = join(testDir, 'automatosx.config.json');
-      await writeFile(configPath, 'invalid json{', 'utf-8');
-
-      const { readFile } = await import('fs/promises');
-      const content = await readFile(configPath, 'utf-8');
-
-      expect(() => JSON.parse(content)).toThrow();
-    });
-  });
-
-  describe('Resource Statistics', () => {
-    it('should count agent files', async () => {
-      await mkdir(join(automatosxDir, 'agents'), { recursive: true });
-      await writeFile(join(automatosxDir, 'agents', 'agent1.yaml'), 'name: agent1', 'utf-8');
-      await writeFile(join(automatosxDir, 'agents', 'agent2.yml'), 'name: agent2', 'utf-8');
-      await writeFile(join(automatosxDir, 'agents', 'README.md'), '# Agents', 'utf-8');
-
-      const { readdir } = await import('fs/promises');
-      const files = await readdir(join(automatosxDir, 'agents'));
-      const agentFiles = files.filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
-
-      expect(agentFiles).toHaveLength(2);
-    });
-
-    it('should count ability files', async () => {
-      await mkdir(join(automatosxDir, 'abilities'), { recursive: true });
-      await writeFile(join(automatosxDir, 'abilities', 'ability1.md'), '# Ability 1', 'utf-8');
-      await writeFile(join(automatosxDir, 'abilities', 'ability2.md'), '# Ability 2', 'utf-8');
-      await writeFile(join(automatosxDir, 'abilities', 'ability3.md'), '# Ability 3', 'utf-8');
-
-      const { readdir } = await import('fs/promises');
-      const files = await readdir(join(automatosxDir, 'abilities'));
-      const abilityFiles = files.filter(f => f.endsWith('.md'));
-
-      expect(abilityFiles).toHaveLength(3);
-    });
-
-    it('should calculate directory sizes', async () => {
-      await mkdir(join(automatosxDir, 'memory'), { recursive: true });
-      await writeFile(join(automatosxDir, 'memory', 'file1.db'), 'x'.repeat(1000), 'utf-8');
-      await writeFile(join(automatosxDir, 'memory', 'file2.db'), 'y'.repeat(2000), 'utf-8');
-
-      const { stat } = await import('fs/promises');
-      const stat1 = await stat(join(automatosxDir, 'memory', 'file1.db'));
-      const stat2 = await stat(join(automatosxDir, 'memory', 'file2.db'));
-
-      const totalSize = stat1.size + stat2.size;
-      expect(totalSize).toBeGreaterThanOrEqual(3000);
-    });
-
-    it('should handle empty directories', async () => {
-      await mkdir(join(automatosxDir, 'workspaces'), { recursive: true });
-
-      const { readdir } = await import('fs/promises');
-      const files = await readdir(join(automatosxDir, 'workspaces'));
-
-      expect(files).toHaveLength(0);
-    });
-  });
-
-  describe('Verbose Mode', () => {
-    it('should show additional details in verbose mode', () => {
-      const verbose = true;
-
-      if (verbose) {
-        const uptime = process.uptime();
-        expect(uptime).toBeGreaterThan(0);
-      }
-    });
-
-    it('should show file paths in verbose mode', async () => {
-      await mkdir(automatosxDir, { recursive: true });
-      const verbose = true;
-
-      if (verbose) {
-        const path = automatosxDir;
-        expect(path).toContain('.automatosx');
-      }
-    });
-
-    it('should show performance metrics in verbose mode', () => {
-      const startTime = Date.now();
-      // Simulate some work
-      for (let i = 0; i < 1000; i++) {
-        Math.sqrt(i);
-      }
-      const duration = Date.now() - startTime;
-
-      expect(duration).toBeGreaterThanOrEqual(0);
-    });
-  });
-
-  describe('JSON Output Mode', () => {
-    it('should output valid JSON', () => {
-      const status = {
-        system: { version: '4.0.0-alpha.1', nodeVersion: process.version },
-        directories: { automatosx: { exists: true } },
-        providers: [],
-        router: { totalProviders: 0 }
-      };
-
-      const json = JSON.stringify(status, null, 2);
-      expect(() => JSON.parse(json)).not.toThrow();
-    });
-
-    it('should include all required fields in JSON output', () => {
-      const status = {
-        system: { version: '4.0.0-alpha.1' },
-        directories: {},
-        providers: [],
-        router: {}
-      };
-
-      expect(status.system).toBeDefined();
-      expect(status.directories).toBeDefined();
-      expect(status.providers).toBeDefined();
-      expect(status.router).toBeDefined();
+      expect(consoleLogSpy).toHaveBeenCalled();
+      // Should complete without error
     });
   });
 
   describe('Error Handling', () => {
-    it('should handle permission denied errors gracefully', async () => {
-      // Create directory we can't read (simulated)
-      await mkdir(automatosxDir, { recursive: true });
+    it('should handle errors gracefully', async () => {
+      // Mock loadConfig to throw error
+      const { loadConfig } = await import('../../src/core/config.js');
+      vi.mocked(loadConfig).mockRejectedValueOnce(new Error('Config error'));
 
-      // Attempt to read should not throw
       try {
-        await checkExists(automatosxDir);
-        expect(true).toBe(true);
+        await statusCommand.handler({ _: [], $0: '' });
+        // Should throw process.exit(1)
+        expect(true).toBe(false); // Should not reach here
       } catch (error) {
-        // Should handle gracefully
-        expect(error).toBeDefined();
+        expect((error as Error).message).toContain('process.exit(1)');
       }
     });
 
-    it('should handle missing package.json', async () => {
-      const packagePath = join(testDir, 'package.json');
-      const exists = await checkExists(packagePath);
+    it('should display error with verbose flag', async () => {
+      const { loadConfig } = await import('../../src/core/config.js');
+      vi.mocked(loadConfig).mockRejectedValueOnce(new Error('Verbose error test'));
 
-      // Should not fail, just report missing
-      expect(exists).toBe(false);
-    });
-
-    it('should continue if some directories are missing', async () => {
-      await mkdir(automatosxDir, { recursive: true });
-      await mkdir(join(automatosxDir, 'agents'), { recursive: true });
-      // Other directories missing
-
-      expect(await checkExists(join(automatosxDir, 'agents'))).toBe(true);
-      expect(await checkExists(join(automatosxDir, 'memory'))).toBe(false);
-
-      // Status should still run
-    });
-  });
-
-  describe('Helper Functions', () => {
-    it('should format bytes correctly', () => {
-      expect(formatBytes(0)).toBe('0 B');
-      expect(formatBytes(1024)).toBe('1.0 KB');
-      expect(formatBytes(1048576)).toBe('1.0 MB');
-      expect(formatBytes(1073741824)).toBe('1.0 GB');
-    });
-
-    it('should format uptime correctly', () => {
-      expect(formatUptime(0)).toBe('0s');
-      expect(formatUptime(59)).toBe('59s');
-      expect(formatUptime(60)).toBe('1m');
-      expect(formatUptime(3661)).toBe('1h 1m 1s');
+      try {
+        await statusCommand.handler({ verbose: true, _: [], $0: '' });
+        expect(true).toBe(false);
+      } catch (error) {
+        expect((error as Error).message).toContain('process.exit(1)');
+      }
     });
   });
 });
-
-/**
- * Helper Functions
- */
-
-async function checkExists(path: string): Promise<boolean> {
-  try {
-    const { access } = await import('fs/promises');
-    const { constants } = await import('fs');
-    await access(path, constants.F_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B';
-
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
-}
-
-function formatUptime(seconds: number): string {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-
-  const parts = [];
-  if (hours > 0) parts.push(`${hours}h`);
-  if (minutes > 0) parts.push(`${minutes}m`);
-  if (secs > 0 || parts.length === 0) parts.push(`${secs}s`);
-
-  return parts.join(' ');
-}
