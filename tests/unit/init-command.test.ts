@@ -1,175 +1,179 @@
 /**
- * Init Command Tests
+ * Init Command Unit Tests
+ *
+ * Tests the init command handler directly for coverage
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mkdir, rm, readFile, access } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { constants } from 'fs';
+import { initCommand } from '../../src/cli/commands/init.js';
 
-describe('Init Command Integration', () => {
+describe('Init Command', () => {
   let testDir: string;
+  let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+  let processExitSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(async () => {
-    // Create unique test directory
-    testDir = join(tmpdir(), `automatosx-test-${Date.now()}`);
+    testDir = join(tmpdir(), `automatosx-init-test-${Date.now()}`);
     await mkdir(testDir, { recursive: true });
+
+    // Spy on console methods
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    processExitSpy = vi.spyOn(process, 'exit').mockImplementation((code) => {
+      throw new Error(`process.exit(${code})`);
+    });
   });
 
   afterEach(async () => {
-    // Cleanup test directory
-    try {
-      await rm(testDir, { recursive: true, force: true });
-    } catch {
-      // Ignore cleanup errors
-    }
+    await rm(testDir, { recursive: true, force: true });
+    consoleLogSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
+    processExitSpy.mockRestore();
   });
 
-  describe('Directory Structure', () => {
-    it('should create .automatosx directory structure', async () => {
+  describe('Handler', () => {
+    it('should have correct command definition', () => {
+      expect(initCommand.command).toBe('init [path]');
+      expect(initCommand.describe).toBeDefined();
+    });
+
+    it('should initialize project in new directory', async () => {
+      await initCommand.handler({ path: testDir, force: false, _: [], $0: '' });
+
+      // Verify .automatosx directory structure
       const automatosxDir = join(testDir, '.automatosx');
+      await expect(pathExists(automatosxDir)).resolves.toBe(true);
+      await expect(pathExists(join(automatosxDir, 'agents'))).resolves.toBe(true);
+      await expect(pathExists(join(automatosxDir, 'abilities'))).resolves.toBe(true);
+      await expect(pathExists(join(automatosxDir, 'memory'))).resolves.toBe(true);
+      await expect(pathExists(join(automatosxDir, 'workspaces'))).resolves.toBe(true);
+      await expect(pathExists(join(automatosxDir, 'logs'))).resolves.toBe(true);
 
-      // Simulate init command creating directories
-      await mkdir(automatosxDir, { recursive: true });
-      await mkdir(join(automatosxDir, 'agents'), { recursive: true });
-      await mkdir(join(automatosxDir, 'memory'), { recursive: true });
-      await mkdir(join(automatosxDir, 'workspaces'), { recursive: true });
-      await mkdir(join(automatosxDir, 'logs'), { recursive: true });
+      // Verify config file
+      const configPath = join(testDir, 'automatosx.config.json');
+      await expect(pathExists(configPath)).resolves.toBe(true);
 
-      // Verify directories exist
-      const dirs = ['agents', 'memory', 'workspaces', 'logs'];
-      for (const dir of dirs) {
-        const dirPath = join(automatosxDir, dir);
-        await expect(checkExists(dirPath)).resolves.toBe(true);
-      }
+      const config = JSON.parse(await readFile(configPath, 'utf-8'));
+      expect(config.providers).toBeDefined();
+      expect(config.memory).toBeDefined();
+      expect(config.workspace).toBeDefined();
+      expect(config.logging).toBeDefined();
     });
 
-    it('should create required subdirectories', async () => {
+    it('should exit with error if already initialized without force', async () => {
+      // First initialization
+      await initCommand.handler({ path: testDir, force: false, _: [], $0: '' });
+
+      // Try to initialize again without force
+      await expect(
+        initCommand.handler({ path: testDir, force: false, _: [], $0: '' })
+      ).rejects.toThrow('process.exit(1)');
+    });
+
+    it('should reinitialize with --force flag', async () => {
+      // First initialization
+      await initCommand.handler({ path: testDir, force: false, _: [], $0: '' });
+
+      // Reinitialize with force
+      await expect(
+        initCommand.handler({ path: testDir, force: true, _: [], $0: '' })
+      ).resolves.not.toThrow();
+
+      // Directory should still exist
       const automatosxDir = join(testDir, '.automatosx');
-      const dirs = [
-        automatosxDir,
-        join(automatosxDir, 'agents'),
-        join(automatosxDir, 'memory'),
-        join(automatosxDir, 'workspaces'),
-        join(automatosxDir, 'logs')
-      ];
+      await expect(pathExists(automatosxDir)).resolves.toBe(true);
+    });
 
-      for (const dir of dirs) {
-        await mkdir(dir, { recursive: true });
-      }
+    it('should create example agents', async () => {
+      await initCommand.handler({ path: testDir, force: false, _: [], $0: '' });
 
-      // All directories should exist
-      for (const dir of dirs) {
-        await expect(checkExists(dir)).resolves.toBe(true);
+      const agentsDir = join(testDir, '.automatosx', 'agents');
+      const agents = ['assistant.yaml', 'coder.yaml', 'reviewer.yaml'];
+
+      for (const agent of agents) {
+        await expect(pathExists(join(agentsDir, agent))).resolves.toBe(true);
       }
     });
-  });
 
-  describe('Configuration File', () => {
-    it('should create automatosx.config.json', async () => {
-      const configPath = join(testDir, 'automatosx.config.json');
-      const config = {
-        providers: {
-          'claude-code': {
-            enabled: true,
-            priority: 1,
-            timeout: 120000,
-            command: 'claude'
-          }
-        },
-        memory: {
-          maxEntries: 10000,
-          persistPath: '.automatosx/memory',
-          autoCleanup: true,
-          cleanupDays: 30
-        },
-        workspace: {
-          basePath: '.automatosx/workspaces',
-          autoCleanup: true,
-          cleanupDays: 7,
-          maxFiles: 100
-        },
-        logging: {
-          level: 'info',
-          path: '.automatosx/logs',
-          console: true
-        }
-      };
+    it('should create example abilities', async () => {
+      await initCommand.handler({ path: testDir, force: false, _: [], $0: '' });
 
-      await writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
+      const abilitiesDir = join(testDir, '.automatosx', 'abilities');
 
-      // Verify file exists
-      await expect(checkExists(configPath)).resolves.toBe(true);
-
-      // Verify content
-      const content = await readFile(configPath, 'utf-8');
-      const parsed = JSON.parse(content);
-      expect(parsed.providers).toBeDefined();
-      expect(parsed.memory).toBeDefined();
-      expect(parsed.workspace).toBeDefined();
-      expect(parsed.logging).toBeDefined();
+      // Check abilities directory exists (abilities are optional)
+      await expect(pathExists(abilitiesDir)).resolves.toBe(true);
     });
 
-    it('should have valid JSON config', async () => {
-      const configPath = join(testDir, 'automatosx.config.json');
-      const config = {
-        providers: {},
-        memory: { maxEntries: 1000, persistPath: '.automatosx/memory', autoCleanup: true, cleanupDays: 30 },
-        workspace: { basePath: '.automatosx/workspaces', autoCleanup: true, cleanupDays: 7, maxFiles: 100 },
-        logging: { level: 'info', path: '.automatosx/logs', console: true }
-      };
+    it('should create or update .gitignore', async () => {
+      await initCommand.handler({ path: testDir, force: false, _: [], $0: '' });
 
-      await writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
-
-      const content = await readFile(configPath, 'utf-8');
-      expect(() => JSON.parse(content)).not.toThrow();
-    });
-  });
-
-  describe('Gitignore', () => {
-    it('should create .gitignore with AutomatosX entries', async () => {
       const gitignorePath = join(testDir, '.gitignore');
-      const entries = [
-        '',
-        '# AutomatosX',
-        '.automatosx/memory/',
-        '.automatosx/workspaces/',
-        '.automatosx/logs/',
-        ''
-      ].join('\n');
+      await expect(pathExists(gitignorePath)).resolves.toBe(true);
 
-      await writeFile(gitignorePath, entries, 'utf-8');
-
-      // Verify file exists
-      await expect(checkExists(gitignorePath)).resolves.toBe(true);
-
-      // Verify content
       const content = await readFile(gitignorePath, 'utf-8');
       expect(content).toContain('# AutomatosX');
       expect(content).toContain('.automatosx/memory/');
       expect(content).toContain('.automatosx/workspaces/');
       expect(content).toContain('.automatosx/logs/');
     });
+
+    it('should handle error when directory creation fails', async () => {
+      // Try to init in a non-existent parent directory that can't be created
+      const invalidPath = '/root/cannot-create-this-path-' + Date.now();
+
+      await expect(
+        initCommand.handler({ path: invalidPath, force: false, _: [], $0: '' })
+      ).rejects.toThrow();
+    });
+  });
+
+  describe('Builder', () => {
+    it('should configure positional path argument', () => {
+      const yargsStub = {
+        positional: vi.fn().mockReturnThis(),
+        option: vi.fn().mockReturnThis()
+      };
+
+      initCommand.builder(yargsStub as any);
+
+      expect(yargsStub.positional).toHaveBeenCalledWith('path', expect.objectContaining({
+        describe: expect.any(String),
+        type: 'string',
+        default: '.'
+      }));
+    });
+
+    it('should configure force option', () => {
+      const yargsStub = {
+        positional: vi.fn().mockReturnThis(),
+        option: vi.fn().mockReturnThis()
+      };
+
+      initCommand.builder(yargsStub as any);
+
+      expect(yargsStub.option).toHaveBeenCalledWith('force', expect.objectContaining({
+        alias: 'f',
+        describe: expect.any(String),
+        type: 'boolean',
+        default: false
+      }));
+    });
   });
 });
 
 /**
- * Helper function to check if file/directory exists
+ * Helper: Check if path exists
  */
-async function checkExists(path: string): Promise<boolean> {
+async function pathExists(path: string): Promise<boolean> {
   try {
     await access(path, constants.F_OK);
     return true;
   } catch {
     return false;
   }
-}
-
-/**
- * Helper function to write file
- */
-async function writeFile(path: string, content: string, encoding: BufferEncoding): Promise<void> {
-  const { writeFile: write } = await import('fs/promises');
-  await write(path, content, encoding);
 }
