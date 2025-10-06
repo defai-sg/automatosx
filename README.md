@@ -167,7 +167,7 @@ automatosx/
 
 - End-to-end testing with real providers
 - Performance benchmarks & optimization
-- Documentation finalization & migration guide
+- Documentation finalization & user guides
 
 ---
 

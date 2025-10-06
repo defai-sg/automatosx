@@ -416,7 +416,7 @@
 
 ### Sprint 4.4: Launch Preparation
 - 📋 Release checklist
-- 📋 Migration guide (v3 → v4)
+- 📋 Installation guide (clean install)
 - 📋 Changelog 完整
 - 📋 npm package 發布
 
@@ -493,7 +493,7 @@
    - 審計並移除不必要依賴
    - 使用輕量級替代方案
 
-3. **✅ 100% TypeScript Migration**
+3. **✅ 100% TypeScript Rewrite**
    - 嚴格模式
    - 完整類型覆蓋
    - 0 編譯錯誤
@@ -634,7 +634,7 @@
 
 - 📋 文檔網站 (docs.automatosx.dev)
 - 📋 Tutorial 系列 (10+ 教學)
-- 📋 Migration guide (v3 → v4)
+- 📋 Installation & Quick Start guide
 - 📋 Video 教學
 - 📋 Plugin development guide
 

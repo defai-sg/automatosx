@@ -5,7 +5,6 @@
 import type { CommandModule } from 'yargs';
 import { resolve } from 'path';
 import { MemoryManagerVec } from '../../core/memory-manager-vec.js';
-import { MigrationTool } from '../../migration/migration-tool.js';
 import chalk from 'chalk';
 import Table from 'cli-table3';
 import { printError } from '../../utils/error-formatter.js';
@@ -340,9 +339,9 @@ export const importCommand: CommandModule = {
         demandOption: true
       })
       .option('validate', {
-        describe: 'Only validate, do not import',
+        describe: 'Validate entries before import',
         type: 'boolean',
-        default: false
+        default: true
       })
       .option('batch-size', {
         describe: 'Batch size for processing',
@@ -361,54 +360,31 @@ export const importCommand: CommandModule = {
   },
   handler: async (argv: any) => {
     try {
-      if (argv.validate) {
-        // Validate only
-        const migrationTool = new MigrationTool();
-        console.log('Validating import file...');
+      const manager = await getMemoryManager(argv.db);
 
-        const validation = await migrationTool.validate(argv.input);
+      const progress = new ProgressIndicator();
+      progress.start('Importing memory...');
 
-        if (validation.valid) {
-          console.log(`\n✓ Validation passed`);
-          console.log(`- Total entries: ${validation.totalEntries}`);
-          if (validation.warnings.length > 0) {
-            console.log(`\nWarnings (${validation.warnings.length}):`);
-            validation.warnings.slice(0, 5).forEach(w => console.log(`  - ${w}`));
-          }
-        } else {
-          console.log(`\n✗ Validation failed`);
-          console.log(`\nErrors (${validation.errors.length}):`);
-          validation.errors.slice(0, 5).forEach(e => console.log(`  - ${e}`));
-          process.exit(1);
-        }
-      } else {
-        // Import
-        const manager = await getMemoryManager(argv.db);
+      const result = await manager.importFromJSON(argv.input, {
+        skipDuplicates: argv.skipDuplicates,
+        batchSize: argv.batchSize,
+        validate: argv.validate
+      });
 
-        const progress = new ProgressIndicator();
-        progress.start('Importing memory...');
+      progress.succeed('Import complete');
 
-        const result = await manager.importFromJSON(argv.input, {
-          skipDuplicates: argv.skipDuplicates,
-          batchSize: argv.batchSize,
-          validate: true
+      console.log(`- Entries imported: ${result.entriesImported}`);
+      console.log(`- Entries skipped: ${result.entriesSkipped}`);
+      console.log(`- Entries failed: ${result.entriesFailed}`);
+
+      if (result.errors.length > 0) {
+        console.log(`\nErrors (${result.errors.length}):`);
+        result.errors.slice(0, 5).forEach(e => {
+          console.log(`  - ${e.error}`);
         });
-
-        progress.succeed('Import complete');
-
-        console.log(`- Entries imported: ${result.entriesImported}`);
-        console.log(`- Entries skipped: ${result.entriesSkipped}`);
-        console.log(`- Entries failed: ${result.entriesFailed}`);
-
-        if (result.errors.length > 0) {
-          console.log(`\nErrors (${result.errors.length}):`);
-          result.errors.slice(0, 5).forEach(e => {
-            console.log(`  - ${e.error}`);
-          });
-        }
-
-        await manager.close();
       }
+
+      await manager.close();
     } catch (error) {
       printError(error, { verbose: false, showCode: true, showSuggestions: true, colors: true });
       process.exit(1);

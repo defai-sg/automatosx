@@ -473,7 +473,7 @@ describe('Memory Commands', () => {
 
         expect(mockYargs.option).toHaveBeenCalledWith('validate', expect.objectContaining({
           type: 'boolean',
-          default: false
+          default: true
         }));
       });
 

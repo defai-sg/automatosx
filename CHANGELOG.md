@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Breaking Changes
+- **v4.0 is a complete rewrite** - No migration from v3.x
+  - Requires clean installation
+  - Use v3.x and v4.0 as separate installations if needed
+  - Export/import can be used to transfer memory data manually if needed
+
 - **Removed `chat` command** (architectural decision)
   - Rationale: AutomatosX runs exclusively inside Claude Code, which already provides interactive conversation
   - Use `run` command for single-shot agent execution instead
@@ -93,7 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Memory configuration** - Max entries, persistence, auto-cleanup
 - **Workspace configuration** - Isolation, cleanup policy
 - **Logging configuration** - Level, file output, console output
-- **Migration from v3.x** - Auto-convert YAML to JSON
+- **Configuration validation** - Comprehensive config validation
 
 ### Added - Documentation
 
@@ -156,46 +161,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Database queries**: 10x faster with SQLite vs Milvus
 - **Dependency installation**: <2min (previously 10-15min)
 
-### Changed - Migration
+### Changed - Breaking Changes from v3.x
 
-#### Breaking Changes from v3.x
+**⚠️ v4.0 requires clean installation - no automatic migration from v3.x**
 
 1. **Configuration Format**
    - YAML → JSON
    - New config structure
-   - Migration tool provided
+   - Manual configuration required
 
 2. **Memory System**
    - Milvus → SQLite + vec
    - New vector extension
-   - Memory export/import for migration
+   - Use export/import for manual data transfer if needed
 
 3. **Directory Structure**
    - `.defai/` → `.automatosx/`
-   - Auto-migration on first run
+   - Clean installation required
 
 4. **CLI Commands**
-   - Some command flags changed
    - New command structure
-   - Backwards compatibility where possible
+   - Different command flags
+   - Review documentation for command changes
 
 5. **Provider Interface**
    - CLI-based providers only
    - Direct API support removed (use CLI wrappers)
 
-#### Migration Path
-```bash
-# Export v3.x memory
-cd old-project
-defai memory export memory-backup.json
-
-# Initialize v4.0
-cd new-project
-automatosx init
-
-# Import memory
-automatosx memory import memory-backup.json
-```
+#### For v3.x Users
+- v4.0 is a complete rewrite - install it separately
+- Both versions can coexist if needed
+- Manually transfer data using export/import if required
+- Review new documentation before switching
 
 ### Removed
 
@@ -261,7 +258,7 @@ automatosx memory import memory-backup.json
 - Comprehensive error messages with suggestions
 - Detailed documentation with examples
 - Test coverage for confidence
-- Migration tool for v3.x users
+- Simplified installation process
 
 #### Developer Tools
 - `npm run build` - Build project
@@ -282,87 +279,6 @@ Last stable version before v4.0 rewrite.
 - High memory usage (~500MB)
 - Milvus dependency (300MB)
 - Limited error handling
-
----
-
-## Migration Guide
-
-### From v3.x to v4.0
-
-#### Step 1: Backup
-```bash
-# Backup your v3.x data
-cd your-v3-project
-defai memory export backup.json
-cp -r .defai .defai.backup
-```
-
-#### Step 2: Install v4.0
-```bash
-npm install -g automatosx@4.0.0-beta.1
-```
-
-#### Step 3: Initialize
-```bash
-cd your-project
-automatosx init
-```
-
-#### Step 4: Migrate Config
-```bash
-# v3.x config (defai.config.yaml) is auto-converted
-# Manual adjustments may be needed
-vi automatosx.config.json
-```
-
-#### Step 5: Import Memory
-```bash
-automatosx memory import backup.json
-```
-
-#### Step 6: Test
-```bash
-automatosx status
-automatosx run assistant "test migration"
-```
-
-### Config Migration
-
-**v3.x (YAML)**:
-```yaml
-providers:
-  - name: claude
-    enabled: true
-    priority: 1
-```
-
-**v4.0 (JSON)**:
-```json
-{
-  "providers": {
-    "claude-code": {
-      "enabled": true,
-      "priority": 1,
-      "timeout": 30000,
-      "command": "claude"
-    }
-  }
-}
-```
-
----
-
-## Deprecation Notices
-
-### Deprecated in v4.0
-- YAML configuration (use JSON)
-- `.defai/` directory (use `.automatosx/`)
-- Direct provider APIs (use CLI wrappers)
-
-### Will be Removed in v5.0
-- Migration tool (use v4.x to migrate from v3.x)
-- Legacy config converter
-- Backwards compatibility layer
 
 ---
 
