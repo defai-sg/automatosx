@@ -5,6 +5,12 @@ AGENTS.md
 CLAUDE.md
 GEMINI.md
 
+# Internal release documentation
+RELEASE-CHECKLIST.md
+RELEASE-NOTES.md
+BETA-TESTING.md
+E2E-TESTING.md
+
 # Development files
 .gitignore
 .gitattributes
