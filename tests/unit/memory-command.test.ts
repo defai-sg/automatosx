@@ -733,4 +733,21 @@ describe('Memory Commands', () => {
       expect(importCommand.command).toContain('<input>');
     });
   });
+
+  describe('Error Handling Patterns', () => {
+    it('should handle async handler functions', () => {
+      const commands = [searchCommand, exportCommand, importCommand, statsCommand, clearCommand];
+
+      for (const command of commands) {
+        expect(command.handler).toBeInstanceOf(Function);
+        expect(command.handler.constructor.name).toBe('AsyncFunction');
+      }
+    });
+
+    it('should validate required parameters', () => {
+      // Export and Import require file paths
+      expect(exportCommand.command).toContain('<output>');
+      expect(importCommand.command).toContain('<input>');
+    });
+  });
 });
