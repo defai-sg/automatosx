@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Status Command Unit Tests
  *

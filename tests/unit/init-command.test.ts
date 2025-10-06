@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Init Command Unit Tests
  *

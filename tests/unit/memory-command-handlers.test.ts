@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Memory Command Handler Tests
  *

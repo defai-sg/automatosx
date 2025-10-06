@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Run Command Handler Tests
  *

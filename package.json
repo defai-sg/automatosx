@@ -37,11 +37,11 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.10.0",
     "@types/yargs": "^17.0.33",
-    "@vitest/coverage-v8": "^1.6.1",
+    "@vitest/coverage-v8": "^2.1.9",
     "tsup": "^8.0.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.0",
-    "vitest": "^1.0.0"
+    "vitest": "^2.1.9"
   },
   "dependencies": {
     "better-sqlite3": "^12.4.1",
@@ -77,5 +77,8 @@
   "bugs": {
     "url": "https://github.com/defai-sg/automatosx/issues"
   },
-  "homepage": "https://docs.automatosx.dev"
+  "homepage": "https://docs.automatosx.dev",
+  "overrides": {
+    "esbuild": "^0.25.0"
+  }
 }
