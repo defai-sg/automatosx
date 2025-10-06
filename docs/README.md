@@ -1,63 +1,223 @@
 # AutomatosX Documentation
 
-Welcome to AutomatosX v4.0 documentation!
+Welcome to the AutomatosX documentation! This guide will help you get started and master AI agent orchestration.
 
-## Table of Contents
+---
+
+## 📚 Documentation Structure
 
 ### Getting Started
-- [Introduction](./guide/introduction.md) - What is AutomatosX and why use it
-- [Installation](./guide/installation.md) - Install and setup AutomatosX
 
-### Resources
-- [Examples](../examples/) - Example agents and use cases (coming soon)
-- [API Reference](./api/) - Technical API documentation (coming soon)
+Start here if you're new to AutomatosX:
 
-## Quick Links
+1. **[Quick Start Guide](./guide/quick-start.md)** ⭐
+   - Installation (npm install)
+   - Initialize your first project
+   - Run your first agent
+   - Basic commands overview
 
-- **Repository**: [GitHub](https://github.com/yourusername/automatosx) (available after v4.0 launch)
-- **NPM Package**: `npm install automatosx`
-- **Issues**: [GitHub Issues](https://github.com/yourusername/automatosx/issues) (available after v4.0 launch)
+2. **[Core Concepts](./guide/core-concepts.md)**
+   - Understand agents, profiles, and abilities
+   - Learn about memory and providers
+   - Grasp the security model
 
-## About AutomatosX v4.0
+3. **[Installation Guide](./guide/installation.md)**
+   - Detailed installation instructions
+   - Environment setup
+   - Troubleshooting installation issues
 
-AutomatosX is a modern AI agent orchestration platform built with TypeScript. It helps you build, manage, and scale AI agents with ease.
+### Reference
 
-**Key Features**:
-- 🚀 **Lightweight**: <50MB bundle size for fast installation
-- 🧠 **Vector Memory**: SQLite + vec for efficient semantic search
-- 🔌 **Multi-Provider**: Support for Claude, Gemini, OpenAI
-- 📝 **Profile-Based**: Define agents with YAML profiles
-- 🔒 **Security First**: Path validation, workspace isolation
-- 🎯 **Developer Friendly**: 100% TypeScript, 705 tests passing
+Complete command and API documentation:
 
-## Quick Example
+- **[CLI Commands Reference](./reference/cli-commands.md)** 📖
+  - All 6 commands documented
+  - Options and parameters
+  - Usage examples
+  - Exit codes and environment variables
+
+- **Configuration Schema** (coming soon)
+  - `automatosx.config.json` reference
+  - All available options
+  - Validation rules
+
+- **API Documentation** (coming soon)
+  - TypeScript API reference
+  - Module documentation
+  - Usage examples
+
+### Tutorials
+
+Step-by-step guides for common tasks:
+
+- **Creating Your First Agent** (coming soon)
+  - Write an agent profile
+  - Add abilities
+  - Test your agent
+
+- **Memory Management** (coming soon)
+  - Using vector search
+  - Managing memory lifecycle
+  - Best practices
+
+- **Custom Abilities** (coming soon)
+  - Create reusable abilities
+  - Ability structure
+  - Testing abilities
+
+- **Advanced Usage** (coming soon)
+  - Multi-provider setup
+  - Performance optimization
+  - Production deployment
+
+### Troubleshooting
+
+Common issues and solutions:
+
+- **Common Issues** (coming soon)
+  - Installation problems
+  - Provider connection errors
+  - Memory search issues
+
+- **Error Codes** (coming soon)
+  - Complete error reference
+  - Debugging tips
+
+### Examples
+
+Real-world code examples:
+
+- **Basic Agent** (coming soon)
+- **Memory Usage** (coming soon)
+- **Multi-Provider** (coming soon)
+
+---
+
+## 🚀 Quick Links
+
+**For End Users**:
+- [Quick Start](./guide/quick-start.md) - Get up and running in 5 minutes
+- [CLI Commands](./reference/cli-commands.md) - Complete command reference
+- [Core Concepts](./guide/core-concepts.md) - Understand the basics
+
+**For Developers**:
+- [Contributing Guide](../CONTRIBUTING.md) - Contribute to AutomatosX
+- [Development Setup](../CONTRIBUTING.md#development-setup) - Local development
+- [API Reference](./reference/api/) - Programmatic usage
+
+**For Claude Code Users**:
+- [Claude Code Integration](./guide/claude-code-integration.md) (coming soon)
+- [Best Practices](./guide/best-practices.md) (coming soon)
+
+---
+
+## 💡 What is AutomatosX?
+
+AutomatosX is an **agent execution tool** designed for **Claude Code**. It allows you to:
+
+✅ **Execute AI Agents**: Run specialized AI agents with a single command
+✅ **Manage Memory**: Store and retrieve context with vector search
+✅ **Use Multiple Providers**: Claude, Gemini, OpenAI support
+✅ **Build Profiles**: YAML-based agent configuration
+✅ **Reuse Abilities**: Markdown-based skill definitions
+
+**Key Point**: AutomatosX is **not** a standalone chat application. It's a tool that Claude Code uses to execute agents and manage their state.
+
+---
+
+## 📦 Installation
+
+Install AutomatosX via npm:
 
 ```bash
-# Install
-npm install automatosx
+# Global installation
+npm install -g automatosx
 
-# Initialize project
-npx automatosx init
-
-# Create your first agent
-npx automatosx run assistant "Help me write a README"
+# Or use npx
+npx automatosx --version
 ```
 
-## Documentation Status
+Initialize your project:
 
-| Document | Status |
-|----------|--------|
-| Introduction | ✅ Complete |
-| Installation | ✅ Complete |
-| Quick Start | 📋 Coming Soon |
-| Core Concepts | 📋 Coming Soon |
-| API Reference | 📋 Coming Soon |
-| Examples | 📋 Coming Soon |
+```bash
+automatosx init
+```
 
-## Contributing
+Run your first agent:
 
-Documentation contributions are welcome! Please see [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
+```bash
+automatosx run assistant "What is TypeScript?"
+```
 
-## License
+See [Quick Start Guide](./guide/quick-start.md) for details.
 
-[MIT License](../LICENSE) © 2024-present AutomatosX Team
+---
+
+## 🎯 Core Commands
+
+AutomatosX provides 6 core commands:
+
+```bash
+automatosx init              # Initialize project
+automatosx run <agent>       # Execute agent
+automatosx list <type>       # List agents/abilities
+automatosx status            # System health
+automatosx config            # Configuration
+automatosx memory <cmd>      # Memory operations
+```
+
+See [CLI Commands Reference](./reference/cli-commands.md) for complete documentation.
+
+---
+
+## 📖 Documentation Status
+
+| Section | Status | Priority |
+|---------|--------|----------|
+| Quick Start Guide | ✅ Complete | P0 |
+| Core Concepts | ✅ Complete | P0 |
+| CLI Commands Reference | ✅ Complete | P0 |
+| Installation Guide | ✅ Complete | P0 |
+| Claude Code Integration | 📝 Planned | P1 |
+| Configuration Guide | 📝 Planned | P1 |
+| Tutorial: First Agent | 📝 Planned | P1 |
+| Tutorial: Memory | 📝 Planned | P1 |
+| Tutorial: Custom Abilities | 📝 Planned | P2 |
+| API Reference | 📝 Planned | P2 |
+| Troubleshooting | 📝 Planned | P2 |
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](../CONTRIBUTING.md) for:
+- Development setup
+- Code style guidelines
+- Testing requirements
+- Pull request process
+
+---
+
+## 📄 License
+
+AutomatosX is [MIT licensed](../LICENSE).
+
+---
+
+## 🔗 Links
+
+- **GitHub**: [github.com/automatosx/automatosx](https://github.com/automatosx/automatosx)
+- **Issues**: [github.com/automatosx/automatosx/issues](https://github.com/automatosx/automatosx/issues)
+- **npm**: [npmjs.com/package/automatosx](https://npmjs.com/package/automatosx)
+
+---
+
+## 📮 Get Help
+
+- **Documentation**: You're reading it!
+- **Issues**: [Report bugs or request features](https://github.com/automatosx/automatosx/issues)
+- **Examples**: Check `.automatosx/agents/` after running `init`
+
+---
+
+**Happy coding with AutomatosX!** 🤖✨
