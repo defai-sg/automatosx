@@ -3,7 +3,7 @@
 > Lightweight AI Agent Orchestration Platform
 
 **Status**: ✅ Production Release
-**Version**: 4.0.1
+**Version**: 4.0.2
 **Released**: October 2025
 
 [![npm version](https://img.shields.io/npm/v/automatosx.svg)](https://www.npmjs.com/package/automatosx)
