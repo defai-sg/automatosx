@@ -20,7 +20,13 @@ describe('CLI: config command', () => {
   beforeEach(async () => {
     // Create temporary directory for each test
     testDir = await mkdtemp(join(tmpdir(), 'automatosx-config-test-'));
-    configPath = join(testDir, 'automatosx.config.json');
+    const automatosxDir = join(testDir, '.automatosx');
+    configPath = join(automatosxDir, 'config.json');
+
+    // Create .automatosx directory
+    await writeFile(join(testDir, '.gitkeep'), '', 'utf-8'); // Ensure testDir exists
+    const { mkdir } = await import('fs/promises');
+    await mkdir(automatosxDir, { recursive: true });
 
     // Create a valid config file
     const config: AutomatosXConfig = {
@@ -216,14 +222,14 @@ describe('CLI: config command', () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('Configuration file');
-      expect(result.stdout).toContain('automatosx.config.json');
+      expect(result.stdout).toContain('.automatosx/config.json');
     }, 10000);
   });
 
   describe('error handling', () => {
     it('should fail when config file does not exist', async () => {
-      // Remove config file
-      await rm(configPath);
+      // Remove config file and directory
+      await rm(join(testDir, '.automatosx'), { recursive: true, force: true });
 
       const result = await runCLI(['config', '--list'], testDir);
 

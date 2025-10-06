@@ -26,7 +26,7 @@
     "maxFiles": 100
   },
   "logging": {
-    "level": "info",
+    "level": "debug",
     "path": ".automatosx/logs",
     "console": true
   },

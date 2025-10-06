@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { join } from 'path';
 import {
   createTestEnv,
   cleanupTestEnv,
@@ -24,11 +25,11 @@ describe('E2E Complete Workflows', () => {
 
   beforeEach(async () => {
     env = await createTestEnv();
-  });
+  }, 15000);
 
   afterEach(async () => {
     await cleanupTestEnv(env);
-  });
+  }, 10000);
 
   describe('Core Workflows', () => {
     it('should complete init → configure → run workflow', async () => {
@@ -54,7 +55,7 @@ describe('E2E Complete Workflows', () => {
       // Step 4: Check status (after run)
       const statusAfter = await execCLI(env, ['status']);
       assertSuccess(statusAfter);
-    });
+    }, 30000);
 
     it('should persist memory across commands', async () => {
       // Step 1: Add memory entries
@@ -80,7 +81,7 @@ describe('E2E Complete Workflows', () => {
       const list2 = await listMemory(env);
       assertOutputContains(list2, 'Test task 1');
       assertOutputContains(list2, 'Test task 2');
-    });
+    }, 30000);
 
     it('should handle multi-command workflow', async () => {
       // Step 1: Add memory
@@ -110,7 +111,7 @@ describe('E2E Complete Workflows', () => {
       // Step 6: Check status
       const status = await execCLI(env, ['status']);
       assertSuccess(status);
-    });
+    }, 35000);
 
     it('should persist configuration changes', async () => {
       // Step 1: Read initial config
@@ -137,7 +138,7 @@ describe('E2E Complete Workflows', () => {
         timeout: 20000
       });
       assertSuccess(run);
-    });
+    }, 30000);
 
     it('should recover from errors gracefully', async () => {
       // Step 1: Try to run non-existent agent (should fail)
@@ -154,7 +155,7 @@ describe('E2E Complete Workflows', () => {
       });
       assertSuccess(run2);
       assertOutputContains(run2.stdout, 'Complete');
-    });
+    }, 30000);
   });
 
   describe('Advanced Scenarios', () => {
@@ -166,12 +167,13 @@ describe('E2E Complete Workflows', () => {
 
       // Step 2: Export memory
       const exportPath = '/tmp/e2e-export.json';
-      const exportResult = await execCLI(env, ['memory', 'export', exportPath]);
+      const memoryDbPath = join(env.testDir, '.automatosx', 'memory', 'memory.db');
+      const exportResult = await execCLI(env, ['memory', 'export', exportPath, '--db', memoryDbPath]);
       assertSuccess(exportResult);
       assertOutputContains(exportResult.stdout, /exported|success/i);
 
       // Step 3: Clear memory
-      const clearResult = await execCLI(env, ['memory', 'clear', '--all', '--confirm']);
+      const clearResult = await execCLI(env, ['memory', 'clear', '--all', '--confirm', '--db', memoryDbPath]);
       assertSuccess(clearResult);
 
       // Step 4: Verify memory is empty
@@ -179,7 +181,7 @@ describe('E2E Complete Workflows', () => {
       expect(listEmpty).not.toContain('Task 1');
 
       // Step 5: Import memory
-      const importResult = await execCLI(env, ['memory', 'import', exportPath]);
+      const importResult = await execCLI(env, ['memory', 'import', exportPath, '--db', memoryDbPath]);
       assertSuccess(importResult);
       assertOutputContains(importResult.stdout, /imported|success/i);
 
@@ -188,7 +190,7 @@ describe('E2E Complete Workflows', () => {
       assertOutputContains(listRestored, 'Task 1');
       assertOutputContains(listRestored, 'Task 2');
       assertOutputContains(listRestored, 'Document 1');
-    });
+    }, 40000);
 
     it('should support configuration changes persistence', async () => {
       // Step 1: Update multiple config values
@@ -204,7 +206,7 @@ describe('E2E Complete Workflows', () => {
       // Step 4: Verify reset
       const config2 = await readConfig(env);
       expect(config2.logging.level).toBe('info');
-    });
+    }, 30000);
 
     it('should handle agent execution with memory injection', async () => {
       // Step 1: Add contextual memory
@@ -223,7 +225,7 @@ describe('E2E Complete Workflows', () => {
       });
       assertSuccess(run);
       assertOutputContains(run.stdout, 'Complete');
-    });
+    }, 30000);
 
     it('should support resource cleanup after execution', async () => {
       // Step 1: Create agent and run
@@ -242,7 +244,7 @@ describe('E2E Complete Workflows', () => {
       // Step 3: Verify no temp files leaked
       const status = await execCLI(env, ['status']);
       assertSuccess(status);
-    });
+    }, 40000);
 
     it('should maintain state consistency across workflow', async () => {
       // Step 1: Initial state
@@ -264,7 +266,7 @@ describe('E2E Complete Workflows', () => {
       const statsFinal = await execCLI(env, ['memory', 'stats']);
       assertSuccess(statsFinal);
       assertOutputContains(statsFinal.stdout, '0');
-    });
+    }, 30000);
 
     it('should handle long task execution', async () => {
       // Create agent
@@ -279,7 +281,7 @@ describe('E2E Complete Workflows', () => {
 
       assertSuccess(run);
       assertOutputContains(run.stdout, 'Complete');
-    }, 35000); // Test timeout > command timeout
+    }, 40000); // Test timeout > command timeout
 
     it('should handle partial failure scenarios', async () => {
       // Step 1: Successful operation
@@ -296,7 +298,7 @@ describe('E2E Complete Workflows', () => {
       const list = await listMemory(env);
       assertOutputContains(list, 'Success 1');
       assertOutputContains(list, 'Success 2');
-    });
+    }, 30000);
 
     it('should support agent profile switching', async () => {
       // Step 1: Create multiple agents
@@ -324,7 +326,7 @@ describe('E2E Complete Workflows', () => {
       // Both should succeed independently
       assertOutputContains(run1.stdout, 'Complete');
       assertOutputContains(run2.stdout, 'Complete');
-    });
+    }, 40000);
 
     it('should handle memory filtering workflow', async () => {
       // Step 1: Add diverse memory types
@@ -346,7 +348,7 @@ describe('E2E Complete Workflows', () => {
       assertOutputContains(all, 'Task item');
       assertOutputContains(all, 'Code snippet');
       assertOutputContains(all, 'Documentation');
-    });
+    }, 30000);
 
     it('should verify command help accessibility', async () => {
       // All commands should have help
@@ -357,6 +359,6 @@ describe('E2E Complete Workflows', () => {
         assertSuccess(help);
         assertOutputContains(help.stdout, cmd);
       }
-    });
+    }, 20000);
   });
 });

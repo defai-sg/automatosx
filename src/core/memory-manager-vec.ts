@@ -904,15 +904,11 @@ export class MemoryManagerVec implements IMemoryManager {
               if (!entry.content || !entry.metadata) {
                 throw new Error('Missing required fields: content or metadata');
               }
-              if (!entry.embedding || entry.embedding.length === 0) {
-                // No embedding provided, check if we have a provider to generate it
-                if (!this.embeddingProvider) {
-                  throw new Error('Embedding provider required to generate embeddings for entries without embeddings');
-                }
-                // Provider will generate embedding when we call add()
-              } else if (entry.embedding.length !== VECTOR_DIMENSIONS) {
+              // Check embedding dimensions if provided
+              if (entry.embedding && entry.embedding.length > 0 && entry.embedding.length !== VECTOR_DIMENSIONS) {
                 throw new Error(`Invalid embedding: expected ${VECTOR_DIMENSIONS} dimensions`);
               }
+              // Note: If no embedding provided, we'll use zero vector fallback (no error)
             }
 
             // Check for duplicates
@@ -926,9 +922,20 @@ export class MemoryManagerVec implements IMemoryManager {
             }
 
             // Import entry
+            // Generate embedding if not provided
+            let embedding: number[] = entry.embedding || [];
+            if (embedding.length === 0) {
+              if (this.embeddingProvider) {
+                embedding = await this.embeddingProvider.generateEmbedding(entry.content);
+              } else {
+                // Use zero vector as fallback (semantic search won't work but entries are preserved)
+                embedding = new Array(VECTOR_DIMENSIONS).fill(0);
+              }
+            }
+
             await this.add(
               entry.content,
-              entry.embedding || [],
+              embedding,
               entry.metadata
             );
 

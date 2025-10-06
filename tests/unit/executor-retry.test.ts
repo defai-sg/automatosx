@@ -48,6 +48,7 @@ describe('AgentExecutor - Retry Mechanism', () => {
       agent: {
         name: 'test',
         role: 'assistant',
+        description: 'Test agent',
         systemPrompt: 'Test',
         abilities: [],
         model: 'test-model',
@@ -57,8 +58,12 @@ describe('AgentExecutor - Retry Mechanism', () => {
       provider: new MockProvider() as any,
       task: 'Test task',
       abilities: '',
-      memory: []
-    };
+      memory: [],
+      projectDir: '/tmp/test',
+      workingDir: '/tmp/test',
+      agentWorkspace: '/tmp/test/.automatosx/workspaces/test',
+      createdAt: new Date()
+    } as any;
   });
 
   describe('Retry Configuration', () => {

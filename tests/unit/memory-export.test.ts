@@ -279,16 +279,16 @@ describe('MemoryManager Export/Import', () => {
 
       await manager.clear();
 
-      // Import should fail because no embedding provider
+      // Import should succeed using zero vectors as fallback
       const result = await manager.importFromJSON(exportPath);
 
-      expect(result.entriesFailed).toBe(3);
-      expect(result.errors).toHaveLength(3);
-      const firstError = result.errors[0];
-      expect(firstError).toBeDefined();
-      if (firstError) {
-        expect(firstError.error).toContain('Embedding provider required');
-      }
+      expect(result.entriesImported).toBe(3);
+      expect(result.entriesFailed).toBe(0);
+      expect(result.errors).toHaveLength(0);
+
+      // Verify entries were imported (even with zero vectors)
+      const stats = await manager.getStats();
+      expect(stats.totalEntries).toBe(3);
     });
   });
 

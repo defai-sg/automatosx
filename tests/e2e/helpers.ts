@@ -33,37 +33,49 @@ export async function createTestEnv(): Promise<E2ETestEnv> {
   const automatosxDir = join(testDir, '.automatosx');
   const agentsDir = join(automatosxDir, 'agents');
   const abilitiesDir = join(automatosxDir, 'abilities');
+  const memoryDir = join(automatosxDir, 'memory');
 
   await mkdir(agentsDir, { recursive: true });
   await mkdir(abilitiesDir, { recursive: true });
+  await mkdir(memoryDir, { recursive: true });
 
   const cliPath = join(process.cwd(), 'dist', 'index.js');
   const configPath = join(automatosxDir, 'config.json');
   const memoryDbPath = join(automatosxDir, 'memory.db');
 
-  // Create default config
+  // Create default config (matching DEFAULT_CONFIG structure)
   const defaultConfig = {
     version: '4.0.0',
     providers: {
-      claude: {
-        name: 'claude',
-        type: 'claude',
-        apiKey: 'mock-key',
-        model: 'claude-3-5-sonnet-20241022',
-        endpoint: 'https://api.anthropic.com/v1/messages',
-        maxTokens: 4096
+      'claude-code': {
+        enabled: true,
+        priority: 1,
+        timeout: 120000,
+        command: 'claude'
+      },
+      'gemini-cli': {
+        enabled: true,
+        priority: 2,
+        timeout: 180000,
+        command: 'gemini'
       }
     },
-    defaultProvider: 'claude',
-    paths: {
-      agents: agentsDir,
-      abilities: abilitiesDir,
-      memory: memoryDbPath,
-      config: configPath
+    memory: {
+      maxEntries: 10000,
+      persistPath: join(automatosxDir, 'memory'),
+      autoCleanup: true,
+      cleanupDays: 30
+    },
+    workspace: {
+      basePath: join(automatosxDir, 'workspaces'),
+      autoCleanup: true,
+      cleanupDays: 7,
+      maxFiles: 100
     },
     logging: {
       level: 'info',
-      file: join(automatosxDir, 'logs', 'automatosx.log')
+      path: join(automatosxDir, 'logs'),
+      console: true
     }
   };
 
@@ -147,8 +159,16 @@ export async function execCLI(
     ...(options.mockProviders !== false && { AUTOMATOSX_MOCK_PROVIDERS: 'true' })
   };
 
+  // Add --config flag if not present and command needs it
+  const finalArgs = [...args];
+
+  if (!finalArgs.includes('--config') && !finalArgs.includes('-c')) {
+    // Insert --config at the beginning (after no command, before first arg)
+    finalArgs.unshift('--config', env.configPath);
+  }
+
   try {
-    const result = await execFileAsync('node', [env.cliPath, ...args], {
+    const result = await execFileAsync('node', [env.cliPath, ...finalArgs], {
       cwd: env.testDir,
       env: execEnv,
       timeout: options.timeout || 15000,
@@ -270,7 +290,9 @@ export async function addMemory(
   content: string,
   type: 'task' | 'code' | 'document' | 'conversation' | 'other' = 'task'
 ): Promise<string> {
-  const result = await execCLI(env, ['memory', 'add', content, '--type', type]);
+  // Add database path
+  const memoryDbPath = join(env.testDir, '.automatosx', 'memory', 'memory.db');
+  const result = await execCLI(env, ['memory', 'add', content, '--type', type, '--db', memoryDbPath]);
   if (result.exitCode !== 0) {
     throw new Error(`Failed to add memory: ${result.stderr}`);
   }
@@ -290,6 +312,10 @@ export async function listMemory(
   const args = ['memory', 'list'];
   if (options.type) args.push('--type', options.type);
   if (options.limit) args.push('--limit', String(options.limit));
+
+  // Add database path
+  const memoryDbPath = join(env.testDir, '.automatosx', 'memory', 'memory.db');
+  args.push('--db', memoryDbPath);
 
   const result = await execCLI(env, args);
   if (result.exitCode !== 0) {
@@ -341,9 +367,13 @@ export function assertOutputContains(output: string, expected: string | RegExp):
 /**
  * Assert CLI command succeeded
  */
-export function assertSuccess(result: { exitCode: number; stderr: string }): void {
+export function assertSuccess(result: { exitCode: number; stderr: string; stdout?: string }): void {
   if (result.exitCode !== 0) {
-    throw new Error(`Command failed with exit code ${result.exitCode}:\n${result.stderr}`);
+    throw new Error(
+      `Command failed with exit code ${result.exitCode}:\n` +
+      `STDERR:\n${result.stderr}\n` +
+      `STDOUT:\n${result.stdout || '(empty)'}`
+    );
   }
 }
 

@@ -35,6 +35,7 @@ describe('AgentExecutor - Timeout Handling', () => {
         agent: {
           name: 'test',
           role: 'assistant',
+          description: 'Test agent',
           systemPrompt: 'Test',
           abilities: [],
           model: 'test-model',
@@ -44,8 +45,12 @@ describe('AgentExecutor - Timeout Handling', () => {
         provider: slowProvider as any,
         task: 'Slow task',
         abilities: '',
-        memory: []
-      };
+        memory: [],
+        projectDir: '/tmp/test',
+        workingDir: '/tmp/test',
+        agentWorkspace: '/tmp/test/.automatosx/workspaces/test',
+        createdAt: new Date()
+      } as any;
 
       await expect(
         executor.execute(context, {
@@ -72,6 +77,7 @@ describe('AgentExecutor - Timeout Handling', () => {
         agent: {
           name: 'test',
           role: 'assistant',
+          description: 'Test agent',
           systemPrompt: 'Test',
           abilities: [],
           model: 'test-model',
@@ -81,8 +87,12 @@ describe('AgentExecutor - Timeout Handling', () => {
         provider: fastProvider as any,
         task: 'Fast task',
         abilities: '',
-        memory: []
-      };
+        memory: [],
+        projectDir: '/tmp/test',
+        workingDir: '/tmp/test',
+        agentWorkspace: '/tmp/test/.automatosx/workspaces/test',
+        createdAt: new Date()
+      } as any;
 
       const result = await executor.execute(context, {
         timeout: 1000,
@@ -112,6 +122,7 @@ describe('AgentExecutor - Timeout Handling', () => {
         agent: {
           name: 'test',
           role: 'assistant',
+          description: 'Test agent',
           systemPrompt: 'Test',
           abilities: [],
           model: 'test-model',
@@ -121,8 +132,12 @@ describe('AgentExecutor - Timeout Handling', () => {
         provider: variableProvider as any,
         task: 'Task',
         abilities: '',
-        memory: []
-      };
+        memory: [],
+        projectDir: '/tmp/test',
+        workingDir: '/tmp/test',
+        agentWorkspace: '/tmp/test/.automatosx/workspaces/test',
+        createdAt: new Date()
+      } as any;
 
       // Should timeout
       await expect(
@@ -154,6 +169,7 @@ describe('AgentExecutor - Timeout Handling', () => {
         agent: {
           name: 'test',
           role: 'assistant',
+          description: 'Test agent',
           systemPrompt: 'Test',
           abilities: [],
           model: 'test-model',
@@ -163,8 +179,12 @@ describe('AgentExecutor - Timeout Handling', () => {
         provider: streamingProvider as any,
         task: 'Stream task',
         abilities: '',
-        memory: []
-      };
+        memory: [],
+        projectDir: '/tmp/test',
+        workingDir: '/tmp/test',
+        agentWorkspace: '/tmp/test/.automatosx/workspaces/test',
+        createdAt: new Date()
+      } as any;
 
       await expect(
         executor.execute(context, {
@@ -194,6 +214,7 @@ describe('AgentExecutor - Timeout Handling', () => {
         agent: {
           name: 'test',
           role: 'assistant',
+          description: 'Test agent',
           systemPrompt: 'Test',
           abilities: [],
           model: 'test-model',
@@ -203,8 +224,12 @@ describe('AgentExecutor - Timeout Handling', () => {
         provider: normalProvider as any,
         task: 'Normal task',
         abilities: '',
-        memory: []
-      };
+        memory: [],
+        projectDir: '/tmp/test',
+        workingDir: '/tmp/test',
+        agentWorkspace: '/tmp/test/.automatosx/workspaces/test',
+        createdAt: new Date()
+      } as any;
 
       const result = await executor.execute(context, { showProgress: false });
       expect(result.response.content).toBe('Normal response');
@@ -229,6 +254,7 @@ describe('AgentExecutor - Timeout Handling', () => {
         agent: {
           name: 'test',
           role: 'assistant',
+          description: 'Test agent',
           systemPrompt: 'Test',
           abilities: [],
           model: 'test-model',
@@ -238,8 +264,12 @@ describe('AgentExecutor - Timeout Handling', () => {
         provider: provider as any,
         task: 'Task',
         abilities: '',
-        memory: []
-      };
+        memory: [],
+        projectDir: '/tmp/test',
+        workingDir: '/tmp/test',
+        agentWorkspace: '/tmp/test/.automatosx/workspaces/test',
+        createdAt: new Date()
+      } as any;
 
       const result = await executor.execute(context, {
         timeout: 300000, // 5 minutes

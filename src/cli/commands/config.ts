@@ -75,12 +75,32 @@ export const configCommand: CommandModule<Record<string, unknown>, ConfigOptions
 
   handler: async (argv) => {
     try {
-      const configPath = resolve(process.cwd(), 'automatosx.config.json');
+      // Debug: Print received arguments (only in debug mode)
+      if (process.env.AUTOMATOSX_DEBUG) {
+        console.error('[DEBUG] Config handler argv:', {
+          config: (argv as any).config,
+          c: (argv as any).c,
+          all: Object.keys(argv)
+        });
+      }
+
+      // Support multiple config path sources (priority order)
+      const configPath =
+        (argv as any).config ||                                      // --config flag
+        (argv as any).c ||                                           // -c alias
+        process.env.AUTOMATOSX_CONFIG ||                             // Environment variable
+        resolve(process.cwd(), '.automatosx', 'config.json') ||     // Hidden dir (E2E)
+        resolve(process.cwd(), 'automatosx.config.json');            // Default location
+
+      if (process.env.AUTOMATOSX_DEBUG) {
+        console.error('[DEBUG] Resolved config path:', configPath);
+      }
 
       // Check if config exists
       const exists = await checkExists(configPath);
       if (!exists) {
         console.log(chalk.yellow('⚠️  Configuration file not found'));
+        console.log(chalk.gray(`   Searched at: ${configPath}`));
         console.log(chalk.gray('   Run "automatosx init" to create configuration\n'));
         process.exit(1);
       }

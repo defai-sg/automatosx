@@ -105,6 +105,16 @@ export const chatCommand: CommandModule<Record<string, unknown>, ChatOptions> = 
       const profileLoader = new ProfileLoader(
         join(projectDir, '.automatosx', 'agents')
       );
+
+      // 2.1 Validate agent profile exists BEFORE starting chat
+      try {
+        await profileLoader.loadProfile(argv.agent);
+      } catch (error) {
+        console.log(chalk.red.bold(`\n❌ Error: Agent profile not found: ${argv.agent}\n`));
+        console.log(chalk.gray(`   Profile should be at: ${join(projectDir, '.automatosx', 'agents', argv.agent + '.yaml')}\n`));
+        console.log(chalk.gray('   Create agent profile first or check agent name.\n'));
+        process.exit(1);
+      }
       const abilitiesManager = new AbilitiesManager(
         join(projectDir, '.automatosx', 'abilities')
       );

@@ -71,7 +71,8 @@ describe('Config Command', () => {
         version: '4.0.0'
       };
 
-      mockFiles['/test-project/automatosx.config.json'] = JSON.stringify(config);
+      // Use .automatosx/config.json (new priority)
+      mockFiles['/test-project/.automatosx/config.json'] = JSON.stringify(config);
 
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
@@ -102,7 +103,7 @@ describe('Config Command', () => {
         }
       };
 
-      mockFiles['/test-project/automatosx.config.json'] = JSON.stringify(config);
+      mockFiles['/test-project/.automatosx/config.json'] = JSON.stringify(config);
 
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
@@ -125,7 +126,7 @@ describe('Config Command', () => {
         ...DEFAULT_CONFIG
       };
 
-      mockFiles['/test-project/automatosx.config.json'] = JSON.stringify(config);
+      mockFiles['/test-project/.automatosx/config.json'] = JSON.stringify(config);
 
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
@@ -151,7 +152,7 @@ describe('Config Command', () => {
         ...DEFAULT_CONFIG
       };
 
-      mockFiles['/test-project/automatosx.config.json'] = JSON.stringify(config);
+      mockFiles['/test-project/.automatosx/config.json'] = JSON.stringify(config);
 
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
@@ -166,7 +167,7 @@ describe('Config Command', () => {
       } as any);
 
       // Read updated config
-      const updatedContent = mockFiles['/test-project/automatosx.config.json'];
+      const updatedContent = mockFiles['/test-project/.automatosx/config.json'];
       const updatedConfig = JSON.parse(updatedContent);
 
       expect(updatedConfig.logging.level).toBe('debug');
@@ -180,7 +181,7 @@ describe('Config Command', () => {
         ...DEFAULT_CONFIG
       };
 
-      mockFiles['/test-project/automatosx.config.json'] = JSON.stringify(config);
+      mockFiles['/test-project/.automatosx/config.json'] = JSON.stringify(config);
 
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
@@ -195,7 +196,7 @@ describe('Config Command', () => {
       } as any);
 
       // Read updated config
-      const updatedContent = mockFiles['/test-project/automatosx.config.json'];
+      const updatedContent = mockFiles['/test-project/.automatosx/config.json'];
       const updatedConfig = JSON.parse(updatedContent);
 
       expect(updatedConfig.memory.maxEntries).toBe(20000);
@@ -208,7 +209,7 @@ describe('Config Command', () => {
         ...DEFAULT_CONFIG
       };
 
-      mockFiles['/test-project/automatosx.config.json'] = JSON.stringify(config);
+      mockFiles['/test-project/.automatosx/config.json'] = JSON.stringify(config);
 
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
@@ -223,7 +224,7 @@ describe('Config Command', () => {
       } as any);
 
       // Read updated config
-      const updatedContent = mockFiles['/test-project/automatosx.config.json'];
+      const updatedContent = mockFiles['/test-project/.automatosx/config.json'];
       const updatedConfig = JSON.parse(updatedContent);
 
       expect(updatedConfig.workspace.isolation).toBe(false);
@@ -240,7 +241,7 @@ describe('Config Command', () => {
         }
       };
 
-      mockFiles['/test-project/automatosx.config.json'] = JSON.stringify(config);
+      mockFiles['/test-project/.automatosx/config.json'] = JSON.stringify(config);
 
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
@@ -252,8 +253,8 @@ describe('Config Command', () => {
         verbose: false
       } as any);
 
-      // Read reset config
-      const resetContent = mockFiles['/test-project/automatosx.config.json'];
+      // Read reset config (should be written to the same path it was loaded from)
+      const resetContent = mockFiles['/test-project/.automatosx/config.json'];
       const resetConfig = JSON.parse(resetContent);
 
       expect(resetConfig.logging.level).toBe(DEFAULT_CONFIG.logging.level);
@@ -268,7 +269,7 @@ describe('Config Command', () => {
         ...DEFAULT_CONFIG
       };
 
-      mockFiles['/test-project/automatosx.config.json'] = JSON.stringify(config);
+      mockFiles['/test-project/.automatosx/config.json'] = JSON.stringify(config);
 
       const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -293,7 +294,7 @@ describe('Config Command', () => {
         ...DEFAULT_CONFIG
       };
 
-      mockFiles['/test-project/automatosx.config.json'] = JSON.stringify(config);
+      mockFiles['/test-project/.automatosx/config.json'] = JSON.stringify(config);
 
       const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -319,7 +320,7 @@ describe('Config Command', () => {
         ...DEFAULT_CONFIG
       };
 
-      mockFiles['/test-project/automatosx.config.json'] = JSON.stringify(config);
+      mockFiles['/test-project/.automatosx/config.json'] = JSON.stringify(config);
 
       const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -344,7 +345,7 @@ describe('Config Command', () => {
         ...DEFAULT_CONFIG
       };
 
-      mockFiles['/test-project/automatosx.config.json'] = JSON.stringify(config);
+      mockFiles['/test-project/.automatosx/config.json'] = JSON.stringify(config);
 
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
@@ -359,7 +360,7 @@ describe('Config Command', () => {
       expect(consoleSpy).toHaveBeenCalled();
       const output = consoleSpy.mock.calls.map(call => call[0]).join('\n');
       expect(output).toContain('Configuration file');
-      expect(output).toContain('automatosx.config.json');
+      expect(output).toContain('.automatosx/config.json');
 
       consoleSpy.mockRestore();
     });
