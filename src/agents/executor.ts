@@ -14,10 +14,20 @@ import { formatError } from '../utils/error-formatter.js';
 import chalk from 'chalk';
 import ora from 'ora';
 
+export interface RetryConfig {
+  maxAttempts: number;
+  initialDelay: number;
+  maxDelay: number;
+  backoffFactor: number;
+  retryableErrors?: string[];
+}
+
 export interface ExecutionOptions {
   verbose?: boolean;
   showProgress?: boolean;
   streaming?: boolean;
+  retry?: RetryConfig;
+  timeout?: number;
 }
 
 export interface ExecutionResult {
@@ -33,9 +43,133 @@ export interface ExecutionResult {
  */
 export class AgentExecutor {
   /**
+   * Default retry configuration
+   */
+  private readonly DEFAULT_RETRY_CONFIG: RetryConfig = {
+    maxAttempts: 3,
+    initialDelay: 1000,
+    maxDelay: 10000,
+    backoffFactor: 2,
+    retryableErrors: [
+      'ECONNREFUSED',
+      'ETIMEDOUT',
+      'ENOTFOUND',
+      'rate_limit',
+      'overloaded',
+      'timeout'
+    ]
+  };
+
+  /**
    * Execute an agent with the given context
    */
   async execute(
+    context: ExecutionContext,
+    options: ExecutionOptions = {}
+  ): Promise<ExecutionResult> {
+    // If both retry and timeout are enabled
+    if (options.retry && options.timeout) {
+      return this.executeWithTimeout(context, {
+        ...options,
+        // Wrap retry logic inside timeout
+        retry: options.retry
+      });
+    }
+
+    // If only retry is enabled
+    if (options.retry) {
+      return this.executeWithRetry(context, options);
+    }
+
+    // If only timeout is enabled
+    if (options.timeout) {
+      return this.executeWithTimeout(context, options);
+    }
+
+    // Otherwise, execute normally
+    return this.executeInternal(context, options);
+  }
+
+  /**
+   * Execute with retry logic
+   */
+  private async executeWithRetry(
+    context: ExecutionContext,
+    options: ExecutionOptions
+  ): Promise<ExecutionResult> {
+    const retryConfig = { ...this.DEFAULT_RETRY_CONFIG, ...options.retry };
+    const { maxAttempts, initialDelay, maxDelay, backoffFactor, retryableErrors } = retryConfig;
+    const { verbose = false } = options;
+
+    let lastError: Error | null = null;
+    let attempt = 0;
+
+    while (attempt < maxAttempts) {
+      attempt++;
+
+      try {
+        if (verbose && attempt > 1) {
+          console.log(chalk.yellow(`\nRetry attempt ${attempt}/${maxAttempts}...`));
+        }
+
+        return await this.executeInternal(context, options);
+      } catch (error: any) {
+        lastError = error;
+
+        // Check if error is retryable
+        const isRetryable = this.isRetryableError(error, retryableErrors);
+
+        if (!isRetryable || attempt >= maxAttempts) {
+          throw error;
+        }
+
+        // Calculate backoff delay
+        const delay = Math.min(
+          initialDelay * Math.pow(backoffFactor, attempt - 1),
+          maxDelay
+        );
+
+        if (verbose) {
+          console.log(chalk.yellow(`Retryable error occurred: ${error.message}`));
+          console.log(chalk.gray(`Waiting ${delay}ms before retry...`));
+        }
+
+        await this.sleep(delay);
+      }
+    }
+
+    // Should not reach here, but throw last error if we do
+    throw lastError || new Error('Execution failed after retries');
+  }
+
+  /**
+   * Execute with timeout
+   */
+  private async executeWithTimeout(
+    context: ExecutionContext,
+    options: ExecutionOptions
+  ): Promise<ExecutionResult> {
+    const timeout = options.timeout!;
+    const { verbose = false } = options;
+
+    const executionPromise = options.retry
+      ? this.executeWithRetry(context, { ...options, timeout: undefined }) // Remove timeout from retry
+      : this.executeInternal(context, options);
+
+    return Promise.race([
+      executionPromise,
+      new Promise<ExecutionResult>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error(`Execution timed out after ${timeout}ms`));
+        }, timeout);
+      })
+    ]);
+  }
+
+  /**
+   * Internal execution (actual implementation)
+   */
+  private async executeInternal(
     context: ExecutionContext,
     options: ExecutionOptions = {}
   ): Promise<ExecutionResult> {
@@ -237,5 +371,25 @@ export class AgentExecutor {
       showSuggestions: true,
       colors: true
     }));
+  }
+
+  /**
+   * Check if error is retryable
+   */
+  private isRetryableError(error: any, retryableErrors?: string[]): boolean {
+    const patterns = retryableErrors || this.DEFAULT_RETRY_CONFIG.retryableErrors!;
+
+    const errorString = (error.message || error.code || '').toLowerCase();
+
+    return patterns.some(pattern =>
+      errorString.includes(pattern.toLowerCase())
+    );
+  }
+
+  /**
+   * Sleep for specified milliseconds
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
