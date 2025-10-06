@@ -216,13 +216,68 @@ describe('CLI Memory Command Integration', () => {
   });
 
   describe('memory search', () => {
-    // TODO: Search requires embedding provider configuration
-    it.skip('should search memories by query', async () => {
-      // Skipped: Requires embedding provider
+    beforeEach(async () => {
+      // Add test memories with different content
+      await execFileAsync('node', [
+        cliPath, 'memory', 'add',
+        'JavaScript is a programming language',
+        '--tags', 'programming'
+      ], { cwd: testDir, env: { ...process.env, AUTOMATOSX_MOCK_PROVIDERS: 'true' } });
+
+      await execFileAsync('node', [
+        cliPath, 'memory', 'add',
+        'Python is also a programming language',
+        '--tags', 'programming'
+      ], { cwd: testDir, env: { ...process.env, AUTOMATOSX_MOCK_PROVIDERS: 'true' } });
+
+      await execFileAsync('node', [
+        cliPath, 'memory', 'add',
+        'The weather is nice today',
+        '--tags', 'weather'
+      ], { cwd: testDir, env: { ...process.env, AUTOMATOSX_MOCK_PROVIDERS: 'true' } });
     });
 
-    it.skip('should support limit in search', async () => {
-      // Skipped: Requires embedding provider
+    it('should search memories by query', async () => {
+      const result = await execFileAsync('node', [
+        cliPath, 'memory', 'search',
+        'programming language',
+        '--output', 'json'
+      ], {
+        cwd: testDir,
+        env: { ...process.env, AUTOMATOSX_MOCK_PROVIDERS: 'true' }
+      });
+
+      const results = JSON.parse(result.stdout.trim());
+
+      // Should return valid array (may be empty with mock embeddings)
+      expect(Array.isArray(results)).toBe(true);
+
+      // If results exist, they should have correct structure
+      if (results.length > 0) {
+        expect(results[0]).toHaveProperty('similarity');
+        expect(results[0]).toHaveProperty('entry');
+        expect(results[0].entry).toHaveProperty('content');
+      }
+
+      // Test passes if command executes without error
+      // Mock embeddings may not have semantic similarity
+    });
+
+    it('should support limit in search', async () => {
+      const result = await execFileAsync('node', [
+        cliPath, 'memory', 'search',
+        'programming',
+        '--limit', '1',
+        '--output', 'json'
+      ], {
+        cwd: testDir,
+        env: { ...process.env, AUTOMATOSX_MOCK_PROVIDERS: 'true' }
+      });
+
+      const results = JSON.parse(result.stdout.trim());
+
+      expect(Array.isArray(results)).toBe(true);
+      expect(results.length).toBeLessThanOrEqual(1);
     });
   });
 

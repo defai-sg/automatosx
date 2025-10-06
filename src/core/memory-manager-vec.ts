@@ -926,7 +926,8 @@ export class MemoryManagerVec implements IMemoryManager {
             let embedding: number[] = entry.embedding || [];
             if (embedding.length === 0) {
               if (this.embeddingProvider) {
-                embedding = await this.embeddingProvider.generateEmbedding(entry.content);
+                const response = await this.embeddingProvider.embed(entry.content);
+                embedding = response.embedding;
               } else {
                 // Use zero vector as fallback (semantic search won't work but entries are preserved)
                 embedding = new Array(VECTOR_DIMENSIONS).fill(0);

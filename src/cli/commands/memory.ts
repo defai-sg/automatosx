@@ -59,8 +59,41 @@ const DEFAULT_DB_PATH = '.automatosx/memory/memory.db';
  */
 async function getMemoryManager(dbPath?: string): Promise<MemoryManagerVec> {
   const path = dbPath || DEFAULT_DB_PATH;
+
+  // Check for embedding provider (optional for basic operations)
+  let embeddingProvider;
+
+  // In test environment with mock providers
+  if (process.env.AUTOMATOSX_MOCK_PROVIDERS === 'true') {
+    try {
+      const { MockEmbeddingProvider } = await import('../../providers/mock-embedding-provider.js');
+      embeddingProvider = new MockEmbeddingProvider({
+        provider: 'mock',
+        model: 'mock-embedding-model'
+      });
+    } catch (error) {
+      // Mock provider not available, continue without embedding
+    }
+  } else {
+    // Production: Check for OpenAI API key
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (apiKey) {
+      try {
+        const { OpenAIEmbeddingProvider } = await import('../../providers/openai-embedding-provider.js');
+        embeddingProvider = new OpenAIEmbeddingProvider({
+          provider: 'openai',
+          apiKey,
+          model: 'text-embedding-3-small'
+        });
+      } catch (error) {
+        // OpenAI provider not available
+      }
+    }
+  }
+
   return await MemoryManagerVec.create({
     dbPath: resolve(path),
+    embeddingProvider,
     maxEntries: 100000,
     autoCleanup: false,
     trackAccess: true
