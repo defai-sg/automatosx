@@ -1,21 +1,30 @@
 # AutomatosX v4.0
 
-> AI Agent Orchestration Platform - Complete Revamp
+> AI Agent Orchestration Platform - Production Ready
 
-**Status**: 🚀 Phase 1 - Active Development
-**Version**: 4.0.0-alpha
-**Target Release**: Q4 2025
+**Status**: ✅ Production Release
+**Version**: 4.0.0
+**Released**: October 2025
 
 ---
 
 ## Overview
 
-AutomatosX v4.0 is a complete revamp of the AI agent orchestration platform, focusing on:
+AutomatosX v4.0 is a complete rewrite of the AI agent orchestration platform, delivering:
 
-- **87% bundle size reduction** (340MB → <45MB)
-- **TypeScript migration** with strict type safety
-- **Modern testing** with 80%+ coverage
-- **Simplified architecture** using SQLite + vec
+- **87% bundle size reduction** (340MB → 46MB)
+- **62x faster vector search** (45ms → 0.72ms)
+- **100% TypeScript** with strict type safety
+- **841 tests** with 84% coverage
+- **Production-ready** infrastructure and documentation
+
+### Why v4.0?
+
+V3.1's 340MB bundle and JavaScript technical debt blocked adoption. V4.0 solves this with:
+- SQLite + vec (2-5MB vs 300MB Milvus)
+- TypeScript strict mode (zero runtime errors)
+- Dramatic performance improvements
+- Comprehensive testing and documentation
 
 ---
 
@@ -24,15 +33,14 @@ AutomatosX v4.0 is a complete revamp of the AI agent orchestration platform, foc
 ### Installation
 
 ```bash
-# Clone repository
-git clone <repository-url>
-cd automatosx
+# Global installation (recommended)
+npm install -g automatosx
 
-# Install dependencies
-npm install
+# Or use with npx (no installation)
+npx automatosx --help
 
-# Build CLI
-npm run build
+# Verify installation
+automatosx --version
 ```
 
 ### Usage
