@@ -63,13 +63,13 @@
     "ai-agents"
   ],
   "author": "AutomatosX Team",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/automatosx.git"
+    "url": "https://github.com/defai-sg/automatosx.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/automatosx/issues"
+    "url": "https://github.com/defai-sg/automatosx/issues"
   },
   "homepage": "https://docs.automatosx.dev"
 }
