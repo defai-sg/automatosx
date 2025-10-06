@@ -1,14 +1,13 @@
 /**
  * CLI Chat Command Integration Tests
  *
- * NOTE: Entire test suite skipped due to process hang issue.
- * The chat command uses spawn() for interactive testing, and the process
- * initialization hangs indefinitely, causing test timeout.
+ * NOTE: Chat command requires TTY (interactive terminal).
+ * Most tests validate that the command correctly rejects non-TTY environments
+ * and provides helpful error messages directing users to the 'run' command.
  *
- * Root cause: Likely readline interface blocking or process lifecycle issue
- * See: tmp/HEAVYTHINK-12-FINAL-FIXES.md for detailed analysis
- * Priority: P2 - Requires 1-2 hours deep debugging
- * Workaround: Chat command has unit tests for core functionality
+ * Root cause: inquirer.prompt() requires TTY for interactive input
+ * Solution: Chat command checks process.stdin.isTTY and exits gracefully
+ * Testing strategy: Verify error handling instead of simulating TTY
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -21,7 +20,7 @@ import { promisify } from 'util';
 
 const execFileAsync = promisify(execFile);
 
-describe.skip('CLI Chat Command Integration', () => {
+describe('CLI Chat Command Integration', () => {
   let testDir: string;
   let cliPath: string;
 
@@ -39,38 +38,67 @@ describe.skip('CLI Chat Command Integration', () => {
     await rm(testDir, { recursive: true, force: true });
   });
 
-  describe('Basic Chat Functionality', () => {
-    // TODO: Chat command should validate agent profile before starting
-    it('should start chat interface', async () => {
-      const chatProcess = spawn('node', [cliPath, 'chat', 'test'], {
-        cwd: testDir,
-        env: {
-          ...process.env,
-          AUTOMATOSX_MOCK_PROVIDERS: 'true'
-        }
-      });
+  describe('TTY Requirements', () => {
+    it('should reject non-TTY environment with helpful message', async () => {
+      // Create agent profile first so we can reach TTY check
+      const agentDir = join(testDir, '.automatosx', 'agents');
+      await mkdir(agentDir, { recursive: true });
 
-      let stdout = '';
+      const agentProfile = `
+name: TestAgent
+role: assistant
+description: Test agent
+systemPrompt: You are a test assistant
+abilities: []
+provider: claude
+`;
+      await writeFile(join(agentDir, 'test.yaml'), agentProfile);
 
-      chatProcess.stdout.on('data', (data) => {
-        stdout += data.toString();
-      });
+      // Chat requires TTY, so this test validates error handling
+      try {
+        await execFileAsync('node', [cliPath, 'chat', 'test'], {
+          cwd: testDir,
+          env: {
+            ...process.env,
+            AUTOMATOSX_MOCK_PROVIDERS: 'true'
+          }
+        });
+        expect.fail('Should have thrown error for non-TTY');
+      } catch (error: any) {
+        expect(error.code).toBe(1);
+        // Should mention TTY requirement
+        const output = error.stdout + error.stderr;
+        expect(output).toMatch(/TTY|interactive terminal/i);
+        // Should suggest using 'run' command instead
+        expect(output).toMatch(/run.*command/i);
+      }
+    });
 
-      // Wait for startup
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+    it('should validate agent profile exists before starting', async () => {
+      // Test that chat validates agent profile before TTY check
+      try {
+        await execFileAsync('node', [cliPath, 'chat', 'nonexistent-agent'], {
+          cwd: testDir,
+          env: {
+            ...process.env,
+            AUTOMATOSX_MOCK_PROVIDERS: 'true'
+          }
+        });
+        expect.fail('Should have thrown error for missing agent');
+      } catch (error: any) {
+        expect(error.code).toBe(1);
+        const output = error.stdout + error.stderr;
+        // Should mention agent not found (this happens before TTY check)
+        expect(output).toMatch(/not found|profile/i);
+      }
+    });
+  });
 
-      // Kill process
-      chatProcess.kill('SIGTERM');
+  describe('Interactive Features', () => {
+    // NOTE: These tests require real TTY environment
+    // They are skipped in CI/test environments but validate important functionality
 
-      await new Promise((resolve) => {
-        chatProcess.on('close', resolve);
-      });
-
-      // Should show chat header
-      expect(stdout).toMatch(/AutomatosX Chat|chat/i);
-    }, 15000);
-
-    it('should show chat header when starting session', async () => {
+    it.skip('should show chat header when starting session', async () => {
       // Create agent profile
       const agentDir = join(testDir, '.automatosx', 'agents');
       await mkdir(agentDir, { recursive: true });
@@ -123,7 +151,7 @@ temperature: 0.7
       expect(stdout).toContain('exit');
     }, 15000);
 
-    it('should handle single message interaction', async () => {
+    it.skip('should handle single message interaction', async () => {
       // Create agent profile
       const agentDir = join(testDir, '.automatosx', 'agents');
       await mkdir(agentDir, { recursive: true });
@@ -181,7 +209,7 @@ provider: claude
   });
 
   describe('Session Management', () => {
-    it('should save session when --save-session is used', async () => {
+    it.skip('should save session when --save-session is used', async () => {
       const agentDir = join(testDir, '.automatosx', 'agents');
       await mkdir(agentDir, { recursive: true });
 
@@ -225,7 +253,7 @@ abilities: []
       expect(stdout).toMatch(/saved|session/i);
     }, 15000);
 
-    it('should accept --load-session parameter', async () => {
+    it.skip('should accept --load-session parameter', async () => {
       const agentDir = join(testDir, '.automatosx', 'agents');
       const sessionsDir = join(testDir, '.automatosx', 'sessions');
       await mkdir(agentDir, { recursive: true });
@@ -282,7 +310,7 @@ abilities: []
   });
 
   describe('Provider Override', () => {
-    it('should accept --provider option', async () => {
+    it.skip('should accept --provider option', async () => {
       const agentDir = join(testDir, '.automatosx', 'agents');
       await mkdir(agentDir, { recursive: true });
 
@@ -323,7 +351,7 @@ provider: claude
       expect(stdout).toBeTruthy();
     }, 15000);
 
-    it('should accept --model option', async () => {
+    it.skip('should accept --model option', async () => {
       const agentDir = join(testDir, '.automatosx', 'agents');
       await mkdir(agentDir, { recursive: true });
 
@@ -365,7 +393,7 @@ abilities: []
   });
 
   describe('Memory Integration', () => {
-    it('should support --memory flag', async () => {
+    it.skip('should support --memory flag', async () => {
       const agentDir = join(testDir, '.automatosx', 'agents');
       await mkdir(agentDir, { recursive: true });
 
@@ -405,7 +433,7 @@ abilities: []
       expect(stdout).toBeTruthy();
     }, 15000);
 
-    it('should support --no-memory flag', async () => {
+    it.skip('should support --no-memory flag', async () => {
       const agentDir = join(testDir, '.automatosx', 'agents');
       await mkdir(agentDir, { recursive: true });
 
@@ -447,7 +475,7 @@ abilities: []
   });
 
   describe('Error Handling', () => {
-    it('should handle missing config gracefully', async () => {
+    it.skip('should handle missing config gracefully', async () => {
       // No config or agent created
       const chatProcess = spawn('node', [cliPath, 'chat', 'missing'], {
         cwd: testDir,
@@ -480,7 +508,7 @@ abilities: []
       expect(stderr).toBeTruthy();
     }, 15000);
 
-    it('should handle invalid session file', async () => {
+    it.skip('should handle invalid session file', async () => {
       const agentDir = join(testDir, '.automatosx', 'agents');
       await mkdir(agentDir, { recursive: true });
 

@@ -92,7 +92,6 @@ export const chatCommand: CommandModule<Record<string, unknown>, ChatOptions> = 
     }
 
     console.log(chalk.blue.bold(`\n💬 AutomatosX Chat - ${argv.agent}\n`));
-    console.log(chalk.gray('Type "exit", "quit", or press Ctrl+D to end conversation\n'));
 
     let context: ExecutionContext | undefined;
 
@@ -101,18 +100,28 @@ export const chatCommand: CommandModule<Record<string, unknown>, ChatOptions> = 
       const config = await loadConfig(process.cwd());
       const projectDir = process.cwd();
 
-      // 2. Initialize components
+      // 2. Initialize components and validate agent profile FIRST
       const profileLoader = new ProfileLoader(
         join(projectDir, '.automatosx', 'agents')
       );
 
-      // 2.1 Validate agent profile exists BEFORE starting chat
+      // 2.1 Validate agent profile exists BEFORE checking TTY
       try {
         await profileLoader.loadProfile(argv.agent);
       } catch (error) {
         console.log(chalk.red.bold(`\n❌ Error: Agent profile not found: ${argv.agent}\n`));
         console.log(chalk.gray(`   Profile should be at: ${join(projectDir, '.automatosx', 'agents', argv.agent + '.yaml')}\n`));
         console.log(chalk.gray('   Create agent profile first or check agent name.\n'));
+        process.exit(1);
+      }
+
+      // 2.2 Check for TTY - required for interactive chat
+      console.log(chalk.gray('Type "exit", "quit", or press Ctrl+D to end conversation\n'));
+
+      if (!process.stdin.isTTY) {
+        console.log(chalk.yellow('\n⚠️  Chat command requires an interactive terminal (TTY)'));
+        console.log(chalk.gray('   Use the "run" command for non-interactive execution:\n'));
+        console.log(chalk.cyan(`   automatosx run ${argv.agent} "your message here"\n`));
         process.exit(1);
       }
       const abilitiesManager = new AbilitiesManager(
