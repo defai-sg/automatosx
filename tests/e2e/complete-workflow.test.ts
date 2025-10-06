@@ -352,7 +352,7 @@ describe('E2E Complete Workflows', () => {
 
     it('should verify command help accessibility', async () => {
       // All commands should have help
-      const commands = ['run', 'chat', 'memory', 'config', 'status'];
+      const commands = ['run', 'memory', 'config', 'status', 'list'];
 
       for (const cmd of commands) {
         const help = await execCLI(env, [cmd, '--help']);

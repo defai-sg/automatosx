@@ -18,11 +18,9 @@ import chalk from 'chalk';
 import { join } from 'path';
 import { writeFileSync } from 'fs';
 import { mkdir } from 'fs/promises';
-import inquirer from 'inquirer';
 import boxen from 'boxen';
 import type { ExecutionResult } from '../../agents/executor.js';
 import { formatOutput, formatForSave } from '../../utils/output-formatter.js';
-import { confirm } from '../../utils/interactive.js';
 
 interface RunOptions {
   provider?: string;
@@ -34,7 +32,6 @@ interface RunOptions {
   format?: 'text' | 'json' | 'markdown';
   save?: string;
   timeout?: number;
-  interactive?: boolean;
 }
 
 export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
@@ -96,12 +93,6 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         describe: 'Execution timeout in seconds',
         type: 'number'
       })
-      .option('interactive', {
-        alias: 'i',
-        describe: 'Interactive mode (confirm before execution)',
-        type: 'boolean',
-        default: false
-      });
   },
 
   handler: async (argv) => {
@@ -228,39 +219,7 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         pathResolver
       });
 
-      // 6. Interactive confirmation
-      if (argv.interactive) {
-        console.log(boxen(
-          chalk.bold('Execution Preview\n\n') +
-          `${chalk.cyan('Agent:')} ${argv.agent}\n` +
-          `${chalk.cyan('Task:')} ${argv.task}\n` +
-          `${chalk.cyan('Provider:')} ${argv.provider || 'auto'}\n` +
-          `${chalk.cyan('Memory:')} ${argv.memory ? 'enabled' : 'disabled'}`,
-          {
-            padding: 1,
-            margin: 1,
-            borderStyle: 'round',
-            borderColor: 'blue'
-          }
-        ));
-
-        const proceed = await confirm({
-          message: 'Proceed with execution?',
-          default: true
-        });
-
-        if (!proceed) {
-          console.log(chalk.yellow('\n⚠ Execution cancelled by user\n'));
-
-          // Cleanup
-          if (memoryManager) await memoryManager.close();
-          router.destroy();
-
-          process.exit(0);
-        }
-      }
-
-      // 7. Create execution context
+      // 6. Create execution context
       if (argv.verbose) {
         console.log(chalk.gray('Creating execution context...'));
         console.log();

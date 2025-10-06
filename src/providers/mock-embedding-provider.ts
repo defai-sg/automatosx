@@ -36,9 +36,20 @@ export class MockEmbeddingProvider implements IEmbeddingProvider {
   private dimensions: number;
 
   constructor(config?: Partial<EmbeddingProviderConfig>) {
-    this.provider = config?.provider || 'mock';
+    this.provider = 'mock';
     this.model = config?.model || 'mock-embedding-model';
     this.dimensions = config?.dimensions || 1536;
+  }
+
+  /**
+   * Get provider info
+   */
+  getInfo() {
+    return {
+      provider: this.provider,
+      model: this.model,
+      dimensions: this.dimensions
+    };
   }
 
   /**
@@ -72,6 +83,7 @@ export class MockEmbeddingProvider implements IEmbeddingProvider {
     return {
       embedding: normalizedEmbedding,
       model: this.model,
+      dimensions: this.dimensions,
       usage: {
         promptTokens: text.split(/\s+/).length,
         totalTokens: text.split(/\s+/).length

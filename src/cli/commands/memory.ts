@@ -68,7 +68,6 @@ async function getMemoryManager(dbPath?: string): Promise<MemoryManagerVec> {
     try {
       const { MockEmbeddingProvider } = await import('../../providers/mock-embedding-provider.js');
       embeddingProvider = new MockEmbeddingProvider({
-        provider: 'mock',
         model: 'mock-embedding-model'
       });
     } catch (error) {

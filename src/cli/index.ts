@@ -15,7 +15,6 @@ import { logger, setLogLevel } from '../utils/logger.js';
 import { globalTracker } from '../utils/performance.js';
 
 // Import all commands directly (lazy loading broke command options)
-import { chatCommand } from './commands/chat.js';
 import { configCommand } from './commands/config.js';
 import { initCommand } from './commands/init.js';
 import { listCommand } from './commands/list.js';
@@ -34,7 +33,6 @@ const argv = await yargs(hideBin(process.argv))
   .usage('\nAI Agent Orchestration Platform')
   .example('$0 init', 'Initialize project')
   .example('$0 run assistant "Hello"', 'Run assistant agent')
-  .example('$0 chat assistant', 'Start interactive chat')
   .example('$0 list agents', 'List available agents')
   .example('$0 memory search "topic"', 'Search memory')
   .example('$0 config --list', 'View configuration')
@@ -63,7 +61,6 @@ const argv = await yargs(hideBin(process.argv))
   .command(initCommand)
   .command(listCommand)
   .command(runCommand)
-  .command(chatCommand)
   .command(configCommand)
   .command(statusCommand)
   .command(memoryCommand)

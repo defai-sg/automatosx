@@ -7,18 +7,14 @@ import { mkdir, writeFile, access } from 'fs/promises';
 import { resolve, join } from 'path';
 import { constants } from 'fs';
 import chalk from 'chalk';
-import inquirer from 'inquirer';
 import { DEFAULT_CONFIG } from '../../types/config.js';
 import type { AutomatosXConfig } from '../../types/config.js';
 import { logger } from '../../utils/logger.js';
 import { printError } from '../../utils/error-formatter.js';
-import { formatSuccess, printSuccess } from '../../utils/message-formatter.js';
-import { confirm, select } from '../../utils/interactive.js';
 
 interface InitOptions {
   force?: boolean;
   path?: string;
-  interactive?: boolean;
 }
 
 export const initCommand: CommandModule<Record<string, unknown>, InitOptions> = {
@@ -37,12 +33,6 @@ export const initCommand: CommandModule<Record<string, unknown>, InitOptions> = 
         describe: 'Force initialization even if .automatosx already exists',
         type: 'boolean',
         default: false
-      })
-      .option('interactive', {
-        alias: 'i',
-        describe: 'Interactive mode with prompts',
-        type: 'boolean',
-        default: false
       });
   },
 
@@ -56,32 +46,14 @@ export const initCommand: CommandModule<Record<string, unknown>, InitOptions> = 
       // Check if already initialized
       const exists = await checkExists(automatosxDir);
       if (exists && !argv.force) {
-        if (argv.interactive) {
-          const proceed = await confirm({
-            message: 'AutomatosX is already initialized. Reinitialize?',
-            default: false
-          });
-
-          if (!proceed) {
-            console.log(chalk.gray('\nInitialization cancelled\n'));
-            process.exit(0);
-          }
-        } else {
-          console.log(chalk.yellow('⚠️  AutomatosX is already initialized in this directory'));
-          console.log(chalk.gray(`   ${automatosxDir}`));
-          console.log(chalk.gray('\n   Use --force to reinitialize\n'));
-          process.exit(1);
-        }
+        console.log(chalk.yellow('⚠️  AutomatosX is already initialized in this directory'));
+        console.log(chalk.gray(`   ${automatosxDir}`));
+        console.log(chalk.gray('\n   Use --force to reinitialize\n'));
+        process.exit(1);
       }
 
       if (exists && argv.force) {
         console.log(chalk.yellow('⚠️  Reinitializing (--force flag detected)'));
-      }
-
-      // Interactive mode: gather configuration preferences
-      let customConfig: Partial<AutomatosXConfig> | undefined;
-      if (argv.interactive) {
-        customConfig = await promptConfiguration();
       }
 
       // Create directory structure
@@ -102,7 +74,7 @@ export const initCommand: CommandModule<Record<string, unknown>, InitOptions> = 
       // Create default config
       console.log(chalk.cyan('⚙️  Generating configuration...'));
       const configPath = join(projectDir, 'automatosx.config.json');
-      await createDefaultConfig(configPath, argv.force ?? false, customConfig);
+      await createDefaultConfig(configPath, argv.force ?? false);
       console.log(chalk.green('   ✓ Configuration created'));
 
       // Create .gitignore entry
@@ -219,88 +191,11 @@ async function copyExampleAbilities(baseDir: string): Promise<void> {
 }
 
 /**
- * Prompt user for configuration preferences (interactive mode)
- */
-async function promptConfiguration(): Promise<Partial<AutomatosXConfig>> {
-  console.log(chalk.cyan('\n⚙️  Configuration Setup\n'));
-
-  // Select primary provider
-  const primaryProvider = await select({
-    message: 'Select primary AI provider:',
-    choices: [
-      { name: 'Claude Code (Anthropic)', value: 'claude-code' },
-      { name: 'Gemini (Google)', value: 'gemini' }
-    ],
-    default: 'claude-code'
-  });
-
-  // Enable memory
-  const enableMemory = await confirm({
-    message: 'Enable persistent memory?',
-    default: true
-  });
-
-  // Memory limit (only if memory enabled)
-  let memoryLimit = DEFAULT_CONFIG.memory.maxEntries;
-  if (enableMemory) {
-    const { limit } = await inquirer.prompt([{
-      type: 'number',
-      name: 'limit',
-      message: 'Maximum memory entries:',
-      default: 10000
-    }]);
-    memoryLimit = limit;
-  }
-
-  // Log level
-  const logLevel = await select<string>({
-    message: 'Log level:',
-    choices: [
-      { name: 'Debug', value: 'debug' },
-      { name: 'Info', value: 'info' },
-      { name: 'Warning', value: 'warn' },
-      { name: 'Error', value: 'error' }
-    ],
-    default: 'info'
-  });
-
-  // Build custom config based on answers
-  const claudeConfig = DEFAULT_CONFIG.providers['claude-code'] || { enabled: false, priority: 1, timeout: 60000, command: 'claude' };
-  const geminiConfig = DEFAULT_CONFIG.providers['gemini'] || { enabled: false, priority: 2, timeout: 60000, command: 'gemini' };
-
-  const customConfig: Partial<AutomatosXConfig> = {
-    providers: {
-      'claude-code': {
-        ...claudeConfig,
-        enabled: true,
-        priority: primaryProvider === 'claude-code' ? 1 : 2
-      },
-      'gemini': {
-        ...geminiConfig,
-        enabled: true,
-        priority: primaryProvider === 'gemini' ? 1 : 2
-      }
-    },
-    memory: {
-      ...DEFAULT_CONFIG.memory,
-      maxEntries: memoryLimit
-    },
-    logging: {
-      ...DEFAULT_CONFIG.logging,
-      level: logLevel as 'debug' | 'info' | 'warn' | 'error'
-    }
-  };
-
-  return customConfig;
-}
-
-/**
  * Create default configuration file
  */
 async function createDefaultConfig(
   configPath: string,
-  force: boolean,
-  customConfig?: Partial<AutomatosXConfig>
+  force: boolean
 ): Promise<void> {
   const exists = await checkExists(configPath);
 
@@ -310,12 +205,6 @@ async function createDefaultConfig(
 
   const config = {
     ...DEFAULT_CONFIG,
-    ...customConfig,
-    // Merge providers properly
-    providers: {
-      ...DEFAULT_CONFIG.providers,
-      ...(customConfig?.providers || {})
-    },
     // Add metadata
     $schema: 'https://automatosx.dev/schema/config.json',
     version: '4.0.0'
