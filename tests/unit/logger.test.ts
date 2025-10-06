@@ -32,16 +32,18 @@ describe('SimpleLogger', () => {
       const logger = new SimpleLogger({ level: 'debug' });
       logger.debug('Debug message');
 
-      expect(consoleSpy.log).toHaveBeenCalledWith(expect.stringContaining('Debug message'));
-      expect(consoleSpy.log).toHaveBeenCalledWith(expect.stringContaining('DEBUG'));
+      // Logger now outputs to stderr (console.error) for all levels
+      expect(consoleSpy.error).toHaveBeenCalledWith(expect.stringContaining('Debug message'));
+      expect(consoleSpy.error).toHaveBeenCalledWith(expect.stringContaining('DEBUG'));
     });
 
     it('should log info messages', () => {
       const logger = new SimpleLogger({ level: 'info' });
       logger.info('Info message');
 
-      expect(consoleSpy.log).toHaveBeenCalledWith(expect.stringContaining('Info message'));
-      expect(consoleSpy.log).toHaveBeenCalledWith(expect.stringContaining('INFO'));
+      // Logger now outputs to stderr (console.error) for all levels
+      expect(consoleSpy.error).toHaveBeenCalledWith(expect.stringContaining('Info message'));
+      expect(consoleSpy.error).toHaveBeenCalledWith(expect.stringContaining('INFO'));
     });
 
     it('should log warn messages', () => {
@@ -66,14 +68,16 @@ describe('SimpleLogger', () => {
       const logger = new SimpleLogger({ level: 'info' });
       logger.debug('Debug message');
 
-      expect(consoleSpy.log).not.toHaveBeenCalled();
+      // Debug should not trigger any console output
+      expect(consoleSpy.error).not.toHaveBeenCalledWith(expect.stringContaining('Debug message'));
     });
 
     it('should not log info when level is warn', () => {
       const logger = new SimpleLogger({ level: 'warn' });
       logger.info('Info message');
 
-      expect(consoleSpy.log).not.toHaveBeenCalled();
+      // Info should not trigger any console output
+      expect(consoleSpy.error).not.toHaveBeenCalledWith(expect.stringContaining('Info message'));
     });
 
     it('should not log warn when level is error', () => {
@@ -81,6 +85,7 @@ describe('SimpleLogger', () => {
       logger.warn('Warning message');
 
       expect(consoleSpy.warn).not.toHaveBeenCalled();
+      expect(consoleSpy.error).not.toHaveBeenCalledWith(expect.stringContaining('Warning message'));
     });
 
     it('should log all levels when level is debug', () => {
@@ -91,9 +96,9 @@ describe('SimpleLogger', () => {
       logger.warn('Warn');
       logger.error('Error');
 
-      expect(consoleSpy.log).toHaveBeenCalledTimes(2); // debug + info
-      expect(consoleSpy.warn).toHaveBeenCalledTimes(1);
-      expect(consoleSpy.error).toHaveBeenCalledTimes(1);
+      // All levels go to stderr now (console.error for info/debug, console.warn for warn, console.error for error)
+      expect(consoleSpy.error).toHaveBeenCalledTimes(3); // debug + info + error
+      expect(consoleSpy.warn).toHaveBeenCalledTimes(1); // warn
     });
   });
 
@@ -104,9 +109,10 @@ describe('SimpleLogger', () => {
 
       logger.info('Test message', context);
 
-      expect(consoleSpy.log).toHaveBeenCalledWith(expect.stringContaining('Test message'));
-      expect(consoleSpy.log).toHaveBeenCalledWith(expect.stringContaining('userId'));
-      expect(consoleSpy.log).toHaveBeenCalledWith(expect.stringContaining('123'));
+      // Logger now outputs to stderr (console.error)
+      expect(consoleSpy.error).toHaveBeenCalledWith(expect.stringContaining('Test message'));
+      expect(consoleSpy.error).toHaveBeenCalledWith(expect.stringContaining('userId'));
+      expect(consoleSpy.error).toHaveBeenCalledWith(expect.stringContaining('123'));
     });
 
     it('should work without context', () => {
@@ -114,7 +120,8 @@ describe('SimpleLogger', () => {
 
       logger.info('Test message');
 
-      expect(consoleSpy.log).toHaveBeenCalledWith(expect.stringContaining('Test message'));
+      // Logger now outputs to stderr (console.error)
+      expect(consoleSpy.error).toHaveBeenCalledWith(expect.stringContaining('Test message'));
     });
   });
 
@@ -125,7 +132,8 @@ describe('SimpleLogger', () => {
       logger.debug('Debug');
       logger.info('Info');
 
-      expect(consoleSpy.log).toHaveBeenCalledTimes(1); // Only info, not debug
+      // Only info should be logged (to stderr), not debug
+      expect(consoleSpy.error).toHaveBeenCalledTimes(1); // Only info, not debug
     });
 
     it('should disable console output when console is false', () => {
@@ -135,9 +143,8 @@ describe('SimpleLogger', () => {
       logger.warn('Test');
       logger.error('Test');
 
-      expect(consoleSpy.log).not.toHaveBeenCalled();
-      expect(consoleSpy.warn).not.toHaveBeenCalled();
       expect(consoleSpy.error).not.toHaveBeenCalled();
+      expect(consoleSpy.warn).not.toHaveBeenCalled();
     });
 
     it('should enable console output by default', () => {
@@ -145,7 +152,8 @@ describe('SimpleLogger', () => {
 
       logger.info('Test');
 
-      expect(consoleSpy.log).toHaveBeenCalled();
+      // Logger now outputs to stderr (console.error)
+      expect(consoleSpy.error).toHaveBeenCalled();
     });
   });
 
@@ -156,7 +164,8 @@ describe('SimpleLogger', () => {
       logger.info('Info');
       logger.warn('Warn');
 
-      expect(consoleSpy.log).not.toHaveBeenCalled();
+      // Info should not be logged, warn should go to console.warn
+      expect(consoleSpy.error).not.toHaveBeenCalledWith(expect.stringContaining('Info'));
       expect(consoleSpy.warn).toHaveBeenCalled();
     });
   });
@@ -168,7 +177,8 @@ describe('SimpleLogger', () => {
       logger.info('Test');
 
       // Check for ISO timestamp format (e.g., "2025-10-04T...")
-      expect(consoleSpy.log).toHaveBeenCalledWith(expect.stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/));
+      // Logger now outputs to stderr (console.error)
+      expect(consoleSpy.error).toHaveBeenCalledWith(expect.stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/));
     });
   });
 
@@ -182,7 +192,8 @@ describe('SimpleLogger', () => {
       logger.error('Error');
 
       // Check for ANSI color codes (e.g., \x1b[36m for cyan)
-      expect(consoleSpy.log.mock.calls.some((call: unknown[]) =>
+      // Logger now outputs to stderr (console.error for debug/info/error, console.warn for warn)
+      expect(consoleSpy.error.mock.calls.some((call: unknown[]) =>
         typeof call[0] === 'string' && call[0].includes('\x1b[')
       )).toBe(true);
     });

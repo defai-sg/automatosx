@@ -11,7 +11,8 @@ describe('Logger Sanitization', () => {
 
   beforeEach(() => {
     logger = new SimpleLogger({ level: 'debug', console: true });
-    consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    // Logger now outputs to stderr (console.error), not stdout
+    consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {

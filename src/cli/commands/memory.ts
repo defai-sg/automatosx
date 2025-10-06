@@ -408,6 +408,11 @@ export const addCommand: CommandModule = {
         describe: 'Tags (comma-separated)',
         type: 'string'
       })
+      .option('metadata', {
+        alias: 'm',
+        describe: 'Custom metadata as JSON string',
+        type: 'string'
+      })
       .option('db', {
         describe: 'Database path',
         type: 'string'
@@ -426,6 +431,17 @@ export const addCommand: CommandModule = {
 
       if (argv.tags) {
         metadata.tags = argv.tags.split(',').map((t: string) => t.trim());
+      }
+
+      // Parse custom metadata if provided
+      if (argv.metadata) {
+        try {
+          const customMetadata = JSON.parse(argv.metadata);
+          // Merge custom metadata, preserving required fields
+          Object.assign(metadata, customMetadata);
+        } catch (error) {
+          throw new Error(`Invalid metadata JSON: ${(error as Error).message}`);
+        }
       }
 
       // For CLI, we don't have an embedding provider by default

@@ -64,9 +64,37 @@ describe('CLI Memory Command Integration', () => {
       expect(result.stdout).toMatch(/test|important/i);
     });
 
-    // TODO: metadata option not supported in current implementation
-    it.skip('should add memory with metadata', async () => {
-      // Skipped: metadata option not available in CLI
+    it('should add memory with metadata', async () => {
+      const customMetadata = JSON.stringify({
+        priority: 'high',
+        project: 'test-project',
+        author: 'test-user'
+      });
+
+      const result = await execFileAsync('node', [
+        cliPath, 'memory', 'add',
+        'Test with custom metadata',
+        '--metadata', customMetadata
+      ], {
+        cwd: testDir,
+        env: process.env
+      });
+
+      expect(result.stdout).toMatch(/added|success/i);
+
+      // Verify metadata was stored
+      const listResult = await execFileAsync('node', [
+        cliPath, 'memory', 'list',
+        '--output', 'json'
+      ], { cwd: testDir, env: process.env });
+
+      const entries = JSON.parse(listResult.stdout.trim());
+      const entry = entries.find((e: any) => e.content === 'Test with custom metadata');
+
+      expect(entry).toBeDefined();
+      expect(entry.metadata.priority).toBe('high');
+      expect(entry.metadata.project).toBe('test-project');
+      expect(entry.metadata.author).toBe('test-user');
     });
 
     it('should accept type option', async () => {
@@ -167,9 +195,23 @@ describe('CLI Memory Command Integration', () => {
       expect(result.stdout).toBeTruthy();
     });
 
-    // TODO: JSON format not in list command
-    it.skip('should support JSON output format', async () => {
-      // Skipped: --format option not available in list command
+    it('should support JSON output format', async () => {
+      const result = await execFileAsync('node', [
+        cliPath, 'memory', 'list',
+        '--output', 'json'
+      ], {
+        cwd: testDir,
+        env: process.env
+      });
+
+      // Parse JSON output (logger now goes to stderr, so stdout is clean JSON)
+      const parsed = JSON.parse(result.stdout.trim());
+
+      expect(Array.isArray(parsed)).toBe(true);
+      expect(parsed.length).toBeGreaterThanOrEqual(2); // We added 2 memories in beforeEach
+      expect(parsed[0]).toHaveProperty('id');
+      expect(parsed[0]).toHaveProperty('content');
+      expect(parsed[0]).toHaveProperty('metadata');
     });
   });
 
@@ -185,9 +227,43 @@ describe('CLI Memory Command Integration', () => {
   });
 
   describe('memory delete', () => {
-    // TODO: Delete requires getting ID first, list doesn't have JSON format
-    it.skip('should delete memory by ID', async () => {
-      // Skipped: Needs list --format json support to get ID
+    it('should delete memory by ID', async () => {
+      // Step 1: Add a test memory
+      await execFileAsync('node', [
+        cliPath, 'memory', 'add',
+        'Memory to delete',
+        '--tags', 'delete-test'
+      ], { cwd: testDir, env: process.env });
+
+      // Step 2: Get ID via JSON list (logger now goes to stderr)
+      const listResult = await execFileAsync('node', [
+        cliPath, 'memory', 'list',
+        '--output', 'json'
+      ], { cwd: testDir, env: process.env });
+
+      const entries = JSON.parse(listResult.stdout.trim());
+      const targetEntry = entries.find((e: any) => e.content === 'Memory to delete');
+      expect(targetEntry).toBeDefined();
+      expect(targetEntry.id).toBeDefined();
+
+      // Step 3: Delete by ID
+      const deleteResult = await execFileAsync('node', [
+        cliPath, 'memory', 'delete',
+        String(targetEntry.id),
+        '--confirm'
+      ], { cwd: testDir, env: process.env });
+
+      expect(deleteResult.stdout).toMatch(/deleted|success/i);
+
+      // Step 4: Verify deleted
+      const verifyResult = await execFileAsync('node', [
+        cliPath, 'memory', 'list',
+        '--output', 'json'
+      ], { cwd: testDir, env: process.env });
+
+      const remainingEntries = JSON.parse(verifyResult.stdout.trim());
+      const stillExists = remainingEntries.find((e: any) => e.id === targetEntry.id);
+      expect(stillExists).toBeUndefined();
     });
 
     it('should show error for invalid ID', async () => {

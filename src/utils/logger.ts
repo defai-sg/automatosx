@@ -219,13 +219,15 @@ export class SimpleLogger implements Logger {
       logMessage += `\n${JSON.stringify(entry.context, null, 2)}`;
     }
 
-    // Output to appropriate stream
+    // Output to stderr to avoid polluting stdout (especially for JSON output)
+    // This ensures CLI commands can output clean JSON to stdout
     if (entry.level === 'error') {
       console.error(logMessage);
     } else if (entry.level === 'warn') {
       console.warn(logMessage);
     } else {
-      console.log(logMessage);
+      // info and debug also go to stderr
+      console.error(logMessage);
     }
   }
 
