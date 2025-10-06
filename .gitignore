@@ -44,11 +44,36 @@ temp/
 .automatosx/
 .automatosx-backups/
 
-# Internal development docs (not for public repo)
-PRD/archive/
-.claude/
+# === INTERNAL DOCUMENTATION (NEVER COMMIT TO PUBLIC REPO) ===
+
+# Product Requirements Documents (Internal Planning)
+PRD/
+
+# Internal release documentation
+RELEASE-CHECKLIST.md
+RELEASE-NOTES.md
+*-RELEASE-PLAN.md
+
+# Internal status tracking
+*-KICKOFF.md
+*-COMPLETE*.md
+*-STATUS.md
+*ULTRATHINK*.md
+*HEAVYTHINK*.md
+*DAY[0-9]*.md
+*-PHASE*.md
+
+# Internal analysis and planning
+*AUDIT*.md
+*ANALYSIS*.md
+*ASSESSMENT*.md
 
 # AI assistant files (internal only)
 AGENTS.md
 CLAUDE.md
 GEMINI.md
+.claude/
+
+# Work in progress
+WIP-*.md
+DRAFT-*.md
