@@ -149,8 +149,10 @@ stages:
       const profile = await loader.loadProfile('test');
       expect(profile.stages).toBeDefined();
       expect(profile.stages).toHaveLength(2);
-      expect(profile.stages![0].name).toBe('stage1');
-      expect(profile.stages![0].temperature).toBe(0.7);
+      if (profile.stages && profile.stages[0]) {
+        expect(profile.stages[0].name).toBe('stage1');
+        expect(profile.stages[0].temperature).toBe(0.7);
+      }
     });
   });
 
