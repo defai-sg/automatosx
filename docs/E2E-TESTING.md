@@ -366,7 +366,7 @@ cat backup.json | jq .
 automatosx run assistant "$(cat long-file.txt)"
 
 # Special characters
-automatosx run assistant "Test with 你好 émojis 🎉"
+automatosx run assistant "Test with Hello émojis 🎉"
 
 # Network interruption
 # (Disconnect internet during execution)

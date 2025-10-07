@@ -47,20 +47,27 @@ export class ContextManager {
   ): Promise<ExecutionContext> {
     logger.info('Creating execution context', { agentName, task });
 
-    // 1. Load agent profile
-    const agent = await this.config.profileLoader.loadProfile(agentName);
+    // 1. Resolve agent name (supports displayName)
+    const resolvedName = await this.config.profileLoader.resolveAgentName(agentName);
+    logger.debug('Agent name resolved', {
+      input: agentName,
+      resolved: resolvedName
+    });
 
-    // 2. Load abilities
+    // 2. Load agent profile
+    const agent = await this.config.profileLoader.loadProfile(resolvedName);
+
+    // 3. Load abilities
     const abilities = await this.config.abilitiesManager.getAbilitiesText(
       agent.abilities || []
     );
 
-    // 3. Select provider
+    // 4. Select provider
     const provider = await this.selectProvider(
       options?.provider || agent.provider
     );
 
-    // 4. Get paths
+    // 5. Get paths
     const projectDir = await this.config.pathResolver.detectProjectRoot();
     const workingDir = process.cwd();
 
@@ -75,7 +82,7 @@ export class ContextManager {
       throw PathError.traversal(agentWorkspace);
     }
 
-    // 5. Create workspace with restricted permissions
+    // 6. Create workspace with restricted permissions
     await mkdir(agentWorkspace, { recursive: true });
 
     // Security: Set restrictive permissions on Unix (700 = owner only)
@@ -85,7 +92,7 @@ export class ContextManager {
 
     logger.debug('Agent workspace created', { workspace: agentWorkspace });
 
-    // 6. Create context
+    // 7. Create context
     const context: ExecutionContext = {
       agent,
       task,

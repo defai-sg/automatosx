@@ -1,8 +1,9 @@
-# Debugger Agent
+# Debugger Agent - Danny
 # Specialized in debugging and troubleshooting
 
 name: debugger
-displayName: "Debug Assistant"
+displayName: Danny
+role: Debug Expert
 description: "Expert at debugging code, analyzing errors, and solving technical problems"
 
 # Provider preference

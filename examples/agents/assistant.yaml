@@ -1,8 +1,9 @@
-# Assistant Agent
+# Assistant Agent - Alex
 # General purpose AI assistant for everyday tasks
 
 name: assistant
-displayName: "General Assistant"
+displayName: Alex
+role: General Assistant
 description: "A versatile AI assistant for general purpose tasks, questions, and conversations"
 
 # Provider preference

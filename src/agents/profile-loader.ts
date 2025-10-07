@@ -16,6 +16,8 @@ import { TTLCache } from '../core/cache.js';
 export class ProfileLoader {
   private profilesDir: string;
   private cache: TTLCache<AgentProfile>;
+  private displayNameMap: Map<string, string> = new Map();
+  private mapInitialized: boolean = false;
 
   constructor(profilesDir: string) {
     this.profilesDir = profilesDir;
@@ -26,6 +28,70 @@ export class ProfileLoader {
       cleanupInterval: 60000, // Cleanup every minute
       debug: false
     });
+  }
+
+  /**
+   * Build displayName → name mapping table
+   * This is called lazily on first agent lookup
+   */
+  private async buildDisplayNameMap(): Promise<void> {
+    if (this.mapInitialized) {
+      return;
+    }
+
+    logger.debug('Building displayName mapping table');
+    this.displayNameMap.clear();
+
+    try {
+      const profiles = await this.listProfiles();
+
+      for (const name of profiles) {
+        try {
+          const profile = await this.loadProfile(name);
+          if (profile.displayName) {
+            // Store case-insensitive mapping
+            this.displayNameMap.set(profile.displayName.toLowerCase(), name);
+            logger.debug('Mapped displayName to agent', {
+              displayName: profile.displayName,
+              name
+            });
+          }
+        } catch (error) {
+          // Skip profiles that fail to load
+          logger.warn('Failed to load profile for mapping', { name, error });
+        }
+      }
+
+      this.mapInitialized = true;
+      logger.info('DisplayName mapping built', {
+        mappings: this.displayNameMap.size
+      });
+    } catch (error) {
+      logger.error('Failed to build displayName mapping', { error });
+      // Don't throw - allow fallback to direct name lookup
+    }
+  }
+
+  /**
+   * Resolve agent identifier (name or displayName) to actual profile name
+   */
+  async resolveAgentName(identifier: string): Promise<string> {
+    // Build map on first use
+    await this.buildDisplayNameMap();
+
+    // Try case-insensitive displayName lookup
+    const resolved = this.displayNameMap.get(identifier.toLowerCase());
+    if (resolved) {
+      logger.debug('Resolved displayName to agent name', {
+        displayName: identifier,
+        name: resolved
+      });
+      return resolved;
+    }
+
+    // Return as-is (assume it's a direct profile name)
+    logger.debug('Using identifier as profile name', { identifier });
+    return identifier;
   }
 
   /**
@@ -156,10 +222,13 @@ export class ProfileLoader {
   }
 
   /**
-   * Clear cache
+   * Clear cache and displayName mapping
    */
   clearCache(): void {
     this.cache.clear();
+    this.displayNameMap.clear();
+    this.mapInitialized = false;
+    logger.debug('Cache and displayName mapping cleared');
   }
 
   /**
@@ -168,6 +237,7 @@ export class ProfileLoader {
   private buildProfile(data: any, name: string): AgentProfile {
     const profile: AgentProfile = {
       name: data.name || name,
+      displayName: data.displayName,
       role: data.role,
       description: data.description,
       systemPrompt: data.systemPrompt,

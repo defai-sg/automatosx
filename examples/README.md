@@ -59,9 +59,22 @@ vim .automatosx/agents/assistant.yaml
 # - systemPrompt: Detailed instructions
 ```
 
+## Agent Names
+
+**AutomatosX agents have human-friendly names!** 🎉
+
+Instead of remembering technical roles, you can use memorable names:
+- 👨‍💻 **Bob** - Backend Engineer
+- 👨‍💻 **Frank** - Frontend Developer
+- 🔒 **Steve** - Security Engineer
+- 🎨 **Debbee** - UX/UI Designer
+- 📊 **Daisy** - Data Scientist
+
+See [AGENTS_INFO.md](./AGENTS_INFO.md) for the complete directory.
+
 ## Available Agents
 
-### assistant.yaml
+### assistant.yaml - Alex
 **Purpose**: General-purpose assistant for everyday tasks
 
 **Best for**:
@@ -71,7 +84,11 @@ vim .automatosx/agents/assistant.yaml
 
 **Example**:
 ```bash
+# Using role name
 automatosx run assistant "What are the benefits of TypeScript?"
+
+# Using display name (easier to remember!)
+automatosx run Alex "What are the benefits of TypeScript?"
 ```
 
 ### coder.yaml

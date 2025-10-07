@@ -11,6 +11,7 @@ import type { MemoryEntry } from './memory.js';
 export interface AgentProfile {
   // Metadata
   name: string;
+  displayName?: string; // Human-friendly name (e.g., "Bob", "Eric")
   role: string;
   description: string;
 

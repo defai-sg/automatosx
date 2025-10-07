@@ -1,10 +1,10 @@
 /**
  * Real Provider Integration Tests
  *
- * Tests AutomatosX with real Claude/Gemini providers (not mocks)
+ * Tests AutomatosX with real Claude/Gemini CLI providers (not mocks)
  *
- * IMPORTANT: These tests make real API calls and may incur costs.
- * Only run when needed with: npm test -- tests/integration/real-provider.test.ts
+ * IMPORTANT: These tests call real CLI commands (claude/gemini) and may incur costs.
+ * Only run when needed with: TEST_REAL_PROVIDERS=true npm test -- tests/integration/real-provider.test.ts
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
@@ -39,7 +39,7 @@ describe.skipIf(SKIP_REAL_PROVIDER_TESTS)('Real Provider Integration', () => {
 role: assistant
 description: Test agent for real provider integration
 systemPrompt: You are a test assistant. Respond concisely in exactly 3 words.
-model: claude-3-5-haiku-20241022
+provider: claude
 temperature: 0.1
 maxTokens: 50
 `
@@ -183,7 +183,7 @@ export async function manualRealProviderTest() {
 role: assistant
 description: Manual test agent
 systemPrompt: You are a helpful assistant. Respond concisely.
-model: claude-3-5-haiku-20241022
+provider: claude
 temperature: 0.7
 maxTokens: 100
 `

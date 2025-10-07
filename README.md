@@ -250,6 +250,11 @@ npm run test:coverage  # Generate coverage report
 automatosx run <agent> "<task>"      # One-time execution
 automatosx chat <agent>               # Interactive session
 
+# Agents have memorable names! 🎉
+automatosx run Bob "Design a RESTful API"      # Bob = Backend Engineer
+automatosx run Frank "Create login component"  # Frank = Frontend Developer
+automatosx run Steve "Review auth code"        # Steve = Security Engineer
+
 # Manage agents
 automatosx list agents                # Show available agents
 automatosx list abilities             # Show available abilities
