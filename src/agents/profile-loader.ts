@@ -3,24 +3,48 @@
  */
 
 import { readFile, readdir } from 'fs/promises';
-import { join, extname, basename } from 'path';
+import { join, extname, basename, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { load } from 'js-yaml';
 import type { AgentProfile } from '../types/agent.js';
 import { AgentValidationError, AgentNotFoundError } from '../types/agent.js';
 import { logger } from '../utils/logger.js';
 import { TTLCache } from '../core/cache.js';
 
+// Get the directory of this file for locating built-in agents
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Get package root - handle both dev (src/) and prod (dist/) scenarios
+function getPackageRoot(): string {
+  // In production, __dirname will be dist/
+  // In development, __dirname will be src/agents/
+  const currentDir = __dirname;
+
+  // If we're in dist/, go up one level to package root
+  // If we're in src/agents/, go up two levels to package root
+  if (currentDir.includes('/dist')) {
+    return join(currentDir, '..');
+  } else {
+    return join(currentDir, '../..');
+  }
+}
+
 /**
  * Profile Loader - Load and validate agent profiles
  */
 export class ProfileLoader {
   private profilesDir: string;
+  private fallbackProfilesDir: string;
   private cache: TTLCache<AgentProfile>;
   private displayNameMap: Map<string, string> = new Map();
   private mapInitialized: boolean = false;
 
-  constructor(profilesDir: string) {
+  constructor(profilesDir: string, fallbackProfilesDir?: string) {
     this.profilesDir = profilesDir;
+    // Default fallback to built-in examples/agents
+    // This should work in both dev and production environments
+    this.fallbackProfilesDir = fallbackProfilesDir || join(getPackageRoot(), 'examples/agents');
     // Use TTLCache with 5 minute TTL for profile caching
     this.cache = new TTLCache<AgentProfile>({
       maxEntries: 20,
@@ -105,57 +129,85 @@ export class ProfileLoader {
       return cached;
     }
 
-    // Load from file
-    const profilePath = this.getProfilePath(name);
+    // Get possible paths (primary and fallback)
+    const profilePaths = this.getProfilePath(name);
 
-    try {
-      const content = await readFile(profilePath, 'utf-8');
+    // Try each path in order
+    let lastError: Error | null = null;
+    for (const profilePath of profilePaths) {
+      try {
+        const content = await readFile(profilePath, 'utf-8');
 
-      // Security: Limit file size to prevent DoS (max 100KB for profile)
-      if (content.length > 100 * 1024) {
-        throw new AgentValidationError('Profile file too large (max 100KB)');
+        // Security: Limit file size to prevent DoS (max 100KB for profile)
+        if (content.length > 100 * 1024) {
+          throw new AgentValidationError('Profile file too large (max 100KB)');
+        }
+
+        // Security: Use safe YAML parsing (default safe schema)
+        // Note: js-yaml's load() already uses safe schema by default
+        const data = load(content) as any;
+
+        // Validate and build profile
+        const profile = this.buildProfile(data, name);
+
+        // Cache it
+        this.cache.set(name, profile);
+
+        logger.info('Profile loaded', { name, path: profilePath });
+        return profile;
+
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+          // File not found, try next path
+          lastError = error as Error;
+          continue;
+        }
+        // Other errors should be thrown immediately
+        throw error;
       }
-
-      // Security: Use safe YAML parsing (default safe schema)
-      // Note: js-yaml's load() already uses safe schema by default
-      const data = load(content) as any;
-
-      // Validate and build profile
-      const profile = this.buildProfile(data, name);
-
-      // Cache it
-      this.cache.set(name, profile);
-
-      logger.info('Profile loaded', { name, path: profilePath });
-      return profile;
-
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        throw new AgentNotFoundError(name);
-      }
-      throw error;
     }
+
+    // If we've tried all paths and none worked, throw AgentNotFoundError
+    throw new AgentNotFoundError(name);
   }
 
   /**
    * List all available profiles
    */
   async listProfiles(): Promise<string[]> {
+    const profileSet = new Set<string>();
+
+    // Try to load from primary directory
     try {
       const files = await readdir(this.profilesDir);
-
       const profiles = files
         .filter(file => extname(file) === '.yaml' || extname(file) === '.yml')
         .map(file => basename(file, extname(file)));
 
-      return profiles.sort();
-
+      profiles.forEach(p => profileSet.add(p));
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        return [];
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        throw error;
       }
-      throw error;
+      // Directory doesn't exist, will fallback to built-in agents
     }
+
+    // Also load from fallback directory (built-in agents)
+    try {
+      const files = await readdir(this.fallbackProfilesDir);
+      const profiles = files
+        .filter(file => extname(file) === '.yaml' || extname(file) === '.yml')
+        .map(file => basename(file, extname(file)));
+
+      profiles.forEach(p => profileSet.add(p));
+    } catch (error) {
+      // Fallback directory doesn't exist - this is OK
+      logger.debug('Fallback profiles directory not found', {
+        dir: this.fallbackProfilesDir
+      });
+    }
+
+    return Array.from(profileSet).sort();
   }
 
   /**
@@ -209,16 +261,20 @@ export class ProfileLoader {
 
   /**
    * Get profile path (with path traversal protection)
+   * Returns an array of possible paths to try (primary first, then fallback)
    */
-  getProfilePath(name: string): string {
+  getProfilePath(name: string): string[] {
     // Security: Prevent path traversal attacks
     // Only allow alphanumeric, dash, underscore in profile names
     if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
       throw new AgentValidationError(`Invalid profile name: ${name}. Only alphanumeric characters, dashes, and underscores are allowed.`);
     }
 
-    // Try .yaml first, then .yml
-    return join(this.profilesDir, `${name}.yaml`);
+    // Return paths to try in order: primary directory, then fallback
+    return [
+      join(this.profilesDir, `${name}.yaml`),
+      join(this.fallbackProfilesDir, `${name}.yaml`)
+    ];
   }
 
   /**

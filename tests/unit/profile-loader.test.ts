@@ -121,23 +121,27 @@ systemPrompt: You are a test agent
   });
 
   describe('listProfiles', () => {
-    it('should list all available profiles', async () => {
+    it('should list all available profiles (local + built-in)', async () => {
       await writeFile(join(testDir, 'agent1.yaml'), 'name: Agent1\nrole: test\ndescription: Test\nsystemPrompt: Test');
       await writeFile(join(testDir, 'agent2.yaml'), 'name: Agent2\nrole: test\ndescription: Test\nsystemPrompt: Test');
       await writeFile(join(testDir, 'agent3.yml'), 'name: Agent3\nrole: test\ndescription: Test\nsystemPrompt: Test');
 
       const profiles = await loader.listProfiles();
 
+      // Should contain local agents
       expect(profiles).toContain('agent1');
       expect(profiles).toContain('agent2');
       expect(profiles).toContain('agent3');
-      expect(profiles.length).toBe(3);
+      // Should also include built-in agents (fallback)
+      expect(profiles.length).toBeGreaterThanOrEqual(3);
     });
 
-    it('should return empty array for non-existent directory', async () => {
+    it('should return built-in agents for non-existent directory', async () => {
       const emptyLoader = new ProfileLoader('/nonexistent/path');
       const profiles = await emptyLoader.listProfiles();
-      expect(profiles).toEqual([]);
+      // Should fall back to built-in agents
+      expect(profiles.length).toBeGreaterThan(0);
+      expect(profiles).toContain('assistant'); // Built-in agent
     });
 
     it('should ignore non-YAML files', async () => {
@@ -147,7 +151,9 @@ systemPrompt: You are a test agent
 
       const profiles = await loader.listProfiles();
 
-      expect(profiles).toEqual(['agent1']);
+      // Should contain local agent1 + built-in agents
+      expect(profiles).toContain('agent1');
+      expect(profiles.length).toBeGreaterThan(1); // agent1 + built-ins
     });
   });
 
@@ -255,9 +261,11 @@ systemPrompt: You are a test agent
   });
 
   describe('getProfilePath', () => {
-    it('should return correct profile path', () => {
-      const path = loader.getProfilePath('myagent');
-      expect(path).toBe(join(testDir, 'myagent.yaml'));
+    it('should return array of profile paths (primary and fallback)', () => {
+      const paths = loader.getProfilePath('myagent');
+      expect(Array.isArray(paths)).toBe(true);
+      expect(paths[0]).toBe(join(testDir, 'myagent.yaml')); // Primary path first
+      expect(paths.length).toBeGreaterThanOrEqual(1); // At least one path
     });
   });
 

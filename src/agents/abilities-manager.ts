@@ -3,19 +3,37 @@
  */
 
 import { readFile, readdir } from 'fs/promises';
-import { join, extname, basename } from 'path';
+import { join, extname, basename, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { logger } from '../utils/logger.js';
 import { TTLCache } from '../core/cache.js';
+
+// Get the directory of this file for locating built-in abilities
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Get package root - handle both dev (src/) and prod (dist/) scenarios
+function getPackageRoot(): string {
+  const currentDir = __dirname;
+  if (currentDir.includes('/dist')) {
+    return join(currentDir, '..');
+  } else {
+    return join(currentDir, '../..');
+  }
+}
 
 /**
  * Abilities Manager - Load and manage agent abilities
  */
 export class AbilitiesManager {
   private abilitiesDir: string;
+  private fallbackAbilitiesDir: string;
   private cache: TTLCache<string>;
 
-  constructor(abilitiesDir: string) {
+  constructor(abilitiesDir: string, fallbackAbilitiesDir?: string) {
     this.abilitiesDir = abilitiesDir;
+    // Default fallback to built-in examples/abilities
+    this.fallbackAbilitiesDir = fallbackAbilitiesDir || join(getPackageRoot(), 'examples/abilities');
     // Use TTLCache with 10 minute TTL for abilities (they change less frequently)
     this.cache = new TTLCache<string>({
       maxEntries: 50,
@@ -43,30 +61,39 @@ export class AbilitiesManager {
       return cached;
     }
 
-    // Load from file
-    const abilityPath = join(this.abilitiesDir, `${name}.md`);
+    // Try primary directory first, then fallback
+    const paths = [
+      join(this.abilitiesDir, `${name}.md`),
+      join(this.fallbackAbilitiesDir, `${name}.md`)
+    ];
 
-    try {
-      const content = await readFile(abilityPath, 'utf-8');
+    for (const abilityPath of paths) {
+      try {
+        const content = await readFile(abilityPath, 'utf-8');
 
-      // Security: Limit file size to prevent DoS (max 500KB for ability)
-      if (content.length > 500 * 1024) {
-        throw new Error('Ability file too large (max 500KB)');
+        // Security: Limit file size to prevent DoS (max 500KB for ability)
+        if (content.length > 500 * 1024) {
+          throw new Error('Ability file too large (max 500KB)');
+        }
+
+        // Cache it
+        this.cache.set(name, content);
+
+        logger.info('Ability loaded', { name, path: abilityPath });
+        return content;
+
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+          // Try next path
+          continue;
+        }
+        throw error;
       }
-
-      // Cache it
-      this.cache.set(name, content);
-
-      logger.info('Ability loaded', { name, path: abilityPath });
-      return content;
-
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        logger.warn('Ability not found', { name, path: abilityPath });
-        return ''; // Return empty string for missing abilities
-      }
-      throw error;
     }
+
+    // If not found in any location, log warning and return empty string
+    logger.warn('Ability not found in any location', { name });
+    return ''; // Return empty string for missing abilities
   }
 
   /**

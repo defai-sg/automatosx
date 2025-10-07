@@ -1,6 +1,6 @@
 {
   "name": "@defai.sg/automatosx",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "description": "AI Agent Orchestration Platform",
   "type": "module",
   "bin": {
