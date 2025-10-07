@@ -39,7 +39,7 @@ describe('CLI: list command', () => {
 
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain('Available Agents');
-    expect(result.stdout).toContain('test-agent');
+    expect(result.stdout).toContain('Test Agent'); // displayName is shown now
     expect(result.stdout).toContain('A test agent');
   }, 10000);
 
