@@ -43,7 +43,7 @@ description: What this agent does
 
 model:
   provider: claude
-  name: claude-3-5-sonnet-20241022
+  command: claude
   temperature: 0.7
   maxTokens: 4096
 
@@ -97,7 +97,7 @@ Add model configuration:
 ```yaml
 model:
   provider: claude
-  name: claude-3-5-sonnet-20241022
+  command: claude
   temperature: 0.3
   maxTokens: 8192
 ```
@@ -112,14 +112,14 @@ model:
 # For Gemini
 model:
   provider: gemini
-  name: gemini-1.5-flash
+  command: gemini
   temperature: 0.3
   maxTokens: 8192
 
 # For OpenAI
 model:
   provider: openai
-  name: gpt-4-turbo
+  command: openai
   temperature: 0.3
   maxTokens: 8192
 ```
@@ -294,7 +294,7 @@ description: Expert code reviewer focused on best practices and bug detection
 
 model:
   provider: claude
-  name: claude-3-5-sonnet-20241022
+  command: claude
   temperature: 0.3
   maxTokens: 8192
 
@@ -487,7 +487,7 @@ model:
 ```yaml
 model:
   provider: gemini  # Switch to Gemini Flash
-  name: gemini-1.5-flash
+  command: gemini
 ```
 
 **Longer Analysis**:

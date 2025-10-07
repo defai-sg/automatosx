@@ -321,16 +321,13 @@ AutomatosX uses JSON configuration with priority order:
   "providers": {
     "preferred": "claude",
     "claude": {
-      "command": "claude",
-      "model": "claude-3-5-sonnet-20241022"
+      "command": "claude"
     },
     "gemini": {
-      "command": "gemini",
-      "model": "gemini-1.5-flash"
+      "command": "gemini"
     },
     "openai": {
-      "command": "openai",
-      "model": "gpt-4"
+      "command": "openai"
     }
   },
   "memory": {
@@ -342,6 +339,8 @@ AutomatosX uses JSON configuration with priority order:
 
 **How it works:**
 - AutomatosX calls your installed CLI commands (`claude`, `gemini`, `openai`)
+- Each CLI uses its own default model (you can override via CLI config if needed)
+- No need to specify model versions—CLIs auto-update to latest models
 - You manage your own subscription/plan directly with the provider
 - No API keys stored in AutomatosX—your CLI handles authentication
 - Pay only for what you use via your existing CLI plan

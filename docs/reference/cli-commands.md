@@ -226,7 +226,7 @@ Key features:
   "task": "What is TypeScript?",
   "response": "TypeScript is a strongly typed...",
   "provider": "claude",
-  "model": "claude-3-5-sonnet-20241022",
+  "command": "claude",
   "duration": 1234,
   "timestamp": "2025-10-06T03:15:00.000Z",
   "memoryUsed": true,

@@ -66,7 +66,7 @@ description: General purpose AI assistant
 # Model configuration
 model:
   provider: claude
-  name: claude-3-5-sonnet-20241022
+  command: claude
   temperature: 0.7
   maxTokens: 4096
 
@@ -303,18 +303,18 @@ A **provider** is an AI service backend that powers agents.
 
 **Claude** (Anthropic):
 - Best for: Reasoning, code generation, long context
-- Models: claude-3-5-sonnet, claude-3-opus
-- Access: Via Claude Code CLI
+- CLI uses latest available model automatically
+- Access: Via `claude` CLI command
 
 **Gemini** (Google):
 - Best for: Fast responses, multimodal tasks
-- Models: gemini-1.5-flash, gemini-1.5-pro
-- Access: Via Gemini CLI
+- CLI uses latest available model automatically
+- Access: Via `gemini` CLI command
 
-**OpenAI**:
-- Best for: Embeddings (vector search)
-- Models: text-embedding-3-small
-- Access: Via API key
+**OpenAI Codex**:
+- Best for: Code completion and generation
+- CLI uses latest available model automatically
+- Access: Via `openai` CLI command
 
 ### Provider Configuration
 

@@ -63,7 +63,7 @@ description: A helpful AI assistant
 
 model:
   provider: claude
-  name: claude-3-5-sonnet-20241022
+  command: claude
   temperature: 0.7
 
 system: |

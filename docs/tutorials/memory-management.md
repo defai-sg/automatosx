@@ -362,7 +362,7 @@ description: Expert on this specific project
 
 model:
   provider: claude
-  name: claude-3-5-sonnet-20241022
+  command: claude
   temperature: 0.5
   maxTokens: 8192
 
