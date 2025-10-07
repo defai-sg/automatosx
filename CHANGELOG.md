@@ -5,6 +5,20 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.2] - 2025-10-07
+
+### 📝 Documentation Updates
+
+- **Updated version references**: Changed all documentation references from v4.1 to v4.5.2
+- **README.md**: Updated header and status line to reflect current version
+- **Package metadata**: Bumped version to 4.5.2 for consistency
+
+### 🔧 Maintenance
+
+- Version synchronization across all documentation
+- No functional changes or bug fixes in this release
+- Preparation for npm publication and GitHub release
+
 ## [4.5.1] - 2025-10-07
 
 ### 🐛 Bug Fixes
