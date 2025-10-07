@@ -110,10 +110,12 @@ describe('PerformanceTracker', () => {
       expect(report).toContain('phase2');
     });
 
-    it('should sort breakdown by duration descending', () => {
+    it('should sort breakdown by duration descending', async () => {
       tracker.mark('start');
+      // Add small delay to ensure measurable difference
+      await new Promise(resolve => setTimeout(resolve, 5));
       tracker.mark('m1');
-      tracker.mark('m2');
+      await new Promise(resolve => setTimeout(resolve, 10));
       tracker.mark('end');
 
       // Simulate different durations by using actual time
