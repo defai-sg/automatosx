@@ -217,13 +217,10 @@ export class AgentExecutor {
       let response;
 
       if (streaming) {
-        // Stop spinner before streaming
+        // Update spinner to show connection status
         if (spinner) {
-          spinner.stop();
+          spinner.text = `Connecting to ${context.provider.name}...`;
         }
-
-        // Stream output
-        console.log(chalk.cyan('\n📝 Streaming response:\n'));
 
         let fullContent = '';
         const streamGenerator = context.provider.stream({
@@ -234,7 +231,17 @@ export class AgentExecutor {
           maxTokens: context.agent.maxTokens
         });
 
+        let firstChunk = true;
         for await (const chunk of streamGenerator) {
+          // Stop spinner and show streaming header on first chunk
+          if (firstChunk) {
+            if (spinner) {
+              spinner.stop();
+            }
+            console.log(chalk.cyan('\n📝 Streaming response:\n'));
+            firstChunk = false;
+          }
+
           process.stdout.write(chunk);
           fullContent += chunk;
         }

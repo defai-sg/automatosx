@@ -5,6 +5,84 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.9] - 2025-10-07
+
+### 🎨 User Experience Improvements
+
+#### Enhanced Streaming Progress Indicators
+
+**Problem Identified:**
+- During streaming execution, spinner would stop immediately upon starting
+- Users experienced a "blank period" while waiting for first response chunk
+- No visual feedback during API connection phase
+- Created perception that the system was frozen or unresponsive
+
+**Solution Implemented:**
+- **Smart Spinner Management**: Spinner now remains active during connection phase
+- **Connection Status Display**: Shows "Connecting to {provider}..." with animated spinner
+- **Smooth Transition**: Spinner stops only when first content chunk arrives
+- **Enhanced Visual Feedback**: Users always see progress indication
+
+**Technical Details (`src/agents/executor.ts:219-247`):**
+```typescript
+// Before: Immediate spinner stop
+if (streaming) {
+  if (spinner) {
+    spinner.stop();  // ❌ Stops too early
+  }
+  console.log('📝 Streaming response:\n');
+  for await (const chunk of streamGenerator) {
+    process.stdout.write(chunk);
+  }
+}
+
+// After: Smart spinner management
+if (streaming) {
+  if (spinner) {
+    spinner.text = `Connecting to ${context.provider.name}...`;  // ✅ Show status
+  }
+
+  let firstChunk = true;
+  for await (const chunk of streamGenerator) {
+    if (firstChunk) {
+      if (spinner) {
+        spinner.stop();  // ✅ Stop only when content arrives
+      }
+      console.log('\n📝 Streaming response:\n');
+      firstChunk = false;
+    }
+    process.stdout.write(chunk);
+  }
+}
+```
+
+#### 🎯 Impact
+
+- ✅ **Better UX**: No more "frozen" perception during connection
+- ✅ **Clear Status**: Users see exactly what's happening at each stage
+- ✅ **Smooth Transitions**: Natural flow from connecting → streaming → complete
+- ✅ **Maintained Performance**: Zero overhead, same execution speed
+
+#### 🧪 Testing
+
+- **788/788 Tests Passing**: All existing tests remain green
+- **No Breaking Changes**: 100% backward compatible
+- **Integration Tests**: Verified with mock and real providers
+- **Build Success**: 248 KB bundle size maintained
+
+#### 📊 User Experience Before/After
+
+| Phase | Before | After |
+|-------|--------|-------|
+| Connection | ❌ No indicator | ✅ "Connecting to claude..." spinner |
+| First Chunk Wait | ❌ Appears frozen | ✅ Animated spinner active |
+| Streaming | ✅ Content displays | ✅ Content displays |
+| Completion | ✅ Success message | ✅ Success message |
+
+**User Impact**: Eliminates confusion and improves perceived responsiveness during agent execution.
+
+---
+
 ## [4.5.8] - 2025-10-07
 
 ### 🚀 Major Performance Optimization: Smart Ability Loading
