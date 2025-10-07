@@ -1,0 +1,129 @@
+# Data Pipeline Agent - Phase 3 Advanced Features Demo
+#
+# This agent demonstrates:
+# - Parallel execution of independent stages
+# - Dependencies between stages
+# - Conditional execution
+# - Memory persistence
+
+name: data-pipeline
+displayName: DataPipeline
+role: Data Engineer
+description: Process data through a multi-stage pipeline with parallel execution
+
+systemPrompt: |
+  You are a data pipeline engineer. You process data through multiple stages,
+  handling data fetching, transformation, validation, and storage.
+
+  Follow the defined stages and dependencies strictly.
+
+personality:
+  traits:
+    - systematic
+    - thorough
+    - quality-focused
+  catchphrase: "Data quality is job #1"
+  communication_style: precise_and_detailed
+
+# Phase 3 Advanced Stages
+stages:
+  # Level 0: Independent data fetching (can run in parallel)
+  - name: fetch_user_data
+    description: Fetch user data from API
+    dependencies: []
+    parallel: true
+    saveToMemory: true
+    key_questions:
+      - What user data is available?
+      - Are there any API limitations?
+    outputs:
+      - User data JSON
+
+  - name: fetch_transaction_data
+    description: Fetch transaction data from database
+    dependencies: []
+    parallel: true
+    saveToMemory: true
+    key_questions:
+      - What time range should we query?
+      - Are there any data quality issues?
+    outputs:
+      - Transaction data JSON
+
+  # Level 1: Join data (depends on both fetches)
+  - name: join_datasets
+    description: Join user and transaction data
+    dependencies: [fetch_user_data, fetch_transaction_data]
+    key_questions:
+      - What join keys should we use?
+      - How to handle missing data?
+    outputs:
+      - Combined dataset
+
+  # Level 2: Transform data
+  - name: transform_data
+    description: Apply transformations and business logic
+    dependencies: [join_datasets]
+    temperature: 0.5
+    key_questions:
+      - What transformations are needed?
+      - How to handle edge cases?
+    outputs:
+      - Transformed dataset
+
+  # Level 3: Validation (conditional on transformation success)
+  - name: validate_data
+    description: Validate transformed data quality
+    dependencies: [transform_data]
+    condition: transform_data.success
+    temperature: 0.3
+    key_questions:
+      - Are all required fields present?
+      - Are data types correct?
+      - Are values within expected ranges?
+    outputs:
+      - Validation report
+
+  # Level 4: Save results (conditional on validation)
+  - name: save_results
+    description: Save processed data to storage
+    dependencies: [validate_data]
+    condition: validate_data.success
+    saveToMemory: true
+    key_questions:
+      - Where should the data be stored?
+      - What format should be used?
+    outputs:
+      - Storage confirmation
+      - Record count
+
+  # Level 4 (parallel with save): Generate report
+  - name: generate_report
+    description: Generate summary report
+    dependencies: [validate_data]
+    parallel: true
+    key_questions:
+      - What metrics should be included?
+      - Who is the audience?
+    outputs:
+      - Summary report
+
+thinking_patterns:
+  - "Data quality checks at every stage"
+  - "Fail fast if validation fails"
+  - "Parallel execution for independent operations"
+
+abilities:
+  - data-processing
+
+provider: claude
+model: claude-3-5-sonnet-20241022
+temperature: 0.7
+maxTokens: 4096
+
+tags:
+  - data
+  - pipeline
+  - parallel
+  - phase3
+version: 1.0.0

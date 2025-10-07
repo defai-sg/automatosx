@@ -28,6 +28,7 @@ export interface ExecutionOptions {
   streaming?: boolean;
   retry?: RetryConfig;
   timeout?: number;
+  signal?: AbortSignal;
 }
 
 export interface ExecutionResult {

@@ -15,6 +15,13 @@ export interface Stage {
   outputs?: string[];
   model?: string;
   temperature?: number;
+
+  // Phase 3: Advanced stage features
+  dependencies?: string[];  // Stage names this stage depends on
+  condition?: string;        // Conditional execution (e.g., "previous.success")
+  parallel?: boolean;        // Can this stage run in parallel with others?
+  streaming?: boolean;       // Enable streaming output for this stage
+  saveToMemory?: boolean;    // Persist this stage's results to memory
 }
 
 /**

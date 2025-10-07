@@ -22,7 +22,7 @@ import { PathError, ProviderError } from '../utils/errors.js';
 export interface ContextManagerConfig {
   profileLoader: ProfileLoader;
   abilitiesManager: AbilitiesManager;
-  memoryManager: IMemoryManager;
+  memoryManager: IMemoryManager | null;
   router: Router;
   pathResolver: PathResolver;
 }
@@ -132,6 +132,13 @@ export class ContextManager {
     query?: string,
     limit: number = 5
   ): Promise<void> {
+    // Skip if no memory manager available
+    if (!this.config.memoryManager) {
+      logger.debug('Memory injection skipped: no memory manager available');
+      context.memory = [];
+      return;
+    }
+
     const searchQuery = query || context.task;
 
     try {
