@@ -1,22 +1,36 @@
-Run an AutomatosX agent with a specific task.
+Execute an AutomatosX agent with a specific task.
 
-**Format**: `/ax:agent <agent-name>, <task>`
+**IMPORTANT**: When user types `/ax:agent <agent>, <task>`, you MUST:
 
-Parse the arguments by splitting on the first comma:
-- Before comma: agent name (e.g., "assistant", "coder", "bob")
-- After comma: task description (everything after the comma)
+1. Split the input on the FIRST comma
+2. Extract agent name (text before comma, trimmed)
+3. Extract task (text after comma, trimmed)
+4. Execute: `automatosx run <agent> "<task>"`
 
-Execute:
-```bash
-automatosx run {agent-name} "{task}"
+**Parsing Rules**:
+```
+Input: /ax:agent assistant, explain quantum computing
+↓
+Agent: "assistant"
+Task: "explain quantum computing"
+↓
+Execute: automatosx run assistant "explain quantum computing"
 ```
 
-Examples:
-- `/ax:agent assistant, explain quantum computing to me` → `automatosx run assistant "explain quantum computing to me"`
-- `/ax:agent bob, i want you help me write a validation function` → `automatosx run bob "i want you help me write a validation function"`
-- `/ax:agent coder, create a REST API for user management` → `automatosx run coder "create a REST API for user management"`
-- `/ax:agent reviewer, review the changes in src/auth.ts` → `automatosx run reviewer "review the changes in src/auth.ts"`
+**Examples**:
 
-Available built-in agents: assistant, coder, reviewer, debugger, writer, backend, frontend, data, security, quality
+User input: `/ax:agent bob, i want you help me write a validation function`
+→ Execute: `automatosx run bob "i want you help me write a validation function"`
 
-Note: You can also use custom agent names if you've created them in `.automatosx/agents/`
+User input: `/ax:agent assistant, explain quantum computing to me`
+→ Execute: `automatosx run assistant "explain quantum computing to me"`
+
+User input: `/ax:agent coder, create a REST API for user management`
+→ Execute: `automatosx run coder "create a REST API for user management"`
+
+User input: `/ax:agent reviewer, review the changes in src/auth.ts and suggest improvements`
+→ Execute: `automatosx run reviewer "review the changes in src/auth.ts and suggest improvements"`
+
+**Available built-in agents**: assistant, coder, reviewer, debugger, writer, backend, frontend, data, security, quality
+
+**Note**: Users can also use custom agent names if they've created them in `.automatosx/agents/`

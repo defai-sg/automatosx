@@ -1,18 +1,18 @@
 List available AutomatosX agents.
 
-Execute:
+**IMPORTANT**: When user types `/ax:list`, you MUST execute:
+
 ```bash
 automatosx list agents
 ```
 
-This will display all available agents with their roles and descriptions.
+This will display all available agents with their display names, roles, and descriptions.
 
-Example output:
-- assistant - General purpose helper
-- coder - Code generation specialist
-- reviewer - Code review expert
-- debugger - Debug assistance
-- writer - Content creation
+**Example**:
 
-Example:
-- `/ax:list` → List all agents
+User input: `/ax:list`
+→ Execute: `automatosx list agents`
+
+Expected output shows all agents including:
+- Built-in agents (assistant, coder, reviewer, debugger, writer, etc.)
+- Custom agents (if any created in `.automatosx/agents/`)

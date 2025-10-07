@@ -1,19 +1,22 @@
 Clear AutomatosX memory.
 
-Execute:
+**IMPORTANT**: When user types `/ax:clear`, you MUST execute:
+
 ```bash
 automatosx memory clear --confirm
 ```
 
 This will delete all stored memories from the AutomatosX memory database.
 
-Options:
-- Add `--type <type>` to clear specific memory type
-- Add `--older-than <days>` to clear old memories only
+**Examples**:
 
-Examples:
-- `/ax:clear` → Clear all memories
-- `/ax:clear --type task` → Clear only task memories
-- `/ax:clear --older-than 30` → Clear memories older than 30 days
+User input: `/ax:clear`
+→ Execute: `automatosx memory clear --confirm`
 
-⚠️ Warning: This action cannot be undone. Consider using `/ax:memory export` first to backup.
+User input: `/ax:clear --type task`
+→ Execute: `automatosx memory clear --confirm --type task`
+
+User input: `/ax:clear --older-than 30`
+→ Execute: `automatosx memory clear --confirm --older-than 30`
+
+⚠️ **Warning**: This action cannot be undone. Consider backing up first.

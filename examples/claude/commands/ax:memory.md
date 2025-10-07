@@ -1,22 +1,25 @@
 Search AutomatosX memory for relevant information.
 
-Parse the argument as a search query.
+**IMPORTANT**: When user types `/ax:memory <query>`, you MUST:
 
-Execute:
-```bash
-automatosx memory search "{query}"
-```
+1. Take everything after `/ax:memory` as the search query
+2. Execute: `automatosx memory search "<query>"`
 
-This will search through stored memories and return relevant results.
+**Examples**:
 
-Examples:
-- `/ax:memory authentication` → `automatosx memory search "authentication"`
-- `/ax:memory how to setup database` → `automatosx memory search "how to setup database"`
-- `/ax:memory API errors` → `automatosx memory search "API errors"`
+User input: `/ax:memory authentication`
+→ Execute: `automatosx memory search "authentication"`
 
-Options:
-- Add `--limit <n>` to limit results (default: 10)
-- Add `--type <type>` to filter by memory type
+User input: `/ax:memory how to setup database`
+→ Execute: `automatosx memory search "how to setup database"`
 
-Example with options:
-- `/ax:memory authentication --limit 5` → Search with limit
+User input: `/ax:memory API errors and solutions`
+→ Execute: `automatosx memory search "API errors and solutions"`
+
+**With Options**:
+
+User input: `/ax:memory authentication --limit 5`
+→ Execute: `automatosx memory search "authentication" --limit 5`
+
+User input: `/ax:memory database --type task`
+→ Execute: `automatosx memory search "database" --type task`

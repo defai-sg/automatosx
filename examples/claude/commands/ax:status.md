@@ -1,17 +1,23 @@
 Display AutomatosX system status and configuration.
 
-Execute:
+**IMPORTANT**: When user types `/ax:status`, you MUST execute:
+
 ```bash
 automatosx status
 ```
 
 This will show:
 - Installed version
-- Configuration status
-- Available AI providers
+- Configuration file location
+- Available AI providers and their status
 - Memory system status
-- Project information
+- Project directory information
 
-Example:
-- `/ax:status` → Show system status
-- `/ax:status --verbose` → Show detailed status
+**Examples**:
+
+User input: `/ax:status`
+→ Execute: `automatosx status`
+
+User input: `/ax:status --verbose`
+→ Execute: `automatosx status --verbose`
+(Shows detailed configuration and environment information)
