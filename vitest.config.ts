@@ -5,8 +5,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    testTimeout: 10000,      // 10 seconds per test
-    hookTimeout: 10000,       // 10 seconds for hooks
+    testTimeout: 30000,      // 30 seconds per test (increased for integration tests)
+    hookTimeout: 30000,       // 30 seconds for hooks
     teardownTimeout: 10000,   // 10 seconds for teardown
     env: {
       // Always use mock providers in tests

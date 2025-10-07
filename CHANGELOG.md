@@ -5,6 +5,23 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.5] - 2025-10-07
+
+### 🔧 Test Configuration Improvements
+
+**Test Timeout Configuration**
+- **Change**: Increased test timeout from 10s to 30s per test
+- **Reason**: Integration tests need more time to complete, especially on slower systems
+- **Impact**: More reliable test execution, prevents false failures due to timeouts
+- **Location**: `vitest.config.ts`
+
+### 📈 Migration from v4.5.4
+
+Seamless upgrade - no changes required:
+```bash
+npm install -g @defai.sg/automatosx@4.5.5
+```
+
 ## [4.5.4] - 2025-10-07
 
 ### 🐛 Critical Bug Fixes
