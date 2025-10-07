@@ -308,7 +308,7 @@ AutomatosX uses JSON configuration with priority order:
 **Example configuration:**
 ```json
 {
-  "$schema": "https://automatosx.dev/schema/config.json",
+  "$schema": "https://automatosx.com/schema/config.json",
   "version": "4.0.0",
   "providers": {
     "preferred": "claude",
@@ -339,8 +339,8 @@ Environment variables are interpolated automatically using `${VAR_NAME}` syntax.
 - **Troubleshooting**: `TROUBLESHOOTING.md`
 - **Issues**: [GitHub Issues](https://github.com/defai-sg/automatosx/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/defai-sg/automatosx/discussions)
-- **npm**: https://www.npmjs.com/package/automatosx
-- **Docs site**: https://docs.automatosx.dev
+- **npm**: https://www.npmjs.com/package/@defai.sg/automatosx
+- **Website**: https://automatosx.com
 
 ---
 

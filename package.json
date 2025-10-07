@@ -77,7 +77,7 @@
   "bugs": {
     "url": "https://github.com/defai-sg/automatosx/issues"
   },
-  "homepage": "https://docs.automatosx.dev",
+  "homepage": "https://automatosx.com",
   "overrides": {
     "esbuild": "^0.25.0"
   }
