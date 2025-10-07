@@ -149,22 +149,43 @@ export class ClaudeProvider extends BaseProvider {
     return new Promise((resolve, reject) => {
       let stdout = '';
       let stderr = '';
+      let hasTimedOut = false;
 
       // Claude Code CLI accepts input via stdin
       // No 'chat' subcommand needed
-      const child = spawn(this.config.command, [], {
-        stdio: ['pipe', 'pipe', 'pipe'],
-        env: {
-          ...process.env,
-          // Pass model and other options via environment if supported
-          CLAUDE_MODEL: model
+      let child: ReturnType<typeof spawn>;
+
+      try {
+        child = spawn(this.config.command, [], {
+          stdio: ['pipe', 'pipe', 'pipe'],
+          env: {
+            ...process.env,
+            // Pass model and other options via environment if supported
+            CLAUDE_MODEL: model
+          }
+        });
+      } catch (error) {
+        const err = error as NodeJS.ErrnoException;
+        if (err.code === 'ENOENT') {
+          reject(new Error(
+            `Claude CLI not found. Please ensure Claude Code is installed and '${this.config.command}' is in your PATH.\n` +
+            `Install from: https://claude.ai/download`
+          ));
+        } else {
+          reject(new Error(`Failed to start Claude CLI: ${err.message}`));
         }
-      });
+        return;
+      }
 
       // Send prompt via stdin
       if (child.stdin) {
-        child.stdin.write(prompt);
-        child.stdin.end();
+        try {
+          child.stdin.write(prompt);
+          child.stdin.end();
+        } catch (error) {
+          reject(new Error(`Failed to send prompt to Claude CLI: ${(error as Error).message}`));
+          return;
+        }
       }
 
       // Collect stdout
@@ -179,22 +200,87 @@ export class ClaudeProvider extends BaseProvider {
 
       // Handle process exit
       child.on('close', (code) => {
+        if (hasTimedOut) {
+          return; // Timeout already handled
+        }
+
         if (code !== 0) {
-          reject(new Error(`Claude CLI exited with code ${code}: ${stderr || 'No error message'}`));
+          const errorMsg = stderr || 'No error message';
+
+          // Parse common error patterns
+          if (errorMsg.toLowerCase().includes('network') ||
+              errorMsg.toLowerCase().includes('connection') ||
+              errorMsg.toLowerCase().includes('econnrefused') ||
+              errorMsg.toLowerCase().includes('enotfound')) {
+            reject(new Error(
+              `Network connection error: Unable to reach Claude API.\n` +
+              `Please check your internet connection and try again.\n` +
+              `Details: ${errorMsg}`
+            ));
+          } else if (errorMsg.toLowerCase().includes('authentication') ||
+                     errorMsg.toLowerCase().includes('unauthorized') ||
+                     errorMsg.toLowerCase().includes('api key')) {
+            reject(new Error(
+              `Authentication failed: Please check your Claude API credentials.\n` +
+              `Details: ${errorMsg}`
+            ));
+          } else if (errorMsg.toLowerCase().includes('rate limit') ||
+                     errorMsg.toLowerCase().includes('quota')) {
+            reject(new Error(
+              `Rate limit exceeded: Please wait a moment and try again.\n` +
+              `Details: ${errorMsg}`
+            ));
+          } else {
+            reject(new Error(`Claude CLI exited with code ${code}: ${errorMsg}`));
+          }
         } else {
-          resolve({ content: stdout.trim() });
+          if (!stdout.trim()) {
+            reject(new Error('Claude CLI returned empty response'));
+          } else {
+            resolve({ content: stdout.trim() });
+          }
         }
       });
 
       // Handle process errors
       child.on('error', (error) => {
-        reject(new Error(`Failed to spawn Claude CLI: ${error.message}`));
+        const err = error as NodeJS.ErrnoException;
+
+        if (err.code === 'ENOENT') {
+          reject(new Error(
+            `Claude CLI command '${this.config.command}' not found.\n` +
+            `Please install Claude Code from https://claude.ai/download`
+          ));
+        } else if (err.code === 'EACCES') {
+          reject(new Error(
+            `Permission denied: Cannot execute '${this.config.command}'.\n` +
+            `Please check file permissions.`
+          ));
+        } else {
+          reject(new Error(`Failed to execute Claude CLI: ${err.message}`));
+        }
       });
 
       // Set timeout
       const timeout = setTimeout(() => {
+        hasTimedOut = true;
         child.kill('SIGTERM');
-        reject(new Error(`Claude CLI execution timeout after ${this.config.timeout}ms`));
+
+        // Force kill after 5 seconds if still running
+        setTimeout(() => {
+          if (child.killed === false) {
+            child.kill('SIGKILL');
+          }
+        }, 5000);
+
+        reject(new Error(
+          `Request timeout after ${this.config.timeout / 1000} seconds.\n` +
+          `This may be due to:\n` +
+          `- Slow network connection\n` +
+          `- Large request requiring more processing time\n` +
+          `- Claude API being overloaded\n` +
+          `Try again or use --timeout option to increase the limit.`
+        ));
       }, this.config.timeout);
 
       child.on('close', () => {
@@ -210,10 +296,25 @@ export class ClaudeProvider extends BaseProvider {
       'rate_limit_error',
       'timeout',
       'connection_error',
-      'internal_server_error'
+      'internal_server_error',
+      'network connection error',
+      'econnrefused',
+      'econnreset',
+      'etimedout',
+      'enotfound'
     ];
 
     const message = error.message.toLowerCase();
-    return claudeRetryableErrors.some(err => message.includes(err)) || super.shouldRetry(error);
+    const isRetryable = claudeRetryableErrors.some(err => message.includes(err)) || super.shouldRetry(error);
+
+    // Don't retry authentication errors or missing CLI
+    if (message.includes('authentication') ||
+        message.includes('api key') ||
+        message.includes('not found') ||
+        message.includes('permission denied')) {
+      return false;
+    }
+
+    return isRetryable;
   }
 }
