@@ -98,39 +98,6 @@ export class Router {
   }
 
   /**
-   * Stream request with automatic provider fallback
-   */
-  async *stream(request: ExecutionRequest): AsyncGenerator<string> {
-    const availableProviders = await this.getAvailableProviders();
-
-    if (availableProviders.length === 0) {
-      throw ProviderError.noAvailableProviders();
-    }
-
-    for (const provider of availableProviders) {
-      try {
-        logger.info(`Attempting streaming with provider: ${provider.name}`);
-
-        yield* provider.stream(request);
-        return; // Success, exit
-
-      } catch (error) {
-        logger.warn(`Provider ${provider.name} streaming failed`, {
-          error: (error as Error).message
-        });
-
-        if (!this.fallbackEnabled) {
-          throw error;
-        }
-
-        continue;
-      }
-    }
-
-    throw ProviderError.noAvailableProviders();
-  }
-
-  /**
    * Get available providers sorted by priority
    */
   async getAvailableProviders(): Promise<Provider[]> {

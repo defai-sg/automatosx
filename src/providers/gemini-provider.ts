@@ -31,7 +31,7 @@ export class GeminiProvider extends BaseProvider {
 
   get capabilities(): ProviderCapabilities {
     return {
-      supportsStreaming: true,
+      supportsStreaming: false,
       supportsEmbedding: true,
       supportsVision: true,
       maxContextTokens: 1000000, // Gemini 1.5 Pro has 1M context window
@@ -73,94 +73,6 @@ export class GeminiProvider extends BaseProvider {
       };
     } catch (error) {
       throw new Error(`Gemini execution failed: ${(error as Error).message}`);
-    }
-  }
-
-  protected async *streamRequest(request: ExecutionRequest): AsyncGenerator<string> {
-    // Check for mock mode
-    const useMock = process.env.AUTOMATOSX_MOCK_PROVIDERS === 'true';
-
-    if (useMock) {
-      // Mock mode: yield placeholder response
-      const mockResponse = `[Mock Response from Gemini ${request.model || this.DEFAULT_MODEL}]\n\nTask received: ${request.prompt.substring(0, 100)}...\n\nThis is a placeholder response. Set AUTOMATOSX_MOCK_PROVIDERS=false to use real CLI.`;
-      // Yield in chunks to simulate streaming
-      const chunkSize = 50;
-      for (let i = 0; i < mockResponse.length; i += chunkSize) {
-        yield mockResponse.slice(i, i + chunkSize);
-      }
-      return;
-    }
-
-    // Gemini CLI doesn't support native streaming
-    // Implement pseudo-streaming by yielding content in chunks as it arrives from stdout
-    const { spawn } = await import('child_process');
-
-    // Build prompt with system prompt if provided
-    let fullPrompt = request.prompt;
-    if (request.systemPrompt) {
-      fullPrompt = `${request.systemPrompt}\n\n${request.prompt}`;
-    }
-
-    const model = request.model || this.DEFAULT_MODEL;
-
-    // Build CLI arguments
-    const args: string[] = [];
-
-    // Add model if specified
-    if (model && model !== this.DEFAULT_MODEL) {
-      args.push('--model', model);
-    }
-
-    // Add prompt as positional argument
-    args.push(fullPrompt);
-
-    const child = spawn(this.config.command, args, {
-      stdio: ['ignore', 'pipe', 'pipe'],
-      env: process.env
-    });
-
-    let buffer = '';
-    const chunkSize = 50; // Characters per chunk for pseudo-streaming
-
-    // Handle errors
-    const errorHandler = new Promise<never>((_, reject) => {
-      child.on('error', (error) => {
-        reject(new Error(`Failed to spawn Gemini CLI: ${error.message}`));
-      });
-
-      let stderr = '';
-      child.stderr?.on('data', (data) => {
-        stderr += data.toString();
-      });
-
-      child.on('close', (code) => {
-        if (code !== 0) {
-          reject(new Error(`Gemini CLI exited with code ${code}: ${stderr}`));
-        }
-      });
-    });
-
-    try {
-      // Process stdout as it arrives, yielding in chunks
-      for await (const chunk of child.stdout!) {
-        buffer += chunk.toString();
-
-        // Yield content in small chunks for streaming effect
-        while (buffer.length >= chunkSize) {
-          const toYield = buffer.slice(0, chunkSize);
-          buffer = buffer.slice(chunkSize);
-          yield toYield;
-        }
-      }
-
-      // Yield remaining buffer
-      if (buffer.length > 0) {
-        yield buffer;
-      }
-    } catch (error) {
-      // Check if error from handler
-      await Promise.race([Promise.resolve(), errorHandler]);
-      throw error;
     }
   }
 

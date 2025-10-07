@@ -28,10 +28,6 @@ describe('AgentExecutor - Timeout Handling', () => {
             model: 'mock-model',
             finishReason: 'stop'
           };
-        }),
-        stream: vi.fn().mockImplementation(async function*() {
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          yield 'Too slow';
         })
       };
 
@@ -74,9 +70,6 @@ describe('AgentExecutor - Timeout Handling', () => {
           latencyMs: 50,
           model: 'mock-model',
           finishReason: 'stop'
-        }),
-        stream: vi.fn().mockImplementation(async function*() {
-          yield 'Fast response';
         })
       };
 
@@ -122,10 +115,6 @@ describe('AgentExecutor - Timeout Handling', () => {
             model: 'mock-model',
             finishReason: 'stop'
           };
-        }),
-        stream: vi.fn().mockImplementation(async function*() {
-          await new Promise(resolve => setTimeout(resolve, 150));
-          yield 'Response';
         })
       };
 
@@ -161,51 +150,7 @@ describe('AgentExecutor - Timeout Handling', () => {
     });
   });
 
-  describe('Timeout with Streaming', () => {
-    it('should timeout streaming execution', async () => {
-      async function* slowStream() {
-        await new Promise(resolve => setTimeout(resolve, 200));
-        yield 'Part 1';
-        await new Promise(resolve => setTimeout(resolve, 200));
-        yield 'Part 2';
-      }
-
-      const streamingProvider = {
-        name: 'streaming-mock',
-        type: 'mock',
-        stream: vi.fn().mockImplementation(slowStream)
-      };
-
-      context = {
-        agent: {
-          name: 'test',
-          role: 'assistant',
-          description: 'Test agent',
-          systemPrompt: 'Test',
-          abilities: [],
-          model: 'test-model',
-          temperature: 0.7,
-          maxTokens: 1000
-        },
-        provider: streamingProvider as any,
-        task: 'Stream task',
-        abilities: '',
-        memory: [],
-        projectDir: '/tmp/test',
-        workingDir: '/tmp/test',
-        agentWorkspace: '/tmp/test/.automatosx/workspaces/test',
-        createdAt: new Date()
-      } as any;
-
-      await expect(
-        executor.execute(context, {
-          timeout: 100,
-          streaming: true,
-          showProgress: false
-        })
-      ).rejects.toThrow(/timed out/);
-    });
-  });
+  // Streaming timeout tests removed - streaming functionality has been removed from the system
 
   describe('No Timeout', () => {
     it('should execute without timeout when not specified', async () => {
@@ -218,9 +163,6 @@ describe('AgentExecutor - Timeout Handling', () => {
           latencyMs: 100,
           model: 'mock-model',
           finishReason: 'stop'
-        }),
-        stream: vi.fn().mockImplementation(async function*() {
-          yield 'Normal response';
         })
       };
 
@@ -261,9 +203,6 @@ describe('AgentExecutor - Timeout Handling', () => {
           latencyMs: 50,
           model: 'mock-model',
           finishReason: 'stop'
-        }),
-        stream: vi.fn().mockImplementation(async function*() {
-          yield 'Response';
         })
       };
 

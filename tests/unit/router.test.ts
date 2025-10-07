@@ -33,7 +33,6 @@ describe('Router', () => {
         model: 'model1',
         finishReason: 'stop'
       } as ExecutionResponse),
-      stream: vi.fn().mockImplementation(async function* () { yield "Mock "; yield "streaming "; yield "response"; }),
       generateEmbedding: vi.fn().mockResolvedValue([0.1, 0.2, 0.3]),
       isAvailable: vi.fn().mockResolvedValue(true),
       getHealth: vi.fn().mockResolvedValue({
@@ -83,7 +82,6 @@ describe('Router', () => {
         model: 'model2',
         finishReason: 'stop'
       } as ExecutionResponse),
-      stream: vi.fn().mockImplementation(async function* () { yield "Mock "; yield "streaming "; yield "response"; }),
       generateEmbedding: vi.fn().mockResolvedValue([0.1, 0.2, 0.3]),
       isAvailable: vi.fn().mockResolvedValue(true),
       getHealth: vi.fn().mockResolvedValue({
@@ -201,81 +199,7 @@ describe('Router', () => {
     });
   });
 
-  describe('stream', () => {
-    it('should stream from first available provider', async () => {
-      const mockStream = async function* () {
-        yield 'chunk1';
-        yield 'chunk2';
-      };
-      mockProvider1.stream = vi.fn().mockReturnValue(mockStream());
-
-      const chunks: string[] = [];
-      for await (const chunk of router.stream(mockRequest)) {
-        chunks.push(chunk);
-      }
-
-      expect(chunks).toEqual(['chunk1', 'chunk2']);
-      expect(mockProvider1.stream).toHaveBeenCalledWith(mockRequest);
-    });
-
-    it('should throw error when no providers available for streaming', async () => {
-      mockProvider1.isAvailable = vi.fn().mockResolvedValue(false);
-      mockProvider2.isAvailable = vi.fn().mockResolvedValue(false);
-
-      const streamGen = router.stream(mockRequest);
-
-      await expect(streamGen.next()).rejects.toThrow(ProviderError);
-    });
-
-    it('should fallback to next provider on streaming failure', async () => {
-      mockProvider1.stream = vi.fn().mockImplementation(() => {
-        throw new Error('Provider1 streaming failed');
-      });
-
-      const mockStream = async function* () {
-        yield 'chunk from provider2';
-      };
-      mockProvider2.stream = vi.fn().mockReturnValue(mockStream());
-
-      const chunks: string[] = [];
-      for await (const chunk of router.stream(mockRequest)) {
-        chunks.push(chunk);
-      }
-
-      expect(chunks).toEqual(['chunk from provider2']);
-      expect(mockProvider2.stream).toHaveBeenCalled();
-    });
-
-    it('should throw error when fallback disabled and streaming fails', async () => {
-      const routerNoFallback = new Router({
-        providers: [mockProvider1],
-        fallbackEnabled: false
-      });
-
-      mockProvider1.stream = vi.fn().mockImplementation(() => {
-        throw new Error('Streaming failed');
-      });
-
-      const streamGen = routerNoFallback.stream(mockRequest);
-
-      await expect(streamGen.next()).rejects.toThrow('Streaming failed');
-
-      routerNoFallback.destroy();
-    });
-
-    it('should throw ProviderError when all streaming attempts fail', async () => {
-      mockProvider1.stream = vi.fn().mockImplementation(() => {
-        throw new Error('Provider1 streaming failed');
-      });
-      mockProvider2.stream = vi.fn().mockImplementation(() => {
-        throw new Error('Provider2 streaming failed');
-      });
-
-      const streamGen = router.stream(mockRequest);
-
-      await expect(streamGen.next()).rejects.toThrow(ProviderError);
-    });
-  });
+  // Streaming tests removed - streaming functionality has been removed from the system
 
   describe('getAvailableProviders', () => {
     it('should return all available providers sorted by priority', async () => {

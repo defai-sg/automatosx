@@ -89,7 +89,7 @@ export interface EmbeddingOptions {
 
 /**
  * Production-ready provider interface
- * Supports streaming, rate limiting, cost estimation, health checks
+ * Supports rate limiting, cost estimation, health checks
  */
 export interface Provider {
   // Metadata
@@ -104,7 +104,6 @@ export interface Provider {
 
   // Execution
   execute(request: ExecutionRequest): Promise<ExecutionResponse>;
-  stream(request: ExecutionRequest): AsyncGenerator<string>;
 
   // Embeddings
   generateEmbedding(text: string, options?: EmbeddingOptions): Promise<number[]>;

@@ -5,6 +5,44 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.6.0] - 2025-10-07
+
+### 🗑️ Breaking Changes - Streaming Functionality Removed
+
+**Reason for Removal:**
+Streaming functionality was found to be non-functional and causing issues:
+1. **Duplicate Output**: Content was displayed twice (`📝 Streaming response:` + `📝 Result:`)
+2. **Gemini Pseudo-streaming**: Not real streaming, just chunked output after waiting for full response
+3. **Claude Streaming Issues**: CLI streaming flags not working as expected
+4. **No Real Value**: Users experienced no performance benefit or improved UX
+
+**What Was Removed:**
+- ❌ `--stream` CLI option (was default `true`, caused confusion)
+- ❌ `Provider.stream()` interface method
+- ❌ `streamRequest()` implementation in ClaudeProvider and GeminiProvider
+- ❌ `Router.stream()` fallback routing
+- ❌ Streaming execution logic in AgentExecutor
+- ❌ `ExecutionOptions.streaming` parameter
+
+**Impact:**
+- ✅ **Cleaner Output**: No more duplicate content display
+- ✅ **Consistent UX**: Single, clear result output for all providers
+- ✅ **Simplified Code**: Removed ~300 lines of non-functional streaming code
+- ✅ **Better Reliability**: Eliminates streaming-related timeout and error issues
+
+**Migration Guide:**
+- If you were using `--stream`: Remove the flag, default behavior is now always non-streaming
+- If you were using `--no-stream`: Remove the flag, it's no longer needed
+- All agents now return complete responses in a single, clean output
+
+**Test Results:**
+- ✅ 846 tests passing (780 unit + 66 integration)
+- ✅ TypeScript compilation successful
+- ✅ All integration tests pass
+- ✅ CLI functionality verified
+
+---
+
 ## [4.5.9] - 2025-10-07
 
 ### 🎨 User Experience Improvements

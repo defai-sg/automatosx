@@ -76,7 +76,6 @@ export abstract class BaseProvider implements Provider {
   }
 
   protected abstract executeRequest(request: ExecutionRequest): Promise<ExecutionResponse>;
-  protected abstract streamRequest(request: ExecutionRequest): AsyncGenerator<string>;
   protected abstract generateEmbeddingInternal(text: string, options?: EmbeddingOptions): Promise<number[]>;
 
   // Health & Availability
@@ -243,17 +242,6 @@ export abstract class BaseProvider implements Provider {
     // All retries failed
     this.updateHealthAfterFailure();
     throw lastError || new Error('Execution failed');
-  }
-
-  // Streaming
-  async *stream(request: ExecutionRequest): AsyncGenerator<string> {
-    if (!await this.isAvailable()) {
-      throw new Error(`Provider ${this.name} is not available`);
-    }
-
-    await this.waitForCapacity();
-
-    yield* this.streamRequest(request);
   }
 
   // Embeddings

@@ -32,7 +32,6 @@ interface RunOptions {
   memory?: boolean;
   saveMemory?: boolean;
   verbose?: boolean;
-  stream?: boolean;
   format?: 'text' | 'json' | 'markdown';
   save?: string;
   timeout?: number;
@@ -77,11 +76,6 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         describe: 'Verbose output',
         type: 'boolean',
         default: false
-      })
-      .option('stream', {
-        describe: 'Enable streaming output (enabled by default, use --no-stream to disable)',
-        type: 'boolean',
-        default: true
       })
       .option('format', {
         describe: 'Output format',
@@ -348,7 +342,6 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
             result = await executor.execute(context, {
               verbose: argv.verbose,
               showProgress: !argv.verbose,
-              streaming: argv.stream || false,
               signal: controller.signal
             });
           } finally {
@@ -362,8 +355,7 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         } else {
           result = await executor.execute(context, {
             verbose: argv.verbose,
-            showProgress: !argv.verbose,
-            streaming: argv.stream || false
+            showProgress: !argv.verbose
           });
         }
 

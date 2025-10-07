@@ -1,4 +1,4 @@
-# AutomatosX v4.5.9
+# AutomatosX v4.6.0
 
 > **The control tower for shipping customer-facing ideas—without the chaos**
 > Orchestrate specialized AI agents to move work from slide decks to production, keeping product, engineering, and stakeholders in sync.
@@ -6,7 +6,7 @@
 [![npm version](https://img.shields.io/npm/v/@defai.sg/automatosx.svg)](https://www.npmjs.com/package/@defai.sg/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-841%20passing-brightgreen.svg)](#production-ready-toolkit)
+[![Tests](https://img.shields.io/badge/tests-846%20passing-brightgreen.svg)](#production-ready-toolkit)
 
 **Teams and solo builders choose AutomatosX because:**
 - 🎯 **Keeps people aligned, not just code moving** – track roadmaps, builds, and launch tasks in one place
@@ -14,7 +14,7 @@
 - ⚡ **Shortens idea-to-impact gap** – organized workflows mean faster onboarding, tighter handoffs, confident timelines
 - 💰 **10× more cost-effective** – CLI-based orchestration beats expensive assistants APIs
 
-**Status**: ✅ Production Release · **Version**: 4.5.9 · **Released**: October 2025
+**Status**: ✅ Production Release · **Version**: 4.6.0 · **Released**: October 2025
 
 ---
 

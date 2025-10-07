@@ -3,7 +3,6 @@
  *
  * Responsibilities:
  * - Execute agents with progress tracking
- * - Handle streaming responses
  * - Manage execution lifecycle
  * - Provide detailed error reporting
  */
@@ -25,7 +24,6 @@ export interface RetryConfig {
 export interface ExecutionOptions {
   verbose?: boolean;
   showProgress?: boolean;
-  streaming?: boolean;
   retry?: RetryConfig;
   timeout?: number;
   signal?: AbortSignal;
@@ -40,7 +38,7 @@ export interface ExecutionResult {
 /**
  * Agent Executor
  *
- * Executes agents with progress tracking, streaming output, and comprehensive error handling.
+ * Executes agents with progress tracking and comprehensive error handling.
  */
 export class AgentExecutor {
   /**
@@ -188,7 +186,7 @@ export class AgentExecutor {
     context: ExecutionContext,
     options: ExecutionOptions = {}
   ): Promise<ExecutionResult> {
-    const { verbose = false, showProgress = true, streaming = true } = options;
+    const { verbose = false, showProgress = true } = options;
 
     // Display execution info
     if (verbose) {
@@ -214,82 +212,25 @@ export class AgentExecutor {
 
       // Execute via provider
       const startTime = Date.now();
-      let response;
+      const response = await context.provider.execute({
+        prompt,
+        systemPrompt: context.agent.systemPrompt,
+        model: context.agent.model,
+        temperature: context.agent.temperature,
+        maxTokens: context.agent.maxTokens
+      });
+      const duration = Date.now() - startTime;
 
-      if (streaming) {
-        // Update spinner to show connection status
-        if (spinner) {
-          spinner.text = `Connecting to ${context.provider.name}...`;
-        }
-
-        let fullContent = '';
-        const streamGenerator = context.provider.stream({
-          prompt,
-          systemPrompt: context.agent.systemPrompt,
-          model: context.agent.model,
-          temperature: context.agent.temperature,
-          maxTokens: context.agent.maxTokens
-        });
-
-        let firstChunk = true;
-        for await (const chunk of streamGenerator) {
-          // Stop spinner and show streaming header on first chunk
-          if (firstChunk) {
-            if (spinner) {
-              spinner.stop();
-            }
-            console.log(chalk.cyan('\n📝 Streaming response:\n'));
-            firstChunk = false;
-          }
-
-          process.stdout.write(chunk);
-          fullContent += chunk;
-        }
-
-        console.log('\n'); // New line after streaming
-
-        const duration = Date.now() - startTime;
-
-        // Build response object from streamed content
-        response = {
-          content: fullContent,
-          tokensUsed: {
-            prompt: 0,
-            completion: 0,
-            total: 0
-          }, // Streaming doesn't provide token count immediately
-          latencyMs: duration,
-          model: context.agent.model || 'unknown',
-          finishReason: 'stop' as const
-        };
-
-        return {
-          response,
-          duration,
-          context
-        };
-      } else {
-        // Normal execution
-        response = await context.provider.execute({
-          prompt,
-          systemPrompt: context.agent.systemPrompt,
-          model: context.agent.model,
-          temperature: context.agent.temperature,
-          maxTokens: context.agent.maxTokens
-        });
-        const duration = Date.now() - startTime;
-
-        // Stop spinner
-        if (spinner) {
-          spinner.succeed('Execution complete');
-        }
-
-        return {
-          response,
-          duration,
-          context
-        };
+      // Stop spinner
+      if (spinner) {
+        spinner.succeed('Execution complete');
       }
+
+      return {
+        response,
+        duration,
+        context
+      };
 
     } catch (error) {
       // Stop spinner with failure

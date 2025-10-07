@@ -163,7 +163,6 @@ automatosx run <agent> <task> [options]
 --no-memory           Disable memory context
 --save-memory         Save interaction to memory
 --verbose             Show detailed execution info
---stream              Stream response in real-time
 --format <type>       Output format: text, json, markdown
 --save <path>         Save output to file
 --timeout <seconds>   Execution timeout

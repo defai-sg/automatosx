@@ -31,7 +31,7 @@ describe('ClaudeProvider', () => {
   it('should have correct metadata', () => {
     expect(provider.name).toBe('claude');
     expect(provider.version).toBe('1.0.0');
-    expect(provider.capabilities.supportsStreaming).toBe(true);
+    expect(provider.capabilities.supportsStreaming).toBe(false);
     expect(provider.capabilities.supportsEmbedding).toBe(false);
     expect(provider.capabilities.supportsVision).toBe(true);
     expect(provider.capabilities.maxContextTokens).toBe(200000);
@@ -121,7 +121,7 @@ describe('GeminiProvider', () => {
   it('should have correct metadata', () => {
     expect(provider.name).toBe('gemini');
     expect(provider.version).toBe('1.0.0');
-    expect(provider.capabilities.supportsStreaming).toBe(true);
+    expect(provider.capabilities.supportsStreaming).toBe(false);
     expect(provider.capabilities.supportsEmbedding).toBe(true);
     expect(provider.capabilities.supportsVision).toBe(true);
     expect(provider.capabilities.maxContextTokens).toBe(1000000);

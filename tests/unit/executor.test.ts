@@ -38,11 +38,6 @@ describe('AgentExecutor', () => {
         model: 'mock-model',
         finishReason: 'stop'
       } as ExecutionResponse),
-      stream: vi.fn().mockImplementation(async function* () {
-        yield 'Mock ';
-        yield 'streaming ';
-        yield 'response';
-      }),
       generateEmbedding: vi.fn().mockResolvedValue([0.1, 0.2, 0.3]),
       isAvailable: vi.fn().mockResolvedValue(true),
       getHealth: vi.fn().mockResolvedValue({
@@ -98,7 +93,7 @@ describe('AgentExecutor', () => {
 
   describe('execute', () => {
     it('should execute successfully and return result', async () => {
-      const result = await executor.execute(mockContext, { showProgress: false, streaming: false });
+      const result = await executor.execute(mockContext, { showProgress: false });
 
       expect(result).toBeDefined();
       expect(result.response.content).toBe('Mock response');
@@ -114,7 +109,7 @@ describe('AgentExecutor', () => {
     });
 
     it('should build prompt with abilities', async () => {
-      await executor.execute(mockContext, { showProgress: false, streaming: false });
+      await executor.execute(mockContext, { showProgress: false });
 
       expect(mockProvider.execute).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -140,7 +135,7 @@ describe('AgentExecutor', () => {
         }
       ];
 
-      await executor.execute(mockContext, { showProgress: false, streaming: false });
+      await executor.execute(mockContext, { showProgress: false });
 
       expect(mockProvider.execute).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -166,7 +161,7 @@ describe('AgentExecutor', () => {
         }
       ];
 
-      await executor.execute(mockContext, { showProgress: false, streaming: false });
+      await executor.execute(mockContext, { showProgress: false });
 
       expect(mockProvider.execute).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -178,7 +173,7 @@ describe('AgentExecutor', () => {
     it('should handle verbose mode', async () => {
       const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-      await executor.execute(mockContext, { verbose: true, showProgress: false, streaming: false });
+      await executor.execute(mockContext, { verbose: true, showProgress: false });
 
       expect(consoleLogSpy).toHaveBeenCalled();
       consoleLogSpy.mockRestore();
@@ -189,11 +184,11 @@ describe('AgentExecutor', () => {
       mockProvider.execute = vi.fn().mockRejectedValue(providerError);
 
       await expect(
-        executor.execute(mockContext, { showProgress: false, streaming: false })
+        executor.execute(mockContext, { showProgress: false })
       ).rejects.toThrow('Provider execution failed');
 
       try {
-        await executor.execute(mockContext, { showProgress: false, streaming: false });
+        await executor.execute(mockContext, { showProgress: false });
       } catch (error: any) {
         expect(error.context).toBeDefined();
         expect(error.context.agent).toBe('Test Agent');
@@ -209,7 +204,7 @@ describe('AgentExecutor', () => {
       mockProvider.execute = vi.fn().mockRejectedValue(new Error('Provider failed'));
 
       try {
-        await executor.execute(mockContext, { showProgress: false, streaming: false });
+        await executor.execute(mockContext, { showProgress: false });
       } catch (error: any) {
         expect(error.context.task).toHaveLength(103); // 100 + '...'
         expect(error.context.task).toContain('...');
@@ -222,7 +217,7 @@ describe('AgentExecutor', () => {
       mockProvider.execute = vi.fn().mockRejectedValue(providerError);
 
       try {
-        await executor.execute(mockContext, { showProgress: false, streaming: false });
+        await executor.execute(mockContext, { showProgress: false });
       } catch (error: any) {
         expect(error.stack).toBe('Original stack trace');
       }
@@ -308,7 +303,7 @@ describe('AgentExecutor', () => {
       mockContext.abilities = '';
       mockContext.memory = [];
 
-      await executor.execute(mockContext, { showProgress: false, streaming: false });
+      await executor.execute(mockContext, { showProgress: false });
 
       expect(mockProvider.execute).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -321,7 +316,7 @@ describe('AgentExecutor', () => {
       mockContext.abilities = '# Ability 1\nTest ability';
       mockContext.memory = [];
 
-      await executor.execute(mockContext, { showProgress: false, streaming: false });
+      await executor.execute(mockContext, { showProgress: false });
 
       expect(mockProvider.execute).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -352,7 +347,7 @@ describe('AgentExecutor', () => {
         }
       ];
 
-      await executor.execute(mockContext, { showProgress: false, streaming: false });
+      await executor.execute(mockContext, { showProgress: false });
 
       expect(mockProvider.execute).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -391,7 +386,7 @@ describe('AgentExecutor', () => {
         }
       ];
 
-      await executor.execute(mockContext, { showProgress: false, streaming: false });
+      await executor.execute(mockContext, { showProgress: false });
 
       expect(mockProvider.execute).toHaveBeenCalledWith(
         expect.objectContaining({

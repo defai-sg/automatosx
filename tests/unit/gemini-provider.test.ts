@@ -94,37 +94,7 @@ describe('GeminiProvider - Additional Coverage', () => {
     });
   });
 
-  describe('streamRequest()', () => {
-    it('should stream response', async () => {
-      const request: ExecutionRequest = {
-        prompt: 'Stream test',
-        model: 'gemini-1.5-flash'
-      };
-
-      const chunks: string[] = [];
-      for await (const chunk of provider.stream(request)) {
-        chunks.push(chunk);
-      }
-
-      expect(chunks.length).toBeGreaterThan(0);
-      expect(chunks.join('')).toContain('Mock Response');
-    });
-
-    it('should stream with system prompt', async () => {
-      const request: ExecutionRequest = {
-        prompt: 'Stream test',
-        systemPrompt: 'System context',
-        model: 'gemini-2.0-flash-exp'
-      };
-
-      const chunks: string[] = [];
-      for await (const chunk of provider.stream(request)) {
-        chunks.push(chunk);
-      }
-
-      expect(chunks.length).toBeGreaterThan(0);
-    });
-  });
+  // Streaming tests removed - streaming functionality has been removed from the system
 
   describe('generateEmbeddingInternal()', () => {
     it('should generate embedding with default dimensions', async () => {
