@@ -154,8 +154,8 @@ async function getLatestVersion(): Promise<string> {
  */
 function isNewer(a: string, b: string): boolean {
   const parseVersion = (v: string) => v.split('.').map(Number);
-  const [aMajor, aMinor, aPatch] = parseVersion(a);
-  const [bMajor, bMinor, bPatch] = parseVersion(b);
+  const [aMajor = 0, aMinor = 0, aPatch = 0] = parseVersion(a);
+  const [bMajor = 0, bMinor = 0, bPatch = 0] = parseVersion(b);
 
   if (aMajor !== bMajor) return aMajor > bMajor;
   if (aMinor !== bMinor) return aMinor > bMinor;
