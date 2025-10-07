@@ -55,8 +55,8 @@ export class ProfileLoader {
   }
 
   /**
-   * Build displayName → name mapping table
-   * This is called lazily on first agent lookup
+   * Build displayName → name mapping table (lightweight)
+   * Only reads displayName field from YAML, doesn't load full profile
    */
   private async buildDisplayNameMap(): Promise<void> {
     if (this.mapInitialized) {
@@ -71,18 +71,20 @@ export class ProfileLoader {
 
       for (const name of profiles) {
         try {
-          const profile = await this.loadProfile(name);
-          if (profile.displayName) {
+          // Lightweight: Only read displayName field, not full profile
+          const displayName = await this.readDisplayNameOnly(name);
+
+          if (displayName) {
             // Store case-insensitive mapping
-            this.displayNameMap.set(profile.displayName.toLowerCase(), name);
+            this.displayNameMap.set(displayName.toLowerCase(), name);
             logger.debug('Mapped displayName to agent', {
-              displayName: profile.displayName,
+              displayName,
               name
             });
           }
         } catch (error) {
-          // Skip profiles that fail to load
-          logger.warn('Failed to load profile for mapping', { name, error });
+          // Skip profiles that fail to read
+          logger.warn('Failed to read displayName for mapping', { name, error });
         }
       }
 
@@ -94,6 +96,39 @@ export class ProfileLoader {
       logger.error('Failed to build displayName mapping', { error });
       // Don't throw - allow fallback to direct name lookup
     }
+  }
+
+  /**
+   * Read only displayName field from YAML (lightweight, no full parsing)
+   * Returns null if no displayName or file doesn't exist
+   */
+  private async readDisplayNameOnly(name: string): Promise<string | null> {
+    const profilePaths = this.getProfilePath(name);
+
+    for (const profilePath of profilePaths) {
+      try {
+        const content = await readFile(profilePath, 'utf-8');
+
+        // Security: Limit file size check (same as loadProfile)
+        if (content.length > 100 * 1024) {
+          continue;
+        }
+
+        // Parse YAML to extract only displayName
+        const data = load(content) as any;
+        return data.displayName || null;
+
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+          // File not found, try next path
+          continue;
+        }
+        // Other errors, skip this profile
+        return null;
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -151,7 +186,6 @@ export class ProfileLoader {
     const profilePaths = this.getProfilePath(name);
 
     // Try each path in order
-    let lastError: Error | null = null;
     for (const profilePath of profilePaths) {
       try {
         const content = await readFile(profilePath, 'utf-8');
@@ -177,7 +211,6 @@ export class ProfileLoader {
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
           // File not found, try next path
-          lastError = error as Error;
           continue;
         }
         // Other errors should be thrown immediately
