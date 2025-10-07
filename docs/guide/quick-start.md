@@ -48,7 +48,7 @@ If you want to contribute to AutomatosX development:
 
 ```bash
 # Clone repository
-git clone https://github.com/automatosx/automatosx.git
+git clone https://github.com/defai-sg/automatosx.git
 cd automatosx
 
 # Install dependencies
@@ -365,7 +365,7 @@ For more help, see [Troubleshooting Guide](../troubleshooting/common-issues.md).
 ## Getting Help
 
 - **Documentation**: [docs.automatosx.dev](https://docs.automatosx.dev) (coming soon)
-- **GitHub Issues**: [github.com/automatosx/automatosx/issues](https://github.com/automatosx/automatosx/issues)
+- **GitHub Issues**: [github.com/defai-sg/automatosx/issues](https://github.com/defai-sg/automatosx/issues)
 - **Examples**: Check `.automatosx/agents/` and `.automatosx/abilities/` after running `init`
 
 ---

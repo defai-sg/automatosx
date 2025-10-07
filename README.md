@@ -406,4 +406,4 @@ Apache License 2.0 — see [LICENSE](LICENSE) for details.
 
 **Built by the DEFAI team for practitioners who ship agents, not demos.**
 
-*Need enterprise support, custom integrations, or SLA guarantees? Contact us at team@defai.sg*
+*Need enterprise support, custom integrations, or SLA guarantees? Contact us at support@defai.digital*

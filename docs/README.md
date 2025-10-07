@@ -206,8 +206,8 @@ AutomatosX is [MIT licensed](../LICENSE).
 
 ## 🔗 Links
 
-- **GitHub**: [github.com/automatosx/automatosx](https://github.com/automatosx/automatosx)
-- **Issues**: [github.com/automatosx/automatosx/issues](https://github.com/automatosx/automatosx/issues)
+- **GitHub**: [github.com/defai-sg/automatosx](https://github.com/defai-sg/automatosx)
+- **Issues**: [github.com/defai-sg/automatosx/issues](https://github.com/defai-sg/automatosx/issues)
 - **npm**: [npmjs.com/package/automatosx](https://npmjs.com/package/automatosx)
 
 ---
@@ -215,7 +215,7 @@ AutomatosX is [MIT licensed](../LICENSE).
 ## 📮 Get Help
 
 - **Documentation**: You're reading it!
-- **Issues**: [Report bugs or request features](https://github.com/automatosx/automatosx/issues)
+- **Issues**: [Report bugs or request features](https://github.com/defai-sg/automatosx/issues)
 - **Examples**: Check `.automatosx/agents/` after running `init`
 
 ---

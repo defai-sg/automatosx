@@ -390,7 +390,7 @@ As a thank you for beta testing:
 - **GitHub Issues**: Bug reports
 - **GitHub Discussions**: General feedback
 - **Discord**: Real-time chat (coming soon)
-- **Email**: beta@automatosx.dev
+- **Email**: support@defai.digital
 
 ## Beta Testing Timeline
 
@@ -460,4 +460,4 @@ Your participation makes AutomatosX better for everyone. We appreciate your time
 
 ---
 
-**Questions?** Email beta@automatosx.dev or ask in [GitHub Discussions](https://github.com/defai-sg/automatosx/discussions)
+**Questions?** Email support@defai.digital or ask in [GitHub Discussions](https://github.com/defai-sg/automatosx/discussions)

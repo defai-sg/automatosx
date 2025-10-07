@@ -768,4 +768,4 @@ You've learned to:
 
 ---
 
-**Questions?** Check the [FAQ](../troubleshooting/faq.md) or [open an issue](https://github.com/automatosx/automatosx/issues).
+**Questions?** Check the [FAQ](../troubleshooting/faq.md) or [open an issue](https://github.com/defai-sg/automatosx/issues).

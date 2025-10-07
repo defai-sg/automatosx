@@ -14,7 +14,7 @@ hero:
       link: /guide/introduction
     - theme: alt
       text: View on GitHub
-      link: https://github.com/automatosx/automatosx
+      link: https://github.com/defai-sg/automatosx
     - theme: alt
       text: API Reference
       link: /api/
@@ -128,4 +128,4 @@ For now, please use [GitHub Issues](https://github.com/yourusername/automatosx/i
 
 ## License
 
-[MIT License](https://github.com/automatosx/automatosx/blob/main/LICENSE) © 2024-present AutomatosX Team
+[MIT License](https://github.com/defai-sg/automatosx/blob/main/LICENSE) © 2024-present AutomatosX Team

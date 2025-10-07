@@ -662,4 +662,4 @@ You've learned to:
 
 ---
 
-**Need help?** Check [Troubleshooting Guide](../troubleshooting/common-issues.md) or [open an issue](https://github.com/automatosx/automatosx/issues).
+**Need help?** Check [Troubleshooting Guide](../troubleshooting/common-issues.md) or [open an issue](https://github.com/defai-sg/automatosx/issues).
