@@ -1,10 +1,11 @@
 {
   "name": "@defai.sg/automatosx",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "description": "AI Agent Orchestration Platform",
   "type": "module",
   "bin": {
-    "automatosx": "./dist/index.js"
+    "automatosx": "./dist/index.js",
+    "ax": "./dist/index.js"
   },
   "engines": {
     "node": ">=20.0.0"

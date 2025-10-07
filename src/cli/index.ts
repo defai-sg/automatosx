@@ -21,6 +21,7 @@ import { listCommand } from './commands/list.js';
 import { memoryCommand } from './commands/memory.js';
 import { runCommand } from './commands/run.js';
 import { statusCommand } from './commands/status.js';
+import { updateCommand } from './commands/update.js';
 
 // Mark CLI startup
 globalTracker.mark('cli_start');
@@ -36,6 +37,7 @@ const argv = await yargs(hideBin(process.argv))
   .example('$0 list agents', 'List available agents')
   .example('$0 memory search "topic"', 'Search memory')
   .example('$0 config --list', 'View configuration')
+  .example('$0 update', 'Update to latest version')
 
   // Global options
   .option('debug', {
@@ -64,6 +66,7 @@ const argv = await yargs(hideBin(process.argv))
   .command(configCommand)
   .command(statusCommand)
   .command(memoryCommand)
+  .command(updateCommand)
 
   // Configuration
   .demandCommand(1, 'You must provide a command. Run --help for usage.')
