@@ -1,8 +1,17 @@
-# AutomatosX Agent Executor
+# /ax - AutomatosX Agent Executor
 
-Execute an AutomatosX agent with a specific task.
+Execute the specified AutomatosX agent with the given task using the `automatosx` CLI.
 
-## Usage
+When the user invokes this command, execute:
+```bash
+automatosx run {agent-name} "{task}"
+```
+
+Where:
+- `{agent-name}` is the first argument after /ax
+- `{task}` is the remaining text (the task description)
+
+## Usage Format
 
 ```
 /ax <agent-name> <task>
