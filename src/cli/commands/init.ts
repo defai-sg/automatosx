@@ -21,9 +21,11 @@ const __dirname = dirname(__filename);
 function getPackageRoot(): string {
   const currentDir = __dirname;
   if (currentDir.includes('/dist')) {
+    // Production: dist/index.js -> go up one level to package root
     return join(currentDir, '..');
   } else {
-    return join(currentDir, '../..');
+    // Development: src/cli/commands/init.ts -> go up three levels to package root
+    return join(currentDir, '../../..');
   }
 }
 
