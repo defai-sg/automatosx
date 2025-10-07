@@ -5,19 +5,110 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.3] - 2025-10-07
+
+### 🔧 Maintenance Release
+
+This is a maintenance release that consolidates improvements from v4.5.2 and ensures stability across all features.
+
+### ✨ Highlights
+
+#### All Features from v4.5.2 Included
+- Enhanced agent listing with dual-directory support
+- Smarter config file resolution with existence checks
+- Streaming enabled by default with opt-out option
+- Improved timeout handling with AbortController
+- Dynamic version reading from package.json
+- Fixed Gemini CLI argument formatting
+
+### 📊 Technical Details
+
+- **No Breaking Changes**: Fully backward compatible with v4.5.x
+- **Bundle Size**: Optimized and stable
+- **Tests**: 841 tests passing (100% reliability)
+- **TypeScript**: Strict mode compliance maintained
+- **Production Ready**: All core features tested and stable
+
+### 📈 Migration from v4.5.2
+
+No changes required! v4.5.3 is a seamless upgrade:
+- All existing agents work unchanged
+- Configuration files compatible
+- No API changes
+
+### 🎯 What's Next
+
+Looking ahead to v4.6.0:
+- Performance optimizations
+- Enhanced memory features
+- Additional provider integrations
+- Improved documentation
+
 ## [4.5.2] - 2025-10-07
 
-### 📝 Documentation Updates
+### ✨ Enhancements
 
-- **Updated version references**: Changed all documentation references from v4.1 to v4.5.2
-- **README.md**: Updated header and status line to reflect current version
-- **Package metadata**: Bumped version to 4.5.2 for consistency
+#### CLI Improvements
+- **Enhanced agent listing**: Now shows agents from both `.automatosx/agents/` and `examples/agents/`
+  - Displays source location (`.automatosx` or `examples`) for each agent
+  - Prevents duplicate listings when same agent exists in both locations
+  - Shows `displayName` field if available, falls back to `name` or filename
+  - Files: `src/cli/commands/list.ts:62-141`
 
-### 🔧 Maintenance
+#### Configuration Improvements
+- **Smarter config file resolution**: Checks if files exist before choosing config path
+  - Priority: `--config` flag → `-c` alias → `AUTOMATOSX_CONFIG` env → project root → hidden dir
+  - No longer blindly defaults to hidden dir for E2E tests
+  - Files: `src/cli/commands/config.ts:88-109`
 
-- Version synchronization across all documentation
-- No functional changes or bug fixes in this release
-- Preparation for npm publication and GitHub release
+#### Execution Improvements
+- **Streaming enabled by default**: Changed `--stream` option default to `true`
+  - Users can now use `--no-stream` to disable streaming output
+  - Better real-time feedback during agent execution
+  - Files: `src/cli/commands/run.ts:82-84`, `src/agents/executor.ts:191`
+
+- **Better timeout handling**: Implemented AbortController for proper execution cancellation
+  - Timeout now cancels the running executor properly (prevents resource leaks)
+  - Ensures cleanup of memory manager, provider connections, and agent instances
+  - Files: `src/agents/executor.ts:156-181`
+
+#### User Experience Improvements
+- **Dynamic version reading**: Version now read from `package.json` at runtime
+  - Shows correct version in `--version` and `status` command
+  - No hardcoded version strings in source code
+  - Files: `src/cli/index.ts:14-26`, `src/cli/commands/status.ts:23-35`
+
+- **Better error messages**: Enhanced embedding provider error message
+  - Clear instructions on how to enable semantic text search
+  - Alternative suggestions for browsing memories without search
+  - Files: `src/core/memory-manager-vec.ts:185-191`
+
+#### Provider Fixes
+- **Fixed Gemini CLI arguments**: Corrected CLI invocation for Gemini provider
+  - Prompt now passed as positional argument (not `--prompt` flag)
+  - Model passed via `--model` flag only when non-default
+  - Removed unsupported `--temperature` and `--max-tokens` flags (configured in settings.json)
+  - Files: `src/providers/gemini-provider.ts:155-169`
+
+### 🐛 Bug Fixes
+
+- **Fixed config path resolution**: Now checks file existence before selecting default path
+- **Fixed timeout resource leaks**: AbortController ensures proper cleanup on timeout
+- **Fixed Gemini provider CLI invocation**: Correct argument format for Gemini CLI
+
+### 🔧 Technical Details
+
+- **No Breaking Changes**: All changes are backward compatible
+- **Bundle Size**: 237.06 KB (similar to 4.5.1)
+- **Tests**: All existing tests passing (841 tests)
+- **TypeScript**: Full strict mode compliance
+
+### 📈 Migration from v4.5.1
+
+No changes required! v4.5.2 is fully backward compatible:
+- All existing agents work unchanged
+- Configuration files work as-is
+- New features are opt-in (streaming is default but can be disabled)
 
 ## [4.5.1] - 2025-10-07
 

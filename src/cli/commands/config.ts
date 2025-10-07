@@ -85,12 +85,29 @@ export const configCommand: CommandModule<Record<string, unknown>, ConfigOptions
       }
 
       // Support multiple config path sources (priority order)
-      const configPath =
-        (argv as any).config ||                                      // --config flag
-        (argv as any).c ||                                           // -c alias
-        process.env.AUTOMATOSX_CONFIG ||                             // Environment variable
-        resolve(process.cwd(), '.automatosx', 'config.json') ||     // Hidden dir (E2E)
-        resolve(process.cwd(), 'automatosx.config.json');            // Default location
+      let configPath: string;
+
+      if ((argv as any).config) {
+        configPath = (argv as any).config;
+      } else if ((argv as any).c) {
+        configPath = (argv as any).c;
+      } else if (process.env.AUTOMATOSX_CONFIG) {
+        configPath = process.env.AUTOMATOSX_CONFIG;
+      } else {
+        // Check in priority order: project root config, then hidden dir config
+        const projectConfig = resolve(process.cwd(), 'automatosx.config.json');
+        const hiddenConfig = resolve(process.cwd(), '.automatosx', 'config.json');
+
+        const fs = await import('fs');
+        if (fs.existsSync(projectConfig)) {
+          configPath = projectConfig;
+        } else if (fs.existsSync(hiddenConfig)) {
+          configPath = hiddenConfig;
+        } else {
+          // Default to project config (for error message)
+          configPath = projectConfig;
+        }
+      }
 
       if (process.env.AUTOMATOSX_DEBUG) {
         console.error('[DEBUG] Resolved config path:', configPath);

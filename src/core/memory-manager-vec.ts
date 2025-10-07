@@ -183,7 +183,12 @@ export class MemoryManagerVec implements IMemoryManager {
     if (query.text) {
       if (!this.embeddingProvider) {
         throw new MemoryError(
-          'Embedding provider required for text search. Configure embeddingProvider in MemoryManagerConfig.',
+          'Embedding provider required for semantic text search.\n\n' +
+          'To enable text-based memory search:\n' +
+          '1. Configure an embedding provider (OpenAI recommended)\n' +
+          '2. Set OPENAI_API_KEY environment variable\n' +
+          '3. Or use vector-based search with pre-generated embeddings\n\n' +
+          'Alternatively, use: ax memory list --type <type> to browse memories without search',
           'PROVIDER_MISSING'
         );
       }

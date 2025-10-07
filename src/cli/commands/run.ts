@@ -79,9 +79,9 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         default: false
       })
       .option('stream', {
-        describe: 'Enable streaming output',
+        describe: 'Enable streaming output (enabled by default, use --no-stream to disable)',
         type: 'boolean',
-        default: false
+        default: true
       })
       .option('format', {
         describe: 'Output format',

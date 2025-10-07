@@ -115,9 +115,8 @@ thinking_patterns:
 abilities:
   - code-generation  # Uses original 28-line version (AI knows the rest)
 
-config:
-  temperature: 0.7
-  maxTokens: 4000
+temperature: 0.7
+maxTokens: 4000
 
 systemPrompt: |
   You are CodeCraft, a pragmatic senior software engineer.

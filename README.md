@@ -1,4 +1,4 @@
-# AutomatosX v4.5.2
+# AutomatosX v4.5.3
 
 > **The control tower for shipping customer-facing ideas—without the chaos**
 > Orchestrate specialized AI agents to move work from slide decks to production, keeping product, engineering, and stakeholders in sync.
@@ -14,7 +14,7 @@
 - ⚡ **Shortens idea-to-impact gap** – organized workflows mean faster onboarding, tighter handoffs, confident timelines
 - 💰 **10× more cost-effective** – CLI-based orchestration beats expensive assistants APIs
 
-**Status**: ✅ Production Release · **Version**: 4.5.2 · **Released**: October 2025
+**Status**: ✅ Production Release · **Version**: 4.5.3 · **Released**: October 2025
 
 ---
 

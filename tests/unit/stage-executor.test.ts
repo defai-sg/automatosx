@@ -22,7 +22,7 @@ describe('StageExecutor', () => {
       priority: 1,
       enabled: true,
       execute: vi.fn(),
-      stream: vi.fn(),
+      stream: vi.fn().mockImplementation(async function* () { yield "Mock "; yield "streaming "; yield "response"; }),
       checkHealth: vi.fn().mockResolvedValue({
         healthy: true,
         latency: 100

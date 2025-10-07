@@ -20,8 +20,20 @@ import chalk from 'chalk';
 import { existsSync, statSync } from 'fs';
 import { readdir, stat } from 'fs/promises';
 import { join, basename } from 'path';
+import { createRequire } from 'module';
 import os from 'os';
 import { printError } from '../../utils/error-formatter.js';
+
+// Read version from package.json using require (works in both dev and installed)
+const require = createRequire(import.meta.url);
+let VERSION = '4.5.2'; // Fallback version
+try {
+  const packageJson = require('../../../package.json');
+  VERSION = packageJson.version;
+} catch (err) {
+  // If package.json not found (installed globally), use fallback
+  logger.debug('Using fallback version');
+}
 
 interface StatusOptions {
   verbose?: boolean;
@@ -124,7 +136,7 @@ export const statusCommand: CommandModule<Record<string, unknown>, StatusOptions
       // Build status object
       const status = {
         system: {
-          version: '4.0.0-alpha.1',
+          version: VERSION,
           nodeVersion: process.version,
           platform: `${os.platform()} ${os.arch()}`,
           uptime: Math.floor(process.uptime()),

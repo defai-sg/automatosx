@@ -62,10 +62,45 @@ export const listCommand: CommandModule<Record<string, unknown>, ListOptions> = 
  */
 async function listAgents(pathResolver: PathResolver): Promise<void> {
   const agentsDir = pathResolver.getAgentsDirectory();
+  const { existsSync } = await import('fs');
+  const projectDir = await detectProjectRoot();
+  const examplesDir = join(projectDir, 'examples', 'agents');
 
   try {
-    const files = await readdir(agentsDir);
-    const agentFiles = files.filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
+    // Collect agent files from both directories
+    const agentFiles: Array<{ file: string; path: string; source: string }> = [];
+
+    // Load from .automatosx/agents/
+    if (existsSync(agentsDir)) {
+      const files = await readdir(agentsDir);
+      for (const file of files) {
+        if (file.endsWith('.yaml') || file.endsWith('.yml')) {
+          agentFiles.push({
+            file,
+            path: join(agentsDir, file),
+            source: '.automatosx'
+          });
+        }
+      }
+    }
+
+    // Load from examples/agents/
+    if (existsSync(examplesDir)) {
+      const files = await readdir(examplesDir);
+      for (const file of files) {
+        if (file.endsWith('.yaml') || file.endsWith('.yml')) {
+          // Skip if already loaded from .automatosx (avoid duplicates)
+          const alreadyLoaded = agentFiles.some(a => a.file === file);
+          if (!alreadyLoaded) {
+            agentFiles.push({
+              file,
+              path: join(examplesDir, file),
+              source: 'examples'
+            });
+          }
+        }
+      }
+    }
 
     if (agentFiles.length === 0) {
       console.log(chalk.yellow('\n⚠️  No agents found\n'));
@@ -80,16 +115,18 @@ async function listAgents(pathResolver: PathResolver): Promise<void> {
     const { load } = await import('js-yaml');
     const { readFile } = await import('fs/promises');
 
-    for (const file of agentFiles.sort()) {
-      const agentPath = join(agentsDir, file);
+    // Sort by name
+    agentFiles.sort((a, b) => a.file.localeCompare(b.file));
+
+    for (const { file, path: agentPath, source } of agentFiles) {
       try {
         const content = await readFile(agentPath, 'utf-8');
         const agent = load(content) as any;
 
-        const name = agent.name || file.replace(/\.(yaml|yml)$/, '');
+        const name = agent.displayName || agent.name || file.replace(/\.(yaml|yml)$/, '');
         const description = agent.description || 'No description';
 
-        console.log(chalk.cyan(`  • ${name}`));
+        console.log(chalk.cyan(`  • ${name}`) + chalk.gray(` (${source})`));
         console.log(chalk.gray(`    ${description}`));
 
         if (agent.abilities && agent.abilities.length > 0) {
@@ -97,7 +134,7 @@ async function listAgents(pathResolver: PathResolver): Promise<void> {
         }
         console.log();
       } catch (error) {
-        console.log(chalk.yellow(`  • ${file} (error loading)`));
+        console.log(chalk.yellow(`  • ${file} (error loading)`) + chalk.gray(` (${source})`));
         console.log();
       }
     }

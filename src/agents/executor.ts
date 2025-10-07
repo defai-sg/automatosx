@@ -153,18 +153,32 @@ export class AgentExecutor {
     const timeout = options.timeout!;
     const { verbose = false } = options;
 
-    const executionPromise = options.retry
-      ? this.executeWithRetry(context, { ...options, timeout: undefined }) // Remove timeout from retry
-      : this.executeInternal(context, options);
+    // Create an AbortController for cancellation
+    const controller = new AbortController();
+    const executionOptions = {
+      ...options,
+      signal: controller.signal,
+      timeout: undefined // Remove timeout from nested execution
+    };
 
-    return Promise.race([
-      executionPromise,
-      new Promise<ExecutionResult>((_, reject) => {
-        setTimeout(() => {
-          reject(new Error(`Execution timed out after ${timeout}ms`));
-        }, timeout);
-      })
-    ]);
+    const executionPromise = options.retry
+      ? this.executeWithRetry(context, executionOptions)
+      : this.executeInternal(context, executionOptions);
+
+    const timeoutPromise = new Promise<ExecutionResult>((_, reject) => {
+      setTimeout(() => {
+        controller.abort(); // Cancel the execution
+        reject(new Error(`Execution timed out after ${timeout}ms`));
+      }, timeout);
+    });
+
+    try {
+      return await Promise.race([executionPromise, timeoutPromise]);
+    } catch (error) {
+      // Ensure abortion on error
+      controller.abort();
+      throw error;
+    }
   }
 
   /**
@@ -174,7 +188,7 @@ export class AgentExecutor {
     context: ExecutionContext,
     options: ExecutionOptions = {}
   ): Promise<ExecutionResult> {
-    const { verbose = false, showProgress = true, streaming = false } = options;
+    const { verbose = false, showProgress = true, streaming = true } = options;
 
     // Display execution info
     if (verbose) {

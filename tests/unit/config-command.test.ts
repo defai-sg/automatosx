@@ -27,6 +27,14 @@ vi.mock('fs/promises', () => ({
   })
 }));
 
+vi.mock('fs', async () => {
+  const actual = await vi.importActual('fs');
+  return {
+    ...actual,
+    existsSync: vi.fn((path: string) => !!mockFiles[path])
+  };
+});
+
 // Mock process.cwd
 vi.stubGlobal('process', {
   ...process,

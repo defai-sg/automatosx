@@ -152,20 +152,21 @@ export class GeminiProvider extends BaseProvider {
       let stdout = '';
       let stderr = '';
 
-      // Build CLI arguments (adjust based on actual Gemini CLI interface)
-      const args = [
-        'chat',
-        '--model', model,
-        '--prompt', prompt
-      ];
+      // Build CLI arguments for Gemini CLI
+      // Note: Gemini CLI uses positional prompt, not --prompt flag
+      // Model is set via -m/--model flag
+      const args: string[] = [];
 
-      // Add optional parameters
-      if (request.temperature !== undefined) {
-        args.push('--temperature', request.temperature.toString());
+      // Add model if specified
+      if (model && model !== this.DEFAULT_MODEL) {
+        args.push('--model', model);
       }
-      if (request.maxTokens !== undefined) {
-        args.push('--max-tokens', request.maxTokens.toString());
-      }
+
+      // Add prompt as positional argument (not as flag)
+      args.push(prompt);
+
+      // Note: Gemini CLI doesn't support temperature and maxTokens via CLI flags
+      // These parameters are configured in the Gemini settings.json instead
 
       // Spawn the CLI process
       const child = spawn(this.config.command, args, {

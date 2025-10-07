@@ -11,8 +11,20 @@
 
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import { createRequire } from 'module';
 import { logger, setLogLevel } from '../utils/logger.js';
 import { globalTracker } from '../utils/performance.js';
+
+// Read version from package.json using require (works in both dev and installed)
+const require = createRequire(import.meta.url);
+let VERSION = '4.5.2'; // Fallback version
+try {
+  const packageJson = require('../../package.json');
+  VERSION = packageJson.version;
+} catch (err) {
+  // If package.json not found (installed globally), use fallback
+  logger.debug('Using fallback version');
+}
 
 // Import all commands directly (lazy loading broke command options)
 import { configCommand } from './commands/config.js';
@@ -71,7 +83,7 @@ const argv = await yargs(hideBin(process.argv))
   // Configuration
   .demandCommand(1, 'You must provide a command. Run --help for usage.')
   .help()
-  .version('4.0.0-alpha.1')
+  .version(VERSION)
   .alias('h', 'help')
   .alias('v', 'version')
   .strict()
@@ -110,7 +122,7 @@ if (argv.config) {
 // Log startup info in debug mode
 if (argv.debug) {
   logger.debug('AutomatosX CLI started', {
-    version: '4.0.0-alpha.1',
+    version: VERSION,
     command: argv._[0],
     options: {
       debug: argv.debug,
