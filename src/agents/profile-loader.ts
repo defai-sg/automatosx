@@ -98,24 +98,42 @@ export class ProfileLoader {
 
   /**
    * Resolve agent identifier (name or displayName) to actual profile name
+   * Optimized: Try direct load first, only build full mapping if needed
    */
   async resolveAgentName(identifier: string): Promise<string> {
-    // Build map on first use
-    await this.buildDisplayNameMap();
+    // Optimization: Try direct profile load first (most common case)
+    // This avoids loading all profiles when using profile names directly
+    try {
+      await this.loadProfile(identifier);
+      // If load succeeds, identifier is a valid profile name
+      logger.debug('Using identifier as profile name (direct match)', { identifier });
+      return identifier;
+    } catch (error) {
+      // Profile not found directly, might be a displayName
+      // Only now build the displayName mapping if not already done
+      if ((error as any).name === 'AgentNotFoundError') {
+        logger.debug('Direct profile load failed, trying displayName lookup', { identifier });
 
-    // Try case-insensitive displayName lookup
-    const resolved = this.displayNameMap.get(identifier.toLowerCase());
-    if (resolved) {
-      logger.debug('Resolved displayName to agent name', {
-        displayName: identifier,
-        name: resolved
-      });
-      return resolved;
+        // Build map lazily if not already built
+        await this.buildDisplayNameMap();
+
+        // Try case-insensitive displayName lookup
+        const resolved = this.displayNameMap.get(identifier.toLowerCase());
+        if (resolved) {
+          logger.debug('Resolved displayName to agent name', {
+            displayName: identifier,
+            name: resolved
+          });
+          return resolved;
+        }
+
+        // Still not found, throw the original error
+        throw error;
+      }
+
+      // Other errors (validation, etc.) should be propagated
+      throw error;
     }
-
-    // Return as-is (assume it's a direct profile name)
-    logger.debug('Using identifier as profile name', { identifier });
-    return identifier;
   }
 
   /**

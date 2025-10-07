@@ -28,6 +28,10 @@ describe('AgentExecutor - Timeout Handling', () => {
             model: 'mock-model',
             finishReason: 'stop'
           };
+        }),
+        stream: vi.fn().mockImplementation(async function*() {
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          yield 'Too slow';
         })
       };
 
@@ -70,6 +74,9 @@ describe('AgentExecutor - Timeout Handling', () => {
           latencyMs: 50,
           model: 'mock-model',
           finishReason: 'stop'
+        }),
+        stream: vi.fn().mockImplementation(async function*() {
+          yield 'Fast response';
         })
       };
 
@@ -115,6 +122,10 @@ describe('AgentExecutor - Timeout Handling', () => {
             model: 'mock-model',
             finishReason: 'stop'
           };
+        }),
+        stream: vi.fn().mockImplementation(async function*() {
+          await new Promise(resolve => setTimeout(resolve, 150));
+          yield 'Response';
         })
       };
 
@@ -207,6 +218,9 @@ describe('AgentExecutor - Timeout Handling', () => {
           latencyMs: 100,
           model: 'mock-model',
           finishReason: 'stop'
+        }),
+        stream: vi.fn().mockImplementation(async function*() {
+          yield 'Normal response';
         })
       };
 
@@ -247,6 +261,9 @@ describe('AgentExecutor - Timeout Handling', () => {
           latencyMs: 50,
           model: 'mock-model',
           finishReason: 'stop'
+        }),
+        stream: vi.fn().mockImplementation(async function*() {
+          yield 'Response';
         })
       };
 

@@ -81,11 +81,122 @@ export class ClaudeProvider extends BaseProvider {
   }
 
   protected async *streamRequest(request: ExecutionRequest): AsyncGenerator<string> {
-    // Streaming implementation (placeholder for Phase 1)
-    // Will be implemented with Anthropic SDK in future phases
+    // Real streaming implementation using Claude Code CLI
+    const { spawn } = await import('child_process');
 
-    const response = await this.executeRequest(request);
-    yield response.content;
+    // Build prompt with system prompt if provided
+    let fullPrompt = request.prompt;
+    if (request.systemPrompt) {
+      fullPrompt = `System: ${request.systemPrompt}\n\nUser: ${request.prompt}`;
+    }
+
+    const model = request.model || this.DEFAULT_MODEL;
+
+    // Build CLI arguments with streaming
+    const args = [
+      '--print',
+      '--output-format', 'stream-json',
+      '--verbose',  // Required for stream-json
+      '--include-partial-messages',  // Enable real streaming with deltas
+      fullPrompt
+    ];
+
+    // Add model if specified and different from default
+    if (model && model !== this.DEFAULT_MODEL) {
+      args.unshift('--model', model);
+    }
+
+    const child = spawn(this.config.command, args, {
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: process.env
+    });
+
+    let buffer = '';
+    let hasYieldedContent = false; // Track if we've already yielded content
+
+    // Create a promise to handle errors
+    const errorPromise = new Promise<never>((_, reject) => {
+      child.on('error', (error: NodeJS.ErrnoException) => {
+        if (error.code === 'ENOENT') {
+          reject(new Error(
+            `Claude CLI not found. Please ensure Claude Code is installed and '${this.config.command}' is in your PATH.\n` +
+            `Install from: https://claude.ai/download`
+          ));
+        } else {
+          reject(new Error(`Failed to execute Claude CLI: ${error.message}`));
+        }
+      });
+
+      child.on('close', (code) => {
+        if (code !== 0) {
+          reject(new Error(`Claude CLI exited with code ${code}`));
+        }
+      });
+    });
+
+    try {
+      // Process stdout line by line
+      for await (const chunk of child.stdout!) {
+        buffer += chunk.toString();
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+
+          try {
+            // Parse JSON streaming format
+            const data = JSON.parse(line);
+
+            // Extract content based on Claude Code CLI streaming format
+            if (data.type === 'stream_event' && data.event) {
+              const event = data.event;
+
+              // Real-time streaming deltas
+              if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta' && event.delta.text) {
+                yield event.delta.text;
+                hasYieldedContent = true;
+              }
+            }
+            // Fallback: if no deltas received, use complete message
+            else if (!hasYieldedContent && data.type === 'assistant' && data.message?.content) {
+              const content = data.message.content;
+              if (Array.isArray(content)) {
+                for (const block of content) {
+                  if (block.type === 'text' && block.text) {
+                    yield block.text;
+                    hasYieldedContent = true;
+                  }
+                }
+              }
+            }
+            // Skip system and result messages
+          } catch (e) {
+            // Not JSON, might be plain text fallback
+            if (line.trim() && !line.startsWith('{')) {
+              yield line;
+            }
+          }
+        }
+      }
+
+      // Process any remaining buffer
+      if (buffer.trim()) {
+        try {
+          const data = JSON.parse(buffer);
+          if (data.type === 'content' && data.content) {
+            yield data.content;
+          }
+        } catch (e) {
+          // Plain text
+          yield buffer;
+        }
+      }
+    } catch (error) {
+      // Check if it's from the error promise
+      await Promise.race([Promise.resolve(), errorPromise]);
+      throw error;
+    }
   }
 
   protected async generateEmbeddingInternal(text: string, options?: EmbeddingOptions): Promise<number[]> {
@@ -140,8 +251,8 @@ export class ClaudeProvider extends BaseProvider {
   /**
    * Execute real CLI command via spawn
    *
-   * Claude Code CLI syntax: echo "prompt" | claude
-   * or: claude (with prompt via stdin)
+   * Claude Code CLI syntax: claude -p "prompt"
+   * Uses --print flag for non-interactive output
    */
   private async executeRealCLI(prompt: string, model: string, request: ExecutionRequest): Promise<{ content: string }> {
     const { spawn } = await import('child_process');
@@ -151,18 +262,21 @@ export class ClaudeProvider extends BaseProvider {
       let stderr = '';
       let hasTimedOut = false;
 
-      // Claude Code CLI accepts input via stdin
-      // No 'chat' subcommand needed
+      // Build CLI arguments
+      // Use --print for non-interactive mode
+      const args = ['--print', prompt];
+
+      // Add model if specified and different from default
+      if (model && model !== this.DEFAULT_MODEL) {
+        args.unshift('--model', model);
+      }
+
       let child: ReturnType<typeof spawn>;
 
       try {
-        child = spawn(this.config.command, [], {
-          stdio: ['pipe', 'pipe', 'pipe'],
-          env: {
-            ...process.env,
-            // Pass model and other options via environment if supported
-            CLAUDE_MODEL: model
-          }
+        child = spawn(this.config.command, args, {
+          stdio: ['ignore', 'pipe', 'pipe'],
+          env: process.env
         });
       } catch (error) {
         const err = error as NodeJS.ErrnoException;
@@ -175,17 +289,6 @@ export class ClaudeProvider extends BaseProvider {
           reject(new Error(`Failed to start Claude CLI: ${err.message}`));
         }
         return;
-      }
-
-      // Send prompt via stdin
-      if (child.stdin) {
-        try {
-          child.stdin.write(prompt);
-          child.stdin.end();
-        } catch (error) {
-          reject(new Error(`Failed to send prompt to Claude CLI: ${(error as Error).message}`));
-          return;
-        }
       }
 
       // Collect stdout

@@ -35,6 +35,17 @@ class MockProvider implements Partial<BaseProvider> {
       finishReason: 'stop' as const
     };
   }
+
+  async *stream(options: any): AsyncGenerator<string> {
+    this.failCount++;
+
+    if (this.failCount <= this.failUntil) {
+      const error: any = new Error(`rate_limit: API rate limit exceeded`);
+      error.code = 'rate_limit';
+      throw error;
+    }
+    yield 'Success';
+  }
 }
 
 describe('AgentExecutor - Retry Mechanism', () => {
@@ -112,7 +123,10 @@ describe('AgentExecutor - Retry Mechanism', () => {
       const nonRetryableProvider = {
         name: 'mock',
         type: 'mock',
-        execute: vi.fn().mockRejectedValue(new Error('Syntax error'))
+        execute: vi.fn().mockRejectedValue(new Error('Syntax error')),
+        stream: vi.fn().mockImplementation(async function*() {
+          throw new Error('Syntax error');
+        })
       };
 
       context.provider = nonRetryableProvider as any;
@@ -127,7 +141,8 @@ describe('AgentExecutor - Retry Mechanism', () => {
       await expect(
         executor.execute(context, {
           retry: retryConfig,
-          showProgress: false
+          showProgress: false,
+          streaming: false  // Disable streaming to check execute() calls
         })
       ).rejects.toThrow('Syntax error');
 
@@ -193,7 +208,10 @@ describe('AgentExecutor - Retry Mechanism', () => {
             latencyMs: 100,
             model: 'mock-model',
             finishReason: 'stop'
-          })
+          }),
+        stream: vi.fn().mockImplementation(async function*() {
+          yield 'Success';
+        })
       };
 
       context.provider = customErrorProvider as any;
@@ -208,7 +226,8 @@ describe('AgentExecutor - Retry Mechanism', () => {
 
       const result = await executor.execute(context, {
         retry: retryConfig,
-        showProgress: false
+        showProgress: false,
+        streaming: false  // Disable streaming to check execute() calls
       });
 
       expect(result.response.content).toBe('Success');
@@ -230,6 +249,10 @@ describe('AgentExecutor - Retry Mechanism', () => {
             model: 'mock-model',
             finishReason: 'stop'
           };
+        }),
+        stream: vi.fn().mockImplementation(async function*() {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          yield 'Success';
         })
       };
 
