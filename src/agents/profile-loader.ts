@@ -363,6 +363,48 @@ export class ProfileLoader {
       }
     }
 
+    // Validate v4.5.8+ abilitySelection
+    if (profile.abilitySelection !== undefined) {
+      const as = profile.abilitySelection;
+
+      if (typeof as !== 'object' || as === null || Array.isArray(as)) {
+        throw new AgentValidationError('abilitySelection must be an object');
+      }
+
+      if (as.core !== undefined) {
+        if (!Array.isArray(as.core)) {
+          throw new AgentValidationError('abilitySelection.core must be an array');
+        }
+        // Validate core abilities are strings
+        as.core.forEach((ability, i) => {
+          if (typeof ability !== 'string') {
+            throw new AgentValidationError(`abilitySelection.core[${i}] must be a string`);
+          }
+        });
+      }
+
+      if (as.taskBased !== undefined) {
+        if (typeof as.taskBased !== 'object' || as.taskBased === null || Array.isArray(as.taskBased)) {
+          throw new AgentValidationError('abilitySelection.taskBased must be an object');
+        }
+        // Validate taskBased structure: keyword -> abilities[]
+        Object.entries(as.taskBased).forEach(([keyword, abilities]) => {
+          if (!Array.isArray(abilities)) {
+            throw new AgentValidationError(`abilitySelection.taskBased["${keyword}"] must be an array`);
+          }
+          abilities.forEach((ability, i) => {
+            if (typeof ability !== 'string') {
+              throw new AgentValidationError(`abilitySelection.taskBased["${keyword}"][${i}] must be a string`);
+            }
+          });
+        });
+      }
+
+      if (as.loadAll !== undefined && typeof as.loadAll !== 'boolean') {
+        throw new AgentValidationError('abilitySelection.loadAll must be a boolean');
+      }
+    }
+
     return true;
   }
 

@@ -35,6 +35,18 @@ export interface Personality {
 }
 
 /**
+ * Ability Selection Strategy - How to select abilities for different tasks
+ */
+export interface AbilitySelection {
+  // Core abilities always loaded
+  core?: string[];
+  // Task-based ability mapping (keyword -> abilities)
+  taskBased?: Record<string, string[]>;
+  // Load all abilities (default behavior)
+  loadAll?: boolean;
+}
+
+/**
  * Agent Profile - Loaded from YAML
  */
 export interface AgentProfile {
@@ -52,6 +64,7 @@ export interface AgentProfile {
   stages?: Stage[];              // Workflow stages
   personality?: Personality;     // Character traits
   thinking_patterns?: string[];  // Guiding principles
+  abilitySelection?: AbilitySelection; // Smart ability loading
 
   // Provider preferences
   provider?: string;    // Preferred provider (claude, gemini, openai)

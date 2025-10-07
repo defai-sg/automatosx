@@ -57,10 +57,17 @@ export class ContextManager {
     // 2. Load agent profile
     const agent = await this.config.profileLoader.loadProfile(resolvedName);
 
-    // 3. Load abilities
+    // 3. Load abilities (smart selection based on task)
+    const selectedAbilities = this.selectAbilities(agent, task);
     const abilities = await this.config.abilitiesManager.getAbilitiesText(
-      agent.abilities || []
+      selectedAbilities
     );
+
+    logger.debug('Abilities selected', {
+      total: agent.abilities.length,
+      selected: selectedAbilities.length,
+      abilities: selectedAbilities
+    });
 
     // 4. Select provider
     const provider = await this.selectProvider(
@@ -161,6 +168,65 @@ export class ContextManager {
       // Continue without memory
       context.memory = [];
     }
+  }
+
+  /**
+   * Select abilities based on task keywords (smart selection)
+   */
+  private selectAbilities(agent: AgentProfile, task: string): string[] {
+    // If no abilitySelection config, load all abilities (backward compatible)
+    if (!agent.abilitySelection || agent.abilitySelection.loadAll) {
+      return agent.abilities || [];
+    }
+
+    const taskLower = task.toLowerCase();
+    const selectedAbilities = new Set<string>();
+    const availableAbilities = new Set(agent.abilities || []);
+
+    // Always load core abilities
+    if (agent.abilitySelection.core) {
+      agent.abilitySelection.core.forEach(a => {
+        if (availableAbilities.has(a)) {
+          selectedAbilities.add(a);
+        } else {
+          logger.warn('Core ability not found in agent abilities list', {
+            ability: a,
+            agent: agent.name
+          });
+        }
+      });
+    }
+
+    // Task-based selection
+    if (agent.abilitySelection.taskBased) {
+      for (const [keyword, abilities] of Object.entries(agent.abilitySelection.taskBased)) {
+        if (taskLower.includes(keyword.toLowerCase())) {
+          abilities.forEach(a => {
+            if (availableAbilities.has(a)) {
+              selectedAbilities.add(a);
+            } else {
+              logger.warn('Task-based ability not found in agent abilities list', {
+                ability: a,
+                keyword,
+                agent: agent.name
+              });
+            }
+          });
+          logger.debug('Task keyword matched', { keyword, abilities: abilities.filter(a => availableAbilities.has(a)) });
+        }
+      }
+    }
+
+    // If no task-based matches, return core abilities only
+    const selected = Array.from(selectedAbilities);
+
+    // Fallback: if no abilities selected, load core or first 2 abilities
+    if (selected.length === 0) {
+      logger.debug('No task-based matches, using fallback');
+      return agent.abilities.slice(0, 2);
+    }
+
+    return selected;
   }
 
   /**
