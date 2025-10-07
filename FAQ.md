@@ -446,5 +446,5 @@ Powered by AutomatosX (https://github.com/defai-sg/automatosx)
 
 - **GitHub Discussions**: [Ask the community](https://github.com/defai-sg/automatosx/discussions)
 - **Discord**: [Join our Discord](https://discord.gg/automatosx)
-- **Email**: support@automatosx.dev
+- **Email**: support@defai.digital
 - **Twitter**: [@automatosx](https://twitter.com/automatosx)
