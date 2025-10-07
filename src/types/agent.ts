@@ -6,6 +6,28 @@ import type { Provider } from './provider.js';
 import type { MemoryEntry } from './memory.js';
 
 /**
+ * Stage - A step in the agent's workflow
+ */
+export interface Stage {
+  name: string;
+  description: string;
+  key_questions?: string[];
+  outputs?: string[];
+  model?: string;
+  temperature?: number;
+}
+
+/**
+ * Personality - Defines agent's character and behavior
+ */
+export interface Personality {
+  traits?: string[];
+  catchphrase?: string;
+  communication_style?: string;
+  decision_making?: string;
+}
+
+/**
  * Agent Profile - Loaded from YAML
  */
 export interface AgentProfile {
@@ -19,6 +41,11 @@ export interface AgentProfile {
   systemPrompt: string;
   abilities: string[];  // List of ability file names
 
+  // Enhanced v4.1+ features
+  stages?: Stage[];              // Workflow stages
+  personality?: Personality;     // Character traits
+  thinking_patterns?: string[];  // Guiding principles
+
   // Provider preferences
   provider?: string;    // Preferred provider (claude, gemini, openai)
   model?: string;       // Preferred model
@@ -28,6 +55,7 @@ export interface AgentProfile {
   // Optional
   tags?: string[];
   version?: string;
+  metadata?: Record<string, any>;
 }
 
 /**

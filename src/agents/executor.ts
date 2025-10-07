@@ -303,6 +303,35 @@ export class AgentExecutor {
       prompt += `# Your Abilities\n\n${context.abilities}\n\n`;
     }
 
+    // Add stages workflow (v4.1+ enhanced profiles)
+    if (context.agent.stages && context.agent.stages.length > 0) {
+      prompt += `# Your Workflow Stages\n\n`;
+      prompt += `You MUST follow these stages explicitly for every task:\n\n`;
+
+      context.agent.stages.forEach((stage, i) => {
+        prompt += `## Stage ${i + 1}: ${stage.name}\n\n`;
+        prompt += `${stage.description}\n\n`;
+
+        if (stage.key_questions && stage.key_questions.length > 0) {
+          prompt += `**Key Questions:**\n`;
+          stage.key_questions.forEach(q => {
+            prompt += `- ${q}\n`;
+          });
+          prompt += `\n`;
+        }
+
+        if (stage.outputs && stage.outputs.length > 0) {
+          prompt += `**Expected Outputs:**\n`;
+          stage.outputs.forEach(o => {
+            prompt += `- ${o}\n`;
+          });
+          prompt += `\n`;
+        }
+      });
+
+      prompt += `**Important:** Announce each stage as you work through it (e.g., "## Stage 1: requirement_analysis").\n\n`;
+    }
+
     // Add memory (relevant context)
     if (context.memory.length > 0) {
       prompt += `# Relevant Context from Memory\n\n`;

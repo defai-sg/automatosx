@@ -256,6 +256,62 @@ export class ProfileLoader {
       }
     }
 
+    // Validate v4.1+ enhanced fields
+    if (profile.stages !== undefined) {
+      if (!Array.isArray(profile.stages)) {
+        throw new AgentValidationError('stages must be an array');
+      }
+
+      profile.stages.forEach((stage, i) => {
+        if (!stage.name || typeof stage.name !== 'string') {
+          throw new AgentValidationError(`stages[${i}].name is required and must be a string`);
+        }
+        if (!stage.description || typeof stage.description !== 'string') {
+          throw new AgentValidationError(`stages[${i}].description is required and must be a string`);
+        }
+        if (stage.key_questions !== undefined && !Array.isArray(stage.key_questions)) {
+          throw new AgentValidationError(`stages[${i}].key_questions must be an array`);
+        }
+        if (stage.outputs !== undefined && !Array.isArray(stage.outputs)) {
+          throw new AgentValidationError(`stages[${i}].outputs must be an array`);
+        }
+        if (stage.model !== undefined && typeof stage.model !== 'string') {
+          throw new AgentValidationError(`stages[${i}].model must be a string`);
+        }
+        if (stage.temperature !== undefined) {
+          if (typeof stage.temperature !== 'number' || stage.temperature < 0 || stage.temperature > 1) {
+            throw new AgentValidationError(`stages[${i}].temperature must be a number between 0 and 1`);
+          }
+        }
+      });
+    }
+
+    if (profile.personality !== undefined) {
+      if (typeof profile.personality !== 'object' || profile.personality === null || Array.isArray(profile.personality)) {
+        throw new AgentValidationError('personality must be an object');
+      }
+      // Validate personality fields if present
+      const p = profile.personality;
+      if (p.traits !== undefined && !Array.isArray(p.traits)) {
+        throw new AgentValidationError('personality.traits must be an array');
+      }
+      if (p.catchphrase !== undefined && typeof p.catchphrase !== 'string') {
+        throw new AgentValidationError('personality.catchphrase must be a string');
+      }
+      if (p.communication_style !== undefined && typeof p.communication_style !== 'string') {
+        throw new AgentValidationError('personality.communication_style must be a string');
+      }
+      if (p.decision_making !== undefined && typeof p.decision_making !== 'string') {
+        throw new AgentValidationError('personality.decision_making must be a string');
+      }
+    }
+
+    if (profile.thinking_patterns !== undefined) {
+      if (!Array.isArray(profile.thinking_patterns)) {
+        throw new AgentValidationError('thinking_patterns must be an array');
+      }
+    }
+
     return true;
   }
 
@@ -298,12 +354,19 @@ export class ProfileLoader {
       description: data.description,
       systemPrompt: data.systemPrompt,
       abilities: data.abilities || [],
+      // Enhanced v4.1+ features
+      stages: data.stages,
+      personality: data.personality,
+      thinking_patterns: data.thinking_patterns,
+      // Provider preferences
       provider: data.provider,
       model: data.model,
       temperature: data.temperature,
       maxTokens: data.maxTokens,
+      // Optional
       tags: data.tags,
-      version: data.version
+      version: data.version,
+      metadata: data.metadata
     };
 
     // Validate

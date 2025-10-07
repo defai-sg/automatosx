@@ -5,6 +5,46 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.3.0] - 2025-10-07
+
+### ✨ New Features
+
+#### Enhanced Agent Architecture
+- **7-Stage Workflow System**: Added structured multi-stage workflow support with `stages` field in agent profiles
+  - Each stage includes: name, description, key_questions, outputs, model, temperature
+  - Stages are automatically injected into prompts to guide agent behavior
+  - Example stages: requirement_analysis, test_planning, implementation, self_code_review, refactoring, documentation, final_review
+- **Personality System**: Added `personality` field to define agent traits, catchphrase, communication style, and decision-making approach
+- **Thinking Patterns**: Added `thinking_patterns` field for guiding principles that shape agent decisions
+
+#### Project-Specific Knowledge System
+- **4 New Ability Templates**: Created project-specific ability templates in `examples/abilities/`
+  - `our-coding-standards.md`: Team-specific coding conventions (TypeScript, ESM, security patterns)
+  - `our-project-structure.md`: Directory structure and file organization
+  - `our-architecture-decisions.md`: Architectural Decision Records (ADRs)
+  - `our-code-review-checklist.md`: Team review process and checklists
+
+### 🔧 Improvements
+- **Enhanced Coder Profile**: Updated `coder.yaml` from 47 lines to 388 lines with comprehensive 7-stage workflow
+- **Type Safety**: Added TypeScript interfaces for `Stage`, `Personality` types
+- **Profile Validation**: Enhanced validation to check stages structure, personality fields, and thinking patterns
+
+### 🐛 Bug Fixes
+- **Critical**: Fixed missing validation for v4.1+ enhanced fields (stages, personality, thinking_patterns)
+  - Prevented runtime crashes from malformed YAML profiles
+  - Added comprehensive validation for all new fields and nested structures
+
+### 📊 Technical Details
+- **Bundle Size**: 204.50 KB (optimized from 205.64 KB)
+- **Test Coverage**: 862 tests passing (added 13 new profile validation tests)
+- **Documentation**: Comprehensive phase 1 implementation docs in `tmp/`
+
+### 📖 Documentation
+- Phase 1 implementation summary (`tmp/PHASE-1-COMPLETE.md`)
+- Bug analysis report (`tmp/BUG-ANALYSIS-REPORT.md`)
+- Bug fix completion report (`tmp/BUG-FIX-COMPLETE.md`)
+- Enhanced agent architecture design docs
+
 ## [4.0.0] - 2025-10-06
 
 ### 🎉 Major Release: Complete Platform Revamp
