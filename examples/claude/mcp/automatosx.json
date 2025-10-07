@@ -1,0 +1,74 @@
+{
+  "mcpServers": {
+    "automatosx": {
+      "command": "automatosx",
+      "args": ["mcp"],
+      "description": "AutomatosX AI Agent Orchestration Platform",
+      "tools": [
+        {
+          "name": "run_agent",
+          "description": "Execute an AutomatosX agent with a specific task",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "agent": {
+                "type": "string",
+                "description": "The name of the agent to run (e.g., assistant, coder, reviewer)"
+              },
+              "task": {
+                "type": "string",
+                "description": "The task for the agent to perform"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional: Override the AI provider (claude, gemini, openai)",
+                "enum": ["claude", "gemini", "openai"]
+              },
+              "no_memory": {
+                "type": "boolean",
+                "description": "Optional: Skip memory injection",
+                "default": false
+              }
+            },
+            "required": ["agent", "task"]
+          }
+        },
+        {
+          "name": "list_agents",
+          "description": "List all available AutomatosX agents",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "search_memory",
+          "description": "Search AutomatosX memory for relevant information",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Search query"
+              },
+              "limit": {
+                "type": "number",
+                "description": "Maximum number of results",
+                "default": 10
+              }
+            },
+            "required": ["query"]
+          }
+        },
+        {
+          "name": "get_status",
+          "description": "Get AutomatosX system status and configuration",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      ]
+    }
+  }
+}

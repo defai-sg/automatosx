@@ -4,13 +4,28 @@
 
 import type { CommandModule } from 'yargs';
 import { mkdir, writeFile, access } from 'fs/promises';
-import { resolve, join } from 'path';
+import { resolve, join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { constants } from 'fs';
 import chalk from 'chalk';
 import { DEFAULT_CONFIG } from '../../types/config.js';
 import type { AutomatosXConfig } from '../../types/config.js';
 import { logger } from '../../utils/logger.js';
 import { printError } from '../../utils/error-formatter.js';
+
+// Get the directory of this file for locating examples
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Get package root - handle both dev (src/) and prod (dist/) scenarios
+function getPackageRoot(): string {
+  const currentDir = __dirname;
+  if (currentDir.includes('/dist')) {
+    return join(currentDir, '..');
+  } else {
+    return join(currentDir, '../..');
+  }
+}
 
 interface InitOptions {
   force?: boolean;
@@ -77,6 +92,11 @@ export const initCommand: CommandModule<Record<string, unknown>, InitOptions> = 
       await createDefaultConfig(configPath, argv.force ?? false);
       console.log(chalk.green('   ✓ Configuration created'));
 
+      // Setup Claude Code integration
+      console.log(chalk.cyan('🔌 Setting up Claude Code integration...'));
+      await setupClaudeIntegration(projectDir);
+      console.log(chalk.green('   ✓ Claude Code integration configured'));
+
       // Create .gitignore entry
       console.log(chalk.cyan('📝 Updating .gitignore...'));
       await updateGitignore(projectDir);
@@ -94,6 +114,10 @@ export const initCommand: CommandModule<Record<string, unknown>, InitOptions> = 
       console.log(chalk.gray('  • reviewer   - Code review expert'));
       console.log(chalk.gray('  • debugger   - Debug assistance'));
       console.log(chalk.gray('  • writer     - Content creation\n'));
+      console.log(chalk.cyan('Claude Code Integration:'));
+      console.log(chalk.gray('  • Use /ax command in Claude Code'));
+      console.log(chalk.gray('  • Example: /ax assistant "Explain this code"'));
+      console.log(chalk.gray('  • MCP tools available in .claude/mcp/\n'));
 
       logger.info('AutomatosX initialized', { projectDir, automatosxDir });
 
@@ -145,12 +169,8 @@ async function createDirectoryStructure(baseDir: string): Promise<void> {
  */
 async function copyExampleAgents(baseDir: string): Promise<void> {
   const { readdir, copyFile } = await import('fs/promises');
-  const { fileURLToPath } = await import('url');
-  const { dirname: pathDirname } = await import('path');
 
-  // Get the directory of the current module
-  const currentDir = pathDirname(fileURLToPath(import.meta.url));
-  const examplesDir = resolve(currentDir, '../../../examples/agents');
+  const examplesDir = join(getPackageRoot(), 'examples/agents');
   const targetDir = join(baseDir, 'agents');
 
   try {
@@ -170,12 +190,8 @@ async function copyExampleAgents(baseDir: string): Promise<void> {
  */
 async function copyExampleAbilities(baseDir: string): Promise<void> {
   const { readdir, copyFile } = await import('fs/promises');
-  const { fileURLToPath } = await import('url');
-  const { dirname: pathDirname } = await import('path');
 
-  // Get the directory of the current module
-  const currentDir = pathDirname(fileURLToPath(import.meta.url));
-  const examplesDir = resolve(currentDir, '../../../examples/abilities');
+  const examplesDir = join(getPackageRoot(), 'examples/abilities');
   const targetDir = join(baseDir, 'abilities');
 
   try {
@@ -212,6 +228,45 @@ async function createDefaultConfig(
 
   const content = JSON.stringify(config, null, 2);
   await writeFile(configPath, content, 'utf-8');
+}
+
+/**
+ * Setup Claude Code integration files
+ */
+async function setupClaudeIntegration(projectDir: string): Promise<void> {
+  const { readdir, copyFile } = await import('fs/promises');
+
+  const examplesBaseDir = join(getPackageRoot(), 'examples/claude');
+
+  // Create .claude directory structure
+  const claudeDir = join(projectDir, '.claude');
+  const commandsDir = join(claudeDir, 'commands');
+  const mcpDir = join(claudeDir, 'mcp');
+
+  await mkdir(commandsDir, { recursive: true });
+  await mkdir(mcpDir, { recursive: true });
+
+  try {
+    // Copy slash command
+    const commandsSourceDir = join(examplesBaseDir, 'commands');
+    const commandFiles = await readdir(commandsSourceDir);
+    for (const file of commandFiles) {
+      if (file.endsWith('.md')) {
+        await copyFile(join(commandsSourceDir, file), join(commandsDir, file));
+      }
+    }
+
+    // Copy MCP configuration
+    const mcpSourceDir = join(examplesBaseDir, 'mcp');
+    const mcpFiles = await readdir(mcpSourceDir);
+    for (const file of mcpFiles) {
+      if (file.endsWith('.json')) {
+        await copyFile(join(mcpSourceDir, file), join(mcpDir, file));
+      }
+    }
+  } catch (error) {
+    logger.warn('Could not copy Claude integration files', { error: (error as Error).message });
+  }
 }
 
 /**
