@@ -71,7 +71,7 @@ Memory System
 ### Install AutomatosX
 
 ```bash
-npm install -g automatosx
+npm install -g @defai.sg/automatosx
 automatosx init
 ```
 

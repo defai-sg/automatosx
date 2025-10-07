@@ -31,13 +31,13 @@ AutomatosX is an **agent execution tool** designed to run inside **Claude Code**
 Simply install AutomatosX via npm:
 
 ```bash
-npm install -g automatosx
+npm install -g @defai.sg/automatosx
 ```
 
 Or use npx without installation:
 
 ```bash
-npx automatosx --version
+npx @defai.sg/automatosx --version
 ```
 
 **That's it!** You're ready to use AutomatosX.
@@ -333,10 +333,10 @@ A: All data is stored in `.automatosx/` directory in your project root. This inc
 **Command not found: automatosx**
 ```bash
 # If installed globally
-npm install -g automatosx
+npm install -g @defai.sg/automatosx
 
 # Or use npx
-npx automatosx --version
+npx @defai.sg/automatosx --version
 ```
 
 **Provider connection failed**

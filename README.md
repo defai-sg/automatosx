@@ -120,23 +120,31 @@ See `examples/` for ready-to-run agent profiles.
 
 ### 1. Install
 ```bash
-npm install -g automatosx
+npm install -g @defai.sg/automatosx
 # or run without installing
-npx automatosx --help
+npx @defai.sg/automatosx --help
 ```
 
-### 2. Configure (use any provider)
+### 2. Setup Provider CLI (one-time)
+AutomatosX uses your installed CLI tools—**no API keys needed**:
+
 ```bash
-# Option A: Environment variable
-export ANTHROPIC_API_KEY="sk-ant-..."
+# Install Claude CLI (if you use Claude)
+brew install claude
 
-# Option B: CLI config
-automatosx config --set providers.claude.apiKey --value "sk-ant-..."
+# Or install Gemini CLI (if you use Gemini)
+# Follow: https://ai.google.dev/gemini-api/docs/cli
+
+# Or install OpenAI Codex CLI (if you use Codex)
+# Follow OpenAI CLI setup instructions
 ```
+
+AutomatosX will automatically detect and use your installed CLIs.
 
 ### 3. Run your first agent
 ```bash
 automatosx run assistant "Explain quantum computing in 3 sentences"
+# AutomatosX calls your installed Claude/Gemini/Codex CLI under the hood
 ```
 
 **That's it!** Now explore:
@@ -313,12 +321,16 @@ AutomatosX uses JSON configuration with priority order:
   "providers": {
     "preferred": "claude",
     "claude": {
-      "apiKey": "${ANTHROPIC_API_KEY}",
-      "model": "claude-3-sonnet-20240229"
+      "command": "claude",
+      "model": "claude-3-5-sonnet-20241022"
     },
     "gemini": {
-      "apiKey": "${GOOGLE_API_KEY}",
+      "command": "gemini",
       "model": "gemini-1.5-flash"
+    },
+    "openai": {
+      "command": "openai",
+      "model": "gpt-4"
     }
   },
   "memory": {
@@ -328,7 +340,11 @@ AutomatosX uses JSON configuration with priority order:
 }
 ```
 
-Environment variables are interpolated automatically using `${VAR_NAME}` syntax.
+**How it works:**
+- AutomatosX calls your installed CLI commands (`claude`, `gemini`, `openai`)
+- You manage your own subscription/plan directly with the provider
+- No API keys stored in AutomatosX—your CLI handles authentication
+- Pay only for what you use via your existing CLI plan
 
 ---
 

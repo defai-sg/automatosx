@@ -28,7 +28,7 @@ Beta testing helps us:
 ### Option 1: Global Installation
 
 ```bash
-npm install -g automatosx@beta
+npm install -g @defai.sg/automatosx@beta
 ```
 
 ### Option 2: Test in Isolated Project
@@ -37,7 +37,7 @@ npm install -g automatosx@beta
 mkdir automatosx-beta-test
 cd automatosx-beta-test
 npm init -y
-npm install automatosx@beta
+npm install @defai.sg/automatosx@beta
 ```
 
 ### Verify Installation
@@ -427,16 +427,16 @@ automatosx memory export --output backup.json
 Yes, use different directories:
 ```bash
 mkdir test-beta-1 && cd test-beta-1
-npm install automatosx@4.0.0-beta.1
+npm install @defai.sg/automatosx@4.0.0-beta.1
 
 mkdir test-beta-2 && cd test-beta-2
-npm install automatosx@4.0.0-beta.2
+npm install @defai.sg/automatosx@4.0.0-beta.2
 ```
 
 ### How do I revert to stable version?
 
 ```bash
-npm install -g automatosx@3.1.5
+npm install -g @defai.sg/automatosx@3.1.5
 ```
 
 ### Will I be charged for API usage?

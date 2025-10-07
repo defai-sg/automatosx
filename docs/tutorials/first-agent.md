@@ -18,7 +18,7 @@ In this tutorial, you'll create a **Code Reviewer Agent** that:
 
 ## Prerequisites
 
-- AutomatosX installed (`npm install -g automatosx`)
+- AutomatosX installed (`npm install -g @defai.sg/automatosx`)
 - Project initialized (`automatosx init`)
 - Basic understanding of YAML
 - Familiarity with your preferred AI provider (Claude, Gemini, etc.)

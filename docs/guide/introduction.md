@@ -140,7 +140,7 @@ search("Latest AI news")
 Build a personal AI assistant that remembers conversations and helps with tasks:
 
 ```bash
-npx automatosx chat assistant
+npx @defai.sg/automatosx chat assistant
 > Help me plan my week
 > Remind me what we discussed yesterday
 > Draft an email to my team
@@ -151,8 +151,8 @@ npx automatosx chat assistant
 Analyze codebases and answer questions about code:
 
 ```bash
-npx automatosx run code-analyzer "What does the Router class do?"
-npx automatosx run code-analyzer "Find all TypeScript errors"
+npx @defai.sg/automatosx run code-analyzer "What does the Router class do?"
+npx @defai.sg/automatosx run code-analyzer "Find all TypeScript errors"
 ```
 
 ### 3. Research Agent
@@ -160,8 +160,8 @@ npx automatosx run code-analyzer "Find all TypeScript errors"
 Conduct research and summarize findings:
 
 ```bash
-npx automatosx run researcher "Summarize recent AI advancements"
-npx automatosx run researcher "Compare vector databases"
+npx @defai.sg/automatosx run researcher "Summarize recent AI advancements"
+npx @defai.sg/automatosx run researcher "Compare vector databases"
 ```
 
 ### 4. Multi-Agent Orchestration
@@ -169,7 +169,7 @@ npx automatosx run researcher "Compare vector databases"
 Coordinate multiple agents for complex tasks:
 
 ```bash
-npx automatosx run orchestrator "Plan and execute a project"
+npx @defai.sg/automatosx run orchestrator "Plan and execute a project"
 # Coordinates: planner, researcher, developer, reviewer
 ```
 

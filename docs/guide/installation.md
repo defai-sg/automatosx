@@ -44,7 +44,7 @@ Choose your preferred package manager:
 ### Method 1: npm (Recommended for most users)
 
 ```bash
-npm install automatosx
+npm install @defai.sg/automatosx
 ```
 
 ### Method 2: pnpm (Recommended for performance)
@@ -68,7 +68,7 @@ yarn add automatosx
 Install globally for system-wide access:
 
 ```bash
-npm install -g automatosx
+npm install -g @defai.sg/automatosx
 # or
 pnpm add -g automatosx
 # or
@@ -82,14 +82,14 @@ yarn global add automatosx
 Check that AutomatosX is installed correctly:
 
 ```bash
-npx automatosx --version
+npx @defai.sg/automatosx --version
 # Should output: 4.0.0
 ```
 
 Show help to see available commands:
 
 ```bash
-npx automatosx --help
+npx @defai.sg/automatosx --help
 ```
 
 Expected output:
@@ -119,7 +119,7 @@ Global Options:
 Create a new AutomatosX project:
 
 ```bash
-npx automatosx init
+npx @defai.sg/automatosx init
 ```
 
 This command creates:
@@ -174,63 +174,62 @@ This command creates:
 
 </details>
 
-## Configure API Keys
+## Setup Provider CLIs
 
-AutomatosX supports multiple AI providers. Configure at least one:
+**AutomatosX uses CLI tools—no API keys needed!** Install your preferred CLI and AutomatosX will automatically detect it.
 
-### Claude (Anthropic)
-
-```bash
-npx automatosx config --set providers.claude.apiKey --value "sk-ant-..."
-npx automatosx config --set providers.claude.enabled --value true
-```
-
-Get your API key: [console.anthropic.com](https://console.anthropic.com/)
-
-### Gemini (Google)
+### Claude CLI
 
 ```bash
-npx automatosx config --set providers.gemini.apiKey --value "AIza..."
-npx automatosx config --set providers.gemini.enabled --value true
+# macOS/Linux
+brew install claude
+
+# Or follow: https://claude.ai/download
 ```
 
-Get your API key: [makersuite.google.com](https://makersuite.google.com/)
+Verify installation:
+```bash
+claude --version
+```
 
-### OpenAI
+### Gemini CLI
 
 ```bash
-npx automatosx config --set providers.openai.apiKey --value "sk-..."
-npx automatosx config --set providers.openai.enabled --value true
+# Follow Google's CLI setup guide
+# https://ai.google.dev/gemini-api/docs/cli
 ```
 
-Get your API key: [platform.openai.com](https://platform.openai.com/)
+Verify installation:
+```bash
+gemini --version
+```
 
-**Tip**: You can configure multiple providers. AutomatosX will automatically fallback if one fails.
-
-## Environment Variables (Alternative)
-
-Instead of using `config --set`, you can use environment variables:
+### OpenAI Codex CLI
 
 ```bash
-# .env file
-AUTOMATOSX_CLAUDE_API_KEY=sk-ant-...
-AUTOMATOSX_GEMINI_API_KEY=AIza...
-AUTOMATOSX_OPENAI_API_KEY=sk-...
+# Follow OpenAI's CLI setup guide
+# https://platform.openai.com/docs/cli
 ```
 
-Or export directly:
-
+Verify installation:
 ```bash
-export AUTOMATOSX_CLAUDE_API_KEY="sk-ant-..."
-export AUTOMATOSX_GEMINI_API_KEY="AIza..."
+openai --version
 ```
+
+**How it works:**
+- AutomatosX calls `claude`, `gemini`, or `openai` commands
+- Your CLI handles authentication (via your existing login)
+- No API keys stored in AutomatosX configuration
+- Pay via your existing CLI subscription/plan
+
+**Tip**: You can install multiple CLIs. AutomatosX will automatically fallback if one fails.
 
 ## Verify Setup
 
 Check your configuration:
 
 ```bash
-npx automatosx status
+npx @defai.sg/automatosx status
 ```
 
 Expected output:
@@ -264,7 +263,7 @@ Status: Ready ✓
 Run a simple test:
 
 ```bash
-npx automatosx run assistant "Say hello"
+npx @defai.sg/automatosx run assistant "Say hello"
 ```
 
 Expected output:
@@ -281,8 +280,8 @@ Expected output:
 **Problem**: `automatosx: command not found`
 
 **Solutions**:
-1. Use `npx automatosx` instead of `automatosx`
-2. Install globally: `npm install -g automatosx`
+1. Use `npx @defai.sg/automatosx` instead of `automatosx`
+2. Install globally: `npm install -g @defai.sg/automatosx`
 3. Add `./node_modules/.bin` to your PATH
 
 ### API Key Not Working
@@ -318,7 +317,7 @@ Expected output:
 **Problem**: `Cannot find module 'automatosx'`
 
 **Solutions**:
-1. Reinstall: `npm install automatosx`
+1. Reinstall: `npm install @defai.sg/automatosx`
 2. Clear node_modules: `rm -rf node_modules && npm install`
 3. Check `package.json` includes automatosx
 
@@ -354,7 +353,7 @@ Works out of the box. Install via Homebrew:
 
 ```bash
 brew install node@20
-npm install automatosx
+npm install @defai.sg/automatosx
 ```
 
 ### Linux

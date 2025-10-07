@@ -50,13 +50,13 @@ features:
 
 ```bash
 # Install
-npm install automatosx
+npm install @defai.sg/automatosx
 
 # Initialize project
-npx automatosx init
+npx @defai.sg/automatosx init
 
 # Create your first agent
-npx automatosx run assistant "Help me write a README"
+npx @defai.sg/automatosx run assistant "Help me write a README"
 ```
 
 ## Why AutomatosX v4.0?
@@ -85,7 +85,7 @@ npx automatosx run assistant "Help me write a README"
 ### 1. Install AutomatosX
 
 ```bash
-npm install automatosx
+npm install @defai.sg/automatosx
 # or
 pnpm add automatosx
 # or
@@ -95,7 +95,7 @@ yarn add automatosx
 ### 2. Initialize Your Project
 
 ```bash
-npx automatosx init
+npx @defai.sg/automatosx init
 ```
 
 This creates:
@@ -107,13 +107,13 @@ This creates:
 ### 3. Configure Providers
 
 ```bash
-npx automatosx config --set providers.claude.apiKey --value "your-api-key"
+npx @defai.sg/automatosx config --set providers.claude.apiKey --value "your-api-key"
 ```
 
 ### 4. Run Your First Agent
 
 ```bash
-npx automatosx run assistant "What is the weather like?"
+npx @defai.sg/automatosx run assistant "What is the weather like?"
 ```
 
 </div>

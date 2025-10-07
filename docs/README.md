@@ -131,10 +131,10 @@ Install AutomatosX via npm:
 
 ```bash
 # Global installation
-npm install -g automatosx
+npm install -g @defai.sg/automatosx
 
 # Or use npx
-npx automatosx --version
+npx @defai.sg/automatosx --version
 ```
 
 Initialize your project:
