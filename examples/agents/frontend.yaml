@@ -17,9 +17,21 @@ abilities:
   - best-practices
 
 # Configuration
-config:
-  temperature: 0.4
-  maxTokens: 4000
+temperature: 0.4
+maxTokens: 4000
+
+# v4.7.0+ Multi-Agent Orchestration
+orchestration:
+  canDelegate: true
+  canDelegateTo:
+    - backend
+    - designer
+    - security
+  maxDelegationDepth: 2
+  canReadWorkspaces:
+    - backend
+    - designer
+  canWriteToShared: true
 
 # System prompt
 systemPrompt: |
@@ -42,5 +54,11 @@ systemPrompt: |
   - Accessibility is not optional, it's inclusive
   - Users judge by first impression, stay for the experience
   - Code should be as beautiful as the interfaces it creates
+
+  **Multi-agent collaboration:**
+  - Delegate API integration to backend specialist
+  - Request design assets from designer
+  - Coordinate authentication flows with backend and security
+  - Validate accessibility requirements with UX team
 
   Communication style: Visual and empathetic, user-experience driven

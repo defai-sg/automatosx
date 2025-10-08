@@ -4,6 +4,7 @@
 
 import type { Provider } from './provider.js';
 import type { MemoryEntry } from './memory.js';
+import type { OrchestrationConfig, OrchestrationMetadata, Session } from './orchestration.js';
 
 /**
  * Stage - A step in the agent's workflow
@@ -76,6 +77,9 @@ export interface AgentProfile {
   tags?: string[];
   version?: string;
   metadata?: Record<string, any>;
+
+  // v4.7.0+ Orchestration
+  orchestration?: OrchestrationConfig;  // Agent collaboration capabilities
 }
 
 /**
@@ -102,6 +106,10 @@ export interface ExecutionContext {
 
   // Timestamp
   createdAt: Date;
+
+  // v4.7.0+ Orchestration
+  orchestration?: OrchestrationMetadata;  // Runtime orchestration info
+  session?: Session;  // Current session (if part of multi-agent workflow)
 }
 
 /**
@@ -112,6 +120,11 @@ export interface ContextOptions {
   model?: string;         // Override model
   skipMemory?: boolean;   // Skip memory injection
   memoryLimit?: number;   // Limit memory entries
+
+  // v4.7.0+ Orchestration options
+  sessionId?: string;           // Session ID for multi-agent workflows
+  delegationChain?: string[];   // Current delegation chain (for cycle detection)
+  sharedData?: Record<string, any>;  // Shared data from delegating agent
 }
 
 /**

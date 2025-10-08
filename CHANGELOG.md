@@ -5,6 +5,159 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.7.0] - 2025-10-08
+
+### 🚀 Major Feature: Multi-Agent Orchestration
+
+AutomatosX now supports true multi-agent collaboration with session-based workflows, workspace isolation, and intelligent delegation.
+
+#### ✨ New Features
+
+**1. Agent-to-Agent Delegation**
+- Agents can now delegate tasks to other specialized agents
+- Whitelist-based delegation for security (`canDelegateTo`)
+- Automatic cycle detection prevents infinite delegation loops
+- Configurable delegation depth limits (default: 3 levels)
+- Structured delegation results with file tracking
+
+**2. Session Management**
+- Multi-agent collaborative sessions with unique IDs
+- Track all agents participating in a workflow
+- Session lifecycle management (active → completed/failed)
+- Session metadata for context sharing
+- Automatic cleanup of old sessions
+
+**3. Workspace Isolation**
+- Each agent gets isolated workspace (`.automatosx/workspaces/<agent>/`)
+- Session-based shared workspaces for collaboration
+- Permission-based workspace access control
+- Path traversal protection for security
+- Persistent shared workspace for cross-session collaboration
+
+**4. New CLI Commands**
+
+```bash
+# Session management
+ax session create <task> <initiator>  # Create new session
+ax session list                       # List all sessions
+ax session status <id>               # Show session details
+ax session complete <id>             # Mark session complete
+ax session fail <id>                 # Mark session failed
+
+# Workspace management
+ax workspace list [--session <id>]   # List workspace files
+ax workspace stats                    # Show workspace statistics
+ax workspace cleanup                  # Clean up old workspaces
+
+# Enhanced run command
+ax run <agent> <task> --session <id> # Join existing session
+```
+
+**5. Enhanced Agent Profiles**
+
+New `orchestration` configuration in agent YAML:
+
+```yaml
+orchestration:
+  canDelegate: true                # Enable delegation
+  canDelegateTo:                   # Whitelist
+    - frontend
+    - backend
+    - security
+  maxDelegationDepth: 3           # Max chain depth
+  canReadWorkspaces:              # Readable workspaces
+    - frontend
+    - backend
+  canWriteToShared: true          # Can write to shared
+```
+
+#### 🔧 Core Improvements
+
+**ProfileLoader**
+- ✅ Now loads `orchestration` configuration from YAML
+- ✅ Validates orchestration config with strict type checking
+- ✅ Validates `abilitySelection` configuration
+
+**ContextManager**
+- ✅ Integrates SessionManager and WorkspaceManager
+- ✅ Builds OrchestrationMetadata with available agents
+- ✅ Handles session context in execution flow
+- ✅ Constructs shared workspace paths
+
+**AgentExecutor**
+- ✅ Includes orchestration info in agent prompts
+- ✅ Shows available delegation targets
+- ✅ Displays current session and collaboration context
+- ✅ Provides delegation instructions to agents
+
+#### 📁 New Core Modules
+
+- `src/core/session-manager.ts` - Session lifecycle management
+- `src/core/workspace-manager.ts` - Workspace isolation and collaboration
+- `src/types/orchestration.ts` - Orchestration type definitions
+- `src/cli/commands/session.ts` - Session CLI commands
+- `src/cli/commands/workspace.ts` - Workspace CLI commands
+
+#### 🧪 Testing
+
+- ✅ **948 tests passing** (882 unit + 66 integration)
+- ✅ New test files:
+  - `tests/unit/executor-delegation.test.ts` (833 lines)
+  - `tests/unit/session-manager.test.ts` (476 lines)
+  - `tests/unit/workspace-manager.test.ts` (511 lines)
+- ✅ TypeScript strict mode validation
+- ✅ All integration tests pass
+
+#### 📚 Documentation
+
+- ✅ Updated `CLAUDE.md` with orchestration architecture
+- ✅ Added orchestration examples in `examples/agents/backend.yaml`
+- ✅ Added orchestration examples in `examples/agents/frontend.yaml`
+
+#### 🔒 Security Features
+
+- **Whitelist-based delegation**: Only allowed agents can be delegated to
+- **Cycle detection**: Prevents A → B → A delegation loops
+- **Depth limits**: Prevents excessive delegation chains
+- **Workspace isolation**: Each agent works in isolated directory
+- **Path validation**: Prevents path traversal attacks
+- **Permission checking**: Workspace access requires explicit permission
+
+#### 💡 Usage Example
+
+```bash
+# 1. Create a session for building authentication
+ax session create "Implement auth feature" backend
+
+# 2. Backend agent designs the API
+ax run backend "Design user authentication API" --session <session-id>
+
+# 3. Frontend agent builds the UI
+ax run frontend "Create login interface" --session <session-id>
+
+# 4. Security agent audits the implementation
+ax run security "Audit auth implementation" --session <session-id>
+
+# 5. Check session status
+ax session status <session-id>
+
+# 6. View workspace outputs
+ax workspace list --session <session-id>
+
+# 7. Complete the session
+ax session complete <session-id>
+```
+
+#### 🎯 Benefits
+
+- **True Collaboration**: Multiple agents work together on complex tasks
+- **Context Sharing**: Agents share workspace and session context
+- **Better Organization**: Session-based workflow tracking
+- **Enhanced Security**: Controlled delegation with permissions
+- **Workspace Management**: Automatic isolation and cleanup
+
+---
+
 ## [4.6.0] - 2025-10-07
 
 ### 🗑️ Breaking Changes - Streaming Functionality Removed

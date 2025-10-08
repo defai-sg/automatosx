@@ -405,6 +405,51 @@ export class ProfileLoader {
       }
     }
 
+    // Validate v4.7.0+ orchestration
+    if (profile.orchestration !== undefined) {
+      const orch = profile.orchestration;
+
+      if (typeof orch !== 'object' || orch === null || Array.isArray(orch)) {
+        throw new AgentValidationError('orchestration must be an object');
+      }
+
+      if (orch.canDelegate !== undefined && typeof orch.canDelegate !== 'boolean') {
+        throw new AgentValidationError('orchestration.canDelegate must be a boolean');
+      }
+
+      if (orch.canDelegateTo !== undefined) {
+        if (!Array.isArray(orch.canDelegateTo)) {
+          throw new AgentValidationError('orchestration.canDelegateTo must be an array');
+        }
+        orch.canDelegateTo.forEach((agent, i) => {
+          if (typeof agent !== 'string') {
+            throw new AgentValidationError(`orchestration.canDelegateTo[${i}] must be a string`);
+          }
+        });
+      }
+
+      if (orch.maxDelegationDepth !== undefined) {
+        if (typeof orch.maxDelegationDepth !== 'number' || orch.maxDelegationDepth < 1 || !Number.isInteger(orch.maxDelegationDepth)) {
+          throw new AgentValidationError('orchestration.maxDelegationDepth must be a positive integer');
+        }
+      }
+
+      if (orch.canReadWorkspaces !== undefined) {
+        if (!Array.isArray(orch.canReadWorkspaces)) {
+          throw new AgentValidationError('orchestration.canReadWorkspaces must be an array');
+        }
+        orch.canReadWorkspaces.forEach((workspace, i) => {
+          if (typeof workspace !== 'string') {
+            throw new AgentValidationError(`orchestration.canReadWorkspaces[${i}] must be a string`);
+          }
+        });
+      }
+
+      if (orch.canWriteToShared !== undefined && typeof orch.canWriteToShared !== 'boolean') {
+        throw new AgentValidationError('orchestration.canWriteToShared must be a boolean');
+      }
+    }
+
     return true;
   }
 
@@ -451,6 +496,7 @@ export class ProfileLoader {
       stages: data.stages,
       personality: data.personality,
       thinking_patterns: data.thinking_patterns,
+      abilitySelection: data.abilitySelection,
       // Provider preferences
       provider: data.provider,
       model: data.model,
@@ -459,7 +505,9 @@ export class ProfileLoader {
       // Optional
       tags: data.tags,
       version: data.version,
-      metadata: data.metadata
+      metadata: data.metadata,
+      // v4.7.0+ Orchestration
+      orchestration: data.orchestration
     };
 
     // Validate

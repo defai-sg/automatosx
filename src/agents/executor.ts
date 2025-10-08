@@ -5,11 +5,20 @@
  * - Execute agents with progress tracking
  * - Manage execution lifecycle
  * - Provide detailed error reporting
+ * - Handle agent-to-agent delegation (v4.7.0+)
  */
 
 import type { ExecutionContext } from '../types/agent.js';
 import type { ExecutionResponse } from '../types/provider.js';
+import type { DelegationRequest, DelegationResult } from '../types/orchestration.js';
+import { DelegationError } from '../types/orchestration.js';
+import type { SessionManager } from '../core/session-manager.js';
+import type { WorkspaceManager } from '../core/workspace-manager.js';
+import type { ContextManager } from './context-manager.js';
+import type { ProfileLoader } from './profile-loader.js';
 import { formatError } from '../utils/error-formatter.js';
+import { randomUUID } from 'crypto';
+import { logger } from '../utils/logger.js';
 import chalk from 'chalk';
 import ora from 'ora';
 
@@ -36,11 +45,27 @@ export interface ExecutionResult {
 }
 
 /**
+ * Agent Executor Configuration
+ */
+export interface AgentExecutorConfig {
+  sessionManager?: SessionManager;
+  workspaceManager?: WorkspaceManager;
+  contextManager?: ContextManager;
+  profileLoader?: ProfileLoader;
+}
+
+/**
  * Agent Executor
  *
  * Executes agents with progress tracking and comprehensive error handling.
+ * Supports agent-to-agent delegation for multi-agent workflows (v4.7.0+).
  */
 export class AgentExecutor {
+  private sessionManager?: SessionManager;
+  private workspaceManager?: WorkspaceManager;
+  private contextManager?: ContextManager;
+  private profileLoader?: ProfileLoader;
+
   /**
    * Default retry configuration
    */
@@ -58,6 +83,18 @@ export class AgentExecutor {
       'timeout'
     ]
   };
+
+  /**
+   * Create AgentExecutor with optional delegation support
+   *
+   * @param config - Optional configuration for delegation features
+   */
+  constructor(config?: AgentExecutorConfig) {
+    this.sessionManager = config?.sessionManager;
+    this.workspaceManager = config?.workspaceManager;
+    this.contextManager = config?.contextManager;
+    this.profileLoader = config?.profileLoader;
+  }
 
   /**
    * Execute an agent with the given context
@@ -304,6 +341,36 @@ export class AgentExecutor {
       });
     }
 
+    // Add orchestration capabilities (v4.7.0+)
+    if (context.orchestration) {
+      prompt += `# Multi-Agent Orchestration Capabilities\n\n`;
+      prompt += `You can delegate tasks to other specialized agents for better results.\n\n`;
+
+      if (context.orchestration.availableAgents.length > 0) {
+        prompt += `**Available agents for delegation:**\n`;
+        context.orchestration.availableAgents.forEach(agent => {
+          prompt += `- ${agent}\n`;
+        });
+        prompt += `\n`;
+      }
+
+      if (context.session) {
+        prompt += `**Current session:** ${context.session.id}\n`;
+        prompt += `**Session task:** ${context.session.task}\n`;
+        prompt += `**Collaborating agents:** ${context.session.agents.join(', ')}\n\n`;
+      }
+
+      prompt += `**Shared workspace:** ${context.orchestration.sharedWorkspace}\n\n`;
+
+      if (context.orchestration.delegationChain.length > 0) {
+        prompt += `**Delegation chain:** ${context.orchestration.delegationChain.join(' → ')} → YOU\n\n`;
+      }
+
+      prompt += `**How to delegate:**\n`;
+      prompt += `To delegate a task, clearly state in your response:\n`;
+      prompt += `"DELEGATE TO [agent-name]: [specific task description]"\n\n`;
+    }
+
     // Add task
     prompt += `# Task\n\n${context.task}`;
 
@@ -383,5 +450,233 @@ export class AgentExecutor {
    */
   private sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Delegate a task to another agent
+   *
+   * This method enables agent-to-agent delegation with proper permission checks,
+   * cycle detection, and session management.
+   *
+   * @param request - Delegation request
+   * @returns Delegation result with structured outputs
+   * @throws {DelegationError} If delegation fails
+   *
+   * @example
+   * ```typescript
+   * const result = await executor.delegateToAgent({
+   *   fromAgent: 'backend',
+   *   toAgent: 'frontend',
+   *   task: 'Create login UI component',
+   *   context: {
+   *     sessionId: 'auth-feature-123',
+   *     requirements: ['Email/password fields'],
+   *     delegationChain: ['backend']
+   *   }
+   * });
+   *
+   * console.log('Files created:', result.outputs.files);
+   * ```
+   */
+  async delegateToAgent(request: DelegationRequest): Promise<DelegationResult> {
+    // Verify delegation support is configured
+    if (!this.contextManager || !this.sessionManager || !this.workspaceManager || !this.profileLoader) {
+      throw new DelegationError(
+        'Delegation not configured - missing required managers',
+        request.fromAgent,
+        request.toAgent,
+        'execution_failed'
+      );
+    }
+
+    const delegationId = randomUUID();
+    const startTime = new Date();
+
+    logger.info('Delegation started', {
+      delegationId,
+      fromAgent: request.fromAgent,
+      toAgent: request.toAgent,
+      task: request.task.substring(0, 100)
+    });
+
+    try {
+      // 1. Load agent profiles
+      const fromAgentProfile = await this.profileLoader.loadProfile(request.fromAgent);
+      const toAgentProfile = await this.profileLoader.loadProfile(request.toAgent);
+
+      // 2. Permission check: fromAgent must be authorized to delegate to toAgent
+      if (!fromAgentProfile.orchestration?.canDelegate) {
+        throw new DelegationError(
+          `Agent '${request.fromAgent}' is not authorized to delegate tasks`,
+          request.fromAgent,
+          request.toAgent,
+          'unauthorized'
+        );
+      }
+
+      const canDelegateTo = fromAgentProfile.orchestration.canDelegateTo;
+      if (canDelegateTo && !canDelegateTo.includes(request.toAgent)) {
+        throw new DelegationError(
+          `Agent '${request.fromAgent}' is not authorized to delegate to '${request.toAgent}'`,
+          request.fromAgent,
+          request.toAgent,
+          'unauthorized'
+        );
+      }
+
+      // 3. Cycle detection: check delegation chain
+      const delegationChain = request.context?.delegationChain || [];
+      if (delegationChain.includes(request.toAgent)) {
+        throw new DelegationError(
+          `Delegation cycle detected: ${[...delegationChain, request.toAgent].join(' -> ')}`,
+          request.fromAgent,
+          request.toAgent,
+          'cycle'
+        );
+      }
+
+      // 4. Max depth check
+      // Note: delegationChain.length represents the number of intermediate delegations
+      // Example: If delegationChain = ['A', 'B', 'C'], this is the 3rd delegation
+      // allowing 4 total agents in the chain (A → B → C → D)
+      const maxDepth = fromAgentProfile.orchestration.maxDelegationDepth ?? 3;
+      if (delegationChain.length >= maxDepth) {
+        throw new DelegationError(
+          `Max delegation depth (${maxDepth}) exceeded. Chain: ${delegationChain.join(' -> ')}`,
+          request.fromAgent,
+          request.toAgent,
+          'max_depth'
+        );
+      }
+
+      // 5. Session management
+      let sessionId = request.context?.sessionId;
+      let session;
+
+      if (sessionId) {
+        // Join existing session
+        session = await this.sessionManager.getSession(sessionId);
+        if (!session) {
+          throw new DelegationError(
+            `Session not found: ${sessionId}`,
+            request.fromAgent,
+            request.toAgent,
+            'execution_failed'
+          );
+        }
+
+        // Validate session is active
+        if (session.status !== 'active') {
+          throw new DelegationError(
+            `Cannot delegate to ${session.status} session: ${sessionId}`,
+            request.fromAgent,
+            request.toAgent,
+            'execution_failed'
+          );
+        }
+
+        // Add toAgent to session
+        await this.sessionManager.addAgent(sessionId, request.toAgent);
+      } else {
+        // Create new session
+        session = await this.sessionManager.createSession(request.task, request.fromAgent);
+        sessionId = session.id;
+
+        // Add toAgent to session
+        await this.sessionManager.addAgent(sessionId, request.toAgent);
+
+        // Create session workspace
+        await this.workspaceManager.createSessionWorkspace(sessionId);
+      }
+
+      // 6. Create execution context for delegated agent
+      const context = await this.contextManager.createContext(
+        request.toAgent,
+        request.task,
+        {
+          sessionId,
+          delegationChain: [...delegationChain, request.fromAgent],
+          sharedData: request.context?.sharedData
+        }
+      );
+
+      // 7. Execute delegated agent
+      const executionResult = await this.execute(context, {
+        timeout: request.options?.timeout,
+        verbose: false,
+        showProgress: true
+      });
+
+      // 8. Collect outputs
+      const files = await this.workspaceManager.listSessionFiles(
+        sessionId,
+        request.toAgent
+      );
+
+      // 9. Memory IDs collection
+      // TODO: Implement memory saving in future enhancement
+      const memoryIds: number[] = [];
+
+      const endTime = new Date();
+      const duration = endTime.getTime() - startTime.getTime();
+
+      logger.info('Delegation completed', {
+        delegationId,
+        fromAgent: request.fromAgent,
+        toAgent: request.toAgent,
+        duration: `${(duration / 1000).toFixed(1)}s`,
+        filesCreated: files.length
+      });
+
+      // 10. Return structured result
+      return {
+        delegationId,
+        fromAgent: request.fromAgent,
+        toAgent: request.toAgent,
+        status: 'success',
+        response: executionResult.response,
+        duration,
+        outputs: {
+          files,
+          memoryIds,
+          workspacePath: `sessions/${sessionId}/outputs/${request.toAgent}`
+        },
+        startTime,
+        endTime
+      };
+
+    } catch (error) {
+      const endTime = new Date();
+      const duration = endTime.getTime() - startTime.getTime();
+
+      // If it's already a DelegationError, re-throw it
+      if (error instanceof DelegationError) {
+        logger.error('Delegation failed', {
+          delegationId,
+          fromAgent: request.fromAgent,
+          toAgent: request.toAgent,
+          reason: error.reason,
+          error: error.message
+        });
+        throw error;
+      }
+
+      // Otherwise, wrap it in a DelegationError
+      const delegationError = new DelegationError(
+        `Delegation execution failed: ${(error as Error).message}`,
+        request.fromAgent,
+        request.toAgent,
+        'execution_failed'
+      );
+
+      logger.error('Delegation failed', {
+        delegationId,
+        fromAgent: request.fromAgent,
+        toAgent: request.toAgent,
+        error: (error as Error).message
+      });
+
+      throw delegationError;
+    }
   }
 }

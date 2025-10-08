@@ -14,6 +14,8 @@ import type { Stage } from '../../types/agent.js';
 import { MemoryManagerVec } from '../../core/memory-manager-vec.js';
 import { Router } from '../../core/router.js';
 import { PathResolver } from '../../core/path-resolver.js';
+import { SessionManager } from '../../core/session-manager.js';
+import { WorkspaceManager } from '../../core/workspace-manager.js';
 import { ClaudeProvider } from '../../providers/claude-provider.js';
 import { GeminiProvider } from '../../providers/gemini-provider.js';
 import { loadConfig } from '../../core/config.js';
@@ -35,6 +37,7 @@ interface RunOptions {
   format?: 'text' | 'json' | 'markdown';
   save?: string;
   timeout?: number;
+  session?: string;
 }
 
 export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
@@ -90,6 +93,10 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
       .option('timeout', {
         describe: 'Execution timeout in seconds',
         type: 'number'
+      })
+      .option('session', {
+        describe: 'Join existing multi-agent session',
+        type: 'string'
       })
   },
 
@@ -203,16 +210,46 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         fallbackEnabled: true
       });
 
-      // 5. Create context manager
+      // 5. Initialize orchestration managers (if session specified)
+      let sessionManager: SessionManager | undefined;
+      let workspaceManager: WorkspaceManager | undefined;
+
+      if (argv.session) {
+        sessionManager = new SessionManager();
+        workspaceManager = new WorkspaceManager(projectDir);
+
+        // Initialize workspace structure
+        await workspaceManager.initialize();
+
+        // Verify session exists
+        const session = await sessionManager.getSession(argv.session);
+        if (!session) {
+          console.log(chalk.red.bold(`\n✗ Session not found: ${argv.session}\n`));
+          process.exit(1);
+        }
+
+        // Add this agent to the session
+        await sessionManager.addAgent(argv.session, argv.agent as string);
+
+        if (argv.verbose) {
+          console.log(chalk.cyan(`\n🔗 Joined session: ${argv.session}`));
+          console.log(chalk.gray(`Session task: ${session.task}`));
+          console.log(chalk.gray(`Agents in session: ${session.agents.join(', ')}\n`));
+        }
+      }
+
+      // 6. Create context manager
       contextManager = new ContextManager({
         profileLoader,
         abilitiesManager,
         memoryManager: memoryManager || null,
         router,
-        pathResolver
+        pathResolver,
+        sessionManager,
+        workspaceManager
       });
 
-      // 6. Create execution context
+      // 7. Create execution context
       if (argv.verbose) {
         console.log(chalk.gray('Creating execution context...'));
         console.log();
@@ -224,7 +261,8 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         {
           provider: argv.provider,
           model: argv.model,
-          skipMemory: !argv.memory
+          skipMemory: !argv.memory,
+          sessionId: argv.session
         }
       );
 

@@ -11,9 +11,12 @@ import type {
 } from '../types/agent.js';
 import type { Provider } from '../types/provider.js';
 import type { MemoryEntry } from '../types/memory.js';
+import type { OrchestrationMetadata, Session } from '../types/orchestration.js';
 import { ProfileLoader } from './profile-loader.js';
 import { AbilitiesManager } from './abilities-manager.js';
 import type { IMemoryManager } from '../types/memory.js';
+import type { SessionManager } from '../core/session-manager.js';
+import type { WorkspaceManager } from '../core/workspace-manager.js';
 import { Router } from '../core/router.js';
 import { PathResolver } from '../core/path-resolver.js';
 import { logger } from '../utils/logger.js';
@@ -25,6 +28,8 @@ export interface ContextManagerConfig {
   memoryManager: IMemoryManager | null;
   router: Router;
   pathResolver: PathResolver;
+  sessionManager?: SessionManager;
+  workspaceManager?: WorkspaceManager;
 }
 
 /**
@@ -99,7 +104,47 @@ export class ContextManager {
 
     logger.debug('Agent workspace created', { workspace: agentWorkspace });
 
-    // 7. Create context
+    // 7. Handle session (if sessionId provided)
+    let session: Session | undefined;
+    if (options?.sessionId && this.config.sessionManager) {
+      const foundSession = await this.config.sessionManager.getSession(options.sessionId);
+      if (!foundSession) {
+        logger.warn('Session not found', { sessionId: options.sessionId });
+      } else {
+        session = foundSession;
+      }
+    }
+
+    // 8. Build orchestration metadata (if agent has orchestration config)
+    let orchestration: OrchestrationMetadata | undefined;
+    if (agent.orchestration?.canDelegate && this.config.workspaceManager) {
+      // Get list of available agents for delegation
+      const allAgents = await this.config.profileLoader.listProfiles();
+      const canDelegateTo = agent.orchestration.canDelegateTo || [];
+
+      // Filter available agents based on whitelist
+      const availableAgents = allAgents.filter(a => canDelegateTo.includes(a));
+
+      // Get shared workspace path
+      const sharedWorkspace = session
+        ? join(projectDir, '.automatosx', 'workspaces', 'shared', 'sessions', session.id)
+        : join(projectDir, '.automatosx', 'workspaces', 'shared', 'persistent');
+
+      orchestration = {
+        canDelegate: true,
+        availableAgents,
+        sharedWorkspace,
+        delegationChain: options?.delegationChain || []
+      };
+
+      logger.debug('Orchestration metadata built', {
+        availableAgents,
+        sharedWorkspace,
+        delegationChain: orchestration.delegationChain
+      });
+    }
+
+    // 9. Create context
     const context: ExecutionContext = {
       agent,
       task,
@@ -109,10 +154,12 @@ export class ContextManager {
       agentWorkspace,
       provider,
       abilities,
-      createdAt: new Date()
+      createdAt: new Date(),
+      orchestration,
+      session
     };
 
-    // 7. Inject memory (if not skipped)
+    // 10. Inject memory (if not skipped)
     if (!options?.skipMemory) {
       await this.injectMemory(
         context,

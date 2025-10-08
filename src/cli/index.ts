@@ -17,7 +17,7 @@ import { globalTracker } from '../utils/performance.js';
 
 // Read version from package.json using require (works in both dev and installed)
 const require = createRequire(import.meta.url);
-let VERSION = '4.5.2'; // Fallback version
+let VERSION = '4.7.0'; // Fallback version
 try {
   const packageJson = require('../../package.json');
   VERSION = packageJson.version;
@@ -32,8 +32,10 @@ import { initCommand } from './commands/init.js';
 import { listCommand } from './commands/list.js';
 import { memoryCommand } from './commands/memory.js';
 import { runCommand } from './commands/run.js';
+import { sessionCommand } from './commands/session.js';
 import { statusCommand } from './commands/status.js';
 import { updateCommand } from './commands/update.js';
+import { workspaceCommand } from './commands/workspace.js';
 
 // Mark CLI startup
 globalTracker.mark('cli_start');
@@ -46,6 +48,9 @@ const argv = await yargs(hideBin(process.argv))
   .usage('\nAI Agent Orchestration Platform')
   .example('$0 init', 'Initialize project')
   .example('$0 run assistant "Hello"', 'Run assistant agent')
+  .example('$0 session create "Build API" backend', 'Create multi-agent session')
+  .example('$0 session list', 'List all sessions')
+  .example('$0 workspace stats', 'Show workspace statistics')
   .example('$0 list agents', 'List available agents')
   .example('$0 memory search "topic"', 'Search memory')
   .example('$0 config --list', 'View configuration')
@@ -75,6 +80,8 @@ const argv = await yargs(hideBin(process.argv))
   .command(initCommand)
   .command(listCommand)
   .command(runCommand)
+  .command(sessionCommand)
+  .command(workspaceCommand)
   .command(configCommand)
   .command(statusCommand)
   .command(memoryCommand)

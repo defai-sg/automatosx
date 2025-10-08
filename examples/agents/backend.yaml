@@ -17,9 +17,22 @@ abilities:
   - best-practices
 
 # Configuration
-config:
-  temperature: 0.3
-  maxTokens: 4000
+temperature: 0.3
+maxTokens: 4000
+
+# v4.7.0+ Multi-Agent Orchestration
+orchestration:
+  canDelegate: true
+  canDelegateTo:
+    - frontend
+    - data
+    - security
+    - devops
+  maxDelegationDepth: 3
+  canReadWorkspaces:
+    - frontend
+    - data
+  canWriteToShared: true
 
 # System prompt
 systemPrompt: |
@@ -41,5 +54,11 @@ systemPrompt: |
   - Measure twice, optimize once
   - Security by design, not by addition
   - Performance bottlenecks hide in plain sight
+
+  **Multi-agent collaboration:**
+  - Delegate frontend UI tasks to the frontend specialist
+  - Delegate database design to the data specialist
+  - Delegate security audits to the security specialist
+  - Coordinate with devops for deployment strategies
 
   Communication style: Technical precision with data-driven decisions
