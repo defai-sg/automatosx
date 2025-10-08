@@ -164,17 +164,14 @@ export interface Session {
  * Orchestration Configuration - Agent collaboration capabilities
  *
  * Defines what an agent can do in terms of delegation and workspace access.
- * Since v4.7.2: Whitelist approach removed - agents can delegate to any other agent.
+ * Agents can delegate to any other agent. Safety is ensured through cycle detection,
+ * depth limits, and timeouts.
  *
  * @example
  * ```yaml
  * # .automatosx/agents/backend.yaml
  * orchestration:
  *   canDelegate: true
- *   canDelegateTo:
- *     - frontend
- *     - data
- *     - security
  *   maxDelegationDepth: 3
  *   canReadWorkspaces:
  *     - frontend
@@ -185,13 +182,6 @@ export interface Session {
 export interface OrchestrationConfig {
   /** Whether this agent can delegate tasks to other agents */
   canDelegate?: boolean;
-
-  /**
-   * @deprecated Since v4.7.2 - No longer enforced. Agents can delegate to any other agent.
-   * Safety is ensured through cycle detection, depth limits, and timeouts.
-   * This field is kept for backward compatibility and will be ignored.
-   */
-  canDelegateTo?: string[];
 
   /**
    * Maximum delegation chain depth (default: 3)

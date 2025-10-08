@@ -23,11 +23,6 @@ maxTokens: 4000
 # v4.7.0+ Multi-Agent Orchestration
 orchestration:
   canDelegate: true
-  canDelegateTo:
-    - frontend
-    - data
-    - security
-    - devops
   maxDelegationDepth: 3
   canReadWorkspaces:
     - frontend

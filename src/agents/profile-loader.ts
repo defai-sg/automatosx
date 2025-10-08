@@ -537,17 +537,6 @@ export class ProfileLoader {
         throw new AgentValidationError('orchestration.canDelegate must be a boolean');
       }
 
-      if (orch.canDelegateTo !== undefined) {
-        if (!Array.isArray(orch.canDelegateTo)) {
-          throw new AgentValidationError('orchestration.canDelegateTo must be an array');
-        }
-        orch.canDelegateTo.forEach((agent, i) => {
-          if (typeof agent !== 'string') {
-            throw new AgentValidationError(`orchestration.canDelegateTo[${i}] must be a string`);
-          }
-        });
-      }
-
       if (orch.maxDelegationDepth !== undefined) {
         if (typeof orch.maxDelegationDepth !== 'number' || orch.maxDelegationDepth < 1 || !Number.isInteger(orch.maxDelegationDepth)) {
           throw new AgentValidationError('orchestration.maxDelegationDepth must be a positive integer');

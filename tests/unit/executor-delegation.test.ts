@@ -34,7 +34,6 @@ describe('AgentExecutor - Delegation', () => {
     abilities: [],
     orchestration: {
       canDelegate: true,
-      canDelegateTo: ['frontend', 'database'],
       maxDelegationDepth: 3
     }
   };
@@ -47,7 +46,6 @@ describe('AgentExecutor - Delegation', () => {
     abilities: [],
     orchestration: {
       canDelegate: true,
-      canDelegateTo: ['backend'],
       maxDelegationDepth: 3
     }
   };
@@ -372,49 +370,18 @@ describe('AgentExecutor - Delegation', () => {
       );
     });
 
-    it('should allow delegation even when toAgent not in canDelegateTo (v4.7.2+)', async () => {
-      // v4.7.2+: canDelegateTo whitelist is deprecated and not enforced
+    it('should allow delegation to any agent (autonomous collaboration)', async () => {
       // Agents can delegate to any other agent for autonomous collaboration
       const request: DelegationRequest = {
         fromAgent: 'backend',
-        toAgent: 'unauthorized', // Not in backend's canDelegateTo, but should still work
+        toAgent: 'frontend',
         task: 'Some task'
       };
 
-      // Should succeed (whitelist no longer enforced)
       const result = await executor.delegateToAgent(request);
       expect(result).toBeDefined();
       expect(result.fromAgent).toBe('backend');
-      expect(result.toAgent).toBe('unauthorized');
-    });
-
-    it('should allow delegation to any agent when canDelegateTo is undefined', async () => {
-      // Create profile with canDelegate=true but no canDelegateTo
-      const anyDelegateProfile: AgentProfile = {
-        name: 'any-delegate',
-        role: 'any',
-        description: 'Can delegate to anyone',
-        systemPrompt: 'Test',
-        abilities: [],
-        orchestration: {
-          canDelegate: true
-          // canDelegateTo is undefined
-        }
-      };
-
-      (mockProfileLoader.loadProfile as any).mockImplementation(async (name: string) => {
-        if (name === 'any-delegate') return anyDelegateProfile;
-        if (name === 'frontend') return frontendProfile;
-        throw new Error(`Profile not found: ${name}`);
-      });
-
-      const request: DelegationRequest = {
-        fromAgent: 'any-delegate',
-        toAgent: 'frontend',
-        task: 'Test task'
-      };
-
-      const result = await executor.delegateToAgent(request);
+      expect(result.toAgent).toBe('frontend');
       expect(result.status).toBe('success');
     });
   });
@@ -458,8 +425,7 @@ describe('AgentExecutor - Delegation', () => {
           return {
             ...databaseProfile,
             orchestration: {
-              canDelegate: true,
-              canDelegateTo: ['backend']
+              canDelegate: true
             }
           };
         }
@@ -538,8 +504,7 @@ describe('AgentExecutor - Delegation', () => {
         systemPrompt: 'Test',
         abilities: [],
         orchestration: {
-          canDelegate: true,
-          canDelegateTo: ['frontend']
+          canDelegate: true
           // maxDelegationDepth not specified
         }
       };

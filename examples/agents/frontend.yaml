@@ -23,10 +23,6 @@ maxTokens: 4000
 # v4.7.0+ Multi-Agent Orchestration
 orchestration:
   canDelegate: true
-  canDelegateTo:
-    - backend
-    - designer
-    - security
   maxDelegationDepth: 2
   canReadWorkspaces:
     - backend

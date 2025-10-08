@@ -669,20 +669,11 @@ export class AgentExecutor {
         );
       }
 
-      // Note: canDelegateTo whitelist was removed in v4.7.2 to allow autonomous agent collaboration
-      // Agents can now delegate to any other agent, with safety ensured by:
+      // Note: Autonomous agent collaboration - agents can delegate to any other agent
+      // Safety ensured by:
       // - Cycle detection (below)
       // - Max depth limit (below)
       // - Timeout enforcement
-      // If canDelegateTo is still specified in profile, it's logged but not enforced
-
-      if (fromAgentProfile.orchestration.canDelegateTo) {
-        logger.debug('canDelegateTo is deprecated and not enforced', {
-          fromAgent: request.fromAgent,
-          suggestedTargets: fromAgentProfile.orchestration.canDelegateTo,
-          actualTarget: request.toAgent
-        });
-      }
 
       // 3. Cycle detection: check delegation chain
       const delegationChain = request.context?.delegationChain || [];

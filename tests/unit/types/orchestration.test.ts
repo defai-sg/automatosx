@@ -163,14 +163,12 @@ describe('Orchestration Types', () => {
     it('should validate OrchestrationConfig structure', () => {
       const config: OrchestrationConfig = {
         canDelegate: true,
-        canDelegateTo: ['frontend', 'data'],
         maxDelegationDepth: 3,
         canReadWorkspaces: ['frontend'],
         canWriteToShared: true
       };
 
       expect(config.canDelegate).toBe(true);
-      expect(config.canDelegateTo).toHaveLength(2);
       expect(config.maxDelegationDepth).toBe(3);
       expect(config.canReadWorkspaces).toHaveLength(1);
       expect(config.canWriteToShared).toBe(true);
@@ -182,7 +180,6 @@ describe('Orchestration Types', () => {
       };
 
       expect(config.canDelegate).toBe(true);
-      expect(config.canDelegateTo).toBeUndefined();
     });
   });
 
