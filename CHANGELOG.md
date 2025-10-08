@@ -98,13 +98,47 @@ orchestration:
 - `src/cli/commands/session.ts` - Session CLI commands
 - `src/cli/commands/workspace.ts` - Workspace CLI commands
 
+#### 🐛 Critical Bug Fixes & Security Enhancements
+
+**Session Manager Improvements:**
+- ✅ **UUID v4 Validation**: Added strict UUID format validation to prevent path traversal attacks
+- ✅ **Atomic Write Operations**: Implemented temp file + rename pattern with automatic cleanup on failure
+- ✅ **Debounced Save Fix**: Fixed promise tracking to prevent error swallowing in async saves
+- ✅ **Double-Save Prevention**: Corrected flushSave() logic to avoid redundant save operations
+- ✅ **Configurable Limits**: Made MAX_SESSIONS configurable (default: 100)
+- ✅ **Metadata Size Limits**: Added 10KB limit with accurate byte counting for multi-byte characters
+- ✅ **Memory Leak Fix**: Implemented proper destroy() method to cleanup resources
+- ✅ **Skip Reporting**: Invalid sessions during load are now logged and counted
+- ✅ **Static Regex**: Optimized UUID validation regex for better performance
+- ✅ **Friendly Errors**: Improved CLI error messages for better user experience
+
+**Workspace Manager Improvements:**
+- ✅ **File Size Limits**: Added 10MB limit per file to prevent abuse
+- ✅ **Multi-byte Support**: Accurate size calculation using Buffer.byteLength()
+- ✅ **Enhanced Path Security**: Strengthened path traversal protection
+- ✅ **Permission Enforcement**: Strict write permission validation per agent
+
+**Code Quality:**
+- ✅ **Eliminated Duplication**: Created shared `session-utils.ts` for consistent SessionManager initialization
+- ✅ **Error Handling**: Comprehensive error recovery with detailed logging
+- ✅ **Type Safety**: Extended error reason types for new scenarios
+
 #### 🧪 Testing
 
-- ✅ **948 tests passing** (882 unit + 66 integration)
+- ✅ **986 tests passing** (892 unit + 66 integration + 13 e2e + 15 skipped)
 - ✅ New test files:
   - `tests/unit/executor-delegation.test.ts` (833 lines)
-  - `tests/unit/session-manager.test.ts` (476 lines)
-  - `tests/unit/workspace-manager.test.ts` (511 lines)
+  - `tests/unit/session-manager.test.ts` (540 lines, +64 lines for new tests)
+  - `tests/unit/workspace-manager.test.ts` (557 lines, +46 lines for new tests)
+  - `tests/e2e/orchestration.test.ts` (459 lines, new E2E suite)
+- ✅ New test coverage:
+  - Session resource management and cleanup
+  - Metadata size limits with multi-byte characters
+  - UUID validation edge cases
+  - Configurable session limits
+  - File size limits with multi-byte characters
+  - Temp file cleanup on atomic write failures
+  - Complete E2E orchestration workflows
 - ✅ TypeScript strict mode validation
 - ✅ All integration tests pass
 
