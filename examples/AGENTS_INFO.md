@@ -12,67 +12,81 @@ Research shows humans remember names better than roles. Instead of remembering "
 
 | Name | Role | Expertise | Best For | Primary Provider | Fallback |
 |------|------|-----------|----------|------------------|----------|
-| **Alex** | General Assistant | General purpose tasks, planning, questions | Quick questions, brainstorming, planning | claude-code | router |
-| **Charlie** | Software Developer | Code generation, implementation | Writing new code, implementing features | claude-code | router |
-| **Ryan** | Code Reviewer | Code review, quality assurance | PR reviews, code quality checks | claude-code | router |
-| **Danny** | Debug Expert | Debugging, troubleshooting | Fixing bugs, error analysis | claude-code | router |
-| **Wendy** | Technical Writer | Documentation, content creation | Writing docs, README files | claude-code | router |
+| **Alex** | General Assistant | General purpose tasks, planning, questions | Quick questions, brainstorming, planning | 🟣 **Anthropic Claude** (Claude Code) | Auto |
+| **Charlie** | Software Developer | Code generation, implementation | Writing new code, implementing features | 🟣 **Anthropic Claude** (Claude Code) | Auto |
+| **Ryan** | Code Reviewer | Code review, quality assurance | PR reviews, code quality checks | 🟣 **Anthropic Claude** (Claude Code) | Auto |
+| **Danny** | Debug Expert | Debugging, troubleshooting | Fixing bugs, error analysis | 🟣 **Anthropic Claude** (Claude Code) | Auto |
+| **Wendy** | Technical Writer | Documentation, content creation | Writing docs, README files | 🟣 **Anthropic Claude** (Claude Code) | Auto |
 
 ### 💻 Engineering
 
 | Name | Role | Expertise | Best For | Primary Provider | Fallback |
 |------|------|-----------|----------|------------------|----------|
-| **Bob** | Backend Engineer | Server-side architecture, APIs, databases | Backend development, API design | claude | router |
-| **Frank** | Frontend Developer | React, UI/UX, performance | Frontend development, components | claude | router |
-| **Oliver** | DevOps Engineer | Infrastructure, CI/CD, deployment | DevOps, deployment, monitoring | claude | router |
-| **Steve** | Security Engineer | Application security, threat modeling | Security review, vulnerability assessment | claude | router |
-| **Queenie** | QA Engineer | Testing, quality assurance | Test planning, test automation | claude | router |
+| **Bob** | Backend Engineer | Server-side architecture, APIs, databases | Backend development, API design | 🟣 **Anthropic Claude** | Auto |
+| **Frank** | Frontend Developer | React, UI/UX, performance | Frontend development, components | 🟣 **Anthropic Claude** | Auto |
+| **Oliver** | DevOps Engineer | Infrastructure, CI/CD, deployment | DevOps, deployment, monitoring | 🟣 **Anthropic Claude** | Auto |
+| **Steve** | Security Engineer | Application security, threat modeling | Security review, vulnerability assessment | 🟣 **Anthropic Claude** | Auto |
+| **Queenie** | QA Engineer | Testing, quality assurance | Test planning, test automation | 🟣 **Anthropic Claude** | Auto |
 
 ### 📊 Business & Product
 
 | Name | Role | Expertise | Best For | Primary Provider | Fallback |
 |------|------|-----------|----------|------------------|----------|
-| **Eric** | CEO | Business strategy, vision | Strategy, business decisions | claude | router |
-| **Tony** | CTO | Technology strategy, leadership | Tech strategy, architecture decisions | claude | router |
-| **Paris** | Product Manager | Product strategy, user research | Product planning, feature prioritization | claude | router |
-| **Daisy** | Data Scientist | Data analysis, machine learning | Analytics, ML models, insights | claude | router |
+| **Eric** | CEO | Business strategy, vision | Strategy, business decisions | 🟣 **Anthropic Claude** | Auto |
+| **Tony** | CTO | Technology strategy, leadership | Tech strategy, architecture decisions | 🟣 **Anthropic Claude** | Auto |
+| **Paris** | Product Manager | Product strategy, user research | Product planning, feature prioritization | 🟣 **Anthropic Claude** | Auto |
+| **Daisy** | Data Scientist | Data analysis, machine learning | Analytics, ML models, insights | 🟣 **Anthropic Claude** | Auto |
 
 ### 🎨 Design
 
 | Name | Role | Expertise | Best For | Primary Provider | Fallback |
 |------|------|-----------|----------|------------------|----------|
-| **Debbee** | UX/UI Designer | User experience, visual design | UX design, prototyping, design systems | claude | router |
+| **Debbee** | UX/UI Designer | User experience, visual design | UX design, prototyping, design systems | 🟣 **Anthropic Claude** | Auto |
 
 ## Provider Configuration
 
 AutomatosX uses a **3-layer fallback system** for maximum reliability:
 
-1. **Primary Provider**: Each agent's preferred LLM provider (configured in agent YAML)
+1. **Primary Provider**: Each agent's preferred AI brand (configured in agent YAML)
 2. **Fallback Provider**: Optional per-agent fallback (can be configured via `fallbackProvider` field)
-3. **Router Fallback**: Global provider priority order (default: codex → gemini → claude)
+3. **Router Fallback**: Auto-routing through multiple providers (OpenAI Codex → Google Gemini → Anthropic Claude)
+
+### Supported AI Providers
+
+| Brand | Provider Name | CLI Tool | Best For |
+|-------|---------------|----------|----------|
+| 🟣 **Anthropic Claude** | `claude` | `claude` | General purpose, coding, analysis |
+| 🟣 **Anthropic Claude** | `claude-code` | `claude-code` | Advanced coding, debugging |
+| 🟢 **OpenAI** | `codex` | `codex` | Code generation, planning |
+| 🔵 **Google Gemini** | `gemini` | `gemini` | Creative tasks, multimodal |
 
 ### Current Provider Distribution
 
-| Provider | Agent Count | Agents |
+| AI Brand | Agent Count | Agents |
 |----------|-------------|--------|
-| **claude-code** | 5 | Alex, Charlie, Ryan, Danny, Wendy |
-| **claude** | 11 | Bob, Frank, Oliver, Steve, Queenie, Eric, Tony, Paris, Daisy, Debbee, + 1 more |
+| 🟣 **Anthropic Claude** (Claude Code) | 5 | Alex, Charlie, Ryan, Danny, Wendy |
+| 🟣 **Anthropic Claude** | 11 | Bob, Frank, Oliver, Steve, Queenie, Eric, Tony, Paris, Daisy, Debbee, + 1 more |
+| 🟢 **OpenAI Codex** | 0 | Available via auto-routing |
+| 🔵 **Google Gemini** | 0 | Available via auto-routing |
 
 ### Provider Selection Logic
 
 ```text
-Agent Request → Try Primary Provider
+Agent Request → Try Primary Provider (Anthropic Claude)
     ↓ (if fails)
 Try Fallback Provider (if configured)
     ↓ (if fails or not configured)
-Use Router Priority (codex → gemini → claude)
+Use Auto-Routing Priority:
+    1. 🟢 OpenAI Codex
+    2. 🔵 Google Gemini
+    3. 🟣 Anthropic Claude (final fallback)
 ```
 
-**Example**: If Charlie (primary: `claude-code`) encounters an error:
+**Example**: If Charlie (primary: 🟣 **Anthropic Claude** via Claude Code) encounters an error:
 
-1. Try `claude-code` first
-2. No fallback configured, skip to router
-3. Router tries `codex` → `gemini` → `claude` until one succeeds
+1. Try 🟣 **Anthropic Claude** (Claude Code) first
+2. No fallback configured, skip to auto-routing
+3. Router tries 🟢 **OpenAI Codex** → 🔵 **Google Gemini** → 🟣 **Anthropic Claude** until one succeeds
 
 ### Customizing Provider Configuration
 
@@ -82,9 +96,22 @@ You can customize provider preferences for any agent:
 # In .automatosx/agents/my-agent.yaml
 name: my-agent
 displayName: MyAgent
-provider: claude-code          # Primary provider
-fallbackProvider: codex        # Optional fallback (v4.9.5+)
+provider: claude-code          # Primary: 🟣 Anthropic Claude (Claude Code)
+fallbackProvider: codex        # Fallback: 🟢 OpenAI Codex (v4.9.5+)
+
+# Available provider options:
+# - claude-code  (🟣 Anthropic Claude with Claude Code CLI)
+# - claude       (🟣 Anthropic Claude)
+# - codex        (🟢 OpenAI Codex)
+# - gemini       (🔵 Google Gemini)
 ```
+
+**Why choose each provider?**
+
+- 🟣 **Anthropic Claude**: Best for general reasoning, long-context tasks, and detailed analysis
+- 🟣 **Claude Code**: Specialized for coding tasks with enhanced debugging capabilities
+- 🟢 **OpenAI Codex**: Excellent for code generation and technical planning
+- 🔵 **Google Gemini**: Great for creative tasks and multimodal processing
 
 ## Usage Examples
 
