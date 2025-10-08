@@ -162,22 +162,22 @@ describe('Orchestration Types', () => {
   describe('OrchestrationConfig', () => {
     it('should validate OrchestrationConfig structure', () => {
       const config: OrchestrationConfig = {
-        maxDelegationDepth: 3,
+        maxDelegationDepth: 2,
         canReadWorkspaces: ['frontend'],
         canWriteToShared: true
       };
 
-      expect(config.maxDelegationDepth).toBe(3);
+      expect(config.maxDelegationDepth).toBe(2);
       expect(config.canReadWorkspaces).toHaveLength(1);
       expect(config.canWriteToShared).toBe(true);
     });
 
     it('should allow minimal config', () => {
       const config: OrchestrationConfig = {
-        maxDelegationDepth: 3
+        maxDelegationDepth: 2
       };
 
-      expect(config.maxDelegationDepth).toBe(3);
+      expect(config.maxDelegationDepth).toBe(2);
     });
   });
 
@@ -188,14 +188,14 @@ describe('Orchestration Types', () => {
         availableAgents: ['frontend', 'backend', 'data'],
         sharedWorkspace: '/path/to/shared',
         delegationChain: ['backend'],
-        maxDelegationDepth: 3
+        maxDelegationDepth: 2
       };
 
       expect(metadata.isDelegationEnabled).toBe(true);
       expect(metadata.availableAgents).toHaveLength(3);
       expect(metadata.sharedWorkspace).toBe('/path/to/shared');
       expect(metadata.delegationChain).toHaveLength(1);
-      expect(metadata.maxDelegationDepth).toBe(3);
+      expect(metadata.maxDelegationDepth).toBe(2);
     });
   });
 

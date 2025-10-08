@@ -475,7 +475,7 @@ sharedAbilities:
 
 # Team-level orchestration defaults
 orchestration:
-  maxDelegationDepth: 3
+  maxDelegationDepth: 2  # Default: 2 (v4.11.0+)
 
 metadata:
   owner: "Engineering Lead"

@@ -493,7 +493,7 @@ describe('AgentExecutor - Delegation', () => {
       expect(result.status).toBe('success');
     });
 
-    it('should use default max depth of 3 when not specified', async () => {
+    it('should use default max depth of 2 when not specified', async () => {
       // Create profile without maxDelegationDepth
       const noDepthProfile: AgentProfile = {
         name: 'no-depth',
@@ -502,7 +502,7 @@ describe('AgentExecutor - Delegation', () => {
         systemPrompt: 'Test',
         abilities: [],
         orchestration: {
-          // maxDelegationDepth not specified - should default to 3
+          // maxDelegationDepth not specified - should default to 2
         }
       };
 
@@ -518,13 +518,13 @@ describe('AgentExecutor - Delegation', () => {
         task: 'Some task',
         context: {
           sessionId: 'session-123',
-          delegationChain: ['a', 'b', 'c'], // Length = 3
+          delegationChain: ['a', 'b'], // Length = 2
           sharedData: {}
         }
       };
 
       await expect(executor.delegateToAgent(request)).rejects.toThrow(
-        'Max delegation depth (3) exceeded'
+        'Max delegation depth (2) exceeded'
       );
     });
   });

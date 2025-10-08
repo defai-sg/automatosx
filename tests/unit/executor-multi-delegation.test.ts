@@ -106,7 +106,7 @@ All tasks delegated.`,
       systemPrompt: 'You are a frontend developer.',
       abilities: [],
       orchestration: {
-        maxDelegationDepth: 3
+        maxDelegationDepth: 2
       }
     };
 
@@ -117,7 +117,7 @@ All tasks delegated.`,
       systemPrompt: 'You coordinate tasks.',
       abilities: [],
       orchestration: {
-        maxDelegationDepth: 3
+        maxDelegationDepth: 2
       }
     };
 

@@ -24,7 +24,7 @@ maxTokens: 4000
 # v4.9.0+ Multi-Agent Orchestration
 # All agents can delegate by default - no canDelegate field needed
 orchestration:
-  maxDelegationDepth: 3
+  maxDelegationDepth: 2
   canReadWorkspaces:
     - frontend
     - data

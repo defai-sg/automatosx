@@ -455,10 +455,15 @@ export class AgentExecutor {
       });
     }
 
-    // Add orchestration capabilities (v4.7.0+)
+    // Add orchestration capabilities (v4.7.0+, Enhanced v4.11.0+)
     if (context.orchestration) {
       prompt += `# Multi-Agent Orchestration Capabilities\n\n`;
-      prompt += `You can delegate tasks to other specialized agents for better results.\n\n`;
+      prompt += `**IMPORTANT - Task Evaluation Strategy:**\n`;
+      prompt += `1. **First, evaluate if YOU can complete the task** using your abilities and expertise\n`;
+      prompt += `2. **If you CAN do it**, complete the task yourself without delegation\n`;
+      prompt += `3. **If you CANNOT do it** (lacks expertise, tools, or authority), then delegate to a specialized agent\n`;
+      prompt += `4. **Max delegation depth: ${context.orchestration.maxDelegationDepth} levels** - use delegation wisely\n\n`;
+      prompt += `Only delegate when the task genuinely requires specialized expertise you don't have.\n\n`;
 
       // Limit agent list to avoid overly long prompts
       const MAX_AGENTS_TO_SHOW = 10;
@@ -489,7 +494,8 @@ export class AgentExecutor {
       prompt += `**Shared workspace:** ${context.orchestration.sharedWorkspace}\n\n`;
 
       if (context.orchestration.delegationChain.length > 0) {
-        prompt += `**Delegation chain:** ${context.orchestration.delegationChain.join(' → ')} → YOU\n\n`;
+        prompt += `**Delegation chain:** ${context.orchestration.delegationChain.join(' → ')} → YOU\n`;
+        prompt += `**Current depth:** ${context.orchestration.delegationChain.length}/${context.orchestration.maxDelegationDepth}\n\n`;
       }
 
       prompt += `**How to delegate:**\n`;
@@ -657,10 +663,10 @@ export class AgentExecutor {
       // 4. Max depth check
       // delegationChain contains agents that have already delegated
       // If chain = ['A', 'B'], this means A→B has happened, and B is now delegating (3rd delegation)
-      // maxDepth = 3 allows up to 3 delegations: A→B (1st), B→C (2nd), C→D (3rd)
-      // So we reject when delegationChain.length >= maxDepth (4th delegation attempt)
-      // v4.7.8+: Default to 3 if not configured
-      const maxDepth = fromAgentProfile.orchestration?.maxDelegationDepth ?? 3;
+      // maxDepth = 2 allows up to 2 delegations: A→B (1st), B→C (2nd)
+      // So we reject when delegationChain.length >= maxDepth (3rd delegation attempt)
+      // v4.11.0+: Default to 2 (agents evaluate capability first, delegate only when needed)
+      const maxDepth = fromAgentProfile.orchestration?.maxDelegationDepth ?? 2;
       if (delegationChain.length >= maxDepth) {
         throw new DelegationError(
           `Max delegation depth (${maxDepth}) exceeded. Chain: ${delegationChain.join(' -> ')} (length ${delegationChain.length})`,

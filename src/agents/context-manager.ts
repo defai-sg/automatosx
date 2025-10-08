@@ -135,8 +135,8 @@ export class ContextManager {
         ? join(projectDir, '.automatosx', 'workspaces', 'shared', 'sessions', session.id)
         : join(projectDir, '.automatosx', 'workspaces', 'shared', 'persistent');
 
-      // Respect maxDelegationDepth from agent config, default to 3
-      const maxDelegationDepth = agent.orchestration?.maxDelegationDepth ?? 3;
+      // Respect maxDelegationDepth from agent config, default to 2
+      const maxDelegationDepth = agent.orchestration?.maxDelegationDepth ?? 2;
 
       orchestration = {
         isDelegationEnabled: true,
