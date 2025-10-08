@@ -74,9 +74,10 @@ export class ContextManager {
       abilities: selectedAbilities
     });
 
-    // 4. Select provider
+    // 4. Select provider (primary → fallback → router)
     const provider = await this.selectProvider(
-      options?.provider || agent.provider
+      options?.provider || agent.provider,
+      agent.fallbackProvider
     );
 
     // 5. Get paths
@@ -292,31 +293,57 @@ export class ContextManager {
 
   /**
    * Select provider (from agent preference or router)
+   * Tries: primary → fallback → router (global priority)
    */
-  async selectProvider(preferredProvider?: string): Promise<Provider> {
+  async selectProvider(
+    preferredProvider?: string,
+    fallbackProvider?: string
+  ): Promise<Provider> {
+    const availableProviders = await this.config.router.getAvailableProviders();
+
+    // 1. Try primary provider
     if (preferredProvider) {
-      // Try to find preferred provider
-      const availableProviders = await this.config.router.getAvailableProviders();
       const provider = availableProviders.find(p => p.name === preferredProvider);
 
       if (provider) {
-        logger.debug('Using preferred provider', { provider: preferredProvider });
+        logger.debug('Using primary provider', { provider: preferredProvider });
         return provider;
       }
 
-      logger.warn('Preferred provider not available, using router', {
-        preferred: preferredProvider
+      logger.warn('Primary provider not available', {
+        primary: preferredProvider
       });
     }
 
-    // Use router to select best provider
+    // 2. Try fallback provider
+    if (fallbackProvider) {
+      const provider = availableProviders.find(p => p.name === fallbackProvider);
+
+      if (provider) {
+        logger.info('Using fallback provider', {
+          fallback: fallbackProvider,
+          primary: preferredProvider
+        });
+        return provider;
+      }
+
+      logger.warn('Fallback provider not available', {
+        fallback: fallbackProvider
+      });
+    }
+
+    // 3. Use router to select best provider (global priority)
     const provider = await this.config.router.selectProvider();
 
     if (!provider) {
       throw ProviderError.noAvailableProviders();
     }
 
-    logger.debug('Provider selected by router', { provider: provider.name });
+    logger.info('Using router-selected provider (final fallback)', {
+      provider: provider.name,
+      primary: preferredProvider,
+      fallback: fallbackProvider
+    });
     return provider;
   }
 

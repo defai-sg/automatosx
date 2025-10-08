@@ -68,10 +68,11 @@ export interface AgentProfile {
   abilitySelection?: AbilitySelection; // Smart ability loading
 
   // Provider preferences
-  provider?: string;    // Preferred provider (claude, gemini, openai)
-  model?: string;       // Preferred model
-  temperature?: number; // Temperature (0-1)
-  maxTokens?: number;   // Max response tokens
+  provider?: string;         // Primary provider (claude, gemini, openai)
+  fallbackProvider?: string; // Fallback provider if primary fails
+  model?: string;            // Preferred model
+  temperature?: number;      // Temperature (0-1)
+  maxTokens?: number;        // Max response tokens
 
   // Optional
   tags?: string[];

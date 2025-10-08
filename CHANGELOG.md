@@ -5,6 +5,63 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.9.5] - 2025-10-08
+
+### ✨ Features
+
+**Intelligent Per-Agent Provider Fallback**
+- **Added**: `fallbackProvider` field in AgentProfile for per-agent fallback configuration
+- **3-Layer Fallback**: Primary provider → Fallback provider → Router (global priority)
+- **Strategic Distribution**: 17 agents configured with optimal provider assignments
+  - Coding agents (7): Claude primary → Codex fallback (Claude best for coding)
+  - Planning agents (3): Codex primary → Claude fallback (Codex best for planning)
+  - Creative agents (2): Gemini primary → Claude fallback (Gemini best for creative)
+  - Data/Ops agents (4): Codex primary → Claude fallback
+  - General agent (1): Gemini primary → Claude fallback
+- **Claude as Safety Net**: Claude set as global priority 3 (final fallback) to ensure reliable backup
+
+**Provider Renaming: OpenAI → Codex**
+- **Changed**: OpenAIProvider renamed to match actual CLI tool (`codex`)
+- **Updated**: Provider name from `openai` to `codex` throughout codebase
+- **Configuration**: Updated default config to use `command: codex`
+- **Documentation**: All docs updated to reflect Codex CLI usage
+
+### 🔧 Improvements
+
+**Enhanced Context Manager**
+- **Updated**: `selectProvider()` now supports 3-layer fallback logic
+- **Logging**: Added detailed logging for provider selection (primary/fallback/router)
+- **Graceful Degradation**: System continues working even if preferred provider unavailable
+
+**Global Provider Priority Update**
+- **Changed**: Provider priority order: Codex (1) → Gemini (2) → Claude (3)
+- **Rationale**: Claude as lowest priority ensures it's the final reliable fallback
+- **Benefits**: Optimizes cost and performance while maintaining reliability
+
+### 📚 Documentation
+
+**Comprehensive Documentation Updates**
+- **Updated**: README.md, CLAUDE.md with new provider information
+- **Updated**: All docs (installation.md, core-concepts.md, quick-start.md)
+- **Updated**: FAQ.md with Codex CLI information
+- **Clarified**: Provider roles (Claude=coding, Codex=planning, Gemini=creative)
+
+### 🔨 Technical Changes
+
+**Provider System Refactoring**
+- **Modified**: `src/providers/openai-provider.ts` - getter returns 'codex'
+- **Modified**: `src/cli/commands/run.ts` - provider initialization uses name: 'codex'
+- **Modified**: `src/cli/commands/status.ts` - consistent provider naming
+- **Modified**: `src/types/agent.ts` - added fallbackProvider field
+- **Modified**: `src/agents/context-manager.ts` - 3-layer fallback implementation
+
+### ✅ Testing
+
+**All Tests Pass**
+- **Verified**: 922+ tests passing with new provider configuration
+- **Tested**: Provider routing for coding, planning, and creative agents
+- **Validated**: Fallback mechanism working correctly
+
 ## [4.9.1] - 2025-10-08
 
 ### ✨ Features

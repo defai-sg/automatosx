@@ -9,7 +9,7 @@ Get started with AutomatosX in under 5 minutes.
 AutomatosX is an **agent execution tool** designed to run inside **Claude Code**. It allows you to:
 - Execute AI agents with a single command
 - Manage agent memory and context
-- Use multiple AI providers (Claude, Gemini, OpenAI)
+- Use multiple AI providers (Claude, Gemini, Codex)
 - Build reusable agent profiles and abilities
 
 **Key Point**: AutomatosX is **not a standalone chat application**. It's a tool for Claude Code to execute agents and manage their state.

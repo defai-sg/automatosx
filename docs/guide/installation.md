@@ -204,20 +204,21 @@ Verify installation:
 gemini --version
 ```
 
-### OpenAI Codex CLI
+### Codex CLI
 
 ```bash
-# Follow OpenAI's CLI setup guide
-# https://platform.openai.com/docs/cli
+# Install Codex CLI
+# https://github.com/anthropics/codex-cli
+brew install codex
 ```
 
 Verify installation:
 ```bash
-openai --version
+codex --version
 ```
 
 **How it works:**
-- AutomatosX calls `claude`, `gemini`, or `openai` commands
+- AutomatosX calls `claude`, `gemini`, or `codex` commands
 - Your CLI handles authentication (via your existing login)
 - No API keys stored in AutomatosX configuration
 - Pay via your existing CLI subscription/plan
@@ -241,9 +242,9 @@ Project Root: /path/to/your/project
 Config: .automatosx/config.json
 
 Providers:
-  ✓ Claude (claude-3-5-sonnet-20241022)
-  ✓ Gemini (gemini-1.5-pro)
-  ✗ OpenAI (not configured)
+  ✓ claude: available (priority: 3)
+  ✓ gemini: available (priority: 2)
+  ✓ codex: available (priority: 1)
 
 Memory:
   ✓ Enabled

@@ -311,10 +311,10 @@ A **provider** is an AI service backend that powers agents.
 - CLI uses latest available model automatically
 - Access: Via `gemini` CLI command
 
-**OpenAI Codex**:
-- Best for: Code completion and generation
+**Codex**:
+- Best for: Planning and code generation
 - CLI uses latest available model automatically
-- Access: Via `openai` CLI command
+- Access: Via `codex` CLI command
 
 ### Provider Configuration
 

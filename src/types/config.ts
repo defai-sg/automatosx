@@ -50,7 +50,7 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
   providers: {
     'claude-code': {
       enabled: true,
-      priority: 1,
+      priority: 3,
       timeout: 300000,
       command: 'claude'
     },
@@ -59,6 +59,12 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
       priority: 2,
       timeout: 300000,
       command: 'gemini'
+    },
+    'openai': {
+      enabled: true,
+      priority: 1,
+      timeout: 300000,
+      command: 'codex'
     }
   },
   memory: {

@@ -190,8 +190,8 @@ brew install claude
 # Or install Gemini CLI (if you use Gemini)
 # Follow: https://ai.google.dev/gemini-api/docs/cli
 
-# Or install OpenAI Codex CLI (if you use Codex)
-# Follow OpenAI CLI setup instructions
+# Or install Codex CLI (if you use Codex)
+# Install from: https://github.com/anthropics/codex-cli
 ```
 
 AutomatosX will automatically detect and use your installed CLIs.
@@ -199,7 +199,7 @@ AutomatosX will automatically detect and use your installed CLIs.
 ### 3. Run your first agent
 ```bash
 automatosx run assistant "Explain quantum computing in 3 sentences"
-# AutomatosX calls your installed Claude/Gemini/Codex CLI under the hood
+# AutomatosX calls your installed claude/gemini/codex CLI under the hood
 ```
 
 **That's it!** Now explore:
@@ -296,7 +296,7 @@ automatosx/
 ├── src/
 │   ├── core/        # config, routing, memory, path resolution
 │   ├── cli/         # command definitions (run, chat, memory, etc.)
-│   ├── providers/   # Claude, Gemini, OpenAI adapters
+│   ├── providers/   # Claude, Gemini, Codex adapters
 │   └── utils/       # logger, performance tracking
 ├── tests/
 │   ├── unit/        # 892 tests (core modules)
@@ -418,7 +418,7 @@ AutomatosX uses JSON configuration with priority order:
       "command": "gemini"
     },
     "openai": {
-      "command": "openai"
+      "command": "codex"
     }
   },
   "memory": {
@@ -429,7 +429,7 @@ AutomatosX uses JSON configuration with priority order:
 ```
 
 **How it works:**
-- AutomatosX calls your installed CLI commands (`claude`, `gemini`, `openai`)
+- AutomatosX calls your installed CLI commands (`claude`, `gemini`, `codex`)
 - Each CLI uses its own default model (you can override via CLI config if needed)
 - No need to specify model versions—CLIs auto-update to latest models
 - You manage your own subscription/plan directly with the provider

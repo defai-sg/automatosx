@@ -14,6 +14,7 @@ import { Router } from '../../core/router.js';
 import { PathResolver } from '../../core/path-resolver.js';
 import { ClaudeProvider } from '../../providers/claude-provider.js';
 import { GeminiProvider } from '../../providers/gemini-provider.js';
+import { OpenAIProvider } from '../../providers/openai-provider.js';
 import { loadConfig } from '../../core/config.js';
 import { logger } from '../../utils/logger.js';
 import chalk from 'chalk';
@@ -101,6 +102,16 @@ export const statusCommand: CommandModule<Record<string, unknown>, StatusOptions
           priority: config.providers['gemini-cli'].priority,
           timeout: config.providers['gemini-cli'].timeout,
           command: config.providers['gemini-cli'].command
+        }));
+      }
+
+      if (config.providers['openai']?.enabled) {
+        providers.push(new OpenAIProvider({
+          name: 'codex',
+          enabled: true,
+          priority: config.providers['openai'].priority,
+          timeout: config.providers['openai'].timeout,
+          command: config.providers['openai'].command
         }));
       }
 

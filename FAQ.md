@@ -4,7 +4,7 @@
 
 ### What is AutomatosX?
 
-AutomatosX is an AI agent orchestration platform that allows you to create, configure, and run AI agents with different capabilities and behaviors. It supports multiple AI providers (Claude, Gemini, OpenAI) and features a powerful memory system with vector search.
+AutomatosX is an AI agent orchestration platform that allows you to create, configure, and run AI agents with different capabilities and behaviors. It supports multiple AI providers (Claude, Gemini, Codex) with intelligent fallback, and features a powerful memory system with vector search.
 
 ### What's new in v4.0?
 
