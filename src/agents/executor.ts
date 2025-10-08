@@ -536,13 +536,14 @@ export class AgentExecutor {
       }
 
       // 4. Max depth check
-      // Note: delegationChain.length represents the number of intermediate delegations
-      // Example: If delegationChain = ['A', 'B', 'C'], this is the 3rd delegation
-      // allowing 4 total agents in the chain (A → B → C → D)
+      // delegationChain contains agents that have already delegated
+      // If chain = ['A', 'B'], this means A→B has happened, and B is now delegating (3rd delegation)
+      // maxDepth = 3 allows up to 3 delegations: A→B (1st), B→C (2nd), C→D (3rd)
+      // So we reject when delegationChain.length >= maxDepth (4th delegation attempt)
       const maxDepth = fromAgentProfile.orchestration.maxDelegationDepth ?? 3;
       if (delegationChain.length >= maxDepth) {
         throw new DelegationError(
-          `Max delegation depth (${maxDepth}) exceeded. Chain: ${delegationChain.join(' -> ')}`,
+          `Max delegation depth (${maxDepth}) exceeded. Chain: ${delegationChain.join(' -> ')} (length ${delegationChain.length})`,
           request.fromAgent,
           request.toAgent,
           'max_depth'

@@ -164,7 +164,16 @@ export class SessionManager {
 
     // Generate unique session ID (handle extremely rare UUID collisions)
     let sessionId = randomUUID();
+    let attempts = 0;
+    const MAX_UUID_ATTEMPTS = 100;
     while (this.activeSessions.has(sessionId)) {
+      if (++attempts >= MAX_UUID_ATTEMPTS) {
+        throw new SessionError(
+          `Failed to generate unique session ID after ${MAX_UUID_ATTEMPTS} attempts`,
+          undefined,
+          'creation_failed'
+        );
+      }
       sessionId = randomUUID();
     }
 
@@ -187,13 +196,8 @@ export class SessionManager {
       task: task.substring(0, 100) + (task.length > 100 ? '...' : '')
     });
 
-    // Auto-cleanup: both quantity limit and time limit
-    // 1. Cleanup if exceeded max sessions count
-    if (this.activeSessions.size > this.MAX_SESSIONS) {
-      await this.cleanup();
-    }
-
-    // 2. Cleanup old completed/failed sessions (prevents memory leak)
+    // Cleanup old completed/failed sessions (prevents memory leak)
+    // This runs after session creation to avoid blocking the creation process
     await this.cleanupOldSessions(7); // Clean sessions older than 7 days
 
     // Persist to file
@@ -444,7 +448,17 @@ export class SessionManager {
 
     // Check metadata size (prevent DoS attacks)
     // Use Buffer.byteLength for accurate byte count (handles multi-byte characters)
-    const metadataSize = Buffer.byteLength(JSON.stringify(newMetadata), 'utf-8');
+    let metadataSize: number;
+    try {
+      metadataSize = Buffer.byteLength(JSON.stringify(newMetadata), 'utf-8');
+    } catch (error) {
+      throw new SessionError(
+        `Metadata contains circular reference or non-serializable value: ${(error as Error).message}`,
+        sessionId,
+        'metadata_too_large'
+      );
+    }
+
     if (metadataSize > this.MAX_METADATA_SIZE) {
       throw new SessionError(
         `Metadata too large: ${metadataSize} bytes (max: ${this.MAX_METADATA_SIZE} bytes)`,
@@ -483,23 +497,38 @@ export class SessionManager {
       return 0;
     }
 
-    // Sort by update time (oldest first)
+    // Prioritize removing completed/failed sessions over active ones
+    // Sort by: 1) status (completed/failed first), 2) update time (oldest first)
     const sessions = Array.from(this.activeSessions.values())
-      .sort((a, b) => a.updatedAt.getTime() - b.updatedAt.getTime());
+      .sort((a, b) => {
+        // Priority: completed/failed before active
+        const statusPriority = (s: Session) => s.status === 'active' ? 1 : 0;
+        const priorityDiff = statusPriority(a) - statusPriority(b);
+        if (priorityDiff !== 0) return priorityDiff;
+
+        // If same status, sort by update time (oldest first)
+        return a.updatedAt.getTime() - b.updatedAt.getTime();
+      });
 
     // Calculate how many to remove
     const toRemoveCount = sessions.length - this.MAX_SESSIONS;
     const toRemove = sessions.slice(0, toRemoveCount);
 
-    // Remove oldest sessions
+    // Remove selected sessions
     toRemove.forEach(session => {
       this.activeSessions.delete(session.id);
     });
 
     if (toRemoveCount > 0) {
+      const statusCount = toRemove.reduce((acc, s) => {
+        acc[s.status] = (acc[s.status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
       logger.info('Sessions cleaned up', {
         removed: toRemoveCount,
-        remaining: this.activeSessions.size
+        remaining: this.activeSessions.size,
+        removedByStatus: statusCount
       });
 
       // Persist to file
@@ -606,8 +635,15 @@ export class SessionManager {
       this.saveTimeout = undefined;
     }
 
-    // Flush pending save
-    await this.flushSave();
+    // Flush pending save (best effort - don't let errors prevent destroy)
+    try {
+      await this.flushSave();
+    } catch (error) {
+      logger.error('Error flushing save during destroy', {
+        error: (error as Error).message
+      });
+      // Continue with destroy even if flush fails
+    }
 
     logger.debug('SessionManager destroyed', {
       sessions: this.activeSessions.size
@@ -776,10 +812,24 @@ export class SessionManager {
           continue;
         }
 
+        // Validate dates (protect against Invalid Date objects)
+        const createdAt = new Date(sessionData.createdAt);
+        const updatedAt = new Date(sessionData.updatedAt);
+
+        if (isNaN(createdAt.getTime()) || isNaN(updatedAt.getTime())) {
+          skippedCount++;
+          logger.warn('Skipping session with invalid dates from persistence', {
+            sessionId: sessionData.id,
+            createdAt: sessionData.createdAt,
+            updatedAt: sessionData.updatedAt
+          });
+          continue;
+        }
+
         const session: Session = {
           ...sessionData,
-          createdAt: new Date(sessionData.createdAt),
-          updatedAt: new Date(sessionData.updatedAt)
+          createdAt,
+          updatedAt
         };
         this.activeSessions.set(session.id, session);
       }

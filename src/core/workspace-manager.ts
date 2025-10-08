@@ -86,6 +86,9 @@ export class WorkspaceManager {
   /** Maximum file size for writeToSession (10 MB) */
   private readonly MAX_FILE_SIZE = 10 * 1024 * 1024;
 
+  /** UUID v4 validation regex (static for performance) */
+  private static readonly UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
   constructor(projectDir: string) {
     this.workspacesRoot = path.join(projectDir, '.automatosx', 'workspaces');
     this.sharedRoot = path.join(this.workspacesRoot, 'shared');
@@ -168,9 +171,7 @@ export class WorkspaceManager {
   private validateSessionId(sessionId: string): void {
     // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
     // where y is 8, 9, a, or b
-    const uuidV4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-    if (!uuidV4Regex.test(sessionId)) {
+    if (!WorkspaceManager.UUID_V4_REGEX.test(sessionId)) {
       throw new WorkspaceError(
         `Invalid session ID format: ${sessionId}. Session IDs must be valid UUID v4.`,
         undefined,
@@ -434,13 +435,24 @@ export class WorkspaceManager {
     // Validate path security (prevents path traversal)
     const fullPath = await this.validatePath(this.persistentRoot, filePath);
 
+    // Check file size (prevent disk quota exhaustion)
+    const fileSize = Buffer.byteLength(content, 'utf-8');
+    if (fileSize > this.MAX_FILE_SIZE) {
+      throw new WorkspaceError(
+        `File too large: ${fileSize} bytes (max: ${this.MAX_FILE_SIZE} bytes)`,
+        fullPath,
+        'quota_exceeded'
+      );
+    }
+
     try {
       await fs.mkdir(path.dirname(fullPath), { recursive: true });
       await fs.writeFile(fullPath, content, 'utf-8');
 
       logger.info('File written to persistent shared workspace', {
         agentName: agent.name,
-        filePath
+        filePath,
+        size: fileSize
       });
     } catch (error) {
       throw new WorkspaceError(
@@ -497,17 +509,37 @@ export class WorkspaceManager {
     baseDir: string,
     files: string[]
   ): Promise<void> {
-    const entries = await fs.readdir(dir, { withFileTypes: true });
+    try {
+      const entries = await fs.readdir(dir, { withFileTypes: true });
 
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
 
-      if (entry.isDirectory()) {
-        await this.collectFiles(fullPath, baseDir, files);
-      } else {
-        const relativePath = path.relative(baseDir, fullPath);
-        files.push(relativePath);
+        try {
+          if (entry.isDirectory()) {
+            await this.collectFiles(fullPath, baseDir, files);
+          } else {
+            const relativePath = path.relative(baseDir, fullPath);
+            files.push(relativePath);
+          }
+        } catch (err) {
+          // Skip files/directories that were deleted during traversal
+          const error = err as NodeJS.ErrnoException;
+          if (error.code === 'ENOENT') {
+            logger.debug('File removed during traversal', { path: fullPath });
+            continue;
+          }
+          throw err;
+        }
       }
+    } catch (err) {
+      // If directory is deleted during traversal, just log and return
+      const error = err as NodeJS.ErrnoException;
+      if (error.code === 'ENOENT') {
+        logger.debug('Directory removed during traversal', { path: dir });
+        return;
+      }
+      throw err;
     }
   }
 
@@ -535,11 +567,20 @@ export class WorkspaceManager {
 
       for (const sessionId of sessionDirs) {
         if (!activeSet.has(sessionId)) {
-          const sessionDir = this.getSessionDir(sessionId);
-          await fs.rm(sessionDir, { recursive: true, force: true });
-          removed++;
+          try {
+            const sessionDir = this.getSessionDir(sessionId);
+            await fs.rm(sessionDir, { recursive: true, force: true });
+            removed++;
 
-          logger.debug('Session workspace removed', { sessionId });
+            logger.debug('Session workspace removed', { sessionId });
+          } catch (err) {
+            // Skip invalid session directories (non-UUID names)
+            if (err instanceof WorkspaceError && err.reason === 'invalid_session_id') {
+              logger.warn('Skipping invalid session directory', { sessionId });
+              continue;
+            }
+            throw err;
+          }
         }
       }
 
