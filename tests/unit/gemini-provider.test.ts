@@ -64,7 +64,7 @@ describe('GeminiProvider - Additional Coverage', () => {
 
       const response = await provider.execute(request);
 
-      expect(response.model).toBe('gemini-2.0-flash-exp');
+      expect(response.model).toBe('gemini-default');
     });
 
     it('should calculate token usage correctly', async () => {

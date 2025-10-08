@@ -7,7 +7,8 @@ role: Chief Technology Officer
 description: "Expert in technology strategy, technical leadership, innovation management, and architecture oversight"
 
 # Provider preference
-provider: claude
+provider: gemini-cli
+fallbackProvider: claude-code
 
 # Abilities
 abilities:

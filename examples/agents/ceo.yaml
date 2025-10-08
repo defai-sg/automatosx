@@ -7,7 +7,8 @@ role: Chief Executive Officer
 description: "Expert in business strategy, organizational leadership, and product vision"
 
 # Provider preference
-provider: claude
+provider: gemini-cli
+fallbackProvider: claude-code
 
 # Abilities
 abilities:

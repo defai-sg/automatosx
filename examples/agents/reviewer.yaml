@@ -7,7 +7,8 @@ role: Code Reviewer
 description: "Expert code reviewer focusing on quality, security, performance, and maintainability"
 
 # Provider preference
-provider: claude-code
+provider: openai
+fallbackProvider: claude-code
 
 # Abilities
 abilities:

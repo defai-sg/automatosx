@@ -15,8 +15,6 @@ import type {
 } from '../types/provider.js';
 
 export class ClaudeProvider extends BaseProvider {
-  private readonly DEFAULT_MODEL = 'claude-3-5-sonnet-20241022';
-
   constructor(config: ProviderConfig) {
     super(config);
   }
@@ -50,7 +48,6 @@ export class ClaudeProvider extends BaseProvider {
     // In future phases, we'll use the official Anthropic SDK
 
     const startTime = Date.now();
-    const model = request.model || this.DEFAULT_MODEL;
 
     try {
       // Build prompt with system prompt if provided
@@ -59,14 +56,14 @@ export class ClaudeProvider extends BaseProvider {
         fullPrompt = `System: ${request.systemPrompt}\n\nUser: ${request.prompt}`;
       }
 
-      // Execute via CLI (placeholder - actual implementation will use SDK)
-      const response = await this.executeCLI(fullPrompt, model, request);
+      // Execute via CLI - let CLI use its own default model
+      const response = await this.executeCLI(fullPrompt, request);
 
       const latency = Date.now() - startTime;
 
       return {
         content: response.content,
-        model: model,
+        model: request.model || 'claude-default', // CLI decides actual model
         tokensUsed: {
           prompt: this.estimateTokens(fullPrompt),
           completion: this.estimateTokens(response.content),
@@ -85,8 +82,6 @@ export class ClaudeProvider extends BaseProvider {
   }
 
   override async estimateCost(request: ExecutionRequest): Promise<Cost> {
-    const model = request.model || this.DEFAULT_MODEL;
-
     // Claude pricing (as of 2024)
     const pricing: Record<string, { input: number; output: number }> = {
       'claude-3-5-sonnet-20241022': { input: 3.00, output: 15.00 },  // per 1M tokens
@@ -96,10 +91,9 @@ export class ClaudeProvider extends BaseProvider {
       'claude-3-haiku-20240307': { input: 0.25, output: 1.25 }
     };
 
-    const modelPricing = pricing[model] ?? pricing[this.DEFAULT_MODEL];
-    if (!modelPricing) {
-      throw new Error(`Unknown model: ${model}`);
-    }
+    // Use sonnet pricing as default estimate when model not specified
+    const defaultPricing = { input: 3.00, output: 15.00 };
+    const modelPricing = request.model ? (pricing[request.model] ?? defaultPricing) : defaultPricing;
 
     const inputTokens = this.estimateTokens(request.prompt);
     const outputTokens = request.maxTokens ?? 4096;
@@ -114,19 +108,19 @@ export class ClaudeProvider extends BaseProvider {
   }
 
   // CLI execution helper (Phase 1 implementation)
-  private async executeCLI(prompt: string, model: string, request: ExecutionRequest): Promise<{ content: string }> {
+  private async executeCLI(prompt: string, request: ExecutionRequest): Promise<{ content: string }> {
     // Check if running in production mode (real CLI) or test mode (mock)
     const useMock = process.env.AUTOMATOSX_MOCK_PROVIDERS === 'true';
 
     if (useMock) {
       // Mock mode for testing
       return Promise.resolve({
-        content: `[Mock Response from Claude ${model}]\n\nTask received: ${prompt.substring(0, 100)}...\n\nThis is a placeholder response. Set AUTOMATOSX_MOCK_PROVIDERS=false to use real CLI.`
+        content: `[Mock Response from Claude]\n\nTask received: ${prompt.substring(0, 100)}...\n\nThis is a placeholder response. Set AUTOMATOSX_MOCK_PROVIDERS=false to use real CLI.`
       });
     }
 
     // Real CLI execution
-    return this.executeRealCLI(prompt, model, request);
+    return this.executeRealCLI(prompt, request);
   }
 
   /**
@@ -134,8 +128,9 @@ export class ClaudeProvider extends BaseProvider {
    *
    * Claude Code CLI syntax: claude -p "prompt"
    * Uses --print flag for non-interactive output
+   * Model selection is delegated to CLI's own defaults
    */
-  private async executeRealCLI(prompt: string, model: string, request: ExecutionRequest): Promise<{ content: string }> {
+  private async executeRealCLI(prompt: string, request: ExecutionRequest): Promise<{ content: string }> {
     const { spawn } = await import('child_process');
 
     return new Promise((resolve, reject) => {
@@ -145,12 +140,8 @@ export class ClaudeProvider extends BaseProvider {
 
       // Build CLI arguments
       // Use --print for non-interactive mode
+      // Do NOT pass --model - let CLI use its own default
       const args = ['--print', prompt];
-
-      // Add model if specified and different from default
-      if (model && model !== this.DEFAULT_MODEL) {
-        args.unshift('--model', model);
-      }
 
       let child: ReturnType<typeof spawn>;
 

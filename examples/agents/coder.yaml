@@ -64,7 +64,6 @@ stages:
       - Edge cases and error scenarios identified
       - Success metrics defined
 
-    model: claude-3-5-sonnet-20241022
     temperature: 0.8  # More creative for exploration
 
   - name: test_planning
@@ -84,7 +83,6 @@ stages:
       - Coverage target defined (e.g., 80% overall, 90% core modules)
       - Test file structure planned
 
-    model: claude-3-5-sonnet-20241022
     temperature: 0.6  # More structured for planning
 
   - name: implementation
@@ -104,7 +102,6 @@ stages:
       - JSDoc/TSDoc comments for public APIs
       - Error handling and logging implemented
 
-    model: claude-3-5-sonnet-20241022
     temperature: 0.7  # Balanced for code generation
 
   - name: self_code_review
@@ -124,7 +121,6 @@ stages:
       - Performance considerations documented
       - Security review notes
 
-    model: claude-3-5-haiku-20241022  # Faster, cheaper for analysis
     temperature: 0.3  # More precise for review
 
   - name: refactoring
@@ -144,7 +140,6 @@ stages:
       - Eliminated code duplication
       - Improved naming and structure
 
-    model: claude-3-5-sonnet-20241022
     temperature: 0.5  # Conservative for refactoring
 
   - name: documentation
@@ -164,7 +159,6 @@ stages:
       - Architecture decision records (ADR) if needed
       - README updated with new features
 
-    model: claude-3-5-sonnet-20241022
     temperature: 0.7  # Balanced for writing
 
   - name: final_review
@@ -184,7 +178,6 @@ stages:
       - Documentation complete ✅
       - Ready for team code review ✅
 
-    model: claude-3-5-haiku-20241022  # Fast final check
     temperature: 0.3  # Precise verification
 
 # ============================================
@@ -219,7 +212,8 @@ abilities:
 # ============================================
 # PROVIDER & CONFIGURATION
 # ============================================
-provider: claude-code
+provider: openai
+fallbackProvider: claude-code
 
 config:
   temperature: 0.7    # Default, overridden by stage-specific

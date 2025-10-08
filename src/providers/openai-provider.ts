@@ -15,8 +15,6 @@ import type {
 } from '../types/provider.js';
 
 export class OpenAIProvider extends BaseProvider {
-  private readonly DEFAULT_MODEL = 'gpt-4o';
-
   constructor(config: ProviderConfig) {
     super(config);
   }
@@ -49,7 +47,6 @@ export class OpenAIProvider extends BaseProvider {
 
   protected async executeRequest(request: ExecutionRequest): Promise<ExecutionResponse> {
     const startTime = Date.now();
-    const model = request.model || this.DEFAULT_MODEL;
 
     try {
       // Build prompt with system prompt if provided
@@ -58,14 +55,14 @@ export class OpenAIProvider extends BaseProvider {
         fullPrompt = `System: ${request.systemPrompt}\n\nUser: ${request.prompt}`;
       }
 
-      // Execute via CLI
-      const response = await this.executeCLI(fullPrompt, model, request);
+      // Execute via CLI - let CLI use its own default model
+      const response = await this.executeCLI(fullPrompt, request);
 
       const latency = Date.now() - startTime;
 
       return {
         content: response.content,
-        model: model,
+        model: request.model || 'openai-default', // CLI decides actual model
         tokensUsed: {
           prompt: this.estimateTokens(fullPrompt),
           completion: this.estimateTokens(response.content),
@@ -94,8 +91,6 @@ export class OpenAIProvider extends BaseProvider {
   }
 
   override async estimateCost(request: ExecutionRequest): Promise<Cost> {
-    const model = request.model || this.DEFAULT_MODEL;
-
     // OpenAI pricing (as of 2024)
     const pricing: Record<string, { input: number; output: number }> = {
       'gpt-4o': { input: 2.50, output: 10.00 },  // per 1M tokens
@@ -107,10 +102,9 @@ export class OpenAIProvider extends BaseProvider {
       'o1-mini': { input: 3.00, output: 12.00 }
     };
 
-    const modelPricing = pricing[model] ?? pricing[this.DEFAULT_MODEL];
-    if (!modelPricing) {
-      throw new Error(`Unknown model: ${model}`);
-    }
+    // Use gpt-4o pricing as default estimate when model not specified
+    const defaultPricing = { input: 2.50, output: 10.00 };
+    const modelPricing = request.model ? (pricing[request.model] ?? defaultPricing) : defaultPricing;
 
     const inputTokens = this.estimateTokens(request.prompt);
     const outputTokens = request.maxTokens ?? 4096;
@@ -125,27 +119,28 @@ export class OpenAIProvider extends BaseProvider {
   }
 
   // CLI execution helper (Phase 1 implementation)
-  private async executeCLI(prompt: string, model: string, request: ExecutionRequest): Promise<{ content: string }> {
+  private async executeCLI(prompt: string, request: ExecutionRequest): Promise<{ content: string }> {
     // Check if running in production mode (real CLI) or test mode (mock)
     const useMock = process.env.AUTOMATOSX_MOCK_PROVIDERS === 'true';
 
     if (useMock) {
       // Mock mode for testing
       return Promise.resolve({
-        content: `[Mock Response from OpenAI ${model}]\n\nTask received: ${prompt.substring(0, 100)}...\n\nThis is a placeholder response. Set AUTOMATOSX_MOCK_PROVIDERS=false to use real CLI.`
+        content: `[Mock Response from OpenAI]\n\nTask received: ${prompt.substring(0, 100)}...\n\nThis is a placeholder response. Set AUTOMATOSX_MOCK_PROVIDERS=false to use real CLI.`
       });
     }
 
     // Real CLI execution
-    return this.executeRealCLI(prompt, model, request);
+    return this.executeRealCLI(prompt, request);
   }
 
   /**
    * Execute real CLI command via spawn
    *
-   * OpenAI CLI syntax: openai chat -m "model" -p "prompt"
+   * OpenAI CLI syntax: openai chat -p "prompt"
+   * Model selection is delegated to CLI's own defaults
    */
-  private async executeRealCLI(prompt: string, model: string, request: ExecutionRequest): Promise<{ content: string }> {
+  private async executeRealCLI(prompt: string, request: ExecutionRequest): Promise<{ content: string }> {
     const { spawn } = await import('child_process');
 
     return new Promise((resolve, reject) => {
@@ -154,11 +149,9 @@ export class OpenAIProvider extends BaseProvider {
       let hasTimedOut = false;
 
       // Build CLI arguments
-      // OpenAI CLI uses: openai chat -m MODEL -p PROMPT
+      // OpenAI CLI uses: openai chat -p PROMPT
+      // Do NOT pass -m/--model - let CLI use its own default
       const args = ['chat'];
-
-      // Add model
-      args.push('-m', model);
 
       // Add prompt
       args.push('-p', prompt);

@@ -7,7 +7,8 @@ role: Product Manager
 description: "Expert in product strategy, user research, and feature prioritization"
 
 # Provider preference
-provider: claude
+provider: gemini-cli
+fallbackProvider: claude-code
 
 # Abilities
 abilities:

@@ -15,8 +15,6 @@ import type {
 } from '../types/provider.js';
 
 export class GeminiProvider extends BaseProvider {
-  private readonly DEFAULT_MODEL = 'gemini-2.0-flash-exp';
-
   constructor(config: ProviderConfig) {
     super(config);
   }
@@ -46,7 +44,6 @@ export class GeminiProvider extends BaseProvider {
 
   protected async executeRequest(request: ExecutionRequest): Promise<ExecutionResponse> {
     const startTime = Date.now();
-    const model = request.model || this.DEFAULT_MODEL;
 
     try {
       // Build prompt with system prompt if provided
@@ -55,14 +52,14 @@ export class GeminiProvider extends BaseProvider {
         fullPrompt = `${request.systemPrompt}\n\n${request.prompt}`;
       }
 
-      // Execute via CLI (placeholder - actual implementation will use SDK)
-      const response = await this.executeCLI(fullPrompt, model, request);
+      // Execute via CLI - let CLI use its own default model
+      const response = await this.executeCLI(fullPrompt, request);
 
       const latency = Date.now() - startTime;
 
       return {
         content: response.content,
-        model: model,
+        model: request.model || 'gemini-default', // CLI decides actual model
         tokensUsed: {
           prompt: this.estimateTokens(fullPrompt),
           completion: this.estimateTokens(response.content),
@@ -91,8 +88,6 @@ export class GeminiProvider extends BaseProvider {
   }
 
   override async estimateCost(request: ExecutionRequest): Promise<Cost> {
-    const model = request.model || this.DEFAULT_MODEL;
-
     // Gemini pricing (as of 2024)
     const pricing: Record<string, { input: number; output: number }> = {
       'gemini-2.0-flash-exp': { input: 0, output: 0 },  // Free during preview
@@ -101,10 +96,9 @@ export class GeminiProvider extends BaseProvider {
       'gemini-1.0-pro': { input: 0.50, output: 1.50 }
     };
 
-    const modelPricing = pricing[model] ?? pricing[this.DEFAULT_MODEL];
-    if (!modelPricing) {
-      throw new Error(`Unknown model: ${model}`);
-    }
+    // Use gemini-2.0-flash-exp pricing as default estimate when model not specified
+    const defaultPricing = { input: 0, output: 0 };
+    const modelPricing = request.model ? (pricing[request.model] ?? defaultPricing) : defaultPricing;
 
     const inputTokens = this.estimateTokens(request.prompt);
     const outputTokens = request.maxTokens ?? 4096;
@@ -119,25 +113,28 @@ export class GeminiProvider extends BaseProvider {
   }
 
   // CLI execution helper (Phase 1 implementation)
-  private async executeCLI(prompt: string, model: string, request: ExecutionRequest): Promise<{ content: string }> {
+  private async executeCLI(prompt: string, request: ExecutionRequest): Promise<{ content: string }> {
     // Check if running in production mode (real CLI) or test mode (mock)
     const useMock = process.env.AUTOMATOSX_MOCK_PROVIDERS === 'true';
 
     if (useMock) {
       // Mock mode for testing
       return Promise.resolve({
-        content: `[Mock Response from Gemini ${model}]\n\nTask received: ${prompt.substring(0, 100)}...\n\nThis is a placeholder response. Set AUTOMATOSX_MOCK_PROVIDERS=false to use real CLI.`
+        content: `[Mock Response from Gemini]\n\nTask received: ${prompt.substring(0, 100)}...\n\nThis is a placeholder response. Set AUTOMATOSX_MOCK_PROVIDERS=false to use real CLI.`
       });
     }
 
     // Real CLI execution
-    return this.executeRealCLI(prompt, model, request);
+    return this.executeRealCLI(prompt, request);
   }
 
   /**
    * Execute real CLI command via spawn
+   *
+   * Gemini CLI syntax: gemini "prompt"
+   * Model selection is delegated to CLI's own defaults
    */
-  private async executeRealCLI(prompt: string, model: string, request: ExecutionRequest): Promise<{ content: string }> {
+  private async executeRealCLI(prompt: string, request: ExecutionRequest): Promise<{ content: string }> {
     const { spawn } = await import('child_process');
 
     return new Promise((resolve, reject) => {
@@ -146,13 +143,8 @@ export class GeminiProvider extends BaseProvider {
 
       // Build CLI arguments for Gemini CLI
       // Note: Gemini CLI uses positional prompt, not --prompt flag
-      // Model is set via -m/--model flag
+      // Do NOT pass --model - let CLI use its own default
       const args: string[] = [];
-
-      // Add model if specified
-      if (model && model !== this.DEFAULT_MODEL) {
-        args.push('--model', model);
-      }
 
       // Add prompt as positional argument (not as flag)
       args.push(prompt);

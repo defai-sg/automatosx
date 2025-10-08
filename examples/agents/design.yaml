@@ -7,7 +7,8 @@ role: UX/UI Designer
 description: "Expert in user experience design, visual design, and design systems"
 
 # Provider preference
-provider: claude
+provider: gemini-cli
+fallbackProvider: openai
 
 # Abilities
 abilities:

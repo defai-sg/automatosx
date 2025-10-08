@@ -7,7 +7,8 @@ role: Data Scientist
 description: "Expert in data analysis, machine learning, and statistical modeling"
 
 # Provider preference
-provider: claude
+provider: gemini-cli
+fallbackProvider: claude-code
 
 # Abilities
 abilities:

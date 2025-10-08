@@ -7,7 +7,8 @@ role: General Assistant
 description: "A versatile AI assistant for general purpose tasks, questions, and conversations"
 
 # Provider preference
-provider: claude-code
+provider: openai
+fallbackProvider: claude-code
 
 # Abilities
 abilities:

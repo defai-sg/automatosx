@@ -7,7 +7,8 @@ role: DevOps Engineer
 description: "Expert in infrastructure automation, CI/CD pipelines, and cloud platforms"
 
 # Provider preference
-provider: claude
+provider: claude-code
+fallbackProvider: openai
 
 # Abilities
 abilities:

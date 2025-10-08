@@ -12,11 +12,11 @@ Research shows humans remember names better than roles. Instead of remembering "
 
 | Name | Role | Expertise | Best For | Primary Provider | Fallback |
 |------|------|-----------|----------|------------------|----------|
-| **Alex** | General Assistant | General purpose tasks, planning, questions | Quick questions, brainstorming, planning | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
-| **Charlie** | Software Developer | Code generation, implementation | Writing new code, implementing features | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
-| **Ryan** | Code Reviewer | Code review, quality assurance | PR reviews, code quality checks | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
-| **Danny** | Debug Expert | Debugging, troubleshooting | Fixing bugs, error analysis | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
-| **Wendy** | Technical Writer | Documentation, content creation | Writing docs, README files | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Alex** | General Assistant | General purpose tasks, planning, questions | Quick questions, brainstorming, planning | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
+| **Charlie** | Software Developer | Code generation, implementation | Writing new code, implementing features | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
+| **Ryan** | Code Reviewer | Code review, quality assurance | PR reviews, code quality checks | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
+| **Danny** | Debug Expert | Debugging, troubleshooting | Fixing bugs, error analysis | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
+| **Wendy** | Technical Writer | Documentation, content creation | Writing docs, README files | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
 
 ### 💻 Engineering
 
@@ -32,16 +32,16 @@ Research shows humans remember names better than roles. Instead of remembering "
 
 | Name | Role | Expertise | Best For | Primary Provider | Fallback |
 |------|------|-----------|----------|------------------|----------|
-| **Eric** | CEO | Business strategy, vision | Strategy, business decisions | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
-| **Tony** | CTO | Technology strategy, leadership | Tech strategy, architecture decisions | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
-| **Paris** | Product Manager | Product strategy, user research | Product planning, feature prioritization | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
-| **Daisy** | Data Scientist | Data analysis, machine learning | Analytics, ML models, insights | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Eric** | CEO | Business strategy, vision | Strategy, business decisions | 🔵 Gemini | 🟣 Claude → 🟢 OpenAI |
+| **Tony** | CTO | Technology strategy, leadership | Tech strategy, architecture decisions | 🔵 Gemini | 🟣 Claude → 🟢 OpenAI |
+| **Paris** | Product Manager | Product strategy, user research | Product planning, feature prioritization | 🔵 Gemini | 🟣 Claude → 🟢 OpenAI |
+| **Daisy** | Data Scientist | Data analysis, machine learning | Analytics, ML models, insights | 🔵 Gemini | 🟣 Claude → 🟢 OpenAI |
 
 ### 🎨 Design
 
 | Name | Role | Expertise | Best For | Primary Provider | Fallback |
 |------|------|-----------|----------|------------------|----------|
-| **Debbee** | UX/UI Designer | User experience, visual design | UX design, prototyping, design systems | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Debbee** | UX/UI Designer | User experience, visual design | UX design, prototyping, design systems | 🔵 Gemini | 🟢 OpenAI → 🟣 Claude |
 
 ## Provider Configuration
 
@@ -63,50 +63,81 @@ AutomatosX uses a **3-layer fallback system** for maximum reliability:
 
 | AI Provider | Agent Count | Agents |
 |-------------|-------------|--------|
-| 🟣 **Claude** | 16 | All agents (Alex, Charlie, Ryan, Danny, Wendy, Bob, Frank, Oliver, Steve, Queenie, Eric, Tony, Paris, Daisy, Debbee, + 1 more) |
-| 🟢 **OpenAI** | 0 | Available via auto-routing |
-| 🔵 **Gemini** | 0 | Available via auto-routing |
+| 🟢 **OpenAI** | 5 | Core Team (Alex, Charlie, Ryan, Danny, Wendy) |
+| 🟣 **Claude** | 5 | Engineering Team (Bob, Frank, Oliver, Steve, Queenie) |
+| 🔵 **Gemini** | 5 | Business & Product + Design (Eric, Tony, Paris, Daisy, Debbee) |
 
 ### Provider Selection Logic
 
 ```text
-Agent Request → Try Primary Provider (Claude)
+Agent Request → Try Primary Provider (varies by team)
     ↓ (if fails)
-Try Fallback Provider (if configured)
-    ↓ (if fails or not configured)
+Try Fallback Provider (configured per agent)
+    ↓ (if fails)
 Use Auto-Routing Priority:
-    1. 🟢 OpenAI
-    2. 🔵 Gemini
+    1. 🟢 OpenAI (priority 1)
+    2. 🔵 Gemini (priority 2)
+    3. 🟣 Claude (priority 3)
 ```
 
-**Example**: If Charlie (primary: 🟣 **Claude**) encounters an error:
+**Example 1**: If Charlie (Core Team: primary 🟢 **OpenAI**, fallback 🟣 **Claude**) encounters an error:
+
+1. Try 🟢 **OpenAI** first
+2. If fails, try fallback 🟣 **Claude**
+3. If still fails, router tries 🔵 **Gemini** (remaining provider)
+
+**Example 2**: If Bob (Engineering: primary 🟣 **Claude**, fallback 🟢 **OpenAI**) encounters an error:
 
 1. Try 🟣 **Claude** first
-2. No fallback configured, skip to auto-routing
-3. Router tries 🟢 **OpenAI** → 🔵 **Gemini** until one succeeds
+2. If fails, try fallback 🟢 **OpenAI**
+3. If still fails, router tries 🔵 **Gemini** (remaining provider)
+
+**Example 3**: If Eric (Business: primary 🔵 **Gemini**, fallback 🟣 **Claude**) encounters an error:
+
+1. Try 🔵 **Gemini** first
+2. If fails, try fallback 🟣 **Claude**
+3. If still fails, router tries 🟢 **OpenAI** (remaining provider)
 
 ### Customizing Provider Configuration
 
 You can customize provider preferences for any agent:
 
 ```yaml
-# In .automatosx/agents/my-agent.yaml
-name: my-agent
-displayName: MyAgent
-provider: claude               # Primary: 🟣 Claude (can use 'claude' or 'claude-code')
-fallbackProvider: codex        # Fallback: 🟢 OpenAI (v4.9.5+)
+# Example 1: Core Team configuration (OpenAI → Claude → Gemini)
+name: assistant
+displayName: Alex
+provider: openai               # Primary: 🟢 OpenAI
+fallbackProvider: claude-code  # Fallback: 🟣 Claude
+
+# Example 2: Engineering Team configuration (Claude → OpenAI → Gemini)
+name: backend
+displayName: Bob
+provider: claude               # Primary: 🟣 Claude
+fallbackProvider: openai       # Fallback: 🟢 OpenAI (using 'codex' CLI)
+
+# Example 3: Business Team configuration (Gemini → Claude → OpenAI)
+name: ceo
+displayName: Eric
+provider: gemini-cli           # Primary: 🔵 Gemini
+fallbackProvider: claude       # Fallback: 🟣 Claude
+
+# Example 4: Design Team configuration (Gemini → OpenAI → Claude)
+name: design
+displayName: Debbee
+provider: gemini-cli           # Primary: 🔵 Gemini
+fallbackProvider: openai       # Fallback: 🟢 OpenAI
 
 # Available provider options:
 # - claude or claude-code  (🟣 Claude - both are Anthropic Claude)
-# - codex                  (🟢 OpenAI)
-# - gemini                 (🔵 Gemini)
+# - openai or codex        (🟢 OpenAI - both use 'codex' CLI)
+# - gemini-cli or gemini   (🔵 Gemini - both use 'gemini' CLI)
 ```
 
 **Why choose each provider?**
 
 - 🟣 **Claude**: Best for general reasoning, long-context tasks, detailed analysis, and coding
-- 🟢 **OpenAI**: Excellent for code generation and technical planning
-- 🔵 **Gemini**: Great for creative tasks and multimodal processing
+- 🟢 **OpenAI**: Excellent for code generation, technical planning, and structured outputs
+- 🔵 **Gemini**: Great for creative tasks, multimodal processing, and strategic thinking
 
 ## Usage Examples
 

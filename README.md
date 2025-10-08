@@ -317,6 +317,9 @@ automatosx run Bob "Design a RESTful API"      # Bob = Backend Engineer
 automatosx run Frank "Create login component"  # Frank = Frontend Developer
 automatosx run Steve "Review auth code"        # Steve = Security Engineer
 
+# See all agents with their memorable names
+# 📖 Full agent directory: examples/AGENTS_INFO.md
+
 # Manage agents
 automatosx list agents                # Show available agents
 automatosx list abilities             # Show available abilities
@@ -421,6 +424,7 @@ AutomatosX uses JSON configuration with priority order:
 
 ## Documentation & Support
 
+- **Agent Directory**: `examples/AGENTS_INFO.md` (complete list of agents with memorable names)
 - **Guides**: `docs/guide/` (installation, quick start, core concepts)
 - **FAQ**: `FAQ.md`
 - **Troubleshooting**: `TROUBLESHOOTING.md`

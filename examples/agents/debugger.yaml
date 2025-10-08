@@ -7,7 +7,8 @@ role: Debug Expert
 description: "Expert at debugging code, analyzing errors, and solving technical problems"
 
 # Provider preference
-provider: claude-code
+provider: openai
+fallbackProvider: claude-code
 
 # Abilities
 abilities:
