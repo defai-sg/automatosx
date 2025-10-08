@@ -16,6 +16,7 @@ import type { SessionManager } from '../core/session-manager.js';
 import type { WorkspaceManager } from '../core/workspace-manager.js';
 import type { ContextManager } from './context-manager.js';
 import type { ProfileLoader } from './profile-loader.js';
+import { DelegationParser } from './delegation-parser.js';
 import { formatError } from '../utils/error-formatter.js';
 import { randomUUID } from 'crypto';
 import { logger } from '../utils/logger.js';
@@ -65,6 +66,7 @@ export class AgentExecutor {
   private workspaceManager?: WorkspaceManager;
   private contextManager?: ContextManager;
   private profileLoader?: ProfileLoader;
+  private delegationParser: DelegationParser;
 
   /**
    * Default retry configuration
@@ -94,6 +96,7 @@ export class AgentExecutor {
     this.workspaceManager = config?.workspaceManager;
     this.contextManager = config?.contextManager;
     this.profileLoader = config?.profileLoader;
+    this.delegationParser = new DelegationParser();
   }
 
   /**
@@ -260,7 +263,7 @@ export class AgentExecutor {
 
       // Check for delegation requests in response (v4.7.2+)
       if (context.orchestration) {
-        const delegations = this.parseDelegationRequests(response.content, context.agent.name);
+        const delegations = this.delegationParser.parse(response.content, context.agent.name);
 
         if (delegations.length > 0) {
           if (verbose) {
@@ -277,8 +280,8 @@ export class AgentExecutor {
 
           // Append delegation results to response
           let delegationSummary = '\n\n---\n\n## Delegation Results\n\n';
-          delegationResults.forEach((result, agent) => {
-            delegationSummary += `### Delegated to ${agent}\n\n`;
+          delegationResults.forEach((result, index) => {
+            delegationSummary += `### Delegation ${index + 1}: ${result.toAgent}\n\n`;
             delegationSummary += result.response.content + '\n\n';
           });
 
@@ -312,36 +315,6 @@ export class AgentExecutor {
     }
   }
 
-  /**
-   * Parse delegation requests from agent response
-   *
-   * Looks for pattern: "DELEGATE TO [agent-name]: [task description]"
-   * Returns array of parsed delegation requests
-   */
-  private parseDelegationRequests(response: string, fromAgent: string): Array<{ toAgent: string; task: string }> {
-    const delegations: Array<{ toAgent: string; task: string }> = [];
-
-    // Pattern: DELEGATE TO [agent-name]: [task]
-    // Case-insensitive, allows whitespace variations
-    const pattern = /DELEGATE\s+TO\s+([a-zA-Z0-9-_]+)\s*:\s*(.+?)(?=\n\n|DELEGATE\s+TO|$)/gis;
-
-    let match;
-    while ((match = pattern.exec(response)) !== null) {
-      const toAgent = match[1]!.trim();
-      const task = match[2]!.trim();
-
-      if (toAgent && task) {
-        delegations.push({ toAgent, task });
-        logger.info('Delegation request detected', {
-          fromAgent,
-          toAgent,
-          taskPreview: task.substring(0, 100)
-        });
-      }
-    }
-
-    return delegations;
-  }
 
   /**
    * Execute delegation requests parsed from agent response
@@ -353,8 +326,8 @@ export class AgentExecutor {
     delegations: Array<{ toAgent: string; task: string }>,
     context: ExecutionContext,
     options: ExecutionOptions
-  ): Promise<Map<string, DelegationResult>> {
-    const results = new Map<string, DelegationResult>();
+  ): Promise<DelegationResult[]> {
+    const results: DelegationResult[] = [];
     const { verbose = false } = options;
 
     for (const { toAgent, task } of delegations) {
@@ -375,7 +348,7 @@ export class AgentExecutor {
         };
 
         const result = await this.delegateToAgent(request);
-        results.set(toAgent, result);
+        results.push(result);
 
         if (verbose) {
           console.log(chalk.green(`✅ Delegation to ${toAgent} completed`));
@@ -393,7 +366,7 @@ export class AgentExecutor {
         }
 
         // Store error as failed delegation result
-        results.set(toAgent, {
+        results.push({
           delegationId: randomUUID(),
           fromAgent: context.agent.name,
           toAgent,
@@ -520,9 +493,13 @@ export class AgentExecutor {
       }
 
       prompt += `**How to delegate:**\n`;
-      prompt += `To delegate a task, clearly state in your response:\n`;
-      prompt += `"DELEGATE TO [agent-name]: [specific task description]"\n\n`;
-      prompt += `Example: "DELEGATE TO frontend: Create a responsive login UI with email and password fields"\n\n`;
+      prompt += `You can delegate using any of these natural syntaxes:\n`;
+      prompt += `1. "DELEGATE TO frontend: Create login UI"\n`;
+      prompt += `2. "@frontend Create login UI"\n`;
+      prompt += `3. "Please ask backend to implement auth API"\n`;
+      prompt += `4. "I need frontend to handle the UI"\n`;
+      prompt += `5. "請 frontend 建立登入 UI" (Chinese support)\n\n`;
+      prompt += `Example: "@frontend Create a responsive login UI with email and password fields"\n\n`;
     }
 
     // Add task

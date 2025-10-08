@@ -1,4 +1,4 @@
-# AutomatosX v4.7.6
+# AutomatosX v4.7.8
 
 > **The control tower for shipping customer-facing ideas—without the chaos**
 > Orchestrate specialized AI agents to move work from slide decks to production, keeping product, engineering, and stakeholders in sync.
@@ -6,7 +6,7 @@
 [![npm version](https://img.shields.io/npm/v/@defai.sg/automatosx.svg)](https://www.npmjs.com/package/@defai.sg/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-904%20passing-brightgreen.svg)](#production-ready-toolkit)
+[![Tests](https://img.shields.io/badge/tests-922%20passing-brightgreen.svg)](#production-ready-toolkit)
 
 **Teams and solo builders choose AutomatosX because:**
 - 🎯 **Keeps people aligned, not just code moving** – track roadmaps, builds, and launch tasks in one place
@@ -14,13 +14,20 @@
 - ⚡ **Shortens idea-to-impact gap** – organized workflows mean faster onboarding, tighter handoffs, confident timelines
 - 💰 **10× more cost-effective** – CLI-based orchestration beats expensive assistants APIs
 
-**Status**: ✅ Production Release · **Version**: 4.7.6 · **Released**: October 2025
+**Status**: ✅ Production Release · **Version**: 4.7.8 · **Released**: October 2025
 
 ---
 
 ## 🎉 What's New in v4.7
 
-### v4.7.6 (Latest) - Complete Whitelist Removal
+### v4.7.8 (Latest) - Natural Language Delegation
+- 🗣️ **Natural Language Syntax**: Agents delegate using human-readable patterns (@agent, DELEGATE TO, please ask, I need)
+- 🌐 **Multilingual Support**: Full support for English and Chinese delegation commands
+- 🔄 **Multiple Delegations**: Same agent can receive multiple distinct tasks in one execution
+- 📝 **Enhanced Documentation**: Comprehensive examples in CLAUDE.md and agent profiles
+- ✅ **35 New Tests**: Complete coverage for delegation parser and multi-delegation scenarios
+
+### v4.7.6 - Complete Whitelist Removal
 - 🔓 **Full Autonomous Collaboration**: Completely removed `canDelegateTo` whitelist mechanism
 - ✨ **Simplified Configuration**: Agents can now delegate to ANY other agent by default
 - 🛡️ **Enhanced Safety**: Security ensured via cycle detection, depth limits, and timeouts
@@ -46,7 +53,7 @@
 - 🔄 **Session Persistence**: File-based session tracking with atomic writes
 - 🎯 **CLI Commands**: `ax session create/list/status`, `ax workspace list/stats`
 
-**Upgrade**: `npm install -g @defai.sg/automatosx@4.7.6`
+**Upgrade**: `npm install -g @defai.sg/automatosx@4.7.8`
 
 ---
 
@@ -68,7 +75,7 @@ Your team faces:
 **Think of AutomatosX as your operating system for launches.** Every plan, checklist, test result, and approval lives in one orchestrated workflow—so your team stays in sync from kickoff to post-launch.
 
 ```bash
-# Product Manager: Kickoff sprint
+# PRD: Kickoff sprint
 automatosx run planner "Draft Q1 roadmap with marketing milestones"
 
 # Engineer: Build with guardrails
@@ -217,6 +224,37 @@ automatosx memory search "when does Alpha launch"
 # → Returns: "Project Alpha launches Q1 2025" (0.72ms)
 ```
 
+**Multi-Agent Orchestration** *(v4.7.0+)*
+Agents collaborate autonomously through natural language delegation—no complex APIs needed.
+
+```bash
+# Coordinator agent automatically delegates to specialists:
+automatosx run coordinator "Build authentication feature"
+
+# Agent response includes natural language delegations:
+# "@frontend Create login UI with email/password fields."
+# "@backend Implement JWT auth API."
+#
+# System automatically:
+# 1. Detects delegation requests (@frontend, @backend)
+# 2. Executes delegated tasks in parallel
+# 3. Collects and returns all results
+```
+
+**Supported delegation syntaxes:**
+- `@frontend Create login UI` - Concise mention
+- `DELEGATE TO backend: Implement API` - Explicit command
+- `Please ask database to design schema` - Natural request
+- `I need frontend to handle the UI` - Need expression
+- `請 frontend 建立 UI` - Chinese support
+
+**Safety features:**
+- ✅ Autonomous collaboration (no whitelists needed)
+- ✅ Cycle detection prevents infinite loops
+- ✅ Depth limits control delegation chains (default: 3)
+- ✅ Self-delegation automatically blocked
+- ✅ Session tracking for multi-agent workflows
+
 **Secure Execution**
 Path boundary validation, workspace sandboxes, and deterministic config precedence keep agents in safe lanes.
 
@@ -229,7 +267,7 @@ Strict TypeScript, CLI ergonomics, and rich docs unblock contributors quickly.
 
 ```bash
 npm run dev -- run assistant "test"  # Dev mode with hot reload
-npm test                              # 986 tests with Vitest
+npm test                              # 922 tests with Vitest
 npm run typecheck                     # Strict TS validation
 ```
 
