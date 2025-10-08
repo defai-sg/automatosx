@@ -17,6 +17,7 @@ Available for all commands:
 ```
 
 **Examples**:
+
 ```bash
 # Enable debug output
 automatosx run assistant "Hello" --debug
@@ -196,6 +197,7 @@ automatosx run assistant "Long task" --timeout 300
 ### Output
 
 **Text Format** (default):
+
 ```
 🤖 AutomatosX v4.0
 
@@ -219,6 +221,7 @@ Key features:
 ```
 
 **JSON Format**:
+
 ```json
 {
   "agent": "assistant",
@@ -505,11 +508,13 @@ automatosx memory <command> [options]
 List memory entries.
 
 **Syntax**:
+
 ```bash
 automatosx memory list [options]
 ```
 
 **Options**:
+
 ```bash
 --type <type>       Filter by type (conversation, code, document, task)
 --tags <tags>       Filter by tags (comma-separated)
@@ -521,6 +526,7 @@ automatosx memory list [options]
 ```
 
 **Examples**:
+
 ```bash
 # List recent memories
 automatosx memory list
@@ -545,14 +551,17 @@ automatosx memory list --output json
 Search memories by semantic similarity (requires OpenAI API key).
 
 **Syntax**:
+
 ```bash
 automatosx memory search <query> [options]
 ```
 
 **Parameters**:
+
 - `query` (required) - Search query
 
 **Options**:
+
 ```bash
 --limit <number>       Max results (default: 10)
 --threshold <number>   Min similarity score (0.0-1.0, default: 0.7)
@@ -560,6 +569,7 @@ automatosx memory search <query> [options]
 ```
 
 **Examples**:
+
 ```bash
 # Semantic search
 automatosx memory search "How to use TypeScript generics"
@@ -575,6 +585,7 @@ automatosx memory search "debugging" --output json
 ```
 
 **Output**:
+
 ```
 🔍 Memory Search Results
 
@@ -599,14 +610,17 @@ Found 3 results in 12ms
 Add a memory entry.
 
 **Syntax**:
+
 ```bash
 automatosx memory add <content> [options]
 ```
 
 **Parameters**:
+
 - `content` (required) - Memory content
 
 **Options**:
+
 ```bash
 --type <type>     Entry type: conversation, code, document, task, other
 --tags <tags>     Comma-separated tags
@@ -614,6 +628,7 @@ automatosx memory add <content> [options]
 ```
 
 **Examples**:
+
 ```bash
 # Add basic memory
 automatosx memory add "TypeScript uses structural typing"
@@ -636,19 +651,23 @@ automatosx memory add "Fixed bug in auth" \
 Delete a memory entry.
 
 **Syntax**:
+
 ```bash
 automatosx memory delete <id> [options]
 ```
 
 **Parameters**:
+
 - `id` (required) - Entry ID
 
 **Options**:
+
 ```bash
 -y, --confirm    Skip confirmation prompt
 ```
 
 **Examples**:
+
 ```bash
 # Delete with confirmation
 automatosx memory delete 42
@@ -664,11 +683,13 @@ automatosx memory delete 42 --confirm
 Clear all memories.
 
 **Syntax**:
+
 ```bash
 automatosx memory clear [options]
 ```
 
 **Options**:
+
 ```bash
 --all            Clear all entries
 --confirm        Skip confirmation
@@ -677,6 +698,7 @@ automatosx memory clear [options]
 ```
 
 **Examples**:
+
 ```bash
 # Clear all (with confirmation)
 automatosx memory clear --all
@@ -695,20 +717,24 @@ automatosx memory clear --older-than 30 --confirm
 Export memories to JSON file.
 
 **Syntax**:
+
 ```bash
 automatosx memory export <output> [options]
 ```
 
 **Parameters**:
+
 - `output` (required) - Output file path
 
 **Options**:
+
 ```bash
 --format <type>     Export format: json, csv
 --include-vectors   Include embeddings (increases size)
 ```
 
 **Examples**:
+
 ```bash
 # Export to JSON
 automatosx memory export ./backup.json
@@ -727,14 +753,17 @@ automatosx memory export ./memories.csv --format csv
 Import memories from file.
 
 **Syntax**:
+
 ```bash
 automatosx memory import <input> [options]
 ```
 
 **Parameters**:
+
 - `input` (required) - Input file path
 
 **Options**:
+
 ```bash
 --validate           Validate only, don't import
 --batch-size <n>     Batch size for import (default: 100)
@@ -742,6 +771,7 @@ automatosx memory import <input> [options]
 ```
 
 **Examples**:
+
 ```bash
 # Import from file
 automatosx memory import ./backup.json
@@ -760,16 +790,19 @@ automatosx memory import ./backup.json --skip-duplicates=false
 Show memory statistics.
 
 **Syntax**:
+
 ```bash
 automatosx memory stats [options]
 ```
 
 **Options**:
+
 ```bash
 --output <format>   Output format: table, json
 ```
 
 **Examples**:
+
 ```bash
 # Show stats
 automatosx memory stats
@@ -779,6 +812,7 @@ automatosx memory stats --output json
 ```
 
 **Output**:
+
 ```
 📊 Memory Statistics
 
@@ -821,6 +855,7 @@ All commands use standard exit codes:
 | 5 | Validation error |
 
 **Example**:
+
 ```bash
 automatosx run assistant "Hello"
 echo $?  # 0 if successful, non-zero if error

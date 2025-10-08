@@ -17,10 +17,10 @@ Break down complex projects into manageable tasks.
 
 3. **Create** actionable steps
    - Each task should be:
-     * Specific and clear
-     * Measurable
-     * Achievable
-     * Time-bound
+     - Specific and clear
+     - Measurable
+     - Achievable
+     - Time-bound
 
 4. **Review** and adjust
    - Check for gaps
@@ -51,12 +51,14 @@ Dependencies: [other tasks]
 ## Prioritization Framework
 
 **Eisenhower Matrix:**
+
 1. Urgent + Important: Do first
 2. Important + Not urgent: Schedule
 3. Urgent + Not important: Delegate
 4. Neither: Eliminate
 
 **Value vs Effort:**
+
 - High value, low effort: Quick wins
 - High value, high effort: Major projects
 - Low value, low effort: Fill-ins

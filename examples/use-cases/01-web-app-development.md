@@ -325,6 +325,7 @@ task-manager/
 
 **Problem**: Generated code is too generic
 **Solution**: Provide more context and specific requirements
+
 ```bash
 # Instead of:
 automatosx run coder "Create user model"
@@ -344,6 +345,7 @@ automatosx run coder "Create Prisma User model with:
 
 **Problem**: Generated code doesn't follow your conventions
 **Solution**: Create a custom agent with style guidelines
+
 ```yaml
 # .automatosx/agents/project-coder.yaml
 name: project-coder

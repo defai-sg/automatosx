@@ -37,24 +37,28 @@ Identify and mitigate security vulnerabilities in code.
 ## Security Checklist
 
 Input Validation:
+
 - [ ] Validate all user inputs
 - [ ] Whitelist > blacklist
 - [ ] Sanitize outputs
 - [ ] Check file upload types and sizes
 
 Authentication & Authorization:
+
 - [ ] Strong password requirements
 - [ ] Secure session management
 - [ ] Proper authorization checks
 - [ ] Rate limiting on auth endpoints
 
 Data Protection:
+
 - [ ] Encrypt sensitive data at rest
 - [ ] Use HTTPS for data in transit
 - [ ] No secrets in code/logs
 - [ ] Secure key management
 
 Code Security:
+
 - [ ] No eval() or dangerous functions
 - [ ] Parameterized queries (no string concat)
 - [ ] Secure random number generation

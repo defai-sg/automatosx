@@ -55,22 +55,26 @@ Systematically diagnose and resolve technical issues.
 ## Common Issues Checklist
 
 Configuration:
+
 - [ ] Environment variables set correctly
 - [ ] Config files in right location
 - [ ] Paths absolute vs relative
 
 Network:
+
 - [ ] Firewall/security groups allow traffic
 - [ ] DNS resolving correctly
 - [ ] SSL certificates valid
 - [ ] Timeouts configured appropriately
 
 Permissions:
+
 - [ ] File permissions correct
 - [ ] User has necessary privileges
 - [ ] Database permissions granted
 
 Dependencies:
+
 - [ ] All dependencies installed
 - [ ] Correct versions
 - [ ] No version conflicts

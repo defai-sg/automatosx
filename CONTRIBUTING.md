@@ -126,6 +126,7 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) specific
 ```
 
 **Types**:
+
 - `feat` - New feature
 - `fix` - Bug fix
 - `docs` - Documentation changes
@@ -157,6 +158,7 @@ Fixes #456
 ### Pull Request Process
 
 1. **Update your branch**:
+
    ```bash
    git checkout main
    git pull upstream main
@@ -165,6 +167,7 @@ Fixes #456
    ```
 
 2. **Push to your fork**:
+
    ```bash
    git push origin your-branch
    ```
@@ -177,6 +180,7 @@ Fixes #456
    - List breaking changes if any
 
 4. **PR Template**:
+
    ```markdown
    ## Description
    Brief description of changes
@@ -345,6 +349,7 @@ By contributing, you agree that your contributions will be licensed under the MI
 ## Recognition
 
 Contributors will be recognized in:
+
 - CHANGELOG.md
 - GitHub contributors page
 - Release notes (for significant contributions)

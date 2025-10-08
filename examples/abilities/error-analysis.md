@@ -37,41 +37,51 @@ Analyze and understand error messages to find solutions.
 ## Common Error Patterns
 
 ### Null/Undefined Errors
+
 ```
 TypeError: Cannot read property 'x' of undefined
 ```
+
 - Cause: Accessing property on null/undefined
 - Fix: Check if object exists first
 - Prevention: Use optional chaining (?.)
 
 ### Type Errors
+
 ```
 TypeError: 'int' object is not callable
 ```
+
 - Cause: Using wrong type for operation
 - Fix: Convert type or use correct type
 - Prevention: Type annotations, validation
 
 ### Import/Module Errors
+
 ```
 ModuleNotFoundError: No module named 'x'
 ```
+
 - Cause: Missing dependency or wrong path
 - Fix: Install dependency or fix import path
 - Prevention: Requirements file, path checks
 
 ### Network Errors
+
 ```
 ConnectionError: Connection refused
 ```
+
 - Cause: Service not running, wrong address, firewall
 - Fix: Start service, check URL, check network
 - Prevention: Health checks, retry logic
 
 ### Permission Errors
+
 ```
 PermissionError: Permission denied
 ```
+
 - Cause: Insufficient file/resource permissions
 - Fix: Grant permissions or run as correct user
 - Prevention: Check permissions, use appropriate user
@@ -86,6 +96,7 @@ TypeError: Cannot read property 'name' of undefined
 ```
 
 Parts:
+
 1. **Error Type**: TypeError
 2. **Error Message**: Cannot read property 'name' of undefined
 3. **Stack Trace**: Call chain showing where error occurred

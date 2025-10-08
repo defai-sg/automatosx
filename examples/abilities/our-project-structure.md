@@ -228,6 +228,7 @@ Layer 6 (CLI):
 ### Configuration Files
 
 **YAML for agents:**
+
 ```
 examples/agents/coder.yaml
 examples/agents/reviewer.yaml
@@ -235,6 +236,7 @@ examples/agents/reviewer.yaml
 ```
 
 **Markdown for abilities:**
+
 ```
 examples/abilities/code-generation.md
 examples/abilities/our-coding-standards.md
@@ -242,6 +244,7 @@ examples/abilities/our-coding-standards.md
 ```
 
 **JSON for config:**
+
 ```
 .automatosx/config.json
 package.json
@@ -274,6 +277,7 @@ import type { Provider } from '../types/provider.js';
 ### Relative vs Absolute
 
 **Use relative imports within same module:**
+
 ```typescript
 // In src/agents/executor.ts
 import { ContextManager } from './context-manager.js';  // Same directory
@@ -281,6 +285,7 @@ import { ProfileLoader } from './profile-loader.js';    // Same directory
 ```
 
 **Use relative imports to other modules:**
+
 ```typescript
 // In src/agents/executor.ts
 import { PathResolver } from '../core/path-resolver.js';  // Different module
@@ -312,6 +317,7 @@ import type { Provider } from '../types/provider.js';     // Different module
 **User custom:** `.automatosx/agents/*.yaml`
 
 **Search order:**
+
 1. `.automatosx/agents/{name}.yaml` (user custom)
 2. `examples/agents/{name}.yaml` (built-in)
 
@@ -321,6 +327,7 @@ import type { Provider } from '../types/provider.js';     // Different module
 **User custom:** `.automatosx/abilities/*.md`
 
 **Search order:**
+
 1. `.automatosx/abilities/{name}.md` (user custom)
 2. `examples/abilities/{name}.md` (built-in)
 
@@ -340,6 +347,7 @@ dist/
 **Entry point:** `dist/index.js`
 
 **Bundle target:**
+
 - Format: ESM
 - Target: Node 20+
 - Size: <250KB (currently 205KB)
@@ -354,10 +362,12 @@ dist/
 **Purpose:** Isolated workspace for agent file operations
 
 **Permissions:**
+
 - Unix: 700 (owner only)
 - Windows: User only
 
 **Example:**
+
 ```
 .automatosx/workspaces/
 ├── coder/              # Charlie's workspace
@@ -375,6 +385,7 @@ dist/
 **Format:** SQLite database with sqlite-vec extension
 
 **Tables:**
+
 - `memories` - Memory entries with embeddings
 - `vec_memories` - Vector index (HNSW)
 
@@ -383,6 +394,7 @@ dist/
 ### Project Root Detection
 
 **Search order:**
+
 1. `.git` directory → Use git root
 2. `package.json` → Use package root
 3. Fallback → Use current directory
@@ -390,12 +402,15 @@ dist/
 ### Security Boundaries
 
 **Allowed reads:**
+
 - `{projectRoot}/**/*` (validated by PathResolver)
 
 **Allowed writes:**
+
 - `.automatosx/workspaces/{agent-name}/**/*` only
 
 **Forbidden:**
+
 - Path traversal (`../../../etc/passwd`)
 - Symbolic links outside project
 - Writing outside workspace
@@ -405,16 +420,19 @@ dist/
 ### Test Organization
 
 **Unit tests:** `tests/unit/{module-name}.test.ts`
+
 - Test individual modules in isolation
 - Mock external dependencies
 - Fast execution (<1s per suite)
 
 **Integration tests:** `tests/integration/cli-{command}.test.ts`
+
 - Test CLI command integration
 - Use real file system (in temp dir)
 - Mock providers (AUTOMATOSX_MOCK_PROVIDERS=true)
 
 **E2E tests:** `tests/e2e/{workflow}.test.ts`
+
 - Test complete user workflows
 - Real file system, real config
 - Mock providers
@@ -437,6 +455,7 @@ export class MockClaudeProvider implements Provider { }
 ### Published Files
 
 **Included in npm package:**
+
 ```
 dist/           # Build output
 examples/       # Example agents & abilities
@@ -447,6 +466,7 @@ package.json
 ```
 
 **Excluded from npm package:**
+
 ```
 src/            # Source (not needed in package)
 tests/          # Tests (not needed in package)

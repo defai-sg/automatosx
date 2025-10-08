@@ -7,6 +7,7 @@ automatosx init
 ```
 
 This will:
+
 1. Create `.automatosx/` directory structure
 2. Install 15 example agents in `.automatosx/agents/`
 3. Install 15 example abilities in `.automatosx/abilities/`

@@ -14,5 +14,6 @@ User input: `/ax:list`
 → Execute: `automatosx list agents`
 
 Expected output shows all agents including:
+
 - Built-in agents (assistant, coder, reviewer, debugger, writer, etc.)
 - Custom agents (if any created in `.automatosx/agents/`)

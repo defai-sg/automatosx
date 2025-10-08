@@ -47,6 +47,7 @@ Seamlessly integrate with multiple AI providers:
 - **Custom Providers** (extend easily)
 
 Features:
+
 - Automatic fallback on failures
 - Load balancing across providers
 - Cost optimization with caching (30-40% API reduction)
@@ -114,12 +115,14 @@ search("Latest AI news")
 ### What's New
 
 **Architecture**:
+
 - ✨ Complete TypeScript rewrite
 - ✨ SQLite + vec for vector storage
 - ✨ Modern ESM modules
 - ✨ Vitest for testing
 
 **Features**:
+
 - ✨ Advanced caching system
 - ✨ Performance profiling
 - ✨ Better error handling
@@ -127,6 +130,7 @@ search("Latest AI news")
 - ✨ Backward compatibility support
 
 **Quality**:
+
 - ✨ 705 tests (100% passing)
 - ✨ 67% test coverage
 - ✨ 100% TypeScript strict mode

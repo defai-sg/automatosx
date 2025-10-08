@@ -20,12 +20,14 @@ node --version
 Don't have Node.js? Download from [nodejs.org](https://nodejs.org/) or use a version manager:
 
 **Using nvm** (recommended):
+
 ```bash
 nvm install 20
 nvm use 20
 ```
 
 **Using fnm**:
+
 ```bash
 fnm install 20
 fnm use 20
@@ -93,6 +95,7 @@ npx @defai.sg/automatosx --help
 ```
 
 Expected output:
+
 ```
 automatosx <command> [options]
 
@@ -188,6 +191,7 @@ brew install claude
 ```
 
 Verify installation:
+
 ```bash
 claude --version
 ```
@@ -200,6 +204,7 @@ claude --version
 ```
 
 Verify installation:
+
 ```bash
 gemini --version
 ```
@@ -213,11 +218,13 @@ brew install codex
 ```
 
 Verify installation:
+
 ```bash
 codex --version
 ```
 
 **How it works:**
+
 - AutomatosX calls `claude`, `gemini`, or `codex` commands
 - Your CLI handles authentication (via your existing login)
 - No API keys stored in AutomatosX configuration
@@ -234,6 +241,7 @@ npx @defai.sg/automatosx status
 ```
 
 Expected output:
+
 ```
 AutomatosX Status
 -----------------
@@ -268,6 +276,7 @@ npx @defai.sg/automatosx run assistant "Say hello"
 ```
 
 Expected output:
+
 ```
 🤖 assistant: Hello! How can I help you today?
 ```
@@ -281,6 +290,7 @@ Expected output:
 **Problem**: `automatosx: command not found`
 
 **Solutions**:
+
 1. Use `npx @defai.sg/automatosx` instead of `automatosx`
 2. Install globally: `npm install -g @defai.sg/automatosx`
 3. Add `./node_modules/.bin` to your PATH
@@ -290,6 +300,7 @@ Expected output:
 **Problem**: `Provider authentication failed`
 
 **Solutions**:
+
 1. Check API key is correct (no extra spaces)
 2. Ensure provider is enabled: `--set providers.claude.enabled true`
 3. Verify API key has necessary permissions
@@ -300,6 +311,7 @@ Expected output:
 **Problem**: `EACCES: permission denied`
 
 **Solutions**:
+
 1. Don't use `sudo` (not recommended)
 2. Fix npm permissions: [docs.npmjs.com/resolving-eacces-permissions-errors](https://docs.npmjs.com/resolving-eacces-permissions-errors)
 3. Use a version manager (nvm, fnm)
@@ -309,6 +321,7 @@ Expected output:
 **Problem**: `Cannot open database`
 
 **Solutions**:
+
 1. Ensure `.automatosx` directory exists
 2. Check write permissions
 3. Re-run `automatosx init`
@@ -318,6 +331,7 @@ Expected output:
 **Problem**: `Cannot find module 'automatosx'`
 
 **Solutions**:
+
 1. Reinstall: `npm install @defai.sg/automatosx`
 2. Clear node_modules: `rm -rf node_modules && npm install`
 3. Check `package.json` includes automatosx

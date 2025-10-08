@@ -7,6 +7,7 @@ automatosx status
 ```
 
 This will show:
+
 - Installed version
 - Configuration file location
 - Available AI providers and their status

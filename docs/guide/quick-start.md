@@ -7,6 +7,7 @@ Get started with AutomatosX in under 5 minutes.
 ## What is AutomatosX?
 
 AutomatosX is an **agent execution tool** designed to run inside **Claude Code**. It allows you to:
+
 - Execute AI agents with a single command
 - Manage agent memory and context
 - Use multiple AI providers (Claude, Gemini, Codex)
@@ -78,6 +79,7 @@ automatosx init ./my-project
 ```
 
 This creates:
+
 - `.automatosx/` - Configuration and data directory
 - `automatosx.config.json` - Project configuration
 - `.automatosx/agents/` - Agent profiles (5 examples included)
@@ -96,12 +98,14 @@ automatosx run assistant "What is TypeScript?"
 ```
 
 **What happens**:
+
 1. AutomatosX loads the `assistant` agent profile
 2. Sends your prompt to the configured AI provider (Claude, Gemini, etc.)
 3. Returns the response
 4. Optionally saves the interaction to memory
 
 **Output**:
+
 ```
 🤖 AutomatosX v4.0
 
@@ -129,6 +133,7 @@ automatosx list agents
 ```
 
 Example output:
+
 ```
 Available Agents (5):
 
@@ -154,6 +159,7 @@ automatosx status
 ```
 
 Shows:
+
 - Configuration status
 - Available providers
 - Memory statistics
@@ -202,6 +208,7 @@ AutomatosX is designed to work seamlessly inside Claude Code:
 1. **You ask Claude Code**: "Can you help me understand TypeScript generics?"
 
 2. **Claude Code executes**:
+
    ```bash
    automatosx run assistant "Explain TypeScript generics with examples"
    ```
@@ -264,12 +271,14 @@ Edit `automatosx.config.json`:
 AutomatosX uses AI providers via their CLI tools:
 
 **Claude** (via Claude Code):
+
 ```bash
 # Already available in Claude Code environment
 # No additional setup needed
 ```
 
 **Gemini** (Google AI):
+
 ```bash
 # Install Gemini CLI if needed
 npm install -g @google/generative-ai
@@ -279,6 +288,7 @@ export GEMINI_API_KEY="your-api-key"
 ```
 
 **OpenAI** (for embeddings):
+
 ```bash
 # Set API key for vector search
 export OPENAI_API_KEY="your-api-key"
@@ -289,20 +299,24 @@ export OPENAI_API_KEY="your-api-key"
 ## Next Steps
 
 ### Learn Core Concepts
+
 - [Core Concepts](./core-concepts.md) - Understand agents, profiles, and abilities
 - [Configuration Guide](./configuration.md) - Deep dive into configuration options
 
 ### Tutorials
+
 - [Creating Your First Agent](../tutorials/first-agent.md)
 - [Working with Memory](../tutorials/memory-management.md)
 - [Custom Abilities](../tutorials/custom-abilities.md)
 
 ### Reference
+
 - [CLI Commands](../reference/cli-commands.md) - Complete command reference
 - [Configuration Schema](../reference/configuration-schema.md)
 - [API Documentation](../reference/api/) - For programmatic usage
 
 ### Advanced
+
 - [Vector Search Deep Dive](../tutorials/advanced-usage.md#vector-search)
 - [Multi-Provider Configuration](../tutorials/advanced-usage.md#multi-provider)
 - [Performance Optimization](../tutorials/advanced-usage.md#performance)
@@ -331,6 +345,7 @@ A: All data is stored in `.automatosx/` directory in your project root. This inc
 ## Troubleshooting
 
 **Command not found: automatosx**
+
 ```bash
 # If installed globally
 npm install -g @defai.sg/automatosx
@@ -340,6 +355,7 @@ npx @defai.sg/automatosx --version
 ```
 
 **Provider connection failed**
+
 ```bash
 # Check provider status
 automatosx status
@@ -350,6 +366,7 @@ gemini --version  # for Gemini
 ```
 
 **Memory search not working**
+
 ```bash
 # Set OpenAI API key for embeddings
 export OPENAI_API_KEY="your-key"

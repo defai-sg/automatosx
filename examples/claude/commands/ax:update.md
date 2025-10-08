@@ -7,6 +7,7 @@ automatosx update
 ```
 
 This will:
+
 1. Check for the latest version on npm
 2. Display changelog from GitHub
 3. Ask for confirmation

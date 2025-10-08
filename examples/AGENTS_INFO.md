@@ -10,38 +10,81 @@ Research shows humans remember names better than roles. Instead of remembering "
 
 ### 👥 Core Team
 
-| Name | Role | Expertise | Best For |
-|------|------|-----------|----------|
-| **Alex** | General Assistant | General purpose tasks, planning, questions | Quick questions, brainstorming, planning |
-| **Charlie** | Software Developer | Code generation, implementation | Writing new code, implementing features |
-| **Ryan** | Code Reviewer | Code review, quality assurance | PR reviews, code quality checks |
-| **Danny** | Debug Expert | Debugging, troubleshooting | Fixing bugs, error analysis |
-| **Wendy** | Technical Writer | Documentation, content creation | Writing docs, README files |
+| Name | Role | Expertise | Best For | Primary Provider | Fallback |
+|------|------|-----------|----------|------------------|----------|
+| **Alex** | General Assistant | General purpose tasks, planning, questions | Quick questions, brainstorming, planning | claude-code | router |
+| **Charlie** | Software Developer | Code generation, implementation | Writing new code, implementing features | claude-code | router |
+| **Ryan** | Code Reviewer | Code review, quality assurance | PR reviews, code quality checks | claude-code | router |
+| **Danny** | Debug Expert | Debugging, troubleshooting | Fixing bugs, error analysis | claude-code | router |
+| **Wendy** | Technical Writer | Documentation, content creation | Writing docs, README files | claude-code | router |
 
 ### 💻 Engineering
 
-| Name | Role | Expertise | Best For |
-|------|------|-----------|----------|
-| **Bob** | Backend Engineer | Server-side architecture, APIs, databases | Backend development, API design |
-| **Frank** | Frontend Developer | React, UI/UX, performance | Frontend development, components |
-| **Oliver** | DevOps Engineer | Infrastructure, CI/CD, deployment | DevOps, deployment, monitoring |
-| **Steve** | Security Engineer | Application security, threat modeling | Security review, vulnerability assessment |
-| **Queenie** | QA Engineer | Testing, quality assurance | Test planning, test automation |
+| Name | Role | Expertise | Best For | Primary Provider | Fallback |
+|------|------|-----------|----------|------------------|----------|
+| **Bob** | Backend Engineer | Server-side architecture, APIs, databases | Backend development, API design | claude | router |
+| **Frank** | Frontend Developer | React, UI/UX, performance | Frontend development, components | claude | router |
+| **Oliver** | DevOps Engineer | Infrastructure, CI/CD, deployment | DevOps, deployment, monitoring | claude | router |
+| **Steve** | Security Engineer | Application security, threat modeling | Security review, vulnerability assessment | claude | router |
+| **Queenie** | QA Engineer | Testing, quality assurance | Test planning, test automation | claude | router |
 
 ### 📊 Business & Product
 
-| Name | Role | Expertise | Best For |
-|------|------|-----------|----------|
-| **Eric** | CEO | Business strategy, vision | Strategy, business decisions |
-| **Tony** | CTO | Technology strategy, leadership | Tech strategy, architecture decisions |
-| **Paris** | Product Manager | Product strategy, user research | Product planning, feature prioritization |
-| **Daisy** | Data Scientist | Data analysis, machine learning | Analytics, ML models, insights |
+| Name | Role | Expertise | Best For | Primary Provider | Fallback |
+|------|------|-----------|----------|------------------|----------|
+| **Eric** | CEO | Business strategy, vision | Strategy, business decisions | claude | router |
+| **Tony** | CTO | Technology strategy, leadership | Tech strategy, architecture decisions | claude | router |
+| **Paris** | Product Manager | Product strategy, user research | Product planning, feature prioritization | claude | router |
+| **Daisy** | Data Scientist | Data analysis, machine learning | Analytics, ML models, insights | claude | router |
 
 ### 🎨 Design
 
-| Name | Role | Expertise | Best For |
-|------|------|-----------|----------|
-| **Debbee** | UX/UI Designer | User experience, visual design | UX design, prototyping, design systems |
+| Name | Role | Expertise | Best For | Primary Provider | Fallback |
+|------|------|-----------|----------|------------------|----------|
+| **Debbee** | UX/UI Designer | User experience, visual design | UX design, prototyping, design systems | claude | router |
+
+## Provider Configuration
+
+AutomatosX uses a **3-layer fallback system** for maximum reliability:
+
+1. **Primary Provider**: Each agent's preferred LLM provider (configured in agent YAML)
+2. **Fallback Provider**: Optional per-agent fallback (can be configured via `fallbackProvider` field)
+3. **Router Fallback**: Global provider priority order (default: codex → gemini → claude)
+
+### Current Provider Distribution
+
+| Provider | Agent Count | Agents |
+|----------|-------------|--------|
+| **claude-code** | 5 | Alex, Charlie, Ryan, Danny, Wendy |
+| **claude** | 11 | Bob, Frank, Oliver, Steve, Queenie, Eric, Tony, Paris, Daisy, Debbee, + 1 more |
+
+### Provider Selection Logic
+
+```text
+Agent Request → Try Primary Provider
+    ↓ (if fails)
+Try Fallback Provider (if configured)
+    ↓ (if fails or not configured)
+Use Router Priority (codex → gemini → claude)
+```
+
+**Example**: If Charlie (primary: `claude-code`) encounters an error:
+
+1. Try `claude-code` first
+2. No fallback configured, skip to router
+3. Router tries `codex` → `gemini` → `claude` until one succeeds
+
+### Customizing Provider Configuration
+
+You can customize provider preferences for any agent:
+
+```yaml
+# In .automatosx/agents/my-agent.yaml
+name: my-agent
+displayName: MyAgent
+provider: claude-code          # Primary provider
+fallbackProvider: codex        # Optional fallback (v4.9.5+)
+```
 
 ## Usage Examples
 
@@ -165,6 +208,7 @@ Think of AutomatosX like assembling your dream team:
 ---
 
 **Pro tip**: You can list all available agents with:
+
 ```bash
 automatosx list agents
 ```

@@ -47,6 +47,7 @@ async function fetchUser(id) {
 ```
 
 **💡 Why the good example is better:**
+
 - ✅ Type safety: `Promise<User>` ensures return type
 - ✅ Input validation: Checks for empty/invalid ID
 - ✅ Error handling: Try-catch with specific error messages
@@ -105,6 +106,7 @@ interface UserData {
 ```
 
 **💡 Best Practices:**
+
 - ✅ Use descriptive interface names (User, not UserData)
 - ✅ Document with JSDoc comments
 - ✅ Use enums for fixed values (UserRole)
@@ -218,6 +220,7 @@ class UserManager {
 ```
 
 **💡 SOLID Principles Applied:**
+
 - ✅ **S**ingle Responsibility: UserRepository (data), UserService (logic)
 - ✅ **O**pen/Closed: Extensible through interfaces
 - ✅ **L**iskov Substitution: Can swap Database implementations
@@ -358,6 +361,7 @@ class UserRepo:
 ```
 
 **💡 Python Best Practices:**
+
 - ✅ Type hints for all parameters and returns
 - ✅ Dataclasses for simple data structures
 - ✅ `__post_init__` for validation
@@ -497,6 +501,7 @@ async function getUser(id) {
 ```
 
 **💡 Error Handling Principles:**
+
 - ✅ Create custom error classes for different scenarios
 - ✅ Include context (field, value, resource, id)
 - ✅ Re-throw known errors, wrap unknown errors
@@ -689,6 +694,7 @@ router.post('/user/create', async (req, res) => {
 ```
 
 **💡 RESTful API Best Practices:**
+
 - ✅ Use proper HTTP methods (GET, POST, PATCH, DELETE)
 - ✅ Use resource-based URLs (`/users/:id`, not `/getUser`)
 - ✅ Validate all inputs with express-validator
@@ -858,6 +864,7 @@ describe('UserService', () => {
 ```
 
 **💡 Testing Best Practices:**
+
 - ✅ Use AAA pattern (Arrange, Act, Assert)
 - ✅ Test happy path AND edge cases
 - ✅ Test error conditions
@@ -967,12 +974,14 @@ function addItem<T>(array: T[], item: T): T[] {
 ### Code Generation Checklist
 
 **Type Safety:**
+
 - [ ] All function parameters have types
 - [ ] All return types are explicitly defined
 - [ ] No use of `any` or `unknown` without justification
 - [ ] Interfaces and types are well-documented
 
 **Error Handling:**
+
 - [ ] Input validation for all public functions
 - [ ] Explicit error types (custom error classes)
 - [ ] Try-catch blocks for async operations
@@ -980,6 +989,7 @@ function addItem<T>(array: T[], item: T): T[] {
 - [ ] No silent failures (always throw or log)
 
 **Testing:**
+
 - [ ] Unit tests for all public methods
 - [ ] Tests cover happy path + edge cases
 - [ ] Tests verify error conditions
@@ -987,6 +997,7 @@ function addItem<T>(array: T[], item: T): T[] {
 - [ ] Descriptive test names
 
 **Code Quality:**
+
 - [ ] Functions are small and focused (< 50 lines)
 - [ ] Descriptive variable and function names
 - [ ] JSDoc/TSDoc comments for public APIs
@@ -994,6 +1005,7 @@ function addItem<T>(array: T[], item: T): T[] {
 - [ ] Follows SOLID principles
 
 **API Design:**
+
 - [ ] RESTful URLs (resource-based)
 - [ ] Proper HTTP methods (GET, POST, PATCH, DELETE)
 - [ ] Input validation (express-validator)
@@ -1014,6 +1026,7 @@ Generating high-quality code requires:
 6. **Edge Cases** - Handle division by zero, null/undefined, empty strings, etc.
 
 **Remember:**
+
 - Code is read 10x more than written - optimize for readability
 - Fail fast, fail loudly - explicit errors over silent failures
 - Tests are documentation that never goes out of date

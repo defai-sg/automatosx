@@ -31,6 +31,7 @@ Apply industry-standard best practices across development.
 ## Development Practices
 
 ### Version Control (Git)
+
 - Commit often, push daily
 - Write meaningful commit messages
 - Use feature branches
@@ -38,6 +39,7 @@ Apply industry-standard best practices across development.
 - Keep main/master deployable
 
 ### Code Review
+
 - Review all changes
 - Be constructive and respectful
 - Check for bugs, style, design
@@ -45,6 +47,7 @@ Apply industry-standard best practices across development.
 - Approve only when ready
 
 ### Testing
+
 - Write tests first (TDD)
 - Test behavior, not implementation
 - Aim for 80%+ coverage
@@ -52,6 +55,7 @@ Apply industry-standard best practices across development.
 - Fix failing tests immediately
 
 ### Security
+
 - Never commit secrets
 - Validate all inputs
 - Use parameterized queries

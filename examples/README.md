@@ -64,6 +64,7 @@ vim .automatosx/agents/assistant.yaml
 **AutomatosX agents have human-friendly names!** 🎉
 
 Instead of remembering technical roles, you can use memorable names:
+
 - 👨‍💻 **Bob** - Backend Engineer
 - 👨‍💻 **Frank** - Frontend Developer
 - 🔒 **Steve** - Security Engineer
@@ -75,14 +76,17 @@ See [AGENTS_INFO.md](./AGENTS_INFO.md) for the complete directory.
 ## Available Agents
 
 ### assistant.yaml - Alex
+
 **Purpose**: General-purpose assistant for everyday tasks
 
 **Best for**:
+
 - Quick questions and answers
 - Information lookup
 - General help
 
 **Example**:
+
 ```bash
 # Using role name
 automatosx run assistant "What are the benefits of TypeScript?"
@@ -92,53 +96,65 @@ automatosx run Alex "What are the benefits of TypeScript?"
 ```
 
 ### coder.yaml
+
 **Purpose**: Code generation and development assistance
 
 **Best for**:
+
 - Writing new code
 - Implementing features
 - Creating boilerplate
 
 **Example**:
+
 ```bash
 automatosx run coder "Create a React component for user authentication"
 ```
 
 ### reviewer.yaml
+
 **Purpose**: Code review and quality analysis
 
 **Best for**:
+
 - Reviewing pull requests
 - Finding bugs and issues
 - Suggesting improvements
 
 **Example**:
+
 ```bash
 automatosx run reviewer "Review the code in src/components/Auth.tsx"
 ```
 
 ### debugger.yaml
+
 **Purpose**: Debugging and troubleshooting
 
 **Best for**:
+
 - Analyzing error messages
 - Finding root causes
 - Suggesting fixes
 
 **Example**:
+
 ```bash
 automatosx run debugger "Help me debug this error: TypeError: Cannot read property 'name' of undefined"
 ```
 
 ### writer.yaml
+
 **Purpose**: Technical writing and documentation
 
 **Best for**:
+
 - Writing documentation
 - Creating tutorials
 - Explaining concepts
 
 **Example**:
+
 ```bash
 automatosx run writer "Write API documentation for the User authentication module"
 ```
@@ -146,6 +162,7 @@ automatosx run writer "Write API documentation for the User authentication modul
 ## Available Abilities
 
 ### Code-Related
+
 - **code-generation.md**: Generate new code from requirements
 - **code-review.md**: Review code for quality and issues
 - **refactoring.md**: Improve existing code structure
@@ -153,16 +170,19 @@ automatosx run writer "Write API documentation for the User authentication modul
 - **testing.md**: Write and improve tests
 
 ### Analysis
+
 - **error-analysis.md**: Analyze error messages and logs
 - **performance-analysis.md**: Identify performance bottlenecks
 - **security-audit.md**: Check for security vulnerabilities
 
 ### Documentation
+
 - **documentation.md**: Write technical documentation
 - **technical-writing.md**: Create technical content
 - **content-creation.md**: Generate articles and guides
 
 ### Problem Solving
+
 - **problem-solving.md**: Break down and solve problems
 - **task-planning.md**: Plan and organize tasks
 - **troubleshooting.md**: Diagnose and fix issues
@@ -385,6 +405,7 @@ cat .automatosx/agents/my-agent.yaml
 ## Real-World Use Cases
 
 See `examples/use-cases/` for complete scenarios:
+
 - Web application development
 - API design and implementation
 - Code migration and refactoring
@@ -394,6 +415,7 @@ See `examples/use-cases/` for complete scenarios:
 ## Community Examples
 
 Share your agents and abilities:
+
 1. Fork the repository
 2. Add your examples to this directory
 3. Submit a pull request

@@ -9,6 +9,7 @@ AutomatosX is an AI agent orchestration platform that allows you to create, conf
 ### What's new in v4.0?
 
 v4.0 is a complete TypeScript rewrite with major improvements:
+
 - **87% smaller**: Bundle reduced from 340MB to <50MB
 - **SQLite + vec**: Replaced Milvus with lightweight SQLite-based vector search
 - **TypeScript**: 100% type-safe codebase
@@ -20,6 +21,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for detailed changes.
 ### Can I migrate from v3.x to v4.0?
 
 No, v4.0 requires a clean installation due to major breaking changes:
+
 - Database format changed (Milvus → SQLite)
 - Configuration format changed (YAML → JSON)
 - Directory structure changed (`.defai/` → `.automatosx/`)
@@ -30,6 +32,7 @@ No, v4.0 requires a clean installation due to major breaking changes:
 ### What AI providers are supported?
 
 AutomatosX supports:
+
 - **Claude** (Anthropic): claude-3-opus, claude-3-sonnet, claude-3-haiku
 - **Gemini** (Google): gemini-1.5-pro, gemini-1.5-flash
 - **OpenAI**: For embeddings (text-embedding-3-small/large)
@@ -88,6 +91,7 @@ automatosx run assistant "hello" --api-key "sk-ant-..."
 ### Can I use AutomatosX without API keys?
 
 No, you need at least one provider API key to use AutomatosX. However:
+
 - Gemini offers a generous free tier
 - You can use different providers for different tasks
 - Tests run with mock providers (no API needed)
@@ -97,11 +101,13 @@ No, you need at least one provider API key to use AutomatosX. However:
 ### Where should I put my config file?
 
 AutomatosX looks for config in this order:
+
 1. `.automatosx/config.json` (project-specific) ⭐ **Recommended**
 2. `automatosx.config.json` (project root)
 3. `~/.automatosx/config.json` (user global)
 
 Create project-specific config:
+
 ```bash
 automatosx init
 ```
@@ -142,6 +148,7 @@ automatosx config --reset
 - **Abilities**: Specific skills or tools agents can use (Markdown files)
 
 Example:
+
 ```yaml
 # Agent: .automatosx/agents/researcher.yaml
 name: researcher
@@ -198,6 +205,7 @@ Abilities are referenced in agent profiles and injected into prompts.
 ### Can agents access my files?
 
 Yes, but with security restrictions:
+
 - **Read access**: Validated paths within your project directory
 - **Write access**: Only to `.automatosx/workspaces/<agent-name>/`
 - **Prevented**: Path traversal attacks (`../../etc/passwd`)
@@ -209,6 +217,7 @@ This ensures agents can read your code but only write to isolated workspaces.
 ### How does the memory system work?
 
 AutomatosX stores conversation history and data in a SQLite database with vector search:
+
 - **Storage**: `.automatosx/memory.db`
 - **Vector search**: HNSW algorithm via sqlite-vec extension
 - **Embeddings**: OpenAI text-embedding-3-small (default)
@@ -258,6 +267,7 @@ rm .automatosx/memory.db
 ### Why do I need OpenAI API for memory search?
 
 Vector search requires converting text to numerical embeddings. AutomatosX uses OpenAI's embedding API by default because it's:
+
 - High quality
 - Cost-effective ($0.02 per 1M tokens)
 - Fast and reliable
@@ -269,11 +279,13 @@ You can configure a different embedding provider if needed.
 ### Why is startup slow?
 
 First run loads dependencies and initializes the database. Subsequent runs should be faster due to:
+
 - Lazy loading (on-demand module loading)
 - Filesystem caching
 - Pre-warmed configurations
 
 To warm the cache:
+
 ```bash
 automatosx status
 ```
@@ -295,6 +307,7 @@ automatosx config --set providers.claude.model --value claude-3-haiku-20240307
 ### Is there a rate limit?
 
 AutomatosX itself has no rate limits, but AI providers do:
+
 - **Claude**: 50 requests/min (tier 1), higher for paid tiers
 - **Gemini**: 60 requests/min (free), higher for paid
 - **OpenAI**: Varies by tier
@@ -316,6 +329,7 @@ See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for more solutions.
 ### `Error: database is locked`
 
 Another AutomatosX process is using the database:
+
 ```bash
 # Find and kill processes
 ps aux | grep automatosx
@@ -325,6 +339,7 @@ pkill -f automatosx
 ### Configuration not being applied
 
 Check which config file is being used:
+
 ```bash
 automatosx config  # Shows config path
 ```
@@ -334,6 +349,7 @@ Ensure you're editing the right file based on priority order.
 ### AutomatosX not working after upgrading from older version
 
 If you're experiencing errors or unexpected behavior after upgrading, it may be due to:
+
 - **Old agent profiles** (YAML format or schema changes)
 - **Outdated configuration** (incompatible settings from previous versions)
 - **Old database format** (v3.x Milvus → v4.x SQLite migration)
@@ -370,6 +386,7 @@ cp ./backup-abilities/* .automatosx/abilities/
 ### Vector search returns no results
 
 Verify memories exist and embedding provider is configured:
+
 ```bash
 automatosx memory list
 automatosx config --get providers.openai.embeddingApiKey
@@ -382,6 +399,7 @@ automatosx config --get providers.openai.embeddingApiKey
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 
 Quick start:
+
 ```bash
 git clone https://github.com/defai-sg/automatosx.git
 cd automatosx
@@ -432,6 +450,7 @@ npm test memory-manager
 ### Is my data safe?
 
 AutomatosX:
+
 - Stores data locally in `.automatosx/` directory
 - Only sends data to AI providers you configure
 - Never sends data to third parties
@@ -440,6 +459,7 @@ AutomatosX:
 ### Can agents access sensitive files?
 
 No. AutomatosX implements security boundaries:
+
 - Agents can only read files within project directory
 - Path traversal attacks are prevented
 - Agent writes are isolated to workspace directories
@@ -447,11 +467,13 @@ No. AutomatosX implements security boundaries:
 ### Should I commit `.automatosx/` to git?
 
 **No, add to .gitignore**:
+
 ```bash
 echo ".automatosx/" >> .gitignore
 ```
 
 The `.automatosx/` directory contains:
+
 - API keys (sensitive!)
 - Local database
 - Conversation history
@@ -472,6 +494,7 @@ Yes! Apache 2.0 license allows commercial use with no restrictions.
 ### Do I need to credit AutomatosX?
 
 Not required, but appreciated! You can mention:
+
 ```
 Powered by AutomatosX (https://github.com/defai-sg/automatosx)
 ```
@@ -482,5 +505,5 @@ Powered by AutomatosX (https://github.com/defai-sg/automatosx)
 
 - **GitHub Discussions**: [Ask the community](https://github.com/defai-sg/automatosx/discussions)
 - **Discord**: [Join our Discord](https://discord.gg/automatosx)
-- **Email**: support@defai.digital
+- **Email**: <support@defai.digital>
 - **Twitter**: [@automatosx](https://twitter.com/automatosx)

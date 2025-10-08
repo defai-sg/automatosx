@@ -96,16 +96,19 @@ Real-world code examples:
 ## 🚀 Quick Links
 
 **For End Users**:
+
 - [Quick Start](./guide/quick-start.md) - Get up and running in 5 minutes
 - [CLI Commands](./reference/cli-commands.md) - Complete command reference
 - [Core Concepts](./guide/core-concepts.md) - Understand the basics
 
 **For Developers**:
+
 - [Contributing Guide](../CONTRIBUTING.md) - Contribute to AutomatosX
 - [Development Setup](../CONTRIBUTING.md#development-setup) - Local development
 - [API Reference](./reference/api/) - Programmatic usage
 
 **For Claude Code Users**:
+
 - [Claude Code Integration](./guide/claude-code-integration.md) (coming soon)
 - [Best Practices](./guide/best-practices.md) (coming soon)
 
@@ -191,6 +194,7 @@ See [CLI Commands Reference](./reference/cli-commands.md) for complete documenta
 ## 🤝 Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](../CONTRIBUTING.md) for:
+
 - Development setup
 - Code style guidelines
 - Testing requirements

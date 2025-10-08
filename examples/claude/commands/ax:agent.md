@@ -8,6 +8,7 @@ Execute an AutomatosX agent with a specific task.
 4. Execute: `automatosx run <agent> "<task>"`
 
 **Parsing Rules**:
+
 ```
 Input: /ax:agent assistant, explain quantum computing
 ↓

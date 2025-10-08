@@ -54,6 +54,7 @@ npm test e2e
 **File**: `tests/e2e/complete-workflow.test.ts`
 
 **Scenarios Tested**:
+
 - Project initialization
 - Configuration management
 - Agent creation and execution
@@ -62,6 +63,7 @@ npm test e2e
 - Export/import functionality
 
 **Example**:
+
 ```typescript
 describe('Complete Workflow', () => {
   it('should complete full user journey', async () => {
@@ -90,11 +92,13 @@ describe('Complete Workflow', () => {
 ### 2. Error Handling Test
 
 **Validates**:
+
 - Graceful failure on invalid input
 - Clear error messages
 - Proper exit codes
 
 **Example**:
+
 ```typescript
 it('should handle errors gracefully', async () => {
   // Invalid command
@@ -112,11 +116,13 @@ it('should handle errors gracefully', async () => {
 ### 3. Provider Fallback Test
 
 **Validates**:
+
 - Automatic fallback when primary provider fails
 - Correct provider selection
 - Retry logic
 
 **Example**:
+
 ```typescript
 it('should fallback to secondary provider', async () => {
   // Configure primary (invalid key) and fallback
@@ -283,6 +289,7 @@ E2E tests should complete within:
 - **Single test**: 5 seconds (mock), 20 seconds (real)
 
 If tests are slower, investigate:
+
 - Unnecessary waits/sleeps
 - Network timeouts
 - Large file operations
@@ -291,6 +298,7 @@ If tests are slower, investigate:
 ## Continuous Integration
 
 E2E tests run automatically on:
+
 - Pull requests
 - Commits to main branch
 - Release tags
@@ -395,8 +403,10 @@ Example report:
 **Mode**: Real providers (Claude)
 **Error**:
 ```
+
 Error: Request timeout after 30000ms
 at completeWorkflow.test.ts:45
+
 ```
 **Steps**:
 1. Run `npm test e2e -- --grep "complete workflow"`

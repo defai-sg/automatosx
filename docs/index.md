@@ -99,6 +99,7 @@ npx @defai.sg/automatosx init
 ```
 
 This creates:
+
 - `.automatosx/config.json` - Configuration
 - `.automatosx/agents/` - Agent profiles
 - `.automatosx/abilities/` - Custom abilities

@@ -36,6 +36,7 @@ Write clear, concise technical documentation.
 ## Document Types
 
 ### API Documentation
+
 ```
 ## Function Name
 
@@ -58,6 +59,7 @@ code example
 ```
 
 ### Tutorial
+
 1. **Introduction**: What you'll build/learn
 2. **Prerequisites**: What's needed before starting
 3. **Step-by-step instructions**: Numbered, detailed
@@ -65,6 +67,7 @@ code example
 5. **Next steps**: Where to go from here
 
 ### README
+
 1. **Project name and description**
 2. **Installation instructions**
 3. **Quick start example**

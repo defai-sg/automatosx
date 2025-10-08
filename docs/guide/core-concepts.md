@@ -22,6 +22,7 @@ AutomatosX is built around a few core concepts:
 ### What is an Agent?
 
 An **agent** is an AI entity configured to perform specific tasks. Each agent has:
+
 - A **role** (assistant, coder, reviewer, etc.)
 - A **system prompt** that defines its behavior
 - A set of **abilities** it can use
@@ -31,6 +32,7 @@ An **agent** is an AI entity configured to perform specific tasks. Each agent ha
 ### Agent Characteristics
 
 **Single-Purpose**: Each agent is designed for a specific task
+
 - ✅ `assistant` - General help and conversation
 - ✅ `coder` - Code generation and refactoring
 - ✅ `reviewer` - Code review and analysis
@@ -38,11 +40,13 @@ An **agent** is an AI entity configured to perform specific tasks. Each agent ha
 - ✅ `writer` - Content creation and editing
 
 **Stateless Execution**: Each run is independent
+
 - Agents don't maintain state between runs
 - Use **memory** for persistence
 - Each execution starts fresh
 
 **Provider-Backed**: Agents use AI providers for intelligence
+
 - Claude (Anthropic) - Best for reasoning and code
 - Gemini (Google) - Fast and versatile
 - OpenAI - For embeddings and specialized tasks
@@ -96,27 +100,32 @@ execution:
 ### Key Components
 
 **Basic Info**:
+
 - `name` - Unique identifier for the agent
 - `version` - Profile version (for tracking changes)
 - `description` - What the agent does
 
 **Model Settings**:
+
 - `provider` - Which AI service to use
 - `name` - Specific model name
 - `temperature` - Creativity (0.0-1.0)
 - `maxTokens` - Response length limit
 
 **System Prompt**:
+
 - Defines agent's personality and behavior
 - Instructions for how to respond
 - Guidelines and constraints
 
 **Abilities**:
+
 - List of skills the agent can use
 - Loaded from `.automatosx/abilities/`
 - Injected into agent's context
 
 **Memory**:
+
 - Whether to use memory system
 - How many past interactions to include
 - Context window size
@@ -180,6 +189,7 @@ results.forEach(r => {
 2. Limit results to what you need
 3. Handle errors gracefully
 4. Cache results when possible
+
 ```
 
 ### Why Abilities?
@@ -199,6 +209,7 @@ abilities:
 ```
 
 **Modularity**: Easy to add/remove capabilities
+
 ```yaml
 # Before
 abilities:
@@ -211,6 +222,7 @@ abilities:
 ```
 
 **Documentation**: Built-in usage examples
+
 - Clear API documentation
 - Parameter specifications
 - Error handling guidelines
@@ -226,6 +238,7 @@ abilities:
 ### Memory Types
 
 **Text Memory**: Store and retrieve by keywords
+
 ```bash
 # Add a memory
 automatosx memory add "TypeScript is a typed superset of JavaScript" \
@@ -237,6 +250,7 @@ automatosx memory list --tags typescript
 ```
 
 **Vector Memory**: Semantic search using embeddings
+
 ```bash
 # Search by meaning (requires OpenAI API key)
 automatosx memory search "What are the benefits of static typing?"
@@ -250,6 +264,7 @@ automatosx memory search "What are the benefits of static typing?"
 ### Memory Structure
 
 Each memory entry contains:
+
 ```javascript
 {
   id: 1,
@@ -270,12 +285,14 @@ Each memory entry contains:
 ### Memory in Agent Context
 
 When an agent runs with memory enabled:
+
 1. AutomatosX searches for relevant past interactions
 2. Top N most relevant memories are loaded
 3. Memories are injected into agent's context
 4. Agent uses past knowledge to inform response
 
 Example:
+
 ```yaml
 # agent profile
 memory:
@@ -302,16 +319,19 @@ A **provider** is an AI service backend that powers agents.
 ### Supported Providers
 
 **Claude** (Anthropic):
+
 - Best for: Reasoning, code generation, long context
 - CLI uses latest available model automatically
 - Access: Via `claude` CLI command
 
 **Gemini** (Google):
+
 - Best for: Fast responses, multimodal tasks
 - CLI uses latest available model automatically
 - Access: Via `gemini` CLI command
 
 **Codex**:
+
 - Best for: Planning and code generation
 - CLI uses latest available model automatically
 - Access: Via `codex` CLI command
@@ -340,18 +360,21 @@ A **provider** is an AI service backend that powers agents.
 ### Provider Selection
 
 **Automatic**: Based on priority
+
 ```bash
 # Uses highest priority enabled provider
 automatosx run assistant "Hello"
 ```
 
 **Manual Override**: Specify provider
+
 ```bash
 # Force use of Gemini
 automatosx run assistant "Hello" --provider gemini
 ```
 
 **Fallback**: If provider fails
+
 ```
 1. Try claude-code (priority 1)
    ↓ (fails)
@@ -371,12 +394,14 @@ A **workspace** is an isolated directory where an agent can write files.
 ### Security Model
 
 **Read Access**: Agents can read from:
+
 - ✅ Project root (validated paths)
 - ✅ User-specified files
 - ❌ System files (blocked)
 - ❌ Parent directories via `../` (blocked)
 
 **Write Access**: Agents can only write to:
+
 - ✅ Their workspace: `.automatosx/workspaces/<agent-name>/`
 - ❌ Project files (blocked)
 - ❌ System files (blocked)
@@ -399,6 +424,7 @@ A **workspace** is an isolated directory where an agent can write files.
 ### Why Workspaces?
 
 **Safety**: Prevent accidental overwrites
+
 ```bash
 # Agent can't do this
 rm -rf /important-files
@@ -408,6 +434,7 @@ echo "notes" > .automatosx/workspaces/assistant/notes.txt
 ```
 
 **Isolation**: Each agent has its own space
+
 ```bash
 # coder writes here
 .automatosx/workspaces/coder/output.ts
@@ -419,6 +446,7 @@ echo "notes" > .automatosx/workspaces/assistant/notes.txt
 ```
 
 **Cleanup**: Easy to clean up agent outputs
+
 ```bash
 # Remove all agent outputs
 rm -rf .automatosx/workspaces/*
@@ -434,11 +462,13 @@ rm -rf .automatosx/workspaces/coder/
 ### Example Flow
 
 1. **User Request** (via Claude Code):
+
    ```
    "Can you help me refactor this code?"
    ```
 
 2. **Claude Code Executes**:
+
    ```bash
    automatosx run coder "Refactor the login function for better readability"
    ```
@@ -482,12 +512,14 @@ User → Claude Code → AutomatosX → AI Provider
 ### Agent Design
 
 **Do**:
+
 - ✅ Create specialized agents for specific tasks
 - ✅ Write clear, detailed system prompts
 - ✅ Use temperature 0.3-0.7 for focused tasks
 - ✅ Enable memory for context-aware responses
 
 **Don't**:
+
 - ❌ Create generic "do everything" agents
 - ❌ Use vague system prompts
 - ❌ Set temperature too high (> 0.9) for code tasks
@@ -496,12 +528,14 @@ User → Claude Code → AutomatosX → AI Provider
 ### Ability Design
 
 **Do**:
+
 - ✅ Document parameters clearly
 - ✅ Provide usage examples
 - ✅ Include error handling
 - ✅ Keep abilities focused (single responsibility)
 
 **Don't**:
+
 - ❌ Create overlapping abilities
 - ❌ Mix multiple concerns in one ability
 - ❌ Forget to document edge cases
@@ -509,12 +543,14 @@ User → Claude Code → AutomatosX → AI Provider
 ### Memory Usage
 
 **Do**:
+
 - ✅ Tag memories for easy retrieval
 - ✅ Use descriptive content
 - ✅ Clean up old memories periodically
 - ✅ Export/backup important memories
 
 **Don't**:
+
 - ❌ Store sensitive information
 - ❌ Let memory grow unbounded
 - ❌ Forget to set up OpenAI key for search

@@ -69,24 +69,28 @@ Create engaging, informative content for various audiences.
 ## Writing Tips
 
 **Clarity:**
+
 - Use simple words
 - Short sentences
 - Active voice
 - Concrete examples
 
 **Engagement:**
+
 - Hook readers early
 - Use stories and examples
 - Ask questions
 - Vary sentence length
 
 **Structure:**
+
 - Clear headings
 - Logical progression
 - Bullet points for lists
 - White space for readability
 
 **Credibility:**
+
 - Cite sources
 - Use data and statistics
 - Show expertise

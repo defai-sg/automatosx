@@ -9,6 +9,7 @@
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](#production-ready-toolkit)
 
 **Teams and solo builders choose AutomatosX because:**
+
 - 🎯 **Keeps people aligned, not just code moving** – track roadmaps, builds, and launch tasks in one place
 - 🛡️ **Protects quality across the whole release** – built-in guardrails for tests, docs, compliance, approvals
 - ⚡ **Shortens idea-to-impact gap** – organized workflows mean faster onboarding, tighter handoffs, confident timelines
@@ -21,10 +22,12 @@
 ## 📣 What's New
 
 For detailed release notes, new features, and upgrade instructions, see:
+
 - 📋 **[Release Notes](https://github.com/defai-sg/automatosx/releases)** - Latest updates and changes
 - 📝 **[Changelog](CHANGELOG.md)** - Complete version history
 
 **Quick Install:**
+
 ```bash
 npm install -g @defai.sg/automatosx
 ```
@@ -38,6 +41,7 @@ npm install -g @defai.sg/automatosx
 Building software is easy. **Shipping it reliably is hard.**
 
 Your team faces:
+
 - **Context chaos**: Marketing doesn't know what's shipping next week. Sales asks "who owns this?" Nobody remembers what was decided.
 - **Quality gaps**: Deadlines loom. Release notes go stale. Compliance updates get skipped. Tests aren't run.
 - **Handoff friction**: New contributors ask the same questions. Cross-team work stalls. Executives lose confidence in timelines.
@@ -65,6 +69,7 @@ automatosx memory search "What did sales promise Customer #1234?"
 ```
 
 **Every agent has:**
+
 - 🧠 **Persistent memory** – recalls every decision, deadline, and dependency
 - 🎭 **Defined roles** – researcher, coder, reviewer, tester, writer (no context-switching)
 - 🔒 **Workspace isolation** – agents work independently without colliding
@@ -83,12 +88,14 @@ automatosx memory search "What did sales promise Customer #1234?"
 ### "Why not just use Claude Code or ChatGPT?"
 
 **Claude Code / ChatGPT**: Brilliant for answering quick questions or generating snippets. But they can't:
+
 - Track who approved the launch plan
 - Remind you the release checklist is incomplete
 - Coordinate work across product, engineering, and marketing
 - Remember context from last quarter's sprint
 
 **AutomatosX**: Built for **shipping outcomes, not just code**. It's the glue that:
+
 - Keeps teams aligned on what's shipping and when
 - Enforces quality gates (tests, docs, compliance) automatically
 - Turns scattered tribal knowledge into dependable workflows
@@ -101,18 +108,21 @@ automatosx memory search "What did sales promise Customer #1234?"
 ## What You Can Build in Minutes
 
 ### 🔍 Research Assistant
+
 ```bash
 automatosx run researcher "Analyze the top 5 TypeScript frameworks in 2025"
 # → Searches web, summarizes findings, cites sources
 ```
 
 ### 🚨 On-Call Incident Bot
+
 ```bash
 automatosx run oncall "Check error logs from the last hour"
 # → Scans logs, identifies critical errors, auto-creates tickets
 ```
 
 ### 💬 Customer Support Copilot
+
 ```bash
 automatosx chat support
 > "What did Customer #1234 ask about last week?"
@@ -120,6 +130,7 @@ automatosx chat support
 ```
 
 ### 🔄 Batch Processing with Fallbacks
+
 ```bash
 automatosx run batch-analyzer "Process all user feedback from Q3"
 # → Tries Claude → falls back to Gemini if rate-limited → exports results
@@ -132,6 +143,7 @@ See `examples/` for ready-to-run agent profiles.
 ## Quick Start (< 2 minutes)
 
 ### 1. Install
+
 ```bash
 npm install -g @defai.sg/automatosx
 # or run without installing
@@ -139,6 +151,7 @@ npx @defai.sg/automatosx --help
 ```
 
 ### 2. Setup Provider CLI (one-time)
+
 AutomatosX uses your installed CLI tools—**no API keys needed**:
 
 ```bash
@@ -155,12 +168,14 @@ brew install claude
 AutomatosX will automatically detect and use your installed CLIs.
 
 ### 3. Run your first agent
+
 ```bash
 automatosx run assistant "Explain quantum computing in 3 sentences"
 # AutomatosX calls your installed claude/gemini/codex CLI under the hood
 ```
 
 **That's it!** Now explore:
+
 ```bash
 automatosx list agents              # See available agents
 automatosx chat assistant           # Interactive mode
@@ -216,6 +231,7 @@ automatosx run coordinator "Build authentication feature"
 ```
 
 **Supported delegation syntaxes:**
+
 - `@frontend Create login UI` - Concise mention
 - `DELEGATE TO backend: Implement API` - Explicit command
 - `Please ask database to design schema` - Natural request
@@ -223,6 +239,7 @@ automatosx run coordinator "Build authentication feature"
 - `請 frontend 建立 UI` - Chinese support
 
 **Safety features:**
+
 - ✅ Autonomous collaboration (no whitelists needed)
 - ✅ Cycle detection prevents infinite loops
 - ✅ Depth limits control delegation chains (default: 3)
@@ -241,7 +258,7 @@ Strict TypeScript, CLI ergonomics, and rich docs unblock contributors quickly.
 
 ```bash
 npm run dev -- run assistant "test"  # Dev mode with hot reload
-npm test                              # 922 tests with Vitest
+npm test                              # 994 tests with Vitest
 npm run typecheck                     # Strict TS validation
 ```
 
@@ -249,7 +266,7 @@ npm run typecheck                     # Strict TS validation
 
 ## Architecture at a Glance
 
-```
+```text
 automatosx/
 ├── src/
 │   ├── core/        # config, routing, memory, path resolution
@@ -257,9 +274,9 @@ automatosx/
 │   ├── providers/   # Claude, Gemini, Codex adapters
 │   └── utils/       # logger, performance tracking
 ├── tests/
-│   ├── unit/        # 892 tests (core modules)
+│   ├── unit/        # 928 tests (core modules)
 │   ├── integration/ # 66 tests (CLI commands)
-│   └── e2e/         # 28 tests (complete workflows)
+│   └── e2e/         # Complete workflows
 ├── docs/            # guides, references, troubleshooting
 └── examples/        # agent profiles and abilities
 ```
@@ -278,6 +295,7 @@ Strict mode TypeScript + Vitest ensures every module is covered before it ships.
 | Tests passing | 512 | 986 | **93% ↑** |
 
 **Run the essentials:**
+
 ```bash
 npm run build          # Bundle via tsup into dist/
 npm test               # All test suites
@@ -323,6 +341,7 @@ Full CLI reference: `docs/reference/cli-commands.md`
 ## Real-World Examples
 
 ### Research Pipeline
+
 ```bash
 # 1. Define researcher agent
 cat > .automatosx/agents/researcher.yaml <<EOF
@@ -339,6 +358,7 @@ automatosx memory search "session storage comparison"
 ```
 
 ### CI/CD Integration
+
 ```yaml
 # .github/workflows/code-review.yml
 - name: AI Code Review
@@ -347,6 +367,7 @@ automatosx memory search "session storage comparison"
 ```
 
 ### Cron Job Monitoring
+
 ```bash
 # Monitor logs every hour
 0 * * * * automatosx run oncall "Check last hour logs for errors" | mail -s "Hourly Report" team@company.com
@@ -363,6 +384,7 @@ AutomatosX uses JSON configuration with priority order:
 3. `~/.automatosx/config.json` (user global)
 
 **Example configuration:**
+
 ```json
 {
   "$schema": "https://automatosx.com/schema/config.json",
@@ -387,6 +409,7 @@ AutomatosX uses JSON configuration with priority order:
 ```
 
 **How it works:**
+
 - AutomatosX calls your installed CLI commands (`claude`, `gemini`, `codex`)
 - Each CLI uses its own default model (you can override via CLI config if needed)
 - No need to specify model versions—CLIs auto-update to latest models
@@ -403,8 +426,8 @@ AutomatosX uses JSON configuration with priority order:
 - **Troubleshooting**: `TROUBLESHOOTING.md`
 - **Issues**: [GitHub Issues](https://github.com/defai-sg/automatosx/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/defai-sg/automatosx/discussions)
-- **npm**: https://www.npmjs.com/package/@defai.sg/automatosx
-- **Website**: https://automatosx.com
+- **npm**: <https://www.npmjs.com/package/@defai.sg/automatosx>
+- **Website**: <https://automatosx.com>
 
 ---
 
@@ -413,6 +436,7 @@ AutomatosX uses JSON configuration with priority order:
 ⚠️ **No automatic migration path** – v4.0 requires clean installation due to fundamental architectural changes.
 
 **Key changes:**
+
 - Vector DB: Milvus → SQLite + vec
 - Language: JavaScript → TypeScript
 - Config: `.defai/` → `.automatosx/`, YAML → JSON
@@ -432,6 +456,7 @@ We welcome contributions! Please:
 4. Update docs when changing architecture or APIs
 
 **Development setup:**
+
 ```bash
 git clone https://github.com/defai-sg/automatosx.git
 cd automatosx
@@ -450,4 +475,4 @@ Apache License 2.0 — see [LICENSE](LICENSE) for details.
 
 **Built by the DEFAI team for practitioners who ship agents, not demos.**
 
-*Need enterprise support, custom integrations, or SLA guarantees? Contact us at support@defai.digital*
+*Need enterprise support, custom integrations, or SLA guarantees? Contact us at <support@defai.digital>*

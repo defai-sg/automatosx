@@ -7,6 +7,7 @@
 ### Type Safety (Strict Mode)
 
 **Always use strict TypeScript:**
+
 ```typescript
 // tsconfig.json enforces:
 // - strict: true
@@ -16,6 +17,7 @@
 ```
 
 **Type annotations:**
+
 ```typescript
 // ✅ Good: Explicit types for public APIs
 export function loadProfile(name: string): Promise<AgentProfile> {
@@ -34,6 +36,7 @@ function process(data: any) { } // Never use any!
 ### Error Handling
 
 **Use custom error classes:**
+
 ```typescript
 // ✅ Good: Typed errors from utils/errors.ts
 import { AgentValidationError, PathError } from '../utils/errors.js';
@@ -51,6 +54,7 @@ throw new Error('Something went wrong'); // Too vague
 ```
 
 **Error context:**
+
 ```typescript
 // ✅ Good: Include context
 try {
@@ -68,6 +72,7 @@ try {
 ### Module System
 
 **ESM with .js extensions:**
+
 ```typescript
 // ✅ Good: .js extension in imports (required for ESM)
 import { PathResolver } from '../core/path-resolver.js';
@@ -80,6 +85,7 @@ import { PathResolver } from '../core/path-resolver'; // Won't work
 ### File Organization
 
 **Directory structure:**
+
 ```
 src/
 ├── core/           # Core modules (Router, PathResolver, MemoryManager)
@@ -91,6 +97,7 @@ src/
 ```
 
 **File naming:**
+
 - Use kebab-case: `path-resolver.ts`, `memory-manager.ts`
 - Types: `agent.ts`, `provider.ts` (no -types suffix)
 - Tests: `path-resolver.test.ts` (co-located with source)
@@ -100,6 +107,7 @@ src/
 ### Function Size
 
 **Keep functions small (<50 lines):**
+
 ```typescript
 // ✅ Good: Small, focused function
 private buildPrompt(context: ExecutionContext): string {
@@ -126,6 +134,7 @@ private buildStagesSection(stages: Stage[]): string {
 ### Naming Conventions
 
 **Variables and functions:**
+
 ```typescript
 // ✅ Good: Descriptive names
 const profilePath = join(profilesDir, `${name}.yaml`);
@@ -137,6 +146,7 @@ async function resolve(x: string): Promise<string> { }
 ```
 
 **Classes:**
+
 ```typescript
 // ✅ Good: PascalCase, descriptive
 export class PathResolver { }
@@ -150,6 +160,7 @@ export class PM { }      // Unclear
 ### Comments and Documentation
 
 **JSDoc for public APIs:**
+
 ```typescript
 /**
  * Load agent profile from YAML file
@@ -165,6 +176,7 @@ async loadProfile(name: string): Promise<AgentProfile> {
 ```
 
 **Inline comments for complex logic:**
+
 ```typescript
 // Security: Validate path to prevent traversal attacks
 const resolvedPath = resolve(userPath);
@@ -178,6 +190,7 @@ if (!resolvedPath.startsWith(projectRoot)) {
 ### Path Validation
 
 **Always use PathResolver:**
+
 ```typescript
 // ✅ Good: Use PathResolver for all file access
 import { PathResolver } from '../core/path-resolver.js';
@@ -192,6 +205,7 @@ const path = join(projectRoot, userInput); // Unsafe!
 ### Input Sanitization
 
 **Sanitize user inputs:**
+
 ```typescript
 // ✅ Good: Sanitize before using in file system
 const agentDirName = agentName
@@ -202,6 +216,7 @@ const workspace = join(projectRoot, '.automatosx', 'workspaces', agentDirName);
 ```
 
 **File size limits:**
+
 ```typescript
 // ✅ Good: Prevent DoS with size limits
 if (content.length > 100 * 1024) {
@@ -212,6 +227,7 @@ if (content.length > 100 * 1024) {
 ### Permissions
 
 **Restrictive permissions on Unix:**
+
 ```typescript
 // ✅ Good: Restrict workspace permissions
 if (process.platform !== 'win32') {
@@ -224,6 +240,7 @@ if (process.platform !== 'win32') {
 ### Test Structure
 
 **Use Vitest with describe/it:**
+
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
 
@@ -259,6 +276,7 @@ describe('PathResolver', () => {
 ### Use Structured Logging
 
 **Always use logger from utils/logger:**
+
 ```typescript
 import { logger } from '../utils/logger.js';
 
@@ -290,6 +308,7 @@ console.log('Profile loaded'); // No structure, no context
 ### Lazy Loading
 
 **Defer expensive operations:**
+
 ```typescript
 // ✅ Good: Lazy load heavy dependencies
 async executeTask() {
@@ -301,6 +320,7 @@ async executeTask() {
 ### Caching
 
 **Use TTLCache for expensive operations:**
+
 ```typescript
 // ✅ Good: Cache profiles with TTL
 this.cache = new TTLCache<AgentProfile>({
@@ -313,6 +333,7 @@ this.cache = new TTLCache<AgentProfile>({
 ### Bundle Size
 
 **Target: <250KB**
+
 - Current: 205KB ✅
 - Avoid large dependencies
 - Use tree-shaking friendly imports

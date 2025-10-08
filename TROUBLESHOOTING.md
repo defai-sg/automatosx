@@ -3,6 +3,7 @@
 This guide helps you resolve common issues when using AutomatosX.
 
 ## Table of Contents
+
 - [Installation Issues](#installation-issues)
 - [Configuration Problems](#configuration-problems)
 - [Memory System Issues](#memory-system-issues)
@@ -20,6 +21,7 @@ This guide helps you resolve common issues when using AutomatosX.
 **Symptom**: Installation fails with error about Node.js version
 
 **Solution**:
+
 ```bash
 # Check your Node version
 node --version
@@ -39,6 +41,7 @@ n 20
 **Symptom**: `better-sqlite3` or `sqlite-vec` fails to compile
 
 **Solution**:
+
 ```bash
 # On macOS
 xcode-select --install
@@ -60,6 +63,7 @@ npm install
 **Symptom**: `EACCES: permission denied` when running `npm install -g`
 
 **Solution**:
+
 ```bash
 # Option 1: Use npx (recommended)
 npx automatosx --help
@@ -83,6 +87,7 @@ npm install -g automatosx
 **Symptom**: `Configuration file not found`
 
 **Solution**:
+
 ```bash
 # Initialize configuration in your project
 automatosx init
@@ -107,6 +112,7 @@ EOF
 **Symptom**: `Invalid API key` or `401 Unauthorized`
 
 **Solution**:
+
 ```bash
 # Check your API key is set
 automatosx config --get providers.claude.apiKey
@@ -125,11 +131,13 @@ export OPENAI_API_KEY="sk-..."
 **Issue**: Config from wrong location is being used
 
 **Explanation**: AutomatosX loads config in this priority order:
+
 1. `.automatosx/config.json` (project-specific)
 2. `automatosx.config.json` (project root)
 3. `~/.automatosx/config.json` (user global)
 
 **Solution**:
+
 ```bash
 # Check which config file is being used
 automatosx config
@@ -147,6 +155,7 @@ automatosx run assistant "hello" --config /path/to/config.json
 **Symptom**: `Error: database is locked`
 
 **Solution**:
+
 ```bash
 # Check for other AutomatosX processes
 ps aux | grep automatosx
@@ -165,6 +174,7 @@ automatosx memory list  # Will recreate database
 **Symptom**: Memory search returns empty results despite having data
 
 **Solution**:
+
 ```bash
 # Check if memories exist
 automatosx memory list
@@ -183,6 +193,7 @@ automatosx memory import --input backup.json
 **Symptom**: Export or import command fails with validation errors
 
 **Solution**:
+
 ```bash
 # Export with validation disabled (not recommended)
 automatosx memory export --output backup.json --no-validate
@@ -204,6 +215,7 @@ automatosx memory import --input backup.json --validate
 **Error**: `overloaded_error` or `rate_limit_error`
 
 **Solution**:
+
 ```bash
 # Wait and retry (AutomatosX has built-in retry logic)
 # Or reduce request rate by adjusting config
@@ -215,6 +227,7 @@ automatosx config --set providers.claude.retryDelay --value 2000
 **Error**: `context_length_exceeded`
 
 **Solution**:
+
 ```bash
 # Use a model with larger context window
 automatosx config --set providers.claude.model --value claude-3-opus-20240229
@@ -230,6 +243,7 @@ automatosx config --set providers.claude.model --value claude-3-opus-20240229
 **Error**: `RESOURCE_EXHAUSTED`
 
 **Solution**:
+
 ```bash
 # Gemini has aggressive rate limits on free tier
 # Use exponential backoff (already built in)
@@ -244,6 +258,7 @@ automatosx config --set providers.preferred --value claude
 **Symptom**: Wrong provider is being used
 
 **Solution**:
+
 ```bash
 # Check provider configuration
 automatosx config --list | grep -A 20 "Providers"
@@ -264,6 +279,7 @@ automatosx run assistant "hello" --provider claude
 **Symptom**: `Agent profile not found: <name>`
 
 **Solution**:
+
 ```bash
 # List available agents
 automatosx list agents
@@ -284,6 +300,7 @@ cat .automatosx/agents/assistant.yaml
 **Symptom**: Agent cannot find abilities
 
 **Solution**:
+
 ```bash
 # List available abilities
 automatosx list abilities
@@ -300,6 +317,7 @@ ls -la .automatosx/abilities/
 **Symptom**: `Error: Execution timeout`
 
 **Solution**:
+
 ```bash
 # Increase timeout in agent profile
 cat > .automatosx/agents/assistant.yaml << EOF
@@ -320,6 +338,7 @@ automatosx config --set agents.defaultTimeout --value 300000
 **Symptom**: `Path outside project boundary` or `Invalid path`
 
 **Solution**:
+
 ```bash
 # AutomatosX prevents path traversal for security
 # Paths must be within project directory
@@ -343,6 +362,7 @@ automatosx run assistant "analyze ../../etc/passwd"  # ❌ Path traversal
 **Issue**: CLI takes long to start
 
 **Solution**:
+
 ```bash
 # Enable lazy loading (should be default)
 automatosx config --set performance.lazyLoad --value true
@@ -359,6 +379,7 @@ automatosx config --get performance.cache.enabled
 **Issue**: AutomatosX uses too much RAM
 
 **Solution**:
+
 ```bash
 # Reduce cache size
 automatosx config --set performance.cache.maxSize --value 50
@@ -376,6 +397,7 @@ automatosx memory list
 **Issue**: Memory search takes too long
 
 **Solution**:
+
 ```bash
 # Check database size
 ls -lh .automatosx/memory.db
@@ -408,6 +430,7 @@ automatosx memory import --input backup.json
 **Cause**: Insufficient permissions or missing directory
 
 **Solution**:
+
 ```bash
 # Check directory permissions
 ls -la .automatosx
@@ -426,6 +449,7 @@ automatosx memory list
 **Cause**: Invalid JSON in config file
 
 **Solution**:
+
 ```bash
 # Validate JSON syntax
 cat .automatosx/config.json | jq .
@@ -439,6 +463,7 @@ automatosx config --reset
 **Cause**: Dependencies not installed properly
 
 **Solution**:
+
 ```bash
 # Reinstall dependencies
 rm -rf node_modules package-lock.json
@@ -466,11 +491,13 @@ If your issue is not covered here:
 2. **Search Issues**: Check [GitHub Issues](https://github.com/defai-sg/automatosx/issues)
 
 3. **Enable Debug Logging**:
+
    ```bash
    automatosx run assistant "hello" --debug
    ```
 
 4. **Get System Info**:
+
    ```bash
    automatosx status
    node --version

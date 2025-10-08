@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
-**Natural Language Delegation Parser - Whitespace Handling**
+#### Natural Language Delegation Parser - Whitespace Handling
+
 - **Fixed**: Regex patterns now correctly handle indented delegation syntax
 - **Issue**: Multi-line delegations with indentation were incorrectly parsed as single delegation
 - **Solution**: Added `\s*` to lookahead assertions to match optional whitespace after newlines
@@ -19,7 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔧 Improvements
 
-**Enhanced Delegation Pattern Robustness**
+#### Enhanced Delegation Pattern Robustness
+
 - **Improved**: Lookahead assertions in all regex patterns (DELEGATE TO, @agent, Please/Request, I need/require, Chinese patterns)
 - **Flexibility**: Now supports mixed formatting styles (no indentation, tabs, spaces)
 - **Reliability**: Correctly separates multiple delegations regardless of formatting
@@ -28,7 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ Features
 
-**Intelligent Per-Agent Provider Fallback**
+#### Intelligent Per-Agent Provider Fallback
+
 - **Added**: `fallbackProvider` field in AgentProfile for per-agent fallback configuration
 - **3-Layer Fallback**: Primary provider → Fallback provider → Router (global priority)
 - **Strategic Distribution**: 17 agents configured with optimal provider assignments
@@ -39,7 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - General agent (1): Gemini primary → Claude fallback
 - **Claude as Safety Net**: Claude set as global priority 3 (final fallback) to ensure reliable backup
 
-**Provider Renaming: OpenAI → Codex**
+#### Provider Renaming: OpenAI → Codex
+
 - **Changed**: OpenAIProvider renamed to match actual CLI tool (`codex`)
 - **Updated**: Provider name from `openai` to `codex` throughout codebase
 - **Configuration**: Updated default config to use `command: codex`
@@ -47,19 +51,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔧 Improvements
 
-**Enhanced Context Manager**
+#### Enhanced Context Manager
+
 - **Updated**: `selectProvider()` now supports 3-layer fallback logic
 - **Logging**: Added detailed logging for provider selection (primary/fallback/router)
 - **Graceful Degradation**: System continues working even if preferred provider unavailable
 
-**Global Provider Priority Update**
+#### Global Provider Priority Update
+
 - **Changed**: Provider priority order: Codex (1) → Gemini (2) → Claude (3)
 - **Rationale**: Claude as lowest priority ensures it's the final reliable fallback
 - **Benefits**: Optimizes cost and performance while maintaining reliability
 
 ### 📚 Documentation
 
-**Comprehensive Documentation Updates**
+#### Comprehensive Documentation Updates
+
 - **Updated**: README.md, CLAUDE.md with new provider information
 - **Updated**: All docs (installation.md, core-concepts.md, quick-start.md)
 - **Updated**: FAQ.md with Codex CLI information
@@ -67,7 +74,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Technical Changes
 
-**Provider System Refactoring**
+#### Provider System Refactoring
+
 - **Modified**: `src/providers/openai-provider.ts` - getter returns 'codex'
 - **Modified**: `src/cli/commands/run.ts` - provider initialization uses name: 'codex'
 - **Modified**: `src/cli/commands/status.ts` - consistent provider naming
@@ -76,7 +84,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✅ Testing
 
-**All Tests Pass**
+#### All Tests Pass
+
 - **Verified**: 922+ tests passing with new provider configuration
 - **Tested**: Provider routing for coding, planning, and creative agents
 - **Validated**: Fallback mechanism working correctly
@@ -85,46 +94,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ Features
 
-**Display Name Resolution for Agent Delegation**
+#### Display Name Resolution for Agent Delegation
+
 - **Added**: Agents can now delegate using friendly display names (e.g., `@Oliver`, `@Tony`, `@Steve`)
 - **Smart Resolution**: `DelegationParser` automatically resolves display names to agent names using `ProfileLoader`
 - **Case-Insensitive**: Display name matching is case-insensitive (`@oliver`, `@Oliver`, `@OLIVER` all work)
 - **Graceful Fallback**: Works with or without `ProfileLoader` - degrades gracefully in tests
 - **Example**: `@Oliver Create infrastructure` → resolves to `devops` agent
 
-**Duplicate Display Name Detection**
+#### Duplicate Display Name Detection
+
 - **Added**: `ProfileLoader` now detects and warns about duplicate display names
 - **Behavior**: First occurrence is kept, duplicates are skipped with clear warning
 - **Logging**: Detailed warning includes both conflicting agent names
 
 ### 🔧 Improvements
 
-**Extended Provider Timeout**
+#### Extended Provider Timeout
+
 - **Increased**: Provider timeout from 2 minutes to 5 minutes (300000ms)
 - **Benefit**: Allows complex multi-agent workflows to complete without timing out
 - **Affected**: Both `claude-code` and `gemini-cli` providers
 - **Configuration**: Updated in both `DEFAULT_CONFIG` and `automatosx.config.json`
 
-**Enhanced Error Handling**
+#### Enhanced Error Handling
+
 - **Improved**: Invalid agents are automatically skipped during delegation with clear logging
 - **Added**: Proper error messages when agent resolution fails
 - **Logging**: Debug logs show display name → agent name resolution
 
 ### ✅ Testing
 
-**New Integration Tests**
+#### New Integration Tests
+
 - **Added**: 6 comprehensive integration tests for display name resolution
 - **Coverage**: Tests with/without ProfileLoader, multiple display names, invalid agents, case sensitivity
 - **Total**: 928 tests (up from 922)
 
-**Test Updates**
+#### Test Updates
+
 - **Updated**: All delegation parser tests to use async/await
 - **Fixed**: Test files properly handle async parse() method
 - **Files**: `delegation-parser.test.ts`, `executor-multi-delegation.test.ts`, `natural-language-delegation.test.ts`
 
 ### 🔨 Technical Changes
 
-**Files Modified:**
+#### Files Modified:
+
 - `src/agents/delegation-parser.ts` - Added ProfileLoader support and async resolution
 - `src/agents/executor.ts` - Pass ProfileLoader to DelegationParser
 - `src/agents/profile-loader.ts` - Added duplicate display name detection
@@ -132,7 +148,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `automatosx.config.json` - Updated provider timeouts
 - `tests/unit/delegation-parser.test.ts` - Added display name integration tests
 
-**API Changes:**
+#### API Changes:
+
 - `DelegationParser.constructor()` now accepts optional `ProfileLoader` parameter
 - `DelegationParser.parse()` changed from sync to async method
 - All callers updated to use `await parser.parse()`
@@ -147,14 +164,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🎯 Use Cases
 
-**Before (v4.8.0):**
+#### Before (v4.8.0):
+
 ```typescript
 @devops Create the CI/CD pipeline
 @cto Review architecture
 @security Audit the implementation
 ```
 
-**After (v4.9.1):**
+#### After (v4.9.1):
+
 ```typescript
 @Oliver Create the CI/CD pipeline    // Friendly display name
 @Tony Review architecture             // Auto-resolves to 'cto'
@@ -177,13 +196,15 @@ This release completes the architectural cleanup by **fully removing the `canDel
 
 #### 🎯 Breaking Changes
 
-**`canDelegate` Field Removed**
+#### `canDelegate` Field Removed
+
 - ❌ **Removed**: `orchestration.canDelegate` field no longer exists in `OrchestrationConfig` type
 - ✅ **Behavior**: All agents can delegate by default (unchanged from v4.8.0)
 - ⚠️ **Warning**: Agent profiles with `canDelegate` will show deprecation warning but continue to work
 - 📝 **Action Required**: Remove `canDelegate` from your agent YAML files (optional, not breaking)
 
-**Migration Guide:**
+#### Migration Guide:
+
 ```yaml
 # Before (v4.8.0 and earlier)
 orchestration:
@@ -197,29 +218,34 @@ orchestration:
 
 #### ✨ Features
 
-**1. Clean Type Definitions**
+#### 1. Clean Type Definitions
+
 - **Removed**: `canDelegate?: boolean` from `OrchestrationConfig` interface
 - **Updated**: Documentation reflects universal delegation (all agents can delegate)
 - **Benefit**: No confusion about whether agents can delegate
 
-**2. Improved Runtime Metadata**
+#### 2. Improved Runtime Metadata
+
 - **Renamed**: `OrchestrationMetadata.canDelegate` → `isDelegationEnabled`
 - **Clarification**: Field now clearly indicates whether orchestration system is available
 - **Semantic**: `isDelegationEnabled` = "Is SessionManager/WorkspaceManager available?" not "Can this agent delegate?"
 
-**3. Deprecation Warning**
+#### 3. Deprecation Warning
+
 - **Added**: Warning when loading agent profiles with deprecated `canDelegate` field
 - **Message**: "orchestration.canDelegate is deprecated and ignored (v4.9.0+). All agents can delegate by default."
 - **Impact**: Zero breaking changes for existing profiles
 
-**4. Test Suite Updated**
+#### 4. Test Suite Updated
+
 - **Updated**: 988 tests now use `isDelegationEnabled` instead of `canDelegate`
 - **Removed**: All obsolete permission check tests
 - **Result**: Cleaner, more maintainable test suite
 
 #### 🔧 Technical Details
 
-**Files Changed:**
+#### Files Changed:
+
 - `src/types/orchestration.ts` - Removed `canDelegate` from `OrchestrationConfig`, renamed in `OrchestrationMetadata`
 - `src/agents/profile-loader.ts` - Added deprecation warning for old `canDelegate` usage
 - `src/agents/context-manager.ts` - Uses `isDelegationEnabled` for logging
@@ -227,7 +253,8 @@ orchestration:
 - `CLAUDE.md` - Updated documentation to reflect v4.9.0 changes
 - All test files - Updated to use new API
 
-**Backward Compatibility:**
+#### Backward Compatibility:
+
 - ✅ Existing agent profiles with `canDelegate` continue to work (with warning)
 - ✅ No changes needed to delegation behavior or API
 - ✅ Runtime behavior identical to v4.8.0
@@ -241,17 +268,20 @@ orchestration:
 
 #### 🎨 Why This Change?
 
-**Problem:**
+#### Problem:
+
 - v4.8.0 claimed "all agents can delegate" but `canDelegate` field still existed
 - Caused confusion: developers unsure if they need to set `canDelegate: true`
 - Technical debt: validation code, tests, documentation for unused field
 
-**Solution:**
+#### Solution:
+
 - Complete removal of `canDelegate` from type system
 - Clearer naming: `isDelegationEnabled` indicates system availability
 - Simpler configuration: agents just work without field
 
-**Result:**
+#### Result:
+
 - Zero configuration needed for delegation
 - API matches behavior exactly
 - Reduced maintenance burden
@@ -262,7 +292,8 @@ orchestration:
 2. **Automatic**: Profiles with `canDelegate` show warning but work normally
 3. **No code changes**: Runtime behavior unchanged
 
-**Example Update:**
+#### Example Update:
+
 ```bash
 # Find all agent profiles with canDelegate
 grep -r "canDelegate" .automatosx/agents/
@@ -281,13 +312,15 @@ This release removes all remaining barriers to agent delegation, enabling **ever
 
 #### 🎯 Breaking Changes
 
-**Orchestration Configuration Simplified**
+#### Orchestration Configuration Simplified
+
 - ✅ **New Behavior**: All agents can delegate regardless of `canDelegate` setting
 - ✅ **Auto-Initialization**: SessionManager and WorkspaceManager automatically initialize (no `--session` flag required)
 - 🔧 **Optional Field**: `orchestration.canDelegate` is now optional (defaults to `true`)
 - 📝 **Backward Compatible**: Existing agent profiles continue to work without changes
 
-**Migration Guide:**
+#### Migration Guide:
+
 ```yaml
 # Before (v4.7.8 and earlier)
 orchestration:
@@ -304,40 +337,47 @@ orchestration:           # ✨ Orchestration block now optional!
 
 #### ✨ Features
 
-**1. Universal Delegation**
+#### 1. Universal Delegation
+
 - **Changed**: `context-manager.ts` no longer checks `agent.orchestration?.canDelegate`
 - **Result**: All agents receive orchestration metadata automatically
 - **Benefit**: Zero configuration needed for basic delegation
 
-**2. Always-On Orchestration Managers**
+#### 2. Always-On Orchestration Managers
+
 - **Changed**: `run.ts` always initializes SessionManager and WorkspaceManager
 - **Previous**: Required `--session` flag to enable delegation
 - **Result**: Delegation works immediately without additional flags
 - **Benefit**: Seamless agent-to-agent collaboration
 
-**3. Removed Permission Checks**
+#### 3. Removed Permission Checks
+
 - **Changed**: `executor.ts` no longer validates `canDelegate` permission
 - **Safety**: Maintained via cycle detection, depth limits, timeout enforcement
 - **Benefit**: Autonomous collaboration without artificial restrictions
 
-**4. Enhanced Type Safety**
+#### 4. Enhanced Type Safety
+
 - **Added**: `maxDelegationDepth` to `OrchestrationMetadata` interface
 - **Changed**: Made `maxDelegationDepth` optional with default value (3)
 - **Benefit**: Better TypeScript inference and runtime safety
 
-**5. Improved Logging**
+#### 5. Improved Logging
+
 - **Added**: `hasOrchestration` and `canDelegate` to execution context logs
 - **Benefit**: Better debugging and visibility into orchestration status
 
 #### 🔧 Technical Changes
 
-**Modified Files:**
+#### Modified Files:
+
 - `src/agents/context-manager.ts`: Removed `canDelegate` check, always create orchestration metadata
 - `src/agents/executor.ts`: Removed delegation permission validation, added optional chaining for `maxDelegationDepth`
 - `src/cli/commands/run.ts`: Always initialize SessionManager and WorkspaceManager
 - `src/types/orchestration.ts`: Added `maxDelegationDepth` field to `OrchestrationMetadata`
 
-**Code Changes:**
+#### Code Changes:
+
 ```typescript
 // Before (v4.7.8)
 if (agent.orchestration?.canDelegate &&
@@ -356,14 +396,16 @@ if (this.config.workspaceManager &&
 
 #### 🧪 Testing
 
-**Test Coverage:**
+#### Test Coverage:
+
 - ✅ All existing tests passing (922 tests)
 - ✅ Delegation works without `orchestration` block in agent profiles
 - ✅ Delegation works without `--session` flag
 - ✅ Multiple agents can delegate in sequence
 - ✅ Sessions automatically created and tracked
 
-**Verified Scenarios:**
+#### Verified Scenarios:
+
 1. Agent without `orchestration` block can delegate ✅
 2. Multiple sequential delegations (A→B→C) work ✅
 3. Session creation and persistence automatic ✅
@@ -371,30 +413,35 @@ if (this.config.workspaceManager &&
 
 #### 📦 Files Changed
 
-**Core Changes:**
+#### Core Changes:
+
 - `src/agents/context-manager.ts`: Universal orchestration metadata creation
 - `src/agents/executor.ts`: Removed permission checks, optional `maxDelegationDepth`
 - `src/cli/commands/run.ts`: Always initialize orchestration managers
 - `src/types/orchestration.ts`: Added `maxDelegationDepth` to metadata interface
 
-**Documentation Updates:**
+#### Documentation Updates:
+
 - `README.md`: Updated to v4.8.0, added Universal Agent Delegation section
 - `CHANGELOG.md`: This changelog entry
 - `.automatosx/agents/*.yaml`: Updated example agent profiles (orchestration optional)
 
 #### 🎉 Impact
 
-**Developer Experience:**
+#### Developer Experience:
+
 - 🚀 **Faster Setup**: No configuration needed for delegation
 - 💡 **Clearer Intent**: Agents collaborate naturally without artificial barriers
 - 🔧 **Less Config**: Agent profiles are simpler and more maintainable
 
-**System Behavior:**
+#### System Behavior:
+
 - ✅ **More Autonomous**: Agents decide collaboration without permission checks
 - 🛡️ **Still Safe**: Cycle detection, depth limits, timeouts prevent abuse
 - 📊 **Better Visibility**: Logging shows orchestration status clearly
 
-**Backward Compatibility:**
+#### Backward Compatibility:
+
 - ✅ Existing agent profiles continue to work
 - ✅ `canDelegate: true` is still respected (but no longer required)
 - ✅ `--session` flag still works (but no longer required)
@@ -409,12 +456,14 @@ This release completely removes the `canDelegateTo` whitelist mechanism, enablin
 
 #### 🎯 Breaking Changes
 
-**Whitelist Mechanism Removed**
+#### Whitelist Mechanism Removed
+
 - ❌ **Removed**: `canDelegateTo` field no longer validated or enforced
 - ✅ **New Behavior**: Agents can delegate to ANY other agent by default
 - 🛡️ **Safety**: Security ensured via `canDelegate` flag, cycle detection, depth limits, and timeouts
 
-**Migration Guide:**
+#### Migration Guide:
+
 ```yaml
 # Before (v4.7.5 and earlier)
 orchestration:
@@ -434,24 +483,28 @@ orchestration:
 
 #### ✨ Refactoring & Improvements
 
-**1. Code Cleanup**
+#### 1. Code Cleanup
+
 - Removed `canDelegateTo` validation from `profile-loader.ts`
 - Removed whitelist checking logic from `executor.ts`
 - Removed deprecated field from `OrchestrationConfig` type
 - Cleaned up all example agent configurations
 
-**2. Simplified Delegation Model**
+#### 2. Simplified Delegation Model
+
 - Text-only delegation mode (SessionManager/WorkspaceManager now optional)
 - Lightweight agent-to-agent communication without file system overhead
 - Maintains backward compatibility for full collaboration features
 
-**3. Documentation Updates**
+#### 3. Documentation Updates
+
 - Updated README.md to reflect autonomous collaboration model
 - Updated CLAUDE.md with new orchestration examples
 - Removed whitelist references from all documentation
 - Updated all example agent profiles
 
-**4. Test Updates**
+#### 4. Test Updates
+
 - Simplified delegation tests to focus on autonomous collaboration
 - Removed whitelist-specific test cases
 - Updated orchestration type tests
@@ -459,7 +512,7 @@ orchestration:
 
 #### 🧪 Test Results
 
-```
+```text
 ✅ 904/904 tests passing (100%)
 ✅ All whitelist code removed
 ✅ Build successful: 312.91 KB bundle
@@ -468,28 +521,33 @@ orchestration:
 
 #### 📦 Files Changed
 
-**Core Changes:**
+#### Core Changes:
+
 - `src/types/orchestration.ts`: Removed `canDelegateTo` field
 - `src/agents/executor.ts`: Removed whitelist validation logic
 - `src/agents/profile-loader.ts`: Removed `canDelegateTo` validation
 - `src/cli/commands/run.ts`: SessionManager/WorkspaceManager now optional
 
-**Configuration:**
+#### Configuration:
+
 - `.automatosx/agents/*.yaml`: Removed `canDelegateTo` (3 files)
 - `examples/agents/*.yaml`: Removed `canDelegateTo` (2 files)
 
-**Documentation:**
+#### Documentation:
+
 - `README.md`: Updated to v4.7.6, added whitelist removal highlights
 - `CLAUDE.md`: Updated orchestration examples
 - `CHANGELOG.md`: This entry
 
-**Tests:**
+#### Tests:
+
 - `tests/unit/types/orchestration.test.ts`: Removed whitelist tests
 - `tests/unit/executor-delegation.test.ts`: Simplified to autonomous collaboration
 
 #### 🔒 Security
 
 All security mechanisms remain intact and enhanced:
+
 - ✅ **Permission Check**: `canDelegate: true` required to delegate
 - ✅ **Cycle Detection**: Prevents A→B→A circular delegations
 - ✅ **Depth Limit**: Max 3 levels of delegation by default
@@ -504,7 +562,8 @@ Completed the implementation of autonomous agent delegation system, enabling age
 
 #### ✨ New Features
 
-**1. Autonomous Agent Delegation (CRITICAL)**
+#### 1. Autonomous Agent Delegation (CRITICAL)
+
 - ✅ **Delegation Parsing & Execution**: Agents can now actually delegate tasks by outputting `DELEGATE TO [agent]: [task]`
 - ✅ **Automatic Detection**: System automatically parses agent responses for delegation requests
 - ✅ **Seamless Integration**: Delegation results are automatically appended to agent responses
@@ -512,7 +571,8 @@ Completed the implementation of autonomous agent delegation system, enabling age
 - ✅ **Multi-Delegation Support**: Agents can delegate to multiple agents in single response
 - ✅ **Case-Insensitive Parsing**: Delegation syntax is flexible and robust
 
-**Example:**
+#### Example:
+
 ```bash
 ax run backend "Review README and discuss with CTO"
 # Bob can now output:
@@ -527,30 +587,35 @@ ax run backend "Review README and discuss with CTO"
 
 #### 🐛 Critical Bug Fixes
 
-**1. Orchestration Managers Initialization (CRITICAL)**
+#### 1. Orchestration Managers Initialization (CRITICAL)
+
 - **Issue**: WorkspaceManager only initialized when `--session` flag provided
 - **Impact**: Delegation completely non-functional without explicit session
 - **Fix**: Always initialize WorkspaceManager to enable delegation
 - **Before**: `ax run backend "task"` → orchestration = undefined → no delegation
 - **After**: `ax run backend "task"` → orchestration available → delegation works
 
-**2. Type Safety Improvements**
+#### 2. Type Safety Improvements
+
 - Fixed unsafe type assertion in ProfileLoader (`profile!` → `profile`)
 - Improved null/undefined checking for profile loading
 - Added proper type guards for cached profiles
 
-**3. Error Handling Precision**
+#### 3. Error Handling Precision
+
 - Replaced string matching with instanceof checks
 - `error.message.includes('Agent not found')` → `error instanceof AgentNotFoundError`
 - Added proper import for AgentNotFoundError type
 
-**4. Prompt Optimization**
+#### 4. Prompt Optimization
+
 - Limited availableAgents list to 10 agents (from 17)
 - Added "... and N more agents" message
 - Reduced prompt length by ~40% for large agent lists
 - Added delegation example in prompt
 
-**5. Whitelist Removal**
+#### 5. Whitelist Removal
+
 - Removed `canDelegateTo` enforcement (deprecated in v4.7.2)
 - Agents can now delegate to ANY other agent
 - Safety still ensured via cycle detection, depth limits, timeouts
@@ -565,7 +630,7 @@ ax run backend "Review README and discuss with CTO"
 
 #### 🧪 Test Results
 
-```
+```text
 ✅ 892/892 tests passing (100%)
 ✅ Delegation parsing verified (single/multi/case-insensitive)
 ✅ Type safety validated with strict TypeScript
@@ -574,21 +639,25 @@ ax run backend "Review README and discuss with CTO"
 
 #### 📦 Files Changed
 
-**Core Delegation Implementation:**
+#### Core Delegation Implementation:
+
 - `src/agents/executor.ts`: +120 lines (parseDelegationRequests, executeDelegations, auto-execution)
 - `src/cli/commands/run.ts`: +15 lines (always initialize WorkspaceManager, AgentNotFoundError import)
 
-**Type Safety & Optimization:**
+#### Type Safety & Optimization:
+
 - `src/agents/profile-loader.ts`: Type safety improvements
 - `src/types/orchestration.ts`: Deprecated canDelegateTo with @deprecated tag
 - `src/agents/context-manager.ts`: Removed whitelist filtering
 
-**Tests:**
+#### Tests:
+
 - `tests/unit/executor-delegation.test.ts`: Updated to verify whitelist removal
 
 #### 🔒 Security
 
 All security mechanisms remain intact:
+
 - ✅ Cycle detection prevents infinite delegation loops
 - ✅ Max delegation depth (default: 3)
 - ✅ Timeout enforcement at each level
@@ -597,12 +666,14 @@ All security mechanisms remain intact:
 
 #### ⚠️ Breaking Changes
 
-**Behavioral Change (Non-Breaking):**
+#### Behavioral Change (Non-Breaking):
+
 - `canDelegateTo` in agent profiles is now ignored (previously enforced)
 - Agents can delegate to any other agent regardless of whitelist
 - Existing profiles with `canDelegateTo` will continue to work but field is ignored
 
-**Migration Guide:**
+#### Migration Guide
+
 No action required. The `canDelegateTo` field can be safely removed from agent profiles, but leaving it in place has no negative effect.
 
 ---
@@ -615,24 +686,28 @@ Fixed 12 critical and high-priority bugs discovered through ultra-deep analysis 
 
 #### Critical Fixes
 
-**Session Manager Improvements:**
+#### Session Manager Improvements:
+
 - ✅ **Duplicate Cleanup Execution**: Removed redundant cleanup calls in `createSession()` that caused performance issues
 - ✅ **UUID Collision Protection**: Added 100-attempt limit to prevent infinite loops in rare UUID collision scenarios
 - ✅ **Date Validation**: Validate Date objects when loading from persistence to prevent Invalid Date crashes
 - ✅ **Circular Reference Protection**: Catch JSON.stringify errors to handle metadata with circular references
 
-**Workspace Manager Improvements:**
+#### Workspace Manager Improvements:
+
 - ✅ **Invalid Session ID Handling**: Gracefully skip non-UUID directories in cleanup operations
 - ✅ **File Size Limit for Shared Workspace**: Added 10MB limit to `writeToShared()` consistent with `writeToSession()`
 
 #### High Priority Fixes
 
-**Robustness Improvements:**
+#### Robustness Improvements:
+
 - ✅ **File Traversal Safety**: Handle files/directories deleted during `collectFiles()` traversal
 - ✅ **Destroy Error Handling**: Prevent flush errors from blocking `SessionManager.destroy()`
 - ✅ **Cleanup Prioritization**: Prioritize removing completed/failed sessions over active ones
 
-**Performance Optimizations:**
+#### Performance Optimizations:
+
 - ✅ **UUID Regex Static**: Made UUID validation regex static for better performance
 - ✅ **Enhanced Logging**: Added status breakdown in cleanup operations
 
@@ -646,7 +721,7 @@ Fixed 12 critical and high-priority bugs discovered through ultra-deep analysis 
 
 #### Test Results
 
-```
+```text
 ✅ 986 tests passing (892 unit + 66 integration + 28 e2e)
 ⏭️ 5 tests skipped (real provider tests)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -673,28 +748,31 @@ AutomatosX now supports true multi-agent collaboration with session-based workfl
 
 #### ✨ New Features
 
-**1. Agent-to-Agent Delegation**
+#### 1. Agent-to-Agent Delegation
+
 - Agents can now delegate tasks to other specialized agents
 - Whitelist-based delegation for security (`canDelegateTo`)
 - Automatic cycle detection prevents infinite delegation loops
 - Configurable delegation depth limits (default: 3 levels)
 - Structured delegation results with file tracking
 
-**2. Session Management**
+#### 2. Session Management
+
 - Multi-agent collaborative sessions with unique IDs
 - Track all agents participating in a workflow
 - Session lifecycle management (active → completed/failed)
 - Session metadata for context sharing
 - Automatic cleanup of old sessions
 
-**3. Workspace Isolation**
+#### 3. Workspace Isolation
+
 - Each agent gets isolated workspace (`.automatosx/workspaces/<agent>/`)
 - Session-based shared workspaces for collaboration
 - Permission-based workspace access control
 - Path traversal protection for security
 - Persistent shared workspace for cross-session collaboration
 
-**4. New CLI Commands**
+#### 4. New CLI Commands
 
 ```bash
 # Session management
@@ -713,7 +791,7 @@ ax workspace cleanup                  # Clean up old workspaces
 ax run <agent> <task> --session <id> # Join existing session
 ```
 
-**5. Enhanced Agent Profiles**
+#### 5. Enhanced Agent Profiles
 
 New `orchestration` configuration in agent YAML:
 
@@ -733,18 +811,21 @@ orchestration:
 
 #### 🔧 Core Improvements
 
-**ProfileLoader**
+#### ProfileLoader
+
 - ✅ Now loads `orchestration` configuration from YAML
 - ✅ Validates orchestration config with strict type checking
 - ✅ Validates `abilitySelection` configuration
 
-**ContextManager**
+#### ContextManager
+
 - ✅ Integrates SessionManager and WorkspaceManager
 - ✅ Builds OrchestrationMetadata with available agents
 - ✅ Handles session context in execution flow
 - ✅ Constructs shared workspace paths
 
-**AgentExecutor**
+#### AgentExecutor
+
 - ✅ Includes orchestration info in agent prompts
 - ✅ Shows available delegation targets
 - ✅ Displays current session and collaboration context
@@ -760,7 +841,8 @@ orchestration:
 
 #### 🐛 Critical Bug Fixes & Security Enhancements
 
-**Session Manager Improvements:**
+#### Session Manager Improvements:
+
 - ✅ **UUID v4 Validation**: Added strict UUID format validation to prevent path traversal attacks
 - ✅ **Atomic Write Operations**: Implemented temp file + rename pattern with automatic cleanup on failure
 - ✅ **Debounced Save Fix**: Fixed promise tracking to prevent error swallowing in async saves
@@ -772,13 +854,15 @@ orchestration:
 - ✅ **Static Regex**: Optimized UUID validation regex for better performance
 - ✅ **Friendly Errors**: Improved CLI error messages for better user experience
 
-**Workspace Manager Improvements:**
+#### Workspace Manager Improvements:
+
 - ✅ **File Size Limits**: Added 10MB limit per file to prevent abuse
 - ✅ **Multi-byte Support**: Accurate size calculation using Buffer.byteLength()
 - ✅ **Enhanced Path Security**: Strengthened path traversal protection
 - ✅ **Permission Enforcement**: Strict write permission validation per agent
 
-**Code Quality:**
+#### Code Quality:
+
 - ✅ **Eliminated Duplication**: Created shared `session-utils.ts` for consistent SessionManager initialization
 - ✅ **Error Handling**: Comprehensive error recovery with detailed logging
 - ✅ **Type Safety**: Extended error reason types for new scenarios
@@ -856,14 +940,17 @@ ax session complete <session-id>
 
 ### 🗑️ Breaking Changes - Streaming Functionality Removed
 
-**Reason for Removal:**
+#### Reason for Removal
+
 Streaming functionality was found to be non-functional and causing issues:
+
 1. **Duplicate Output**: Content was displayed twice (`📝 Streaming response:` + `📝 Result:`)
 2. **Gemini Pseudo-streaming**: Not real streaming, just chunked output after waiting for full response
 3. **Claude Streaming Issues**: CLI streaming flags not working as expected
 4. **No Real Value**: Users experienced no performance benefit or improved UX
 
-**What Was Removed:**
+#### What Was Removed:
+
 - ❌ `--stream` CLI option (was default `true`, caused confusion)
 - ❌ `Provider.stream()` interface method
 - ❌ `streamRequest()` implementation in ClaudeProvider and GeminiProvider
@@ -871,18 +958,21 @@ Streaming functionality was found to be non-functional and causing issues:
 - ❌ Streaming execution logic in AgentExecutor
 - ❌ `ExecutionOptions.streaming` parameter
 
-**Impact:**
+#### Impact:
+
 - ✅ **Cleaner Output**: No more duplicate content display
 - ✅ **Consistent UX**: Single, clear result output for all providers
 - ✅ **Simplified Code**: Removed ~300 lines of non-functional streaming code
 - ✅ **Better Reliability**: Eliminates streaming-related timeout and error issues
 
-**Migration Guide:**
+#### Migration Guide:
+
 - If you were using `--stream`: Remove the flag, default behavior is now always non-streaming
 - If you were using `--no-stream`: Remove the flag, it's no longer needed
 - All agents now return complete responses in a single, clean output
 
-**Test Results:**
+#### Test Results:
+
 - ✅ 846 tests passing (780 unit + 66 integration)
 - ✅ TypeScript compilation successful
 - ✅ All integration tests pass
@@ -896,19 +986,22 @@ Streaming functionality was found to be non-functional and causing issues:
 
 #### Enhanced Streaming Progress Indicators
 
-**Problem Identified:**
+#### Problem Identified:
+
 - During streaming execution, spinner would stop immediately upon starting
 - Users experienced a "blank period" while waiting for first response chunk
 - No visual feedback during API connection phase
 - Created perception that the system was frozen or unresponsive
 
-**Solution Implemented:**
+#### Solution Implemented:
+
 - **Smart Spinner Management**: Spinner now remains active during connection phase
 - **Connection Status Display**: Shows "Connecting to {provider}..." with animated spinner
 - **Smooth Transition**: Spinner stops only when first content chunk arrives
 - **Enhanced Visual Feedback**: Users always see progress indication
 
-**Technical Details (`src/agents/executor.ts:219-247`):**
+#### Technical Details (`src/agents/executor.ts:219-247`):
+
 ```typescript
 // Before: Immediate spinner stop
 if (streaming) {
@@ -976,12 +1069,14 @@ if (streaming) {
 
 #### 🎯 What Changed
 
-**Problem Identified:**
+#### Problem Identified:
+
 - Agents were loading ALL abilities for every task (e.g., Bob agent: 1205 lines)
 - Even simple tasks like "check readme" loaded unnecessary context
 - High token costs and slower response times
 
-**Solution Implemented:**
+#### Solution Implemented:
+
 1. **Reduced `code-generation.md`** from 1022 lines → 95 lines (91% reduction)
 2. **Dynamic Ability Selection** - Load only relevant abilities based on task keywords
 
@@ -1001,7 +1096,8 @@ abilitySelection:
     check: [code-review]
 ```
 
-**Results:**
+#### Results:
+
 - "check readme": 1/4 abilities loaded (75% reduction, 96% token savings)
 - "write function": 2/4 abilities loaded (50% reduction)
 - "debug error": 2/4 abilities loaded (50% reduction)
@@ -1016,12 +1112,14 @@ abilitySelection:
 
 #### 🐛 Bug Fixes
 
-**Critical Bug #1: Ability Name Validation**
+#### Critical Bug #1: Ability Name Validation
+
 - **Issue**: `selectAbilities()` could return non-existent ability names
 - **Fix**: Added validation to filter abilities not in agent's abilities list
 - **Impact**: Prevents runtime errors and silent failures
 
-**High-Priority Bug #2: ProfileLoader Validation**
+#### High-Priority Bug #2: ProfileLoader Validation
+
 - **Issue**: `validateProfile()` didn't validate `abilitySelection` structure
 - **Fix**: Added comprehensive validation for all `abilitySelection` fields
 - **Impact**: Catches configuration errors early with clear error messages
@@ -1055,6 +1153,7 @@ abilitySelection:
 #### 📈 Migration from v4.5.7
 
 **Automatic Upgrade** - No action required:
+
 ```bash
 npm install -g @defai.sg/automatosx@4.5.8
 ```
@@ -1073,7 +1172,8 @@ npm install -g @defai.sg/automatosx@4.5.8
 
 ### 🐛 Test Fixes
 
-**Integration Test Fixes**
+#### Integration Test Fixes
+
 - Fixed `cli-list.test.ts`: Updated to expect displayName instead of agent name
 - Fixed `run-command.integration.test.ts`: Made mock response assertion more flexible
 - **Result**: All tests now passing (66/66 in quick test suite, 867/874 in full suite)
@@ -1082,6 +1182,7 @@ npm install -g @defai.sg/automatosx@4.5.8
 ### 📈 Migration from v4.5.5
 
 Seamless upgrade - no functional changes:
+
 ```bash
 npm install -g @defai.sg/automatosx@4.5.6
 ```
@@ -1090,7 +1191,8 @@ npm install -g @defai.sg/automatosx@4.5.6
 
 ### 🔧 Test Configuration Improvements
 
-**Test Timeout Configuration**
+#### Test Timeout Configuration
+
 - **Change**: Increased test timeout from 10s to 30s per test
 - **Reason**: Integration tests need more time to complete, especially on slower systems
 - **Impact**: More reliable test execution, prevents false failures due to timeouts
@@ -1099,6 +1201,7 @@ npm install -g @defai.sg/automatosx@4.5.6
 ### 📈 Migration from v4.5.4
 
 Seamless upgrade - no changes required:
+
 ```bash
 npm install -g @defai.sg/automatosx@4.5.5
 ```
@@ -1109,19 +1212,22 @@ npm install -g @defai.sg/automatosx@4.5.5
 
 #### Performance & Streaming Improvements
 
-**BUG #1: Optimized Agent Profile Loading**
+#### BUG #1: Optimized Agent Profile Loading
+
 - **Issue**: Loading all 16 agent profiles on every execution (unnecessary I/O)
 - **Fix**: Implemented lazy loading - tries direct profile load first, only builds displayName mapping when needed
 - **Impact**: Significant startup performance improvement, only loads required agent
 - **Location**: `src/agents/profile-loader.ts:103-137`
 
-**BUG #2: Gemini Provider Streaming**
+#### BUG #2: Gemini Provider Streaming
+
 - **Issue**: No real-time streaming output - waited for complete response before displaying
 - **Fix**: Implemented pseudo-streaming by yielding stdout chunks as they arrive (50 char chunks)
 - **Impact**: Better user experience with progressive output display
 - **Location**: `src/providers/gemini-provider.ts:79-151`
 
-**BUG #3: Claude Provider Real-Time Streaming**
+#### BUG #3: Claude Provider Real-Time Streaming
+
 - **Issue**: Claude Code CLI hung when called incorrectly, no streaming support
 - **Fix**:
   - Added `--print` flag for non-interactive execution
@@ -1146,6 +1252,7 @@ npm install -g @defai.sg/automatosx@4.5.5
 ### 📈 Migration from v4.5.3
 
 Seamless upgrade - no changes required:
+
 ```bash
 npm install -g @defai.sg/automatosx@4.5.4
 ```
@@ -1159,6 +1266,7 @@ This is a maintenance release that consolidates improvements from v4.5.2 and ens
 ### ✨ Highlights
 
 #### All Features from v4.5.2 Included
+
 - Enhanced agent listing with dual-directory support
 - Smarter config file resolution with existence checks
 - Streaming enabled by default with opt-out option
@@ -1177,6 +1285,7 @@ This is a maintenance release that consolidates improvements from v4.5.2 and ens
 ### 📈 Migration from v4.5.2
 
 No changes required! v4.5.3 is a seamless upgrade:
+
 - All existing agents work unchanged
 - Configuration files compatible
 - No API changes
@@ -1184,6 +1293,7 @@ No changes required! v4.5.3 is a seamless upgrade:
 ### 🎯 What's Next
 
 Looking ahead to v4.6.0:
+
 - Performance optimizations
 - Enhanced memory features
 - Additional provider integrations
@@ -1194,6 +1304,7 @@ Looking ahead to v4.6.0:
 ### ✨ Enhancements
 
 #### CLI Improvements
+
 - **Enhanced agent listing**: Now shows agents from both `.automatosx/agents/` and `examples/agents/`
   - Displays source location (`.automatosx` or `examples`) for each agent
   - Prevents duplicate listings when same agent exists in both locations
@@ -1201,12 +1312,14 @@ Looking ahead to v4.6.0:
   - Files: `src/cli/commands/list.ts:62-141`
 
 #### Configuration Improvements
+
 - **Smarter config file resolution**: Checks if files exist before choosing config path
   - Priority: `--config` flag → `-c` alias → `AUTOMATOSX_CONFIG` env → project root → hidden dir
   - No longer blindly defaults to hidden dir for E2E tests
   - Files: `src/cli/commands/config.ts:88-109`
 
 #### Execution Improvements
+
 - **Streaming enabled by default**: Changed `--stream` option default to `true`
   - Users can now use `--no-stream` to disable streaming output
   - Better real-time feedback during agent execution
@@ -1218,6 +1331,7 @@ Looking ahead to v4.6.0:
   - Files: `src/agents/executor.ts:156-181`
 
 #### User Experience Improvements
+
 - **Dynamic version reading**: Version now read from `package.json` at runtime
   - Shows correct version in `--version` and `status` command
   - No hardcoded version strings in source code
@@ -1229,6 +1343,7 @@ Looking ahead to v4.6.0:
   - Files: `src/core/memory-manager-vec.ts:185-191`
 
 #### Provider Fixes
+
 - **Fixed Gemini CLI arguments**: Corrected CLI invocation for Gemini provider
   - Prompt now passed as positional argument (not `--prompt` flag)
   - Model passed via `--model` flag only when non-default
@@ -1251,6 +1366,7 @@ Looking ahead to v4.6.0:
 ### 📈 Migration from v4.5.1
 
 No changes required! v4.5.2 is fully backward compatible:
+
 - All existing agents work unchanged
 - Configuration files work as-is
 - New features are opt-in (streaming is default but can be disabled)
@@ -1261,37 +1377,43 @@ No changes required! v4.5.2 is fully backward compatible:
 
 #### Critical Fixes for Advanced Stage Executor (Phase 3)
 
-**Bug #1: continueOnFailure option not respected (High Severity)**
+#### Bug #1: continueOnFailure option not respected (High Severity)
+
 - **Issue**: AdvancedStageExecutor ignored the `continueOnFailure` option, always continuing execution after stage failures
 - **Impact**: Users could not control failure behavior, inconsistent with StageExecutor
 - **Fix**: Added failure checks after parallel and sequential stage execution, respecting the `continueOnFailure` flag
 - **Files**: `src/agents/advanced-stage-executor.ts:247-293`
 
-**Bug #2: Skipped stage outputs polluting downstream stages (Medium Severity)**
+#### Bug #2: Skipped stage outputs polluting downstream stages (Medium Severity)
+
 - **Issue**: Stages skipped due to conditions had their `'[Skipped due to condition]'` output added to `stageOutputs`, polluting downstream stage inputs
 - **Impact**: Downstream stages received meaningless placeholder text as context
 - **Fix**: Filter out skipped stage outputs before adding to `stageOutputs` Map
 - **Files**: `src/agents/advanced-stage-executor.ts:241-245, 274-278`
 
-**Bug #3: Missing dependency failure checks (Medium Severity)**
+#### Bug #3: Missing dependency failure checks (Medium Severity)
+
 - **Issue**: Stages executed even when their dependencies failed, only missing the failed dependency's output
 - **Impact**: Stages could execute with incomplete context, producing incorrect results
 - **Fix**: Added pre-execution validation to check all dependencies succeeded; skip stage if any dependency failed
 - **Files**: `src/agents/advanced-stage-executor.ts:331-365`
 
-**Bug #4: Inaccurate previous.success condition logic (Low Severity)**
+#### Bug #4: Inaccurate previous.success condition logic (Low Severity)
+
 - **Issue**: `previous.success` condition only checked if `stageOutputs.size > 0`, couldn't accurately detect failures
 - **Impact**: Conditional execution decisions could be incorrect
 - **Fix**: Introduced `stageResults` Map to track all stage execution states; `previous.success` now accurately checks for failures
 - **Files**: `src/agents/advanced-stage-executor.ts:532-564`
 
-**Bug #5: Missing undefined stages filter (Low Severity)**
+#### Bug #5: Missing undefined stages filter (Low Severity)
+
 - **Issue**: Advanced features detection didn't filter potential `undefined` stages
 - **Impact**: Potential TypeScript runtime errors in edge cases
 - **Fix**: Added TypeScript type guard to filter undefined stages
 - **Files**: `src/cli/commands/run.ts:244`
 
 ### 🔧 Technical Improvements
+
 - **New Data Structure**: Added `stageResults: Map<string, StageExecutionResult>` to track all stage execution states
 - **Enhanced Dependency Validation**: Early detection of dependency failures before stage execution
 - **Improved Condition Evaluation**: Both `previous.success` and `stage_name.success` now based on actual execution results
@@ -1299,18 +1421,22 @@ No changes required! v4.5.2 is fully backward compatible:
 - **Output Filtering**: Skipped stages no longer pollute downstream context
 
 ### ✅ Testing
+
 - **All Tests Passing**: 788/788 unit tests (100% pass rate)
 - **TypeScript**: All strict mode checks passing
 - **Build**: Successful (237.06 KB, +3.01 KB / +1.3%)
 - **Backward Compatibility**: 100% - no breaking changes
 
 ### 📊 Impact
+
 - **Bundle Size**: 237.06 KB (minimal increase of 3.01 KB for bug fixes)
 - **Performance**: No performance degradation
 - **Reliability**: Significantly improved error handling and execution correctness
 
 ### 📈 Migration from v4.5.0
+
 No changes required! v4.5.1 is a pure bug fix release:
+
 - All existing agents work unchanged
 - No API changes
 - Only improved correctness of advanced stage execution logic
@@ -1320,6 +1446,7 @@ No changes required! v4.5.1 is a pure bug fix release:
 ### ✨ New Features
 
 #### Advanced Stage Execution (Phase 3)
+
 - **AdvancedStageExecutor**: Extends StageExecutor with advanced workflow capabilities
   - **Parallel Execution**: Execute independent stages simultaneously
     - Automatic detection of parallelizable stages (marked with `parallel: true`)
@@ -1359,6 +1486,7 @@ No changes required! v4.5.1 is a pure bug fix release:
   - Automatically shown when verbose mode enabled
 
 #### New Example Agent
+
 - **data-pipeline.yaml**: Comprehensive example demonstrating all Phase 3 features
   - 6 stages with complex dependencies
   - Parallel data fetching (fetch_user_data, fetch_transaction_data)
@@ -1368,6 +1496,7 @@ No changes required! v4.5.1 is a pure bug fix release:
   - Memory persistence for critical stages
 
 ### 🧪 Testing
+
 - **New Test Suite**: `tests/unit/advanced-stage-executor.test.ts` (7 comprehensive tests)
   - Dependency graph building and visualization
   - Parallel execution of independent stages
@@ -1378,6 +1507,7 @@ No changes required! v4.5.1 is a pure bug fix release:
 - **Type Safety**: Full TypeScript strict mode compliance
 
 ### 🔧 Technical Implementation
+
 - **Files Added**:
   - `src/agents/advanced-stage-executor.ts` (535 lines)
   - `tests/unit/advanced-stage-executor.test.ts` (327 lines)
@@ -1388,6 +1518,7 @@ No changes required! v4.5.1 is a pure bug fix release:
   - `src/cli/commands/run.ts`: Added advanced feature detection and routing logic
 
 ### 📊 Performance
+
 - **Bundle Size**: 234.05 KB (+13.55 KB from v4.4.0, 6% increase)
   - Dependency graph algorithm: ~8 KB
   - Parallel execution logic: ~3 KB
@@ -1396,6 +1527,7 @@ No changes required! v4.5.1 is a pure bug fix release:
 - **Memory Usage**: Minimal overhead (~5MB for dependency graph data structures)
 
 ### 🎯 Design Philosophy
+
 - **Backward Compatible**: Existing agents work unchanged
   - Simple multi-stage agents use StageExecutor
   - Advanced features only activate when explicitly configured
@@ -1411,6 +1543,7 @@ No changes required! v4.5.1 is a pure bug fix release:
 ### 📖 Usage Examples
 
 #### Parallel Execution
+
 ```yaml
 stages:
   # These run simultaneously
@@ -1428,6 +1561,7 @@ stages:
 ```
 
 #### Conditional Execution
+
 ```yaml
 stages:
   - name: validate
@@ -1443,6 +1577,7 @@ stages:
 ```
 
 #### Dependency Visualization
+
 ```bash
 ax run data-pipeline "Process Q4 sales data" --verbose
 
@@ -1465,6 +1600,7 @@ Level 2:
 ### 🔍 Implementation Details
 
 #### Dependency Graph Algorithm
+
 - **Time Complexity**: O(V + E) where V = stages, E = dependencies
 - **Space Complexity**: O(V) for graph data structure
 - **Algorithm**: Topological sort with level calculation
@@ -1474,6 +1610,7 @@ Level 2:
   - Fourth pass: Group stages by level for parallel execution
 
 #### Parallel Execution Strategy
+
 - **Level-Based Execution**: Execute stages level by level
   - Level 0: No dependencies (can all run in parallel if marked)
   - Level N: Depends on stages at level N-1 (waits for previous level)
@@ -1486,6 +1623,7 @@ Level 2:
   - Sequential stages execute after (one by one)
 
 #### Condition Evaluation
+
 - **Simple Expression Parser**: String-based condition evaluation
   - `previous.success`: All previous stages succeeded
   - `stage_name.success`: Specific stage succeeded
@@ -1496,11 +1634,13 @@ Level 2:
   - Final output includes skipped stages with reason
 
 ### 🐛 Bug Fixes
+
 - **Fixed visibility of assembleFinalOutput**: Changed from `private` to `protected` for inheritance
 - **Fixed stage output assembly**: Proper null checks for stage array access
 - **Fixed conditional test expectations**: Aligned test with actual behavior
 
 ### 🔮 Future Enhancements (Phase 4+)
+
 - Complex boolean condition expressions (AND, OR, NOT)
 - Streaming stage output for real-time feedback
 - Stage retry with exponential backoff
@@ -1511,10 +1651,13 @@ Level 2:
 - Dynamic stage generation based on previous results
 
 ### 📈 Migration from v4.4.0
+
 No changes required! v4.5.0 is fully backward compatible:
+
 - Existing agents continue to work unchanged
 - Simple multi-stage agents use StageExecutor automatically
 - To use advanced features, add Phase 3 fields to your agent profile:
+
   ```yaml
   stages:
     - name: my_stage
@@ -1529,6 +1672,7 @@ No changes required! v4.5.0 is fully backward compatible:
 ### ✨ New Features
 
 #### Multi-Stage Execution Engine (Phase 2)
+
 - **StageExecutor**: New execution engine for multi-stage agent workflows
   - Sequential stage execution with context accumulation
   - Each stage receives outputs from previous stages
@@ -1552,6 +1696,7 @@ No changes required! v4.5.0 is fully backward compatible:
   - Transparent to users—just run `ax run <agent> "<task>"`
 
 #### Updated Example Agents
+
 - **coder-lean.yaml**: Enhanced with detailed 7-stage workflow
   - requirement_analysis: Understand problem and constraints
   - test_planning: Plan TDD strategy before implementation
@@ -1563,6 +1708,7 @@ No changes required! v4.5.0 is fully backward compatible:
   - Each stage includes key questions, expected outputs, and optimal temperature
 
 ### 🧪 Testing
+
 - **New Test Suite**: `tests/unit/stage-executor.test.ts` (11 comprehensive tests)
   - Sequential stage execution
   - Context accumulation between stages
@@ -1573,6 +1719,7 @@ No changes required! v4.5.0 is fully backward compatible:
 - **Type Safety**: Strict TypeScript compliance with `noUncheckedIndexedAccess`
 
 ### 🔧 Technical Implementation
+
 - **Files Added**:
   - `src/agents/stage-executor.ts` (468 lines)
   - `tests/unit/stage-executor.test.ts` (438 lines)
@@ -1581,17 +1728,20 @@ No changes required! v4.5.0 is fully backward compatible:
   - `examples/agents/coder-lean.yaml`: Enhanced with detailed stage configurations
 
 ### 📊 Performance
+
 - **Zero Overhead for Single-Stage**: Single-stage agents use regular executor (no changes)
 - **Minimal Overhead for Multi-Stage**: Only loads `StageExecutor` when needed
 - **Bundle Size**: 220.50 KB (negligible increase of 0.03 KB)
 
 ### 🎯 Design Philosophy
+
 - **Self-Contained**: Built our own lightweight execution engine (no external dependencies like Prefect/Temporal)
 - **CLI-First**: Maintains AutomatosX's zero-infrastructure philosophy
 - **Progressive Enhancement**: Multi-stage is optional—existing agents work unchanged
 - **Type-Safe**: Full TypeScript strict mode compliance
 
 ### 📖 Usage Example
+
 ```bash
 # Run multi-stage agent (automatically detected)
 ax run coder-lean "Build a user authentication system"
@@ -1605,6 +1755,7 @@ ax run coder-lean "Build a user authentication system"
 ```
 
 ### 🔮 Future Enhancements
+
 - Stage result persistence to memory (requires embedding integration)
 - Parallel stage execution for independent stages
 - Conditional stage execution based on previous results
@@ -1615,6 +1766,7 @@ ax run coder-lean "Build a user authentication system"
 ### 🐛 Bug Fixes
 
 #### Critical Resource Management Fixes
+
 - **Fixed timeout mechanism**: Implemented AbortController to properly cancel execution when timeout occurs
   - Previous behavior: timeout rejection didn't stop the running executor
   - Impact: Prevented resource leaks (memory manager, provider connections, agent instances)
@@ -1623,6 +1775,7 @@ ax run coder-lean "Build a user authentication system"
   - Impact: Prevents disk space leaks and state pollution between executions
 
 #### Major Improvements
+
 - **Removed dummy MemoryManager instance**: Changed to null pattern for cleaner error messages
   - ContextManager now accepts `memoryManager: IMemoryManager | null`
   - Improved user experience with clear "memory features disabled" messages
@@ -1631,17 +1784,20 @@ ax run coder-lean "Build a user authentication system"
   - Prevents SQLite WAL mode data loss
 
 #### Code Quality
+
 - **Safe error type assertions**: Replaced unsafe `(error as Error)` with proper instanceof checks
   - Handles non-Error thrown values gracefully
   - Prevents crashes from unexpected error types
 
 ### 📊 Technical Details
+
 - **Files Modified**: 3 core files (`run.ts`, `executor.ts`, `context-manager.ts`)
 - **Test Coverage**: 854 tests passing (improved from 852)
 - **TypeScript**: All type checks passing
 - **No Breaking Changes**: Fully backward compatible with v4.3.0
 
 ### 🔧 Changes
+
 - Added `signal?: AbortSignal` to `ExecutionOptions` interface
 - Modified `ContextManagerConfig.memoryManager` to accept null
 - Enhanced error handling with proper instanceof checks throughout
@@ -1651,6 +1807,7 @@ ax run coder-lean "Build a user authentication system"
 ### ✨ New Features
 
 #### Enhanced Agent Architecture
+
 - **7-Stage Workflow System**: Added structured multi-stage workflow support with `stages` field in agent profiles
   - Each stage includes: name, description, key_questions, outputs, model, temperature
   - Stages are automatically injected into prompts to guide agent behavior
@@ -1659,6 +1816,7 @@ ax run coder-lean "Build a user authentication system"
 - **Thinking Patterns**: Added `thinking_patterns` field for guiding principles that shape agent decisions
 
 #### Project-Specific Knowledge System
+
 - **4 New Ability Templates**: Created project-specific ability templates in `examples/abilities/`
   - `our-coding-standards.md`: Team-specific coding conventions (TypeScript, ESM, security patterns)
   - `our-project-structure.md`: Directory structure and file organization
@@ -1666,21 +1824,25 @@ ax run coder-lean "Build a user authentication system"
   - `our-code-review-checklist.md`: Team review process and checklists
 
 ### 🔧 Improvements
+
 - **Enhanced Coder Profile**: Updated `coder.yaml` from 47 lines to 388 lines with comprehensive 7-stage workflow
 - **Type Safety**: Added TypeScript interfaces for `Stage`, `Personality` types
 - **Profile Validation**: Enhanced validation to check stages structure, personality fields, and thinking patterns
 
 ### 🐛 Bug Fixes
+
 - **Critical**: Fixed missing validation for v4.1+ enhanced fields (stages, personality, thinking_patterns)
   - Prevented runtime crashes from malformed YAML profiles
   - Added comprehensive validation for all new fields and nested structures
 
 ### 📊 Technical Details
+
 - **Bundle Size**: 204.50 KB (optimized from 205.64 KB)
 - **Test Coverage**: 862 tests passing (added 13 new profile validation tests)
 - **Documentation**: Comprehensive phase 1 implementation docs in `tmp/`
 
 ### 📖 Documentation
+
 - Phase 1 implementation summary (`tmp/PHASE-1-COMPLETE.md`)
 - Bug analysis report (`tmp/BUG-ANALYSIS-REPORT.md`)
 - Bug fix completion report (`tmp/BUG-FIX-COMPLETE.md`)
@@ -1716,30 +1878,35 @@ AutomatosX v4.0.0 is a **complete rewrite from the ground up**, addressing the c
 ### ✨ New Features
 
 #### Complete TypeScript Rewrite
+
 - 100% TypeScript with strict mode
 - Full type definitions for all modules
 - Zero runtime type errors
 - Better IDE support and refactoring
 
 #### SQLite Vector Search
+
 - Replaced 300MB Milvus with 2-5MB SQLite + vec
 - Same HNSW algorithm, 62x faster (0.72ms vs 45ms)
 - Single-file database, no external services
 - Embeddable and portable
 
 #### Enhanced Security
+
 - Path boundary validation
 - Workspace isolation for agents
 - Input sanitization
 - Path traversal prevention
 
 #### Performance Optimizations
+
 - Lazy loading for faster startup (60% improvement)
 - TTL-based LRU caching
 - Bundle optimization (87% reduction)
 - Memory usage optimization (50% reduction)
 
 #### Production Infrastructure
+
 - Automated release workflow (GitHub Actions)
 - Comprehensive release checklist
 - Pre-release validation scripts
@@ -1760,17 +1927,20 @@ AutomatosX v4.0.0 is a **complete rewrite from the ground up**, addressing the c
 ### 🔧 Technical Details
 
 #### Dependencies Removed
+
 - Milvus client (~300MB)
 - ONNX Runtime (~100MB)
 - Transformers.js (~50MB)
 - 431 transitive dependencies
 
 #### Dependencies Added
+
 - TypeScript tooling
 - SQLite + vec extension
 - Vitest 2.x for testing
 
 #### Code Metrics
+
 - Source code: 28,980 → 6,200 LOC (78% reduction)
 - Tests: ~200 → 841 tests (320% increase)
 - Test coverage: Unknown → 84.19%
@@ -1823,43 +1993,49 @@ Thank you to all contributors who made v4.0 possible!
 **From v3.1 to v4.0**:
 
 1. **Export v3.1 data** (optional):
+
    ```bash
    cd v3.1-project
    automatosx memory export --output backup.json
    ```
 
 2. **Uninstall v3.1**:
+
    ```bash
    npm uninstall -g automatosx
    ```
 
 3. **Install v4.0**:
+
    ```bash
    npm install -g automatosx@4.0.0
    ```
 
 4. **Initialize fresh project**:
+
    ```bash
    cd your-project
    automatosx init
    ```
 
 5. **Configure providers**:
+
    ```bash
    automatosx config --set providers.claude.apiKey --value "sk-ant-..."
    ```
 
 6. **Import data** (optional):
+
    ```bash
    automatosx memory import --input backup.json
    ```
 
 ### 🔗 Resources
 
-- **Documentation**: https://docs.automatosx.dev
-- **Repository**: https://github.com/defai-sg/automatosx
-- **Issues**: https://github.com/defai-sg/automatosx/issues
-- **npm**: https://www.npmjs.com/package/automatosx
+- **Documentation**: <https://docs.automatosx.dev>
+- **Repository**: <https://github.com/defai-sg/automatosx>
+- **Issues**: <https://github.com/defai-sg/automatosx/issues>
+- **npm**: <https://www.npmjs.com/package/automatosx>
 
 ---
 
@@ -1872,12 +2048,14 @@ Thank you to all contributors who made v4.0 possible!
 ### Added - Core Features
 
 #### Complete TypeScript Rewrite
+
 - **100% TypeScript** with strict mode enabled
 - Full type definitions for all modules
 - JSDoc comments for API documentation
 - Zero TypeScript compilation errors
 
 #### Memory System (SQLite + vec)
+
 - **SQLite-based vector database** using sqlite-vec extension
 - 87% size reduction from v3.x (300MB Milvus → 2-5MB SQLite)
 - Text-based and vector-based memory search
@@ -1887,6 +2065,7 @@ Thank you to all contributors who made v4.0 possible!
 - Configurable memory retention (auto-cleanup)
 
 #### Agent System
+
 - **Agent profiles** (YAML format) with role-based configuration
 - **Abilities system** - Reusable skills for agents
 - **Agent workspace** - Isolated execution environment
@@ -1896,6 +2075,7 @@ Thank you to all contributors who made v4.0 possible!
 - 15 example abilities
 
 #### Provider System
+
 - **Router with automatic fallback** - Try providers in priority order
 - **Health monitoring** - Periodic provider health checks
 - **Timeout handling** - Configurable request timeouts
@@ -1906,6 +2086,7 @@ Thank you to all contributors who made v4.0 possible!
   - OpenAI (future)
 
 #### CLI Commands
+
 - `automatosx init` - Initialize project with config and examples
 - `automatosx run <agent> <task>` - Execute agent with task
 - `automatosx chat <agent>` - Interactive chat mode
@@ -1914,6 +2095,7 @@ Thank you to all contributors who made v4.0 possible!
 - `automatosx memory <command>` - Memory management (search, export, import, stats)
 
 #### Error Handling
+
 - **Structured error hierarchy** with 6 error classes
 - **40+ error codes** (E1000-E9999) for programmatic handling
 - **Actionable error messages** with suggestions
@@ -1922,6 +2104,7 @@ Thank you to all contributors who made v4.0 possible!
 - Complete error code reference documentation
 
 #### Configuration
+
 - **JSON-based configuration** (automatosx.config.json)
 - **Provider configuration** - Enable/disable, priority, timeout
 - **Memory configuration** - Max entries, persistence, auto-cleanup
@@ -1932,6 +2115,7 @@ Thank you to all contributors who made v4.0 possible!
 ### Added - Documentation
 
 #### User Documentation
+
 - **Getting Started Guide** (400+ lines) - 5-minute quick start
 - **API Documentation** (500+ lines) - Complete API reference
 - **Error Codes Reference** (250+ lines) - All error codes with solutions
@@ -1941,6 +2125,7 @@ Thank you to all contributors who made v4.0 possible!
 - **FAQ** (NEW)
 
 #### Developer Documentation
+
 - Comprehensive JSDoc comments
 - Type definitions for all interfaces
 - Code examples in documentation
@@ -1949,6 +2134,7 @@ Thank you to all contributors who made v4.0 possible!
 ### Added - Testing
 
 #### Test Suite
+
 - **379 unit tests** (99.2% pass rate)
 - **22 test files** covering all core modules
 - **Integration tests** for CLI commands
@@ -1958,6 +2144,7 @@ Thank you to all contributors who made v4.0 possible!
 - **100% coverage** for router and error formatter
 
 #### Test Infrastructure
+
 - Vitest test framework
 - Coverage reporting with v8
 - Mock providers for testing
@@ -1966,16 +2153,19 @@ Thank you to all contributors who made v4.0 possible!
 ### Changed - Architecture
 
 #### Bundle Size Reduction
+
 - **v3.x**: 340MB → **v4.0**: 152KB (99.96% reduction)
 - Removed Milvus (300MB) → SQLite + vec (2-5MB)
 - Removed @xenova/transformers (100MB) → OpenAI embeddings API
 - Removed unnecessary dependencies: 589 → 384 (35% reduction)
 
 #### Directory Structure
+
 - **v3.x**: `.defai/` → **v4.0**: `.automatosx/`
 - Config file: `defai.config.yaml` → `automatosx.config.json`
 - Organized structure:
-  ```
+
+  ```text
   .automatosx/
   ├── agents/          # Agent profiles
   ├── abilities/       # Ability definitions
@@ -1985,6 +2175,7 @@ Thank you to all contributors who made v4.0 possible!
   ```
 
 #### Performance Improvements
+
 - **Startup time**: <1s (previously 3-5s)
 - **Memory footprint**: ~50MB (previously ~500MB)
 - **Database queries**: 10x faster with SQLite vs Milvus
@@ -1992,7 +2183,7 @@ Thank you to all contributors who made v4.0 possible!
 
 ### Changed - Breaking Changes from v3.x
 
-**⚠️ v4.0 requires clean installation - no automatic migration from v3.x**
+#### ⚠️ v4.0 requires clean installation - no automatic migration from v3.x
 
 1. **Configuration Format**
    - YAML → JSON
@@ -2018,6 +2209,7 @@ Thank you to all contributors who made v4.0 possible!
    - Direct API support removed (use CLI wrappers)
 
 #### For v3.x Users
+
 - v4.0 is a complete rewrite - install it separately
 - Both versions can coexist if needed
 - Manually transfer data using export/import if required
@@ -2026,6 +2218,7 @@ Thank you to all contributors who made v4.0 possible!
 ### Removed
 
 #### Dependencies Removed
+
 - ❌ Milvus (300MB)
 - ❌ @xenova/transformers (~100MB)
 - ❌ onnxruntime-node (92MB)
@@ -2033,6 +2226,7 @@ Thank you to all contributors who made v4.0 possible!
 - ❌ 200+ unused dependencies
 
 #### Features Removed
+
 - ❌ Built-in transformer models (use API instead)
 - ❌ Direct provider APIs (use CLI wrappers)
 - ❌ Legacy YAML config support
@@ -2041,6 +2235,7 @@ Thank you to all contributors who made v4.0 possible!
 ### Fixed
 
 #### Bug Fixes
+
 - Fixed path traversal vulnerabilities in workspace creation
 - Fixed memory leak in provider health checks
 - Fixed race conditions in concurrent requests
@@ -2048,6 +2243,7 @@ Thank you to all contributors who made v4.0 possible!
 - Fixed config validation edge cases
 
 #### Security Fixes
+
 - Added path validation to prevent directory traversal
 - Restricted workspace permissions (700 on Unix)
 - Sanitized error messages to prevent info leakage
@@ -2056,6 +2252,7 @@ Thank you to all contributors who made v4.0 possible!
 ### Security
 
 #### New Security Features
+
 - **Path traversal prevention** - Validate all file paths
 - **Workspace isolation** - Agents run in isolated directories
 - **Input sanitization** - All user inputs validated
@@ -2063,6 +2260,7 @@ Thank you to all contributors who made v4.0 possible!
 - **Error message sanitization** - No sensitive data in errors
 
 #### Security Audit
+
 - 23 security tests passing
 - Path traversal prevention verified
 - Input validation comprehensive
@@ -2083,6 +2281,7 @@ Thank you to all contributors who made v4.0 possible!
 ### Developer Experience
 
 #### Improvements
+
 - TypeScript for better IDE support
 - Comprehensive error messages with suggestions
 - Detailed documentation with examples
@@ -2090,6 +2289,7 @@ Thank you to all contributors who made v4.0 possible!
 - Simplified installation process
 
 #### Developer Tools
+
 - `npm run build` - Build project
 - `npm run test` - Run tests
 - `npm run test:coverage` - Coverage report
@@ -2103,6 +2303,7 @@ Thank you to all contributors who made v4.0 possible!
 Last stable version before v4.0 rewrite.
 
 ### Known Issues in v3.x
+
 - Large bundle size (340MB)
 - Slow installation (10-15min)
 - High memory usage (~500MB)

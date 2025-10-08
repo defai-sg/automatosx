@@ -5,6 +5,7 @@ Thank you for participating in AutomatosX v4.0 beta testing! Your feedback is cr
 ## What is Beta Testing?
 
 Beta testing helps us:
+
 - Validate functionality in real-world scenarios
 - Identify bugs and edge cases
 - Improve documentation and user experience
@@ -294,6 +295,7 @@ Use [GitHub Issues](https://github.com/defai-sg/automatosx/issues/new):
 **Title**: Brief description of the issue
 
 **Template**:
+
 ```markdown
 ## Bug Description
 Clear description of what went wrong
@@ -317,9 +319,11 @@ What actually happened
 
 ## Logs/Output
 ```
+
 Paste error messages or relevant output here
 Use --debug flag for detailed logs:
 automatosx run assistant "test" --debug
+
 ```
 
 ## Additional Context
@@ -331,6 +335,7 @@ Any other relevant information
 For general feedback, use [GitHub Discussions](https://github.com/defai-sg/automatosx/discussions):
 
 **Categories**:
+
 - **Feature Requests**: Suggest improvements
 - **Questions**: Ask for help or clarification
 - **Show and Tell**: Share your use cases
@@ -371,6 +376,7 @@ AUTOMATOSX_MOCK_PROVIDERS=true automatosx run assistant "test"
 ### Document Your Setup
 
 Keep notes of:
+
 - Your use case
 - Your configuration
 - Commands that work/don't work
@@ -390,21 +396,24 @@ As a thank you for beta testing:
 - **GitHub Issues**: Bug reports
 - **GitHub Discussions**: General feedback
 - **Discord**: Real-time chat (coming soon)
-- **Email**: support@defai.digital
+- **Email**: <support@defai.digital>
 
 ## Beta Testing Timeline
 
 ### Week 1-2: Initial Testing
+
 - Install and setup
 - Test core functionality
 - Report critical bugs
 
 ### Week 3-4: Deep Testing
+
 - Real-world usage
 - Edge cases
 - Performance testing
 
 ### Week 5: Final Validation
+
 - Verify bug fixes
 - Confirm improvements
 - Sign off on release
@@ -418,6 +427,7 @@ As a thank you for beta testing:
 ### Will my data be lost when updating?
 
 Data should persist across updates, but we recommend:
+
 ```bash
 automatosx memory export --output backup.json
 ```
@@ -425,6 +435,7 @@ automatosx memory export --output backup.json
 ### Can I test multiple versions?
 
 Yes, use different directories:
+
 ```bash
 mkdir test-beta-1 && cd test-beta-1
 npm install @defai.sg/automatosx@4.0.0-beta.1
@@ -442,22 +453,24 @@ npm install -g @defai.sg/automatosx@3.1.5
 ### Will I be charged for API usage?
 
 Yes, beta testing uses real AI providers. Costs are typically:
+
 - $0.05 - $0.50 for basic testing
 - $1 - $5 for extensive testing
 
 ## Success Metrics
 
 We consider beta successful when:
+
 - [ ] 10+ testers complete full test suite
 - [ ] All critical bugs fixed
 - [ ] Documentation gaps identified and filled
 - [ ] Real-world use cases validated
 - [ ] 95%+ of testers satisfied with stability
 
-## Thank You!
+## Thank You
 
 Your participation makes AutomatosX better for everyone. We appreciate your time and feedback!
 
 ---
 
-**Questions?** Email support@defai.digital or ask in [GitHub Discussions](https://github.com/defai-sg/automatosx/discussions)
+**Questions?** Email <support@defai.digital> or ask in [GitHub Discussions](https://github.com/defai-sg/automatosx/discussions)

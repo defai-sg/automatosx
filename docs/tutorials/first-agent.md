@@ -7,6 +7,7 @@ Learn how to create a custom AI agent from scratch using AutomatosX.
 ## What You'll Build
 
 In this tutorial, you'll create a **Code Reviewer Agent** that:
+
 - Analyzes code for best practices
 - Identifies potential bugs
 - Suggests improvements
@@ -28,6 +29,7 @@ In this tutorial, you'll create a **Code Reviewer Agent** that:
 ## Step 1: Understanding Agent Profiles
 
 An agent profile is a YAML file that defines:
+
 1. **Basic Info** - Name, version, description
 2. **Model Config** - Provider, model, parameters
 3. **System Prompt** - Behavior and personality
@@ -84,6 +86,7 @@ description: Expert code reviewer focused on best practices and bug detection
 ```
 
 **Key Points**:
+
 - `name` must match the filename (without `.yaml`)
 - `version` follows semantic versioning
 - `description` is shown when listing agents
@@ -103,11 +106,13 @@ model:
 ```
 
 **Why These Settings?**:
+
 - `provider: claude` - Use Claude (best for code analysis)
 - `temperature: 0.3` - Low creativity for consistent, focused reviews
 - `maxTokens: 8192` - Allow detailed analysis of large files
 
 **Alternative Providers**:
+
 ```yaml
 # For Gemini
 model:
@@ -160,6 +165,7 @@ system: |
 ```
 
 **System Prompt Tips**:
+
 - Be specific about behavior
 - Include examples of desired output
 - Define tone and personality
@@ -186,6 +192,7 @@ automatosx list abilities
 ```
 
 Example output:
+
 ```
 Available Abilities (15):
 
@@ -249,6 +256,7 @@ result.issues.forEach(issue => {
 2. Use 'strict' mode for production code
 3. Focus on specific areas to reduce noise
 4. Review the entire codebase, not just changed files
+
 ```
 
 Then reference it in your profile:
@@ -272,12 +280,14 @@ memory:
 ```
 
 **Why Memory?**:
+
 - Remember past reviews of the same codebase
 - Learn your coding standards over time
 - Avoid repeating the same suggestions
 - Maintain consistency across reviews
 
 **Memory Settings**:
+
 - `enabled: true` - Turn on memory system
 - `contextSize: 10` - Include 10 most relevant past interactions
 
@@ -356,6 +366,7 @@ function getUserById(id) {
 ```
 
 Expected output:
+
 ```
 🤖 AutomatosX v4.0
 
@@ -382,13 +393,16 @@ inefficient array filtering, and missing error handling.
     return users.find(u => u.id === id);
   }
   ```
+
 - Why: `==` will match "1" with 1, causing unexpected behavior
 
 ### High
 
 **2. No Error Handling (line 1-3)**
+
 - Issue: Returns undefined if user not found
 - Fix:
+
   ```javascript
   function getUserById(id) {
     const user = users.find(u => u.id === id);
@@ -398,11 +412,13 @@ inefficient array filtering, and missing error handling.
     return user;
   }
   ```
+
 - Why: Explicit errors are better than silent failures
 
 ### Medium
 
 **3. Inefficient Array Operation (line 2)**
+
 - Issue: Using `filter()[0]` instead of `find()`
 - Fix: Already shown above
 - Why: `find()` stops at first match, `filter()` scans entire array
@@ -410,6 +426,7 @@ inefficient array filtering, and missing error handling.
 ─────────────────────────────────────
 
 ✓ Complete (2.3s)
+
 ```
 
 ### Test with File Input
@@ -433,6 +450,7 @@ automatosx list agents
 ```
 
 You should see:
+
 ```
 Available Agents (6):
 
@@ -456,12 +474,14 @@ Available Agents (6):
 Based on your agent's performance, adjust the system prompt:
 
 **Too Strict?** Lower the bar:
+
 ```yaml
 system: |
   Focus on critical issues only. Ignore minor style preferences.
 ```
 
 **Too Lenient?** Raise the bar:
+
 ```yaml
 system: |
   Apply strict code review standards. Flag all potential issues,
@@ -469,6 +489,7 @@ system: |
 ```
 
 **Wrong Focus?** Redirect:
+
 ```yaml
 system: |
   Focus exclusively on security vulnerabilities and data validation.
@@ -478,12 +499,14 @@ system: |
 ### Adjust Model Parameters
 
 **More Creative Reviews**:
+
 ```yaml
 model:
   temperature: 0.7  # Increased from 0.3
 ```
 
 **Faster Responses**:
+
 ```yaml
 model:
   provider: gemini  # Switch to Gemini Flash
@@ -491,6 +514,7 @@ model:
 ```
 
 **Longer Analysis**:
+
 ```yaml
 model:
   maxTokens: 16384  # Increased from 8192
@@ -589,6 +613,7 @@ automatosx run code-reviewer "Review src/auth.ts"
 ### Create More Agents
 
 Try creating:
+
 - **Test Writer** - Generates unit tests
 - **Documentation Agent** - Creates API docs
 - **Refactoring Agent** - Suggests code improvements
@@ -641,6 +666,7 @@ automatosx run code-reviewer "..." --no-memory
 ## Summary
 
 You've learned to:
+
 - ✅ Create an agent profile (YAML)
 - ✅ Configure AI model and parameters
 - ✅ Write effective system prompts

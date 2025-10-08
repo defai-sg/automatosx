@@ -29,12 +29,14 @@ Learn how to use AutomatosX's memory system for context-aware AI agents.
 ### What is Memory?
 
 AutomatosX uses **SQLite with vec extension** for hybrid search:
+
 - **Text Search**: Keyword-based lookup (tags, type)
 - **Vector Search**: Semantic similarity search using embeddings
 
 ### Why Memory?
 
 **Context Awareness**: Agents remember past interactions
+
 ```bash
 # First run
 automatosx run assistant "What is TypeScript?"
@@ -45,6 +47,7 @@ automatosx run assistant "What are its benefits?" --memory
 ```
 
 **Knowledge Persistence**: Build up domain knowledge over time
+
 ```bash
 # Add project-specific knowledge
 automatosx memory add "Our API uses JWT with 24h expiry" --type knowledge --tags api,auth
@@ -122,6 +125,7 @@ AutomatosX supports 4 memory types:
 ### Examples by Type
 
 **Knowledge**:
+
 ```bash
 automatosx memory add "SOLID principles: Single Responsibility, Open-Closed, Liskov Substitution, Interface Segregation, Dependency Inversion" \
   --type knowledge \
@@ -129,6 +133,7 @@ automatosx memory add "SOLID principles: Single Responsibility, Open-Closed, Lis
 ```
 
 **Conversation**:
+
 ```bash
 automatosx memory add "User prefers arrow functions over function declarations" \
   --type conversation \
@@ -136,6 +141,7 @@ automatosx memory add "User prefers arrow functions over function declarations" 
 ```
 
 **Code**:
+
 ```bash
 automatosx memory add "API error handling: try-catch with custom AppError class extending Error" \
   --type code \
@@ -143,6 +149,7 @@ automatosx memory add "API error handling: try-catch with custom AppError class 
 ```
 
 **Task**:
+
 ```bash
 automatosx memory add "Migrated authentication from sessions to JWT (2025-10-01)" \
   --type task \
@@ -177,16 +184,19 @@ automatosx memory search "What are the benefits of static typing?"
 ```
 
 **How it works**:
+
 1. Your query is converted to a 1536-dimension vector
 2. Similarity search finds related memories
 3. Results ranked by relevance (cosine similarity)
 
 **Example**:
+
 ```bash
 automatosx memory search "error handling best practices"
 ```
 
 Output:
+
 ```
 Found 3 memories (similarity > 0.75):
 
@@ -214,6 +224,7 @@ automatosx memory list
 ```
 
 Output:
+
 ```
 Total Memories: 15
 
@@ -233,6 +244,7 @@ automatosx memory get 1
 ```
 
 Output:
+
 ```json
 {
   "id": 1,
@@ -284,6 +296,7 @@ automatosx memory export api-docs.json --tags api,documentation
 ```
 
 **Export Format** (JSON):
+
 ```json
 {
   "version": "4.0.0",
@@ -343,6 +356,7 @@ When you run an agent with memory:
 4. **Execution**: Agent uses past knowledge to inform response
 
 **Example**:
+
 ```bash
 # Without memory
 automatosx run assistant "What's our auth strategy?"
@@ -415,6 +429,7 @@ automatosx memory add "REST API follows JSON:API spec, versioned via URL" \
 ```
 
 Now agents can answer project-specific questions:
+
 ```bash
 automatosx run assistant "What's our backend stack?" --memory
 # Response: "Your backend uses Node.js with TypeScript and PostgreSQL..."
@@ -472,6 +487,7 @@ automatosx memory add "Decided to use Prisma ORM over TypeORM for better TS supp
 ```
 
 Benefits:
+
 - Avoid duplicate work
 - Remember why decisions were made
 - Track project evolution
@@ -569,6 +585,7 @@ automatosx memory import backup-20251005.json --merge
 ### ✅ Do's
 
 **1. Use Descriptive Content**:
+
 ```bash
 # Good
 automatosx memory add "API uses JWT with RS256 algorithm, 24h access token, 7d refresh token" \
@@ -579,6 +596,7 @@ automatosx memory add "JWT stuff" --type knowledge
 ```
 
 **2. Tag Consistently**:
+
 ```bash
 # Create a tagging convention
 # Format: <category>/<subcategory>
@@ -586,18 +604,21 @@ automatosx memory add "..." --tags backend/api,security/auth,tech/jwt
 ```
 
 **3. Regular Exports**:
+
 ```bash
 # Weekly backups
 automatosx memory export backups/weekly-$(date +%Y%m%d).json
 ```
 
 **4. Clean Up Old Conversations**:
+
 ```bash
 # Monthly cleanup
 automatosx memory delete --type conversation --older-than 30d
 ```
 
 **5. Use Appropriate Types**:
+
 - `knowledge`: Facts, reusable information
 - `conversation`: User preferences, discussion context
 - `code`: Patterns, snippets, examples
@@ -606,6 +627,7 @@ automatosx memory delete --type conversation --older-than 30d
 ### ❌ Don'ts
 
 **1. Don't Store Sensitive Data**:
+
 ```bash
 # Bad - Never do this
 automatosx memory add "Production DB password: abc123" --type knowledge
@@ -615,6 +637,7 @@ automatosx memory add "Production DB credentials in 1Password vault" --type know
 ```
 
 **2. Don't Let Memory Grow Unbounded**:
+
 ```bash
 # Set up regular cleanup
 # Keep knowledge and code, clean conversations
@@ -622,6 +645,7 @@ automatosx memory delete --type conversation --older-than 30d
 ```
 
 **3. Don't Use Vague Tags**:
+
 ```bash
 # Bad
 --tags stuff,things,code
@@ -631,6 +655,7 @@ automatosx memory delete --type conversation --older-than 30d
 ```
 
 **4. Don't Forget to Set OpenAI Key**:
+
 ```bash
 # Vector search requires embeddings
 export OPENAI_API_KEY="sk-..."
@@ -643,6 +668,7 @@ export OPENAI_API_KEY="sk-..."
 ### Scenario: Code Review Memory
 
 **Setup**:
+
 ```bash
 # Add coding standards
 automatosx memory add "Always use async/await over .then() chains" \
@@ -664,6 +690,7 @@ automatosx memory add "Team prefers functional style over OOP" \
 ```
 
 **Usage**:
+
 ```yaml
 # .automatosx/agents/code-reviewer.yaml
 name: code-reviewer
@@ -686,6 +713,7 @@ system: |
 ```
 
 **Result**:
+
 ```bash
 automatosx run code-reviewer "Review this auth code" --memory
 
@@ -747,6 +775,7 @@ automatosx memory rebuild-index
 ## Summary
 
 You've learned to:
+
 - ✅ Add memories with metadata (type, tags)
 - ✅ Search with text (tags) and vectors (semantic)
 - ✅ Import/export memories for backup

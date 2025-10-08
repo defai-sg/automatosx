@@ -92,12 +92,14 @@
 ### Type Safety
 
 ❌ **Avoid:**
+
 ```typescript
 const data: any = loadData();  // Any type
 function process(x) { }        // Implicit any
 ```
 
 ✅ **Prefer:**
+
 ```typescript
 const data: ProfileData = loadProfile(name);
 function process(x: string): void { }
@@ -106,6 +108,7 @@ function process(x: string): void { }
 ### Error Handling
 
 ❌ **Avoid:**
+
 ```typescript
 try {
   await task();
@@ -115,6 +118,7 @@ try {
 ```
 
 ✅ **Prefer:**
+
 ```typescript
 try {
   await task();
@@ -130,11 +134,13 @@ try {
 ### Security
 
 ❌ **Avoid:**
+
 ```typescript
 const path = join(root, userInput);  // Path traversal risk
 ```
 
 ✅ **Prefer:**
+
 ```typescript
 const resolver = new PathResolver({ projectRoot: root });
 const path = await resolver.resolve(userInput);  // Validated
@@ -143,11 +149,13 @@ const path = await resolver.resolve(userInput);  // Validated
 ### Logging
 
 ❌ **Avoid:**
+
 ```typescript
 console.log('Profile loaded');  // No structure
 ```
 
 ✅ **Prefer:**
+
 ```typescript
 logger.info('Profile loaded', {
   name: profileName,
