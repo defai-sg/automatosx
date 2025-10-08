@@ -96,7 +96,7 @@ export class AgentExecutor {
     this.workspaceManager = config?.workspaceManager;
     this.contextManager = config?.contextManager;
     this.profileLoader = config?.profileLoader;
-    this.delegationParser = new DelegationParser();
+    this.delegationParser = new DelegationParser(config?.profileLoader);
   }
 
   /**
@@ -263,7 +263,7 @@ export class AgentExecutor {
 
       // Check for delegation requests in response (v4.7.2+)
       if (context.orchestration) {
-        const delegations = this.delegationParser.parse(response.content, context.agent.name);
+        const delegations = await this.delegationParser.parse(response.content, context.agent.name);
 
         if (delegations.length > 0) {
           if (verbose) {

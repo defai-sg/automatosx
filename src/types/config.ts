@@ -51,13 +51,13 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
     'claude-code': {
       enabled: true,
       priority: 1,
-      timeout: 120000,
+      timeout: 300000,
       command: 'claude'
     },
     'gemini-cli': {
       enabled: true,
       priority: 2,
-      timeout: 180000,
+      timeout: 300000,
       command: 'gemini'
     }
   },

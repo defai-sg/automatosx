@@ -163,7 +163,7 @@ All tasks delegated.`,
     });
   });
 
-  it('should parse multiple delegations to same agent correctly', () => {
+  it('should parse multiple delegations to same agent correctly', async () => {
     const parser = new DelegationParser();
 
     const response = `Frontend needs to handle three tasks:
@@ -174,7 +174,7 @@ All tasks delegated.`,
 
 @frontend Create the sidebar component.`;
 
-    const delegations = parser.parse(response, 'coordinator');
+    const delegations = await parser.parse(response, 'coordinator');
 
     // Should parse all 3 delegations
     expect(delegations).toHaveLength(3);
@@ -188,7 +188,7 @@ All tasks delegated.`,
     expect(delegations[2]?.task).toContain('sidebar');
   });
 
-  it('should format delegation results with indices', () => {
+  it('should format delegation results with indices', async () => {
     // This tests the display format logic
     const results = [
       { toAgent: 'frontend', response: { content: 'Result 1' } },
@@ -210,14 +210,14 @@ All tasks delegated.`,
     expect(summary).toContain('Result 3');
   });
 
-  it('should parse natural language delegation correctly', () => {
+  it('should parse natural language delegation correctly', async () => {
     const parser = new DelegationParser();
 
     const response = `@frontend Task 1.
 @frontend Task 2.
 @frontend Task 3.`;
 
-    const delegations = parser.parse(response, 'coordinator');
+    const delegations = await parser.parse(response, 'coordinator');
 
     expect(delegations).toHaveLength(3);
     expect(delegations[0]?.toAgent).toBe('frontend');

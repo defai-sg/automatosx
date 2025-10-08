@@ -17,7 +17,7 @@ import { DelegationParser } from '../../src/agents/delegation-parser.js';
 describe('Natural Language Delegation - E2E', () => {
   const parser = new DelegationParser();
 
-  it('should parse complex agent response with multiple delegations', () => {
+  it('should parse complex agent response with multiple delegations', async () => {
     const agentResponse = `I will coordinate this authentication feature work.
 
 @frontend Create the login UI with email and password fields, including:
@@ -31,7 +31,7 @@ describe('Natural Language Delegation - E2E', () => {
 
 I've delegated the work appropriately.`;
 
-    const delegations = parser.parse(agentResponse, 'coordinator');
+    const delegations = await parser.parse(agentResponse, 'coordinator');
 
     // Should find all 3 delegations (2 to frontend, 1 to backend)
     expect(delegations).toHaveLength(3);
@@ -47,7 +47,7 @@ I've delegated the work appropriately.`;
     expect(delegations[2]?.task).toContain('registration form');
   });
 
-  it('should handle mixed syntax in agent response', () => {
+  it('should handle mixed syntax in agent response', async () => {
     const agentResponse = `Let me break this down:
 
 DELEGATE TO frontend: Create the main dashboard UI.
@@ -58,7 +58,7 @@ I need frontend to implement the user profile page.
 
 委派給 backend：實現 API 端點。`;
 
-    const delegations = parser.parse(agentResponse, 'architect');
+    const delegations = await parser.parse(agentResponse, 'architect');
 
     // All 4 delegations should be found
     expect(delegations).toHaveLength(4);
@@ -77,7 +77,7 @@ I need frontend to implement the user profile page.
     expect(delegations[3]?.task).toContain('API');
   });
 
-  it('should allow same agent to receive multiple tasks', () => {
+  it('should allow same agent to receive multiple tasks', async () => {
     const agentResponse = `Frontend needs to do three things:
 
 @frontend Create the header with navigation menu.
@@ -90,7 +90,7 @@ More planning...
 
 @frontend Implement the sidebar with user menu.`;
 
-    const delegations = parser.parse(agentResponse, 'coordinator');
+    const delegations = await parser.parse(agentResponse, 'coordinator');
 
     // All 3 frontend delegations should be captured
     expect(delegations).toHaveLength(3);
@@ -104,7 +104,7 @@ More planning...
     expect(delegations[2]?.task).toContain('sidebar');
   });
 
-  it('should handle delegation in narrative context', () => {
+  it('should handle delegation in narrative context', async () => {
     const agentResponse = `After analyzing the requirements, here's the plan:
 
 For the frontend work, @frontend Create a modern, responsive design with:
@@ -116,7 +116,7 @@ For the backend, DELEGATE TO backend: Implement secure authentication with JWT.
 
 For data storage, please ask database to design an optimized schema.`;
 
-    const delegations = parser.parse(agentResponse, 'architect');
+    const delegations = await parser.parse(agentResponse, 'architect');
 
     expect(delegations).toHaveLength(3);
     expect(delegations[0]?.toAgent).toBe('frontend');

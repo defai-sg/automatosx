@@ -75,8 +75,23 @@ export class ProfileLoader {
           const displayName = await this.readDisplayNameOnly(name);
 
           if (displayName) {
+            const lowerDisplayName = displayName.toLowerCase();
+
+            // Check for duplicate display names
+            const existing = this.displayNameMap.get(lowerDisplayName);
+            if (existing) {
+              logger.warn('Duplicate displayName detected', {
+                displayName,
+                existingAgent: existing,
+                newAgent: name,
+                resolution: `Using first occurrence (${existing})`
+              });
+              // Keep the first occurrence, skip the duplicate
+              continue;
+            }
+
             // Store case-insensitive mapping
-            this.displayNameMap.set(displayName.toLowerCase(), name);
+            this.displayNameMap.set(lowerDisplayName, name);
             logger.debug('Mapped displayName to agent', {
               displayName,
               name

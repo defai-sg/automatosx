@@ -9,6 +9,7 @@
  */
 
 import { logger } from '../utils/logger.js';
+import type { ProfileLoader } from './profile-loader.js';
 
 /**
  * Parsed delegation instruction
@@ -28,6 +29,7 @@ export interface ParsedDelegation {
  * Delegation Parser
  *
  * Extracts delegation requests from agent response text using multiple patterns.
+ * Supports both agent names and display names (e.g., @oliver or @devops).
  *
  * Supported syntaxes:
  * 1. `DELEGATE TO frontend: Create login UI` (explicit, backward-compatible)
@@ -41,6 +43,17 @@ export interface ParsedDelegation {
  * Performance: < 1ms per parse (regex-based, no LLM calls)
  */
 export class DelegationParser {
+  private profileLoader?: ProfileLoader;
+
+  /**
+   * Create delegation parser with optional ProfileLoader for display name resolution
+   *
+   * @param profileLoader - Optional ProfileLoader for resolving display names to agent names
+   */
+  constructor(profileLoader?: ProfileLoader) {
+    this.profileLoader = profileLoader;
+  }
+
   /**
    * Parse delegation requests from agent response
    *
@@ -50,65 +63,66 @@ export class DelegationParser {
    *
    * @example
    * ```typescript
-   * const parser = new DelegationParser();
-   * const delegations = parser.parse(
-   *   "I'll handle the backend. @frontend Create the login UI with validation.",
+   * const parser = new DelegationParser(profileLoader);
+   * const delegations = await parser.parse(
+   *   "I'll handle the backend. @Oliver Create the login UI with validation.",
    *   "backend"
    * );
-   * // Returns: [{ toAgent: "frontend", task: "Create the login UI with validation." }]
+   * // Returns: [{ toAgent: "devops", task: "Create the login UI with validation." }]
+   * // (Oliver is display name for devops agent)
    * ```
    */
-  parse(response: string, fromAgent: string): ParsedDelegation[] {
+  async parse(response: string, fromAgent: string): Promise<ParsedDelegation[]> {
     const delegations: Array<ParsedDelegation & { position: number }> = [];
 
     // Pattern 1: DELEGATE TO [agent]: [task]
     // Example: "DELEGATE TO frontend: Create login UI"
     // Priority: High (most explicit)
     const pattern1 = /DELEGATE\s+TO\s+([a-zA-Z0-9-_]+)\s*:\s*(.+?)(?=\n\n|DELEGATE\s+TO|@[\w-]+|請\s+[\w-]+|委派給|$)/gis;
-    this.extractMatches(pattern1, response, fromAgent, delegations, 'DELEGATE TO');
+    await this.extractMatches(pattern1, response, fromAgent, delegations, 'DELEGATE TO');
 
     // Pattern 2a: @[agent]: [task]
     // Example: "@frontend: Create login UI"
     // Priority: High (explicit with colon)
     const pattern2a = /@([a-zA-Z0-9-_]+)\s*:\s+(.+?)(?=\n\n|DELEGATE\s+TO|@[\w-]+|請\s+[\w-]+|委派給|$)/gis;
-    this.extractMatches(pattern2a, response, fromAgent, delegations, '@agent:');
+    await this.extractMatches(pattern2a, response, fromAgent, delegations, '@agent:');
 
     // Pattern 2b: @[agent] [task] (no colon after agent name)
     // Example: "@frontend Create login UI"
     // Priority: Medium (less explicit, may have false positives)
     // Match task until: sentence end (.!?:) + newline, next delegation pattern, or end
     const pattern2b = /@([a-zA-Z0-9-_]+)\s+([A-Z][^\n]+?)(?:[.!?:]\s*(?=\n)|(?=\nDELEGATE\s+TO)|(?=\n\s*@[\w-]+)|(?=\n\s*請\s+[\w-]+)|(?=\n\s*委派給)|$)/gs;
-    this.extractMatches(pattern2b, response, fromAgent, delegations, '@agent');
+    await this.extractMatches(pattern2b, response, fromAgent, delegations, '@agent');
 
     // Pattern 3a: Please/Request/Ask [agent] to [task]
     // Example: "Please ask frontend to create login UI"
     // Priority: Medium
     const pattern3a = /(?:please|request|ask)\s+([a-zA-Z0-9-_]+)\s+to\s+(.+?)(?=\n\n|DELEGATE\s+TO|@[\w-]+|請\s+[\w-]+|委派給|please|request|ask|$)/gis;
-    this.extractMatches(pattern3a, response, fromAgent, delegations, 'please/request/ask');
+    await this.extractMatches(pattern3a, response, fromAgent, delegations, 'please/request/ask');
 
     // Pattern 3b: Please/Request [agent]: [task]
     // Example: "Request frontend: create login UI"
     // Priority: Medium
     const pattern3b = /(?:please|request)\s+([a-zA-Z0-9-_]+)\s*:\s*(.+?)(?=\n\n|DELEGATE\s+TO|@[\w-]+|請\s+[\w-]+|委派給|please|request|$)/gis;
-    this.extractMatches(pattern3b, response, fromAgent, delegations, 'please/request:');
+    await this.extractMatches(pattern3b, response, fromAgent, delegations, 'please/request:');
 
     // Pattern 4: I need/require [agent] to [task]
     // Example: "I need frontend to handle the UI"
     // Priority: Medium
     const pattern4 = /I\s+(?:need|require)\s+([a-zA-Z0-9-_]+)\s+to\s+(.+?)(?=\n\n|DELEGATE\s+TO|@[\w-]+|請\s+[\w-]+|委派給|I\s+(?:need|require)|$)/gis;
-    this.extractMatches(pattern4, response, fromAgent, delegations, 'I need/require');
+    await this.extractMatches(pattern4, response, fromAgent, delegations, 'I need/require');
 
     // Pattern 5a: 請 [agent] [task]
     // Example: "請 frontend 建立登入 UI"
     // Priority: High (Chinese explicit)
     const pattern5a = /請\s+([a-zA-Z0-9-_]+)\s+([^\n@請委派]+?)(?=\n\n|DELEGATE\s+TO|@[\w-]+|請\s+[\w-]+|委派給|$)/gs;
-    this.extractMatches(pattern5a, response, fromAgent, delegations, '請');
+    await this.extractMatches(pattern5a, response, fromAgent, delegations, '請');
 
     // Pattern 5b: 委派給 [agent]：[task] or 委派給 [agent] [task]
     // Example: "委派給 backend：實現 API"
     // Priority: High (Chinese formal)
     const pattern5b = /委派給\s+([a-zA-Z0-9-_]+)\s*[：:]\s*(.+?)(?=\n\n|DELEGATE\s+TO|@[\w-]+|請\s+[\w-]+|委派給|$)/gs;
-    this.extractMatches(pattern5b, response, fromAgent, delegations, '委派給');
+    await this.extractMatches(pattern5b, response, fromAgent, delegations, '委派給');
 
     // Sort by position in text (ascending)
     delegations.sort((a, b) => a.position - b.position);
@@ -129,16 +143,16 @@ export class DelegationParser {
    *
    * @private
    */
-  private extractMatches(
+  private async extractMatches(
     pattern: RegExp,
     response: string,
     fromAgent: string,
     delegations: Array<ParsedDelegation & { position: number }>,
     patternName: string
-  ): void {
+  ): Promise<void> {
     let match;
     while ((match = pattern.exec(response)) !== null) {
-      const toAgent = match[1]?.trim();
+      let toAgent = match[1]?.trim();
       const task = match[2]?.trim();
 
       // Validate extracted values
@@ -149,6 +163,28 @@ export class DelegationParser {
       // Skip if task is too short (likely false positive)
       if (task.length < 5) {
         continue;
+      }
+
+      // Resolve agent name (supports display names like "Oliver" → "devops")
+      if (this.profileLoader) {
+        try {
+          const resolvedName = await this.profileLoader.resolveAgentName(toAgent);
+          if (resolvedName !== toAgent) {
+            logger.debug('Resolved display name to agent name', {
+              displayName: toAgent,
+              agentName: resolvedName
+            });
+            toAgent = resolvedName;
+          }
+        } catch (error) {
+          // Agent not found - skip this delegation
+          logger.warn('Agent not found, skipping delegation', {
+            agentIdentifier: toAgent,
+            fromAgent,
+            error: error instanceof Error ? error.message : String(error)
+          });
+          continue;
+        }
       }
 
       // Skip if delegating to self

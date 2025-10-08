@@ -5,6 +5,94 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.9.1] - 2025-10-08
+
+### ✨ Features
+
+**Display Name Resolution for Agent Delegation**
+- **Added**: Agents can now delegate using friendly display names (e.g., `@Oliver`, `@Tony`, `@Steve`)
+- **Smart Resolution**: `DelegationParser` automatically resolves display names to agent names using `ProfileLoader`
+- **Case-Insensitive**: Display name matching is case-insensitive (`@oliver`, `@Oliver`, `@OLIVER` all work)
+- **Graceful Fallback**: Works with or without `ProfileLoader` - degrades gracefully in tests
+- **Example**: `@Oliver Create infrastructure` → resolves to `devops` agent
+
+**Duplicate Display Name Detection**
+- **Added**: `ProfileLoader` now detects and warns about duplicate display names
+- **Behavior**: First occurrence is kept, duplicates are skipped with clear warning
+- **Logging**: Detailed warning includes both conflicting agent names
+
+### 🔧 Improvements
+
+**Extended Provider Timeout**
+- **Increased**: Provider timeout from 2 minutes to 5 minutes (300000ms)
+- **Benefit**: Allows complex multi-agent workflows to complete without timing out
+- **Affected**: Both `claude-code` and `gemini-cli` providers
+- **Configuration**: Updated in both `DEFAULT_CONFIG` and `automatosx.config.json`
+
+**Enhanced Error Handling**
+- **Improved**: Invalid agents are automatically skipped during delegation with clear logging
+- **Added**: Proper error messages when agent resolution fails
+- **Logging**: Debug logs show display name → agent name resolution
+
+### ✅ Testing
+
+**New Integration Tests**
+- **Added**: 6 comprehensive integration tests for display name resolution
+- **Coverage**: Tests with/without ProfileLoader, multiple display names, invalid agents, case sensitivity
+- **Total**: 928 tests (up from 922)
+
+**Test Updates**
+- **Updated**: All delegation parser tests to use async/await
+- **Fixed**: Test files properly handle async parse() method
+- **Files**: `delegation-parser.test.ts`, `executor-multi-delegation.test.ts`, `natural-language-delegation.test.ts`
+
+### 🔨 Technical Changes
+
+**Files Modified:**
+- `src/agents/delegation-parser.ts` - Added ProfileLoader support and async resolution
+- `src/agents/executor.ts` - Pass ProfileLoader to DelegationParser
+- `src/agents/profile-loader.ts` - Added duplicate display name detection
+- `src/types/config.ts` - Increased default timeouts
+- `automatosx.config.json` - Updated provider timeouts
+- `tests/unit/delegation-parser.test.ts` - Added display name integration tests
+
+**API Changes:**
+- `DelegationParser.constructor()` now accepts optional `ProfileLoader` parameter
+- `DelegationParser.parse()` changed from sync to async method
+- All callers updated to use `await parser.parse()`
+
+### 📊 Validation
+
+- ✅ TypeScript compilation: Pass
+- ✅ Unit tests: 928 passed (6 new tests)
+- ✅ Integration tests: Pass
+- ✅ E2E tests: Pass
+- ✅ Build: Success
+
+### 🎯 Use Cases
+
+**Before (v4.8.0):**
+```typescript
+@devops Create the CI/CD pipeline
+@cto Review architecture
+@security Audit the implementation
+```
+
+**After (v4.9.1):**
+```typescript
+@Oliver Create the CI/CD pipeline    // Friendly display name
+@Tony Review architecture             // Auto-resolves to 'cto'
+@Steve Audit the implementation      // Auto-resolves to 'security'
+```
+
+### 🔄 Backward Compatibility
+
+- ✅ All existing agent name delegation continues to work
+- ✅ No breaking changes to API
+- ✅ ProfileLoader is optional - graceful degradation without it
+
+---
+
 ## [4.9.0] - 2025-10-08
 
 ### 🧹 Complete Removal of canDelegate Field - Clean Architecture

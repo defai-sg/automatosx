@@ -4,29 +4,31 @@
  * Tests natural language delegation parsing with multiple syntax patterns.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { DelegationParser } from '../../src/agents/delegation-parser.js';
+import type { ProfileLoader } from '../../src/agents/profile-loader.js';
+import { AgentNotFoundError } from '../../src/types/agent.js';
 
 describe('DelegationParser', () => {
   const parser = new DelegationParser();
 
   describe('Pattern 1: DELEGATE TO syntax', () => {
-    it('should parse "DELEGATE TO frontend: Create login UI"', () => {
+    it('should parse "DELEGATE TO frontend: Create login UI"', async () => {
       const response = 'I will handle the backend. DELEGATE TO frontend: Create login UI with validation.';
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       expect(delegations).toHaveLength(1);
       expect(delegations[0]?.toAgent).toBe('frontend');
       expect(delegations[0]?.task).toBe('Create login UI with validation.');
     });
 
-    it('should parse multiple DELEGATE TO statements', () => {
+    it('should parse multiple DELEGATE TO statements', async () => {
       const response = `
         DELEGATE TO frontend: Create UI components.
 
         DELEGATE TO database: Design schema.
       `;
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       expect(delegations).toHaveLength(2);
       expect(delegations[0]?.toAgent).toBe('frontend');
@@ -35,9 +37,9 @@ describe('DelegationParser', () => {
       expect(delegations[1]?.task).toContain('Design schema');
     });
 
-    it('should handle case-insensitive DELEGATE TO', () => {
+    it('should handle case-insensitive DELEGATE TO', async () => {
       const response = 'delegate to frontend: Build the UI';
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       expect(delegations).toHaveLength(1);
       expect(delegations[0]?.toAgent).toBe('frontend');
@@ -45,40 +47,40 @@ describe('DelegationParser', () => {
   });
 
   describe('Pattern 2: @agent syntax', () => {
-    it('should parse "@frontend: Create login UI"', () => {
+    it('should parse "@frontend: Create login UI"', async () => {
       const response = 'I will handle auth. @frontend: Create login UI with email/password fields.';
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       expect(delegations).toHaveLength(1);
       expect(delegations[0]?.toAgent).toBe('frontend');
       expect(delegations[0]?.task).toContain('Create login UI');
     });
 
-    it('should parse "@frontend Create login UI" (no colon)', () => {
+    it('should parse "@frontend Create login UI" (no colon)', async () => {
       const response = 'Let me delegate this. @frontend Create responsive login UI.';
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       expect(delegations).toHaveLength(1);
       expect(delegations[0]?.toAgent).toBe('frontend');
       expect(delegations[0]?.task).toContain('Create responsive login UI');
     });
 
-    it('should parse multiple @agent mentions', () => {
+    it('should parse multiple @agent mentions', async () => {
       const response = `
         @frontend Create the UI components.
 
         @backend: Implement the REST API.
       `;
-      const delegations = parser.parse(response, 'coordinator');
+      const delegations = await parser.parse(response, 'coordinator');
 
       expect(delegations).toHaveLength(2);
       expect(delegations[0]?.toAgent).toBe('frontend');
       expect(delegations[1]?.toAgent).toBe('backend');
     });
 
-    it('should handle agent names with hyphens and underscores', () => {
+    it('should handle agent names with hyphens and underscores', async () => {
       const response = '@user-service: Create user profile API. @data_validator Validate inputs.';
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       expect(delegations).toHaveLength(2);
       expect(delegations[0]?.toAgent).toBe('user-service');
@@ -87,36 +89,36 @@ describe('DelegationParser', () => {
   });
 
   describe('Pattern 3: Please/Request/Ask syntax', () => {
-    it('should parse "Please ask frontend to create UI"', () => {
+    it('should parse "Please ask frontend to create UI"', async () => {
       const response = 'Please ask frontend to create a responsive login UI.';
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       expect(delegations).toHaveLength(1);
       expect(delegations[0]?.toAgent).toBe('frontend');
       expect(delegations[0]?.task).toContain('create a responsive login UI');
     });
 
-    it('should parse "Request backend to implement API"', () => {
+    it('should parse "Request backend to implement API"', async () => {
       const response = 'Request backend to implement authentication API with JWT.';
-      const delegations = parser.parse(response, 'coordinator');
+      const delegations = await parser.parse(response, 'coordinator');
 
       expect(delegations).toHaveLength(1);
       expect(delegations[0]?.toAgent).toBe('backend');
       expect(delegations[0]?.task).toContain('implement authentication API');
     });
 
-    it('should parse "Request frontend: build UI"', () => {
+    it('should parse "Request frontend: build UI"', async () => {
       const response = 'Request frontend: build the dashboard UI.';
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       expect(delegations).toHaveLength(1);
       expect(delegations[0]?.toAgent).toBe('frontend');
       expect(delegations[0]?.task).toContain('build the dashboard UI');
     });
 
-    it('should handle case-insensitive please/request/ask', () => {
+    it('should handle case-insensitive please/request/ask', async () => {
       const response = 'PLEASE ask frontend to create UI. REQUEST backend: implement API.';
-      const delegations = parser.parse(response, 'coordinator');
+      const delegations = await parser.parse(response, 'coordinator');
 
       expect(delegations).toHaveLength(2);
       expect(delegations[0]?.toAgent).toBe('frontend');
@@ -125,18 +127,18 @@ describe('DelegationParser', () => {
   });
 
   describe('Pattern 4: I need/require syntax', () => {
-    it('should parse "I need frontend to handle UI"', () => {
+    it('should parse "I need frontend to handle UI"', async () => {
       const response = 'I need frontend to handle the user interface components.';
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       expect(delegations).toHaveLength(1);
       expect(delegations[0]?.toAgent).toBe('frontend');
       expect(delegations[0]?.task).toContain('handle the user interface');
     });
 
-    it('should parse "I require backend to implement auth"', () => {
+    it('should parse "I require backend to implement auth"', async () => {
       const response = 'I require backend to implement secure authentication.';
-      const delegations = parser.parse(response, 'frontend');
+      const delegations = await parser.parse(response, 'frontend');
 
       expect(delegations).toHaveLength(1);
       expect(delegations[0]?.toAgent).toBe('backend');
@@ -145,27 +147,27 @@ describe('DelegationParser', () => {
   });
 
   describe('Pattern 5: Chinese syntax', () => {
-    it('should parse "請 frontend 建立登入 UI"', () => {
+    it('should parse "請 frontend 建立登入 UI"', async () => {
       const response = '我會處理後端。請 frontend 建立登入 UI 和表單驗證。';
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       expect(delegations).toHaveLength(1);
       expect(delegations[0]?.toAgent).toBe('frontend');
       expect(delegations[0]?.task).toContain('建立登入 UI');
     });
 
-    it('should parse "委派給 backend：實現 API"', () => {
+    it('should parse "委派給 backend：實現 API"', async () => {
       const response = '委派給 backend：實現認證 API 和資料庫整合。';
-      const delegations = parser.parse(response, 'frontend');
+      const delegations = await parser.parse(response, 'frontend');
 
       expect(delegations).toHaveLength(1);
       expect(delegations[0]?.toAgent).toBe('backend');
       expect(delegations[0]?.task).toContain('實現認證 API');
     });
 
-    it('should parse mixed Chinese and English', () => {
+    it('should parse mixed Chinese and English', async () => {
       const response = '請 frontend 建立 UI。DELEGATE TO backend: Implement API.';
-      const delegations = parser.parse(response, 'coordinator');
+      const delegations = await parser.parse(response, 'coordinator');
 
       expect(delegations).toHaveLength(2);
       expect(delegations[0]?.toAgent).toBe('frontend');
@@ -174,19 +176,19 @@ describe('DelegationParser', () => {
   });
 
   describe('Edge cases', () => {
-    it('should skip self-delegation', () => {
+    it('should skip self-delegation', async () => {
       const response = 'DELEGATE TO backend: Handle this task.';
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       expect(delegations).toHaveLength(0);
     });
 
-    it('should allow multiple delegations to same agent', () => {
+    it('should allow multiple delegations to same agent', async () => {
       const response = `
         DELEGATE TO frontend: Create login UI.
         @frontend Build the dashboard.
       `;
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       // Should keep both delegations to 'frontend'
       expect(delegations).toHaveLength(2);
@@ -196,35 +198,35 @@ describe('DelegationParser', () => {
       expect(delegations[1]?.task).toContain('Build the dashboard');
     });
 
-    it('should skip tasks that are too short', () => {
+    it('should skip tasks that are too short', async () => {
       const response = '@frontend: UI';
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       // Task "UI" is too short (< 5 chars)
       expect(delegations).toHaveLength(0);
     });
 
-    it('should handle empty response', () => {
-      const delegations = parser.parse('', 'backend');
+    it('should handle empty response', async () => {
+      const delegations = await parser.parse('', 'backend');
       expect(delegations).toHaveLength(0);
     });
 
-    it('should handle response with no delegations', () => {
+    it('should handle response with no delegations', async () => {
       const response = 'I will implement this feature myself without delegating.';
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       expect(delegations).toHaveLength(0);
     });
 
-    it('should extract originalText for debugging', () => {
+    it('should extract originalText for debugging', async () => {
       const response = 'DELEGATE TO frontend: Create login UI.';
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       expect(delegations[0]?.originalText).toBeDefined();
       expect(delegations[0]?.originalText).toContain('DELEGATE TO frontend');
     });
 
-    it('should handle multiple tasks to same agent in order', () => {
+    it('should handle multiple tasks to same agent in order', async () => {
       const response = `
         @frontend Create the header component.
 
@@ -234,7 +236,7 @@ describe('DelegationParser', () => {
 
         @frontend And finally create the navigation menu.
       `;
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       expect(delegations).toHaveLength(3);
       expect(delegations[0]?.task).toContain('header component');
@@ -247,7 +249,7 @@ describe('DelegationParser', () => {
       });
     });
 
-    it('should handle mixed agents with duplicates', () => {
+    it('should handle mixed agents with duplicates', async () => {
       const response = `
         @frontend Create UI for login.
         @backend Implement auth API.
@@ -255,7 +257,7 @@ describe('DelegationParser', () => {
         @database Design user schema.
         @backend Add session management.
       `;
-      const delegations = parser.parse(response, 'coordinator');
+      const delegations = await parser.parse(response, 'coordinator');
 
       expect(delegations).toHaveLength(5);
 
@@ -278,21 +280,21 @@ describe('DelegationParser', () => {
   });
 
   describe('Complex scenarios', () => {
-    it('should parse multi-line tasks', () => {
+    it('should parse multi-line tasks', async () => {
       const response = `
         DELEGATE TO frontend: Create a responsive login UI with the following requirements:
         - Email and password fields
         - Form validation
         - Error handling
       `;
-      const delegations = parser.parse(response, 'backend');
+      const delegations = await parser.parse(response, 'backend');
 
       expect(delegations).toHaveLength(1);
       expect(delegations[0]?.toAgent).toBe('frontend');
       expect(delegations[0]?.task).toContain('Create a responsive login UI');
     });
 
-    it('should handle mixed syntax patterns in same response', () => {
+    it('should handle mixed syntax patterns in same response', async () => {
       const response = `
         I'll coordinate the work:
 
@@ -304,13 +306,13 @@ describe('DelegationParser', () => {
 
         I need security to review the authentication flow.
       `;
-      const delegations = parser.parse(response, 'coordinator');
+      const delegations = await parser.parse(response, 'coordinator');
 
       expect(delegations).toHaveLength(4);
       expect(delegations.map(d => d.toAgent)).toEqual(['frontend', 'backend', 'database', 'security']);
     });
 
-    it('should handle delegations in narrative context', () => {
+    it('should handle delegations in narrative context', async () => {
       const response = `
         After analyzing the requirements, I've determined we need specialized help:
 
@@ -323,7 +325,7 @@ describe('DelegationParser', () => {
 
         For data storage, please ask database to design an optimized schema for user data and sessions.
       `;
-      const delegations = parser.parse(response, 'architect');
+      const delegations = await parser.parse(response, 'architect');
 
       expect(delegations).toHaveLength(3);
       expect(delegations[0]?.toAgent).toBe('frontend');
@@ -333,7 +335,7 @@ describe('DelegationParser', () => {
   });
 
   describe('Performance', () => {
-    it('should parse large responses efficiently', () => {
+    it('should parse large responses efficiently', async () => {
       // Create a large response with multiple delegations
       const lines = [
         'This is a complex project requiring multiple delegations.',
@@ -351,11 +353,146 @@ describe('DelegationParser', () => {
       const response = lines.join('\n');
 
       const startTime = Date.now();
-      const delegations = parser.parse(response, 'coordinator');
+      const delegations = await parser.parse(response, 'coordinator');
       const duration = Date.now() - startTime;
 
       expect(delegations).toHaveLength(3);
       expect(duration).toBeLessThan(10); // Should be < 10ms
+    });
+  });
+
+  describe('Display Name Resolution (Integration)', () => {
+    it('should work without ProfileLoader (uses raw agent names)', async () => {
+      const parserWithoutLoader = new DelegationParser();
+      const response = '@frontend Create UI components.';
+      const delegations = await parserWithoutLoader.parse(response, 'backend');
+
+      expect(delegations).toHaveLength(1);
+      expect(delegations[0]?.toAgent).toBe('frontend'); // Raw name, not resolved
+    });
+
+    it('should skip invalid agent names when ProfileLoader is not provided', async () => {
+      const parserWithoutLoader = new DelegationParser();
+      const response = '@nonexistent Create something.';
+      const delegations = await parserWithoutLoader.parse(response, 'backend');
+
+      // Without ProfileLoader, we can't validate if agent exists
+      // So it will be included (validation happens during execution)
+      expect(delegations).toHaveLength(1);
+      expect(delegations[0]?.toAgent).toBe('nonexistent');
+    });
+
+    it('should resolve display names to agent names with ProfileLoader', async () => {
+      // Mock ProfileLoader with display name mapping
+      const mockProfileLoader = {
+        resolveAgentName: vi.fn().mockImplementation(async (identifier: string) => {
+          const mapping: Record<string, string> = {
+            'oliver': 'devops',   // Oliver → devops
+            'tony': 'cto',        // Tony → cto
+            'steve': 'security',  // Steve → security
+            'devops': 'devops',   // Direct agent name
+            'cto': 'cto',
+            'security': 'security'
+          };
+          const resolved = mapping[identifier.toLowerCase()];
+          if (!resolved) {
+            throw new AgentNotFoundError(identifier);
+          }
+          return resolved;
+        })
+      } as unknown as ProfileLoader;
+
+      const parserWithLoader = new DelegationParser(mockProfileLoader);
+
+      // Test with display name
+      const response1 = '@Oliver Create the infrastructure setup.';
+      const delegations1 = await parserWithLoader.parse(response1, 'backend');
+
+      expect(delegations1).toHaveLength(1);
+      expect(delegations1[0]?.toAgent).toBe('devops'); // Resolved Oliver → devops
+      expect(mockProfileLoader.resolveAgentName).toHaveBeenCalledWith('Oliver');
+    });
+
+    it('should handle multiple display names in same response', async () => {
+      const mockProfileLoader = {
+        resolveAgentName: vi.fn().mockImplementation(async (identifier: string) => {
+          const mapping: Record<string, string> = {
+            'oliver': 'devops',
+            'tony': 'cto',
+            'steve': 'security'
+          };
+          const resolved = mapping[identifier.toLowerCase()];
+          if (!resolved) {
+            throw new AgentNotFoundError(identifier);
+          }
+          return resolved;
+        })
+      } as unknown as ProfileLoader;
+
+      const parserWithLoader = new DelegationParser(mockProfileLoader);
+
+      const response = `
+        @Oliver Setup the CI/CD pipeline.
+        @Tony Review the technical architecture.
+        @Steve Conduct security audit.
+      `;
+      const delegations = await parserWithLoader.parse(response, 'coordinator');
+
+      expect(delegations).toHaveLength(3);
+      expect(delegations[0]?.toAgent).toBe('devops');
+      expect(delegations[1]?.toAgent).toBe('cto');
+      expect(delegations[2]?.toAgent).toBe('security');
+    });
+
+    it('should skip delegations when agent not found via ProfileLoader', async () => {
+      const mockProfileLoader = {
+        resolveAgentName: vi.fn().mockImplementation(async (identifier: string) => {
+          if (identifier.toLowerCase() === 'frontend') {
+            return 'frontend';
+          }
+          throw new AgentNotFoundError(identifier);
+        })
+      } as unknown as ProfileLoader;
+
+      const parserWithLoader = new DelegationParser(mockProfileLoader);
+
+      const response = `
+        @frontend Create UI.
+        @nonexistent Do something.
+        @backend Create API.
+      `;
+      const delegations = await parserWithLoader.parse(response, 'coordinator');
+
+      // Only frontend should be included, others skipped
+      expect(delegations).toHaveLength(1);
+      expect(delegations[0]?.toAgent).toBe('frontend');
+    });
+
+    it('should handle case-insensitive display names', async () => {
+      const mockProfileLoader = {
+        resolveAgentName: vi.fn().mockImplementation(async (identifier: string) => {
+          if (identifier.toLowerCase() === 'oliver') {
+            return 'devops';
+          }
+          throw new AgentNotFoundError(identifier);
+        })
+      } as unknown as ProfileLoader;
+
+      const parserWithLoader = new DelegationParser(mockProfileLoader);
+
+      // Test different cases
+      const responses = [
+        '@oliver Create infrastructure.',   // lowercase
+        '@Oliver Create infrastructure.',   // capitalized
+        '@OLIVER Create infrastructure.',   // uppercase
+        '@oLiVeR Create infrastructure.'    // mixed case
+      ];
+
+      for (const response of responses) {
+        const delegations = await parserWithLoader.parse(response, 'backend');
+        expect(delegations).toHaveLength(1);
+        expect(delegations[0]?.toAgent).toBe('devops');
+      }
     });
   });
 });
