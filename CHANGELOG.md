@@ -5,6 +5,25 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.9.6] - 2025-10-08
+
+### 🐛 Bug Fixes
+
+**Natural Language Delegation Parser - Whitespace Handling**
+- **Fixed**: Regex patterns now correctly handle indented delegation syntax
+- **Issue**: Multi-line delegations with indentation were incorrectly parsed as single delegation
+- **Solution**: Added `\s*` to lookahead assertions to match optional whitespace after newlines
+- **Impact**: All 7 delegation patterns now work correctly with various formatting styles
+- **Example**: Properly separates `@frontend Create UI` and `@backend Implement API` even when indented
+- **Tests**: All 1026 tests passing (fixed 2 previously failing tests)
+
+### 🔧 Improvements
+
+**Enhanced Delegation Pattern Robustness**
+- **Improved**: Lookahead assertions in all regex patterns (DELEGATE TO, @agent, Please/Request, I need/require, Chinese patterns)
+- **Flexibility**: Now supports mixed formatting styles (no indentation, tabs, spaces)
+- **Reliability**: Correctly separates multiple delegations regardless of formatting
+
 ## [4.9.5] - 2025-10-08
 
 ### ✨ Features

@@ -78,50 +78,52 @@ export class DelegationParser {
     // Pattern 1: DELEGATE TO [agent]: [task]
     // Example: "DELEGATE TO frontend: Create login UI"
     // Priority: High (most explicit)
-    const pattern1 = /DELEGATE\s+TO\s+([a-zA-Z0-9-_]+)\s*:\s*(.+?)(?=\n\n|DELEGATE\s+TO|@[\w-]+|請\s+[\w-]+|委派給|$)/gis;
+    const pattern1 = /DELEGATE\s+TO\s+([a-zA-Z0-9-_]+)\s*:\s*(.+?)(?=\n\n|(?=\n\s*DELEGATE\s+TO)|(?=\n\s*@[\w-]+)|(?=\n\s*請\s+[\w-]+)|(?=\n\s*委派給)|$)/gis;
     await this.extractMatches(pattern1, response, fromAgent, delegations, 'DELEGATE TO');
 
     // Pattern 2a: @[agent]: [task]
     // Example: "@frontend: Create login UI"
     // Priority: High (explicit with colon)
-    const pattern2a = /@([a-zA-Z0-9-_]+)\s*:\s+(.+?)(?=\n\n|DELEGATE\s+TO|@[\w-]+|請\s+[\w-]+|委派給|$)/gis;
+    const pattern2a = /@([a-zA-Z0-9-_]+)\s*:\s+(.+?)(?=\n\n|(?=\n\s*DELEGATE\s+TO)|(?=\n\s*@[\w-]+)|(?=\n\s*請\s+[\w-]+)|(?=\n\s*委派給)|$)/gis;
     await this.extractMatches(pattern2a, response, fromAgent, delegations, '@agent:');
 
     // Pattern 2b: @[agent] [task] (no colon after agent name)
-    // Example: "@frontend Create login UI"
+    // Example: "@frontend Create login UI" or "@coder 請檢視程式碼"
     // Priority: Medium (less explicit, may have false positives)
-    // Match task until: sentence end (.!?:) + newline, next delegation pattern, or end
-    const pattern2b = /@([a-zA-Z0-9-_]+)\s+([A-Z][^\n]+?)(?:[.!?:]\s*(?=\n)|(?=\nDELEGATE\s+TO)|(?=\n\s*@[\w-]+)|(?=\n\s*請\s+[\w-]+)|(?=\n\s*委派給)|$)/gs;
+    // Match task until: double newline, next delegation pattern, or end
+    // Support both English (uppercase start) and Chinese/other languages
+    // Supports multi-line tasks (e.g., bullet points)
+    const pattern2b = /@([a-zA-Z0-9-_]+)\s+([A-Z\u4e00-\u9fff\u3400-\u4dbf][\s\S]+?)(?:\n\n|(?=\n\s*DELEGATE\s+TO)|(?=\n\s*@[\w-]+)|(?=\n\s*請\s+[\w-]+)|(?=\n\s*委派給)|$)/gs;
     await this.extractMatches(pattern2b, response, fromAgent, delegations, '@agent');
 
     // Pattern 3a: Please/Request/Ask [agent] to [task]
     // Example: "Please ask frontend to create login UI"
     // Priority: Medium
-    const pattern3a = /(?:please|request|ask)\s+([a-zA-Z0-9-_]+)\s+to\s+(.+?)(?=\n\n|DELEGATE\s+TO|@[\w-]+|請\s+[\w-]+|委派給|please|request|ask|$)/gis;
+    const pattern3a = /(?:please|request|ask)\s+([a-zA-Z0-9-_]+)\s+to\s+(.+?)(?=\n\n|(?=\n\s*DELEGATE\s+TO)|(?=\n\s*@[\w-]+)|(?=\n\s*請\s+[\w-]+)|(?=\n\s*委派給)|(?=\n\s*(?:please|request|ask))|$)/gis;
     await this.extractMatches(pattern3a, response, fromAgent, delegations, 'please/request/ask');
 
     // Pattern 3b: Please/Request [agent]: [task]
     // Example: "Request frontend: create login UI"
     // Priority: Medium
-    const pattern3b = /(?:please|request)\s+([a-zA-Z0-9-_]+)\s*:\s*(.+?)(?=\n\n|DELEGATE\s+TO|@[\w-]+|請\s+[\w-]+|委派給|please|request|$)/gis;
+    const pattern3b = /(?:please|request)\s+([a-zA-Z0-9-_]+)\s*:\s*(.+?)(?=\n\n|(?=\n\s*DELEGATE\s+TO)|(?=\n\s*@[\w-]+)|(?=\n\s*請\s+[\w-]+)|(?=\n\s*委派給)|(?=\n\s*(?:please|request))|$)/gis;
     await this.extractMatches(pattern3b, response, fromAgent, delegations, 'please/request:');
 
     // Pattern 4: I need/require [agent] to [task]
     // Example: "I need frontend to handle the UI"
     // Priority: Medium
-    const pattern4 = /I\s+(?:need|require)\s+([a-zA-Z0-9-_]+)\s+to\s+(.+?)(?=\n\n|DELEGATE\s+TO|@[\w-]+|請\s+[\w-]+|委派給|I\s+(?:need|require)|$)/gis;
+    const pattern4 = /I\s+(?:need|require)\s+([a-zA-Z0-9-_]+)\s+to\s+(.+?)(?=\n\n|(?=\n\s*DELEGATE\s+TO)|(?=\n\s*@[\w-]+)|(?=\n\s*請\s+[\w-]+)|(?=\n\s*委派給)|(?=\n\s*I\s+(?:need|require))|$)/gis;
     await this.extractMatches(pattern4, response, fromAgent, delegations, 'I need/require');
 
     // Pattern 5a: 請 [agent] [task]
     // Example: "請 frontend 建立登入 UI"
     // Priority: High (Chinese explicit)
-    const pattern5a = /請\s+([a-zA-Z0-9-_]+)\s+([^\n@請委派]+?)(?=\n\n|DELEGATE\s+TO|@[\w-]+|請\s+[\w-]+|委派給|$)/gs;
+    const pattern5a = /請\s+([a-zA-Z0-9-_]+)\s+([^\n@請委派]+?)(?=\n\n|(?=\n\s*DELEGATE\s+TO)|(?=\n\s*@[\w-]+)|(?=\n\s*請\s+[\w-]+)|(?=\n\s*委派給)|$)/gs;
     await this.extractMatches(pattern5a, response, fromAgent, delegations, '請');
 
     // Pattern 5b: 委派給 [agent]：[task] or 委派給 [agent] [task]
     // Example: "委派給 backend：實現 API"
     // Priority: High (Chinese formal)
-    const pattern5b = /委派給\s+([a-zA-Z0-9-_]+)\s*[：:]\s*(.+?)(?=\n\n|DELEGATE\s+TO|@[\w-]+|請\s+[\w-]+|委派給|$)/gs;
+    const pattern5b = /委派給\s+([a-zA-Z0-9-_]+)\s*[：:]\s*(.+?)(?=\n\n|(?=\n\s*DELEGATE\s+TO)|(?=\n\s*@[\w-]+)|(?=\n\s*請\s+[\w-]+)|(?=\n\s*委派給)|$)/gs;
     await this.extractMatches(pattern5b, response, fromAgent, delegations, '委派給');
 
     // Sort by position in text (ascending)
