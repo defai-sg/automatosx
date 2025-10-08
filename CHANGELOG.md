@@ -5,6 +5,101 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.7.6] - 2025-10-08
+
+### 🔓 Complete Whitelist Removal
+
+This release completely removes the `canDelegateTo` whitelist mechanism, enabling true autonomous agent collaboration.
+
+#### 🎯 Breaking Changes
+
+**Whitelist Mechanism Removed**
+- ❌ **Removed**: `canDelegateTo` field no longer validated or enforced
+- ✅ **New Behavior**: Agents can delegate to ANY other agent by default
+- 🛡️ **Safety**: Security ensured via `canDelegate` flag, cycle detection, depth limits, and timeouts
+
+**Migration Guide:**
+```yaml
+# Before (v4.7.5 and earlier)
+orchestration:
+  canDelegate: true
+  canDelegateTo:        # ❌ No longer needed
+    - frontend
+    - backend
+  maxDelegationDepth: 3
+
+# After (v4.7.6+)
+orchestration:
+  canDelegate: true     # ✅ Just this!
+  maxDelegationDepth: 3
+```
+
+**Action Required:** Simply remove `canDelegateTo` from your agent profiles. Existing profiles with `canDelegateTo` will continue to work (field is ignored).
+
+#### ✨ Refactoring & Improvements
+
+**1. Code Cleanup**
+- Removed `canDelegateTo` validation from `profile-loader.ts`
+- Removed whitelist checking logic from `executor.ts`
+- Removed deprecated field from `OrchestrationConfig` type
+- Cleaned up all example agent configurations
+
+**2. Simplified Delegation Model**
+- Text-only delegation mode (SessionManager/WorkspaceManager now optional)
+- Lightweight agent-to-agent communication without file system overhead
+- Maintains backward compatibility for full collaboration features
+
+**3. Documentation Updates**
+- Updated README.md to reflect autonomous collaboration model
+- Updated CLAUDE.md with new orchestration examples
+- Removed whitelist references from all documentation
+- Updated all example agent profiles
+
+**4. Test Updates**
+- Simplified delegation tests to focus on autonomous collaboration
+- Removed whitelist-specific test cases
+- Updated orchestration type tests
+- All 904 tests passing ✅
+
+#### 🧪 Test Results
+
+```
+✅ 904/904 tests passing (100%)
+✅ All whitelist code removed
+✅ Build successful: 312.91 KB bundle
+✅ No breaking changes to existing delegation functionality
+```
+
+#### 📦 Files Changed
+
+**Core Changes:**
+- `src/types/orchestration.ts`: Removed `canDelegateTo` field
+- `src/agents/executor.ts`: Removed whitelist validation logic
+- `src/agents/profile-loader.ts`: Removed `canDelegateTo` validation
+- `src/cli/commands/run.ts`: SessionManager/WorkspaceManager now optional
+
+**Configuration:**
+- `.automatosx/agents/*.yaml`: Removed `canDelegateTo` (3 files)
+- `examples/agents/*.yaml`: Removed `canDelegateTo` (2 files)
+
+**Documentation:**
+- `README.md`: Updated to v4.7.6, added whitelist removal highlights
+- `CLAUDE.md`: Updated orchestration examples
+- `CHANGELOG.md`: This entry
+
+**Tests:**
+- `tests/unit/types/orchestration.test.ts`: Removed whitelist tests
+- `tests/unit/executor-delegation.test.ts`: Simplified to autonomous collaboration
+
+#### 🔒 Security
+
+All security mechanisms remain intact and enhanced:
+- ✅ **Permission Check**: `canDelegate: true` required to delegate
+- ✅ **Cycle Detection**: Prevents A→B→A circular delegations
+- ✅ **Depth Limit**: Max 3 levels of delegation by default
+- ✅ **Timeout Enforcement**: Per-agent execution timeouts
+- ✅ **Workspace Isolation**: Agents still restricted to their workspaces
+
 ## [4.7.5] - 2025-10-08
 
 ### 🚀 Major Feature Complete: Autonomous Multi-Agent Delegation
