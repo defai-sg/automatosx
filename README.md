@@ -1,4 +1,4 @@
-# AutomatosX v4.9.6
+# AutomatosX
 
 > **The control tower for shipping customer-facing ideas—without the chaos**
 > Orchestrate specialized AI agents to move work from slide decks to production, keeping product, engineering, and stakeholders in sync.
@@ -6,7 +6,7 @@
 [![npm version](https://img.shields.io/npm/v/@defai.sg/automatosx.svg)](https://www.npmjs.com/package/@defai.sg/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-1026%20passing-brightgreen.svg)](#production-ready-toolkit)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](#production-ready-toolkit)
 
 **Teams and solo builders choose AutomatosX because:**
 - 🎯 **Keeps people aligned, not just code moving** – track roadmaps, builds, and launch tasks in one place
@@ -14,69 +14,20 @@
 - ⚡ **Shortens idea-to-impact gap** – organized workflows mean faster onboarding, tighter handoffs, confident timelines
 - 💰 **10× more cost-effective** – CLI-based orchestration beats expensive assistants APIs
 
-**Status**: ✅ Production Release · **Version**: 4.9.6 · **Released**: October 2025
+**Status**: ✅ Production Release · **Latest**: October 2025
 
 ---
 
-## 🎉 What's New in v4.9
+## 📣 What's New
 
-### v4.9.6 (Latest) - Delegation Parser Bug Fix
-- 🐛 **Fixed Regex Whitespace Handling**: Delegation parser now correctly handles indented syntax
-- ✅ **Robust Multi-Delegation**: All 7 delegation patterns properly separate multiple delegations
-- 🔧 **Enhanced Pattern Matching**: Lookahead assertions support mixed formatting (tabs, spaces, no indentation)
-- ✨ **Example Fix**: `@frontend Create UI` and `@backend Implement API` now parse correctly when indented
-- 📊 **All Tests Passing**: 1026 tests passing (fixed 2 previously failing tests)
+For detailed release notes, new features, and upgrade instructions, see:
+- 📋 **[Release Notes](https://github.com/defai-sg/automatosx/releases)** - Latest updates and changes
+- 📝 **[Changelog](CHANGELOG.md)** - Complete version history
 
-### v4.9.1 - Display Name Resolution & Enhanced Stability
-- 🏷️ **Display Name Support**: Agents can now delegate using friendly display names (@Oliver, @Tony, @Steve)
-- 🔍 **Smart Resolution**: Automatic display name → agent name mapping with case-insensitive matching
-- ⚠️ **Duplicate Detection**: System warns when duplicate display names are found and handles gracefully
-- ⏱️ **Extended Timeout**: Provider timeout increased to 5 minutes for complex multi-agent workflows
-- ✅ **Enhanced Testing**: 6 new integration tests for display name resolution (928 total tests)
-- 🛡️ **Robust Error Handling**: Invalid agents automatically skipped with clear logging
-
-### v4.8.0 - Universal Agent Delegation
-- 🌟 **All Agents Can Delegate**: Removed `canDelegate: true` requirement - every agent can now delegate by default
-- ⚡ **Always-On Orchestration**: SessionManager and WorkspaceManager auto-initialize - no `--session` flag needed
-- 🚀 **True Autonomous Collaboration**: Agents autonomously collaborate without configuration barriers
-- 🔧 **Simplified Configuration**: Agent profiles no longer need `orchestration.canDelegate` field
-- 🛡️ **Maintained Safety**: Cycle detection, depth limits, and timeout enforcement still active
-- 📝 **Enhanced Logging**: Orchestration status now visible in execution context logs
-
-### v4.7.8 - Natural Language Delegation
-- 🗣️ **Natural Language Syntax**: Agents delegate using human-readable patterns (@agent, DELEGATE TO, please ask, I need)
-- 🌐 **Multilingual Support**: Full support for English and Chinese delegation commands
-- 🔄 **Multiple Delegations**: Same agent can receive multiple distinct tasks in one execution
-- 📝 **Enhanced Documentation**: Comprehensive examples in CLAUDE.md and agent profiles
-- ✅ **35 New Tests**: Complete coverage for delegation parser and multi-delegation scenarios
-
-### v4.7.6 - Complete Whitelist Removal
-- 🔓 **Full Autonomous Collaboration**: Completely removed `canDelegateTo` whitelist mechanism
-- ✨ **Simplified Configuration**: Agents can now delegate to ANY other agent by default
-- 🛡️ **Enhanced Safety**: Security ensured via cycle detection, depth limits, and timeouts
-- 🧹 **Cleaner Codebase**: Removed all whitelist validation logic and tests
-- 📝 **Updated Documentation**: All examples and docs reflect new autonomous model
-- ⚡ **Text-Only Delegation**: SessionManager/WorkspaceManager now optional for lightweight delegation
-
-### v4.7.5 - Autonomous Multi-Agent Delegation
-- 🚀 **COMPLETE Delegation System**: Agents now autonomously delegate tasks to each other
-- ✨ **Auto-Detection**: System parses `DELEGATE TO [agent]: [task]` from agent responses
-- 🔧 **Critical Fix**: WorkspaceManager now always initialized (delegation works without `--session`)
-- 🎯 **Type Safety**: Improved error handling with `instanceof` checks
-
-### v4.7.1 - Bug Fixes & Security
-- ✅ **12 Critical Fixes**: Session cleanup, UUID collision protection, date validation
-- 🔒 **Security Enhancements**: File size limits, circular reference protection, path validation
-- ⚡ **Performance**: Static regex optimization, prioritized cleanup
-
-### v4.7.0 - Multi-Agent Orchestration
-- 🤝 **Agent-to-Agent Delegation**: Agents can delegate tasks to specialized agents
-- 📋 **Session Management**: Track multi-agent collaborative workflows
-- 🔐 **Workspace Isolation**: Each agent gets isolated workspace with permission controls
-- 🔄 **Session Persistence**: File-based session tracking with atomic writes
-- 🎯 **CLI Commands**: `ax session create/list/status`, `ax workspace list/stats`
-
-**Upgrade**: `npm install -g @defai.sg/automatosx@4.9.6`
+**Quick Install:**
+```bash
+npm install -g @defai.sg/automatosx
+```
 
 ---
 
