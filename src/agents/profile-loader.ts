@@ -10,6 +10,8 @@ import type { AgentProfile } from '../types/agent.js';
 import { AgentValidationError, AgentNotFoundError } from '../types/agent.js';
 import { logger } from '../utils/logger.js';
 import { TTLCache } from '../core/cache.js';
+import type { TeamManager } from '../core/team-manager.js';
+import type { TeamConfig } from '../types/team.js';
 
 // Get the directory of this file for locating built-in agents
 const __filename = fileURLToPath(import.meta.url);
@@ -39,8 +41,9 @@ export class ProfileLoader {
   private cache: TTLCache<AgentProfile>;
   private displayNameMap: Map<string, string> = new Map();
   private mapInitialized: boolean = false;
+  private teamManager?: TeamManager;
 
-  constructor(profilesDir: string, fallbackProfilesDir?: string) {
+  constructor(profilesDir: string, fallbackProfilesDir?: string, teamManager?: TeamManager) {
     this.profilesDir = profilesDir;
     // Default fallback to built-in examples/agents
     // This should work in both dev and production environments
@@ -52,6 +55,8 @@ export class ProfileLoader {
       cleanupInterval: 60000, // Cleanup every minute
       debug: false
     });
+    // v4.10.0+: Optional TeamManager for team-based configuration
+    this.teamManager = teamManager;
   }
 
   /**
@@ -214,8 +219,8 @@ export class ProfileLoader {
         // Note: js-yaml's load() already uses safe schema by default
         const data = load(content) as any;
 
-        // Validate and build profile
-        const profile = this.buildProfile(data, name);
+        // Validate and build profile (v4.10.0+: async for team inheritance)
+        const profile = await this.buildProfile(data, name);
 
         // Cache it
         this.cache.set(name, profile);
@@ -346,7 +351,7 @@ export class ProfileLoader {
                 const content = await readFile(profilePath, 'utf-8');
                 if (content.length > 100 * 1024) continue;
                 const data = load(content) as any;
-                profile = this.buildProfile(data, profileName);
+                profile = await this.buildProfile(data, profileName);
                 this.cache.set(profileName, profile);
                 break;
               } catch (error) {
@@ -610,21 +615,70 @@ export class ProfileLoader {
 
   /**
    * Build profile from raw data with defaults
+   * v4.10.0+: Supports team-based configuration inheritance
    */
-  private buildProfile(data: any, name: string): AgentProfile {
+  private async buildProfile(data: any, name: string): Promise<AgentProfile> {
+    let teamConfig: TeamConfig | undefined;
+
+    // v4.10.0+: Load team configuration if specified
+    if (data.team && this.teamManager) {
+      try {
+        teamConfig = await this.teamManager.loadTeam(data.team);
+        logger.debug('Team configuration loaded for agent', {
+          agent: name,
+          team: data.team
+        });
+      } catch (error) {
+        logger.warn('Failed to load team configuration, using agent defaults', {
+          agent: name,
+          team: data.team,
+          error: (error as Error).message
+        });
+      }
+    }
+
+    // Merge abilities: team's sharedAbilities + agent's abilities
+    const abilities = data.abilities || [];
+    if (teamConfig?.sharedAbilities) {
+      // Combine team shared abilities with agent-specific abilities
+      // Remove duplicates using Set
+      const allAbilities = [...new Set([...teamConfig.sharedAbilities, ...abilities])];
+      logger.debug('Merged abilities from team', {
+        agent: name,
+        team: teamConfig.name,
+        teamAbilities: teamConfig.sharedAbilities.length,
+        agentAbilities: abilities.length,
+        totalAbilities: allAbilities.length
+      });
+      abilities.splice(0, abilities.length, ...allAbilities);
+    }
+
+    // Merge orchestration: team defaults + agent overrides
+    let orchestration = data.orchestration;
+    if (teamConfig?.orchestration && !orchestration) {
+      // Use team orchestration defaults if agent doesn't specify its own
+      orchestration = teamConfig.orchestration;
+      logger.debug('Using team orchestration defaults', {
+        agent: name,
+        team: teamConfig.name
+      });
+    }
+
     const profile: AgentProfile = {
       name: data.name || name,
       displayName: data.displayName,
       role: data.role,
       description: data.description,
+      // v4.10.0+: Team field
+      team: data.team,
       systemPrompt: data.systemPrompt,
-      abilities: data.abilities || [],
+      abilities: abilities,
       // Enhanced v4.1+ features
       stages: data.stages,
       personality: data.personality,
       thinking_patterns: data.thinking_patterns,
       abilitySelection: data.abilitySelection,
-      // Provider preferences
+      // Provider preferences (deprecated, kept for backward compatibility)
       provider: data.provider,
       model: data.model,
       temperature: data.temperature,
@@ -633,13 +687,37 @@ export class ProfileLoader {
       tags: data.tags,
       version: data.version,
       metadata: data.metadata,
-      // v4.7.0+ Orchestration
-      orchestration: data.orchestration
+      // v4.7.0+ Orchestration (merged with team defaults)
+      orchestration: orchestration
     };
 
     // Validate
     this.validateProfile(profile);
 
     return profile;
+  }
+
+  /**
+   * Get team configuration for an agent (if available)
+   * v4.10.0+: Used by ContextManager to get provider configuration
+   */
+  async getTeamConfig(agentName: string): Promise<TeamConfig | undefined> {
+    if (!this.teamManager) {
+      return undefined;
+    }
+
+    try {
+      const profile = await this.loadProfile(agentName);
+      if (profile.team) {
+        return await this.teamManager.loadTeam(profile.team);
+      }
+    } catch (error) {
+      logger.warn('Failed to get team config for agent', {
+        agent: agentName,
+        error: (error as Error).message
+      });
+    }
+
+    return undefined;
   }
 }

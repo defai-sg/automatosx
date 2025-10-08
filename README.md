@@ -21,6 +21,14 @@
 
 ## 📣 What's New
 
+**v4.10.0 (October 2025)**: Team-Based Configuration System
+
+- 🎯 **No more configuration duplication** - Agents inherit provider settings from their team
+- 👥 **4 built-in teams** - Core, Engineering, Business, Design with optimized provider selection
+- ♻️ **Shared abilities** - Team-wide abilities automatically included in all team members
+- 🔄 **Flexible fallback** - Team-level provider fallback chains with automatic failover
+- 📦 **Backward compatible** - Old agent configs still work (deprecated)
+
 For detailed release notes, new features, and upgrade instructions, see:
 
 - 📋 **[Release Notes](https://github.com/defai-sg/automatosx/releases)** - Latest updates and changes
@@ -186,20 +194,35 @@ automatosx memory search "quantum"  # Recall past conversations
 
 ## Key Capabilities
 
-**Composable Agents**
-Define roles, abilities, and guardrails in `.automatosx/agents/*.yaml` and extend skills with Markdown knowledge bases.
+**Composable Agents** *(v4.10.0+: Team-Based Configuration)*
+Define roles, abilities, and guardrails in `.automatosx/agents/*.yaml`. Agents inherit provider configuration from their team—no duplication needed.
 
 ```yaml
-# .automatosx/agents/researcher.yaml
+# .automatosx/agents/researcher.yaml (v4.10.0+)
 name: researcher
+team: core                      # 🆕 Inherits provider from team config
+displayName: "Ryan"             # Optional memorable name
 description: Research specialist with web search and citation abilities
-model: claude-3-sonnet-20240229
-temperature: 0.7
 abilities:
   - web_search
   - summarize
   - cite_sources
+  # Note: Team sharedAbilities automatically included
 ```
+
+**Team Configuration** (`.automatosx/teams/core.yaml`):
+```yaml
+name: core
+displayName: "Core Team"
+provider:
+  primary: claude
+  fallbackChain: [claude, gemini, codex]
+sharedAbilities:
+  - our-code-review-checklist
+  - testing
+```
+
+**Benefits**: No need to specify `provider`, `model`, `temperature` in each agent—just assign a team!
 
 **Intelligent Memory**
 SQLite + `vec` delivers millisecond semantic recall with export/import, quotas, and deterministic search.
@@ -287,12 +310,12 @@ Strict mode TypeScript + Vitest ensures every module is covered before it ships.
 
 ## Production-Ready Toolkit
 
-| Metric | v3.1 | v4.7.1 | Improvement |
-|--------|------|--------|-------------|
+| Metric | v3.1 | v4.10.0 | Improvement |
+|--------|------|---------|-------------|
 | Bundle size | 340 MB | 46 MB | **87% ↓** |
 | Vector search | 45 ms | 0.72 ms | **62× ↑** |
 | Dependencies | 589 | 158 | **73% ↓** |
-| Tests passing | 512 | 986 | **93% ↑** |
+| Tests passing | 512 | 994 | **94% ↑** |
 
 **Run the essentials:**
 
@@ -346,15 +369,17 @@ Full CLI reference: `docs/reference/cli-commands.md`
 ### Research Pipeline
 
 ```bash
-# 1. Define researcher agent
+# 1. Define researcher agent (v4.10.0+ team-based config)
 cat > .automatosx/agents/researcher.yaml <<EOF
 name: researcher
-model: claude-3-sonnet-20240229
+team: core                      # Inherits provider from team
+displayName: "Ryan"
 abilities: [web_search, summarize, cite_sources]
 EOF
 
 # 2. Run research task
 automatosx run researcher "Compare Redis vs PostgreSQL for session storage"
+# Or use display name: automatosx run Ryan "..."
 
 # 3. Search results later
 automatosx memory search "session storage comparison"

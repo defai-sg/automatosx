@@ -5,6 +5,222 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.10.0] - 2025-10-08
+
+### 🎯 Major Features
+
+#### Team-Based Configuration System
+
+**Revolutionary change**: Agents now inherit configuration from teams, eliminating configuration duplication across 17 agents.
+
+**New Architecture**:
+- **4 Teams**: Core, Engineering, Business, Design
+- **Centralized Provider Config**: Each team defines provider fallback chain
+- **Shared Abilities**: Team-wide abilities automatically inherited
+- **Clean Agent Profiles**: No need to specify provider/model/temperature in agents
+
+**Key Benefits**:
+- ✅ **Zero Duplication**: Provider config defined once per team (not per agent)
+- ✅ **Easy Updates**: Change provider for entire team at once
+- ✅ **Clear Organization**: Explicit team structure (17 agents → 4 teams)
+- ✅ **Backward Compatible**: Old agent configs still work (deprecated)
+
+### ✨ New Features
+
+#### TeamManager (NEW)
+
+- **Location**: `src/core/team-manager.ts`
+- **Purpose**: Load and validate team configurations from `.automatosx/teams/*.yaml`
+- **Features**:
+  - TTL-based caching for performance
+  - YAML validation and error handling
+  - Team discovery and listing
+  - Graceful error recovery
+
+#### Team Configuration Files
+
+Created 4 team configurations in `.automatosx/teams/`:
+
+1. **core.yaml**: Quality assurance specialists
+   - Primary: claude
+   - Fallback: [claude, gemini, codex]
+   - Agents: charlie (code reviewer), tester, assistant
+
+2. **engineering.yaml**: Software development teams
+   - Primary: codex
+   - Fallback: [codex, gemini, claude]
+   - Agents: frontend, backend, devops, fullstack, database, architect, api-designer
+
+3. **business.yaml**: Business and product teams
+   - Primary: gemini
+   - Fallback: [gemini, codex, claude]
+   - Agents: planner, pm, researcher
+
+4. **design.yaml**: Design and content teams
+   - Primary: gemini
+   - Fallback: [gemini, claude, codex]
+   - Agents: designer, writer, ux-researcher, content-strategist
+
+#### Agent Profile Enhancement
+
+- **Added**: `team?: string` field to AgentProfile
+- **Deprecated**: `provider`, `fallbackProvider`, `model`, `temperature`, `maxTokens`
+- **Migration**: All 17 agents migrated to team-based configuration
+
+#### Team-Based Provider Selection
+
+- **Location**: `src/agents/context-manager.ts`
+- **New Method**: `selectProviderForAgent(agent, options)`
+- **Priority Order**:
+  1. CLI option (highest): `ax run agent "task" --provider gemini`
+  2. Team configuration: From `.automatosx/teams/<team>.yaml`
+  3. Agent configuration (deprecated): From agent's `provider` field
+  4. Router fallback (lowest): Global provider routing
+
+#### Ability Inheritance
+
+- **Automatic Merging**: Team sharedAbilities + agent abilities
+- **Example**:
+  ```yaml
+  # Team: [our-coding-standards, code-generation]
+  # Agent: [backend-development, api-design]
+  # Final: [our-coding-standards, code-generation, backend-development, api-design]
+  ```
+
+### 🔧 Improvements
+
+#### ProfileLoader Enhancement
+
+- **Modified**: Constructor accepts `teamManager?: TeamManager`
+- **Changed**: `buildProfile()` now async to support team loading
+- **Added**: `getTeamConfig(agentName)` method for ContextManager
+- **Feature**: Automatic ability merging from team config
+
+#### OpenAI Provider CLI Fix
+
+- **Fixed**: Codex CLI parameter format
+- **Before**: `codex chat -p [PROMPT] -t [TEMP]` (broken)
+- **After**: `codex exec -c temperature=X [PROMPT]` (correct)
+- **Issue**: Codex CLI doesn't support `-t` flag, needs `-c` config override format
+
+### 🐛 Critical Bug Fixes
+
+#### TeamManager Initialization (CRITICAL)
+
+- **Issue**: TeamManager was never initialized in `src/cli/commands/run.ts`
+- **Impact**: Entire team system was non-functional despite being implemented
+- **Fix**: Added TeamManager initialization before ProfileLoader creation
+- **Discovery**: Found during deep code review
+- **Verification**: Tested with `--debug` flag, confirmed team config loading
+
+#### TypeScript Type Error
+
+- **Issue**: `Array.filter(Boolean)` doesn't narrow type from `(string | undefined)[]`
+- **Fix**: Used type predicate: `.filter((p): p is string => Boolean(p))`
+- **Location**: `src/agents/context-manager.ts:321`
+
+#### Test Version Mismatch
+
+- **Fixed**: Updated 5 test expectations from '4.7.1' to '4.9.8'
+- **Location**: `tests/unit/cli-index.test.ts`
+
+### 📚 Documentation
+
+#### Comprehensive Documentation Updates
+
+- **CLAUDE.md**:
+  - Updated version to v4.10.0
+  - Added TeamManager to Core Components
+  - Updated Agent System with team inheritance details
+  - Added complete "Team System" section with examples
+  - Updated Agent Profiles section with team-based config examples
+
+- **README.md**:
+  - Added v4.10.0 features in "What's New" section
+  - Updated Key Capabilities with team-based examples
+  - Updated Real-World Examples
+  - Updated version table (v4.7.1 → v4.10.0)
+
+- **tmp/CLAUDE.md**:
+  - Updated with team system architecture details
+
+#### Migration Tools
+
+- **Created**: `tmp/migrate-agents.ts` - Automated migration script
+- **Results**: Successfully migrated all 17 agents
+- **Changes**:
+  - Added `team` field
+  - Removed deprecated fields: `provider`, `fallbackProvider`, `model`, `temperature`, `maxTokens`
+
+### 🔨 Technical Changes
+
+#### New Files
+
+- `src/types/team.ts` - TeamConfig type definitions
+- `src/core/team-manager.ts` - Team configuration management
+- `.automatosx/teams/core.yaml` - Core team configuration
+- `.automatosx/teams/engineering.yaml` - Engineering team configuration
+- `.automatosx/teams/business.yaml` - Business team configuration
+- `.automatosx/teams/design.yaml` - Design team configuration
+- `tmp/migrate-agents.ts` - Agent migration automation script
+
+#### Modified Files
+
+- `src/types/agent.ts` - Added `team` field, deprecated old fields
+- `src/agents/profile-loader.ts` - Team inheritance implementation
+- `src/agents/context-manager.ts` - Team-based provider selection
+- `src/providers/openai-provider.ts` - Fixed codex CLI parameters
+- `src/cli/commands/run.ts` - Added TeamManager initialization
+- All 17 agent YAML files - Migrated to team-based configuration
+- `tests/unit/cli-index.test.ts` - Updated version expectations
+
+### ✅ Testing
+
+#### All Tests Passing
+
+- **Total**: 928 unit tests passing (100%)
+- **TypeScript**: Strict mode compilation successful
+- **Functional**: Team config loading verified with `--debug`
+- **Integration**: All CLI commands working correctly
+
+### 🔄 Breaking Changes
+
+**None** - All changes are backward compatible. Old agent configurations (with `provider`, `temperature`, etc.) still work but are deprecated.
+
+### 📦 Migration Guide
+
+**From v4.9.x to v4.10.0**:
+
+1. **Optional**: Assign agents to teams (recommended but not required)
+   ```yaml
+   # Add to existing agent config:
+   team: engineering
+   ```
+
+2. **Optional**: Remove deprecated fields (they still work if kept)
+   ```yaml
+   # Can remove these:
+   # provider: codex
+   # fallbackProvider: gemini
+   # temperature: 0.7
+   # maxTokens: 4096
+   ```
+
+3. **Optional**: Customize team configurations in `.automatosx/teams/*.yaml`
+
+**No action required** - Everything continues to work with old configurations!
+
+### 🎉 Summary
+
+v4.10.0 introduces a revolutionary team-based configuration system that:
+- ✅ Eliminates configuration duplication (17 agents → 4 teams)
+- ✅ Simplifies agent management (no provider config per agent)
+- ✅ Improves maintainability (change provider for entire team at once)
+- ✅ Maintains backward compatibility (old configs still work)
+- ✅ Fixes critical bugs (TeamManager initialization, codex CLI parameters)
+
+**Total Impact**: 17 agents migrated, 4 team configs created, 6 new/modified core files, 928 tests passing.
+
 ## [4.9.6] - 2025-10-08
 
 ### 🐛 Bug Fixes

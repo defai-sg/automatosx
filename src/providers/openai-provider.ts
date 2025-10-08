@@ -137,8 +137,8 @@ export class OpenAIProvider extends BaseProvider {
   /**
    * Execute real CLI command via spawn
    *
-   * OpenAI CLI syntax: openai chat -p "prompt"
-   * Model selection is delegated to CLI's own defaults
+   * Codex CLI syntax: codex exec [OPTIONS] [PROMPT]
+   * Model and other parameters are passed via -c (config override) or specific flags
    */
   private async executeRealCLI(prompt: string, request: ExecutionRequest): Promise<{ content: string }> {
     const { spawn } = await import('child_process');
@@ -149,22 +149,26 @@ export class OpenAIProvider extends BaseProvider {
       let hasTimedOut = false;
 
       // Build CLI arguments
-      // OpenAI CLI uses: openai chat -p PROMPT
-      // Do NOT pass -m/--model - let CLI use its own default
-      const args = ['chat'];
+      // Codex CLI uses: codex exec [OPTIONS] [PROMPT]
+      const args = ['exec'];
 
-      // Add prompt
-      args.push('-p', prompt);
+      // Add model if specified
+      if (request.model) {
+        args.push('-m', request.model);
+      }
 
-      // Add temperature if specified
+      // Add temperature via config override if specified
       if (request.temperature !== undefined) {
-        args.push('-t', request.temperature.toString());
+        args.push('-c', `temperature=${request.temperature}`);
       }
 
-      // Add max tokens if specified
+      // Add max tokens via config override if specified
       if (request.maxTokens) {
-        args.push('--max-tokens', request.maxTokens.toString());
+        args.push('-c', `max_tokens=${request.maxTokens}`);
       }
+
+      // Add prompt as last argument
+      args.push(prompt);
 
       // Spawn the CLI process
       const child = spawn(this.config.command, args, {

@@ -17,6 +17,7 @@ import { Router } from '../../core/router.js';
 import { PathResolver } from '../../core/path-resolver.js';
 import { SessionManager } from '../../core/session-manager.js';
 import { WorkspaceManager } from '../../core/workspace-manager.js';
+import { TeamManager } from '../../core/team-manager.js';
 import { ClaudeProvider } from '../../providers/claude-provider.js';
 import { GeminiProvider } from '../../providers/gemini-provider.js';
 import { OpenAIProvider } from '../../providers/openai-provider.js';
@@ -136,9 +137,17 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
       }
 
       // 3. Initialize components
-      const profileLoader = new ProfileLoader(
-        join(projectDir, '.automatosx', 'agents')
+      // v4.10.0+: Initialize TeamManager for team-based configuration
+      const teamManager = new TeamManager(
+        join(projectDir, '.automatosx', 'teams')
       );
+
+      const profileLoader = new ProfileLoader(
+        join(projectDir, '.automatosx', 'agents'),
+        undefined, // fallbackProfilesDir (uses default)
+        teamManager
+      );
+
       const abilitiesManager = new AbilitiesManager(
         join(projectDir, '.automatosx', 'abilities')
       );

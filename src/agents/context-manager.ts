@@ -74,11 +74,8 @@ export class ContextManager {
       abilities: selectedAbilities
     });
 
-    // 4. Select provider (primary → fallback → router)
-    const provider = await this.selectProvider(
-      options?.provider || agent.provider,
-      agent.fallbackProvider
-    );
+    // 4. Select provider (v4.10.0+: team-based → agent-based → router)
+    const provider = await this.selectProviderForAgent(agent, options);
 
     // 5. Get paths
     const projectDir = await this.config.pathResolver.detectProjectRoot();
@@ -292,8 +289,102 @@ export class ContextManager {
   }
 
   /**
+   * Select provider for an agent (v4.10.0+: team-based configuration)
+   * Priority: CLI option → team config → agent config → router
+   */
+  async selectProviderForAgent(
+    agent: AgentProfile,
+    options?: ContextOptions
+  ): Promise<Provider> {
+    // 1. CLI option overrides everything
+    if (options?.provider) {
+      const provider = await this.tryGetProvider(options.provider);
+      if (provider) {
+        logger.debug('Using CLI-specified provider', { provider: options.provider });
+        return provider;
+      }
+    }
+
+    // 2. Try team configuration (v4.10.0+)
+    if (agent.team) {
+      try {
+        const teamConfig = await this.config.profileLoader.getTeamConfig(agent.name);
+        if (teamConfig) {
+          logger.debug('Using team provider configuration', {
+            agent: agent.name,
+            team: teamConfig.name,
+            primary: teamConfig.provider.primary
+          });
+
+          // Try fallbackChain if specified, otherwise use primary + fallback
+          const providersToTry = teamConfig.provider.fallbackChain ||
+            [teamConfig.provider.primary, teamConfig.provider.fallback].filter((p): p is string => Boolean(p));
+
+          for (const providerName of providersToTry) {
+            const provider = await this.tryGetProvider(providerName);
+            if (provider) {
+              if (providerName !== teamConfig.provider.primary) {
+                logger.info('Team primary provider unavailable, using fallback', {
+                  team: teamConfig.name,
+                  primary: teamConfig.provider.primary,
+                  using: providerName
+                });
+              }
+              return provider;
+            }
+          }
+
+          logger.warn('All team providers unavailable, falling back to router', {
+            team: teamConfig.name,
+            triedProviders: providersToTry
+          });
+        }
+      } catch (error) {
+        logger.warn('Failed to load team configuration, using agent defaults', {
+          agent: agent.name,
+          team: agent.team,
+          error: (error as Error).message
+        });
+      }
+    }
+
+    // 3. Fallback to agent's own configuration (deprecated but supported)
+    if (agent.provider || agent.fallbackProvider) {
+      logger.debug('Using agent provider configuration (deprecated)', {
+        agent: agent.name,
+        provider: agent.provider,
+        fallback: agent.fallbackProvider
+      });
+
+      return await this.selectProvider(agent.provider, agent.fallbackProvider);
+    }
+
+    // 4. Final fallback: use router (global priority)
+    const provider = await this.config.router.selectProvider();
+    if (!provider) {
+      throw ProviderError.noAvailableProviders();
+    }
+
+    logger.info('Using router-selected provider', {
+      provider: provider.name,
+      agent: agent.name
+    });
+
+    return provider;
+  }
+
+  /**
+   * Try to get a specific provider if available
+   */
+  private async tryGetProvider(providerName: string): Promise<Provider | undefined> {
+    const availableProviders = await this.config.router.getAvailableProviders();
+    return availableProviders.find(p => p.name === providerName);
+  }
+
+  /**
    * Select provider (from agent preference or router)
    * Tries: primary → fallback → router (global priority)
+   * @deprecated v4.10.0+ Use selectProviderForAgent instead
    */
   async selectProvider(
     preferredProvider?: string,
