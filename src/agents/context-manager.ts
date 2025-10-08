@@ -129,10 +129,10 @@ export class ContextManager {
         this.config.profileLoader) {
       // Get list of available agents for delegation
       const allAgents = await this.config.profileLoader.listProfiles();
-      const canDelegateTo = agent.orchestration.canDelegateTo || [];
 
-      // Filter available agents based on whitelist
-      const availableAgents = allAgents.filter(a => canDelegateTo.includes(a));
+      // v4.7.2+: All agents are available for delegation (no whitelist)
+      // Only exclude self to prevent direct self-delegation (cycles still detected)
+      const availableAgents = allAgents.filter(a => a !== agent.name);
 
       // Get shared workspace path
       const sharedWorkspace = session

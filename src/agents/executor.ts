@@ -258,6 +258,39 @@ export class AgentExecutor {
       });
       const duration = Date.now() - startTime;
 
+      // Check for delegation requests in response (v4.7.2+)
+      if (context.orchestration) {
+        const delegations = this.parseDelegationRequests(response.content, context.agent.name);
+
+        if (delegations.length > 0) {
+          if (verbose) {
+            console.log(chalk.cyan(`\n🔗 Found ${delegations.length} delegation request(s)`));
+          }
+
+          // Update spinner
+          if (spinner) {
+            spinner.text = 'Processing delegations...';
+          }
+
+          // Execute all delegations
+          const delegationResults = await this.executeDelegations(delegations, context, options);
+
+          // Append delegation results to response
+          let delegationSummary = '\n\n---\n\n## Delegation Results\n\n';
+          delegationResults.forEach((result, agent) => {
+            delegationSummary += `### Delegated to ${agent}\n\n`;
+            delegationSummary += result.response.content + '\n\n';
+          });
+
+          // Modify response to include delegation results
+          response.content += delegationSummary;
+
+          if (verbose) {
+            console.log(chalk.green(`✅ All delegations completed`));
+          }
+        }
+      }
+
       // Stop spinner
       if (spinner) {
         spinner.succeed('Execution complete');
@@ -277,6 +310,113 @@ export class AgentExecutor {
 
       throw this.enhanceError(error as Error, context);
     }
+  }
+
+  /**
+   * Parse delegation requests from agent response
+   *
+   * Looks for pattern: "DELEGATE TO [agent-name]: [task description]"
+   * Returns array of parsed delegation requests
+   */
+  private parseDelegationRequests(response: string, fromAgent: string): Array<{ toAgent: string; task: string }> {
+    const delegations: Array<{ toAgent: string; task: string }> = [];
+
+    // Pattern: DELEGATE TO [agent-name]: [task]
+    // Case-insensitive, allows whitespace variations
+    const pattern = /DELEGATE\s+TO\s+([a-zA-Z0-9-_]+)\s*:\s*(.+?)(?=\n\n|DELEGATE\s+TO|$)/gis;
+
+    let match;
+    while ((match = pattern.exec(response)) !== null) {
+      const toAgent = match[1]!.trim();
+      const task = match[2]!.trim();
+
+      if (toAgent && task) {
+        delegations.push({ toAgent, task });
+        logger.info('Delegation request detected', {
+          fromAgent,
+          toAgent,
+          taskPreview: task.substring(0, 100)
+        });
+      }
+    }
+
+    return delegations;
+  }
+
+  /**
+   * Execute delegation requests parsed from agent response
+   *
+   * This is called automatically when an agent's response contains
+   * delegation instructions (e.g., "DELEGATE TO frontend: Create UI")
+   */
+  private async executeDelegations(
+    delegations: Array<{ toAgent: string; task: string }>,
+    context: ExecutionContext,
+    options: ExecutionOptions
+  ): Promise<Map<string, DelegationResult>> {
+    const results = new Map<string, DelegationResult>();
+    const { verbose = false } = options;
+
+    for (const { toAgent, task } of delegations) {
+      if (verbose) {
+        console.log(chalk.cyan(`\n📤 Delegating to ${toAgent}...`));
+        console.log(chalk.gray(`   Task: ${task.substring(0, 100)}${task.length > 100 ? '...' : ''}`));
+      }
+
+      try {
+        const request: DelegationRequest = {
+          fromAgent: context.agent.name,
+          toAgent,
+          task,
+          context: {
+            sessionId: context.session?.id,
+            delegationChain: context.orchestration?.delegationChain || []
+          }
+        };
+
+        const result = await this.delegateToAgent(request);
+        results.set(toAgent, result);
+
+        if (verbose) {
+          console.log(chalk.green(`✅ Delegation to ${toAgent} completed`));
+        }
+      } catch (error) {
+        const err = error as Error;
+        logger.error('Delegation failed', {
+          fromAgent: context.agent.name,
+          toAgent,
+          error: err.message
+        });
+
+        if (verbose) {
+          console.log(chalk.red(`❌ Delegation to ${toAgent} failed: ${err.message}`));
+        }
+
+        // Store error as failed delegation result
+        results.set(toAgent, {
+          delegationId: randomUUID(),
+          fromAgent: context.agent.name,
+          toAgent,
+          startTime: new Date(),
+          endTime: new Date(),
+          duration: 0,
+          response: {
+            content: `Delegation failed: ${err.message}`,
+            model: 'error',
+            tokensUsed: { prompt: 0, completion: 0, total: 0 },
+            latencyMs: 0,
+            finishReason: 'error'
+          },
+          outputs: {
+            files: [],
+            memoryIds: [],
+            workspacePath: ''
+          }
+        } as DelegationResult);
+      }
+    }
+
+    return results;
   }
 
   /**
@@ -346,11 +486,23 @@ export class AgentExecutor {
       prompt += `# Multi-Agent Orchestration Capabilities\n\n`;
       prompt += `You can delegate tasks to other specialized agents for better results.\n\n`;
 
-      if (context.orchestration.availableAgents.length > 0) {
+      // Limit agent list to avoid overly long prompts
+      const MAX_AGENTS_TO_SHOW = 10;
+      const availableAgents = context.orchestration.availableAgents;
+
+      if (availableAgents.length > 0) {
         prompt += `**Available agents for delegation:**\n`;
-        context.orchestration.availableAgents.forEach(agent => {
+
+        const agentsToShow = availableAgents.slice(0, MAX_AGENTS_TO_SHOW);
+        agentsToShow.forEach(agent => {
           prompt += `- ${agent}\n`;
         });
+
+        if (availableAgents.length > MAX_AGENTS_TO_SHOW) {
+          const remaining = availableAgents.length - MAX_AGENTS_TO_SHOW;
+          prompt += `... and ${remaining} more agents\n`;
+          prompt += `\nNote: You can delegate to ANY agent by name, not just those listed above.\n`;
+        }
         prompt += `\n`;
       }
 
@@ -369,6 +521,7 @@ export class AgentExecutor {
       prompt += `**How to delegate:**\n`;
       prompt += `To delegate a task, clearly state in your response:\n`;
       prompt += `"DELEGATE TO [agent-name]: [specific task description]"\n\n`;
+      prompt += `Example: "DELEGATE TO frontend: Create a responsive login UI with email and password fields"\n\n`;
     }
 
     // Add task
@@ -514,14 +667,19 @@ export class AgentExecutor {
         );
       }
 
-      const canDelegateTo = fromAgentProfile.orchestration.canDelegateTo;
-      if (canDelegateTo && !canDelegateTo.includes(request.toAgent)) {
-        throw new DelegationError(
-          `Agent '${request.fromAgent}' is not authorized to delegate to '${request.toAgent}'`,
-          request.fromAgent,
-          request.toAgent,
-          'unauthorized'
-        );
+      // Note: canDelegateTo whitelist was removed in v4.7.2 to allow autonomous agent collaboration
+      // Agents can now delegate to any other agent, with safety ensured by:
+      // - Cycle detection (below)
+      // - Max depth limit (below)
+      // - Timeout enforcement
+      // If canDelegateTo is still specified in profile, it's logged but not enforced
+
+      if (fromAgentProfile.orchestration.canDelegateTo) {
+        logger.debug('canDelegateTo is deprecated and not enforced', {
+          fromAgent: request.fromAgent,
+          suggestedTargets: fromAgentProfile.orchestration.canDelegateTo,
+          actualTarget: request.toAgent
+        });
       }
 
       // 3. Cycle detection: check delegation chain

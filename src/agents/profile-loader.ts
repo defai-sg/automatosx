@@ -262,6 +262,126 @@ export class ProfileLoader {
   }
 
   /**
+   * Calculate Levenshtein distance between two strings (for fuzzy matching)
+   */
+  private levenshteinDistance(a: string, b: string): number {
+    const matrix: number[][] = [];
+
+    for (let i = 0; i <= b.length; i++) {
+      matrix[i] = [i];
+    }
+
+    for (let j = 0; j <= a.length; j++) {
+      matrix[0]![j] = j;
+    }
+
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+          matrix[i]![j] = matrix[i - 1]![j - 1]!;
+        } else {
+          matrix[i]![j] = Math.min(
+            matrix[i - 1]![j - 1]! + 1, // substitution
+            matrix[i]![j - 1]! + 1,     // insertion
+            matrix[i - 1]![j]! + 1      // deletion
+          );
+        }
+      }
+    }
+
+    return matrix[b.length]![a.length]!;
+  }
+
+  /**
+   * Find similar agent names using fuzzy matching
+   * Returns agents sorted by similarity (most similar first)
+   */
+  async findSimilarAgents(query: string, maxResults: number = 3): Promise<Array<{ name: string; displayName?: string; role?: string; distance: number }>> {
+    const allProfiles = await this.listProfiles();
+    const similarities: Array<{ name: string; displayName?: string; role?: string; distance: number }> = [];
+
+    // Build displayName map if not already done
+    await this.buildDisplayNameMap();
+
+    for (const profileName of allProfiles) {
+      try {
+        // Calculate distance for profile name
+        const nameDistance = this.levenshteinDistance(query.toLowerCase(), profileName.toLowerCase());
+
+        // Try to get displayName and role for better matching
+        const displayName = await this.readDisplayNameOnly(profileName);
+        let minDistance = nameDistance;
+
+        // Also check distance with displayName
+        if (displayName) {
+          const displayDistance = this.levenshteinDistance(query.toLowerCase(), displayName.toLowerCase());
+          minDistance = Math.min(minDistance, displayDistance);
+        }
+
+        // Load profile to get role (suppress logs)
+        try {
+          const cached = this.cache.get(profileName);
+          let profile: AgentProfile | undefined = cached;
+
+          if (!profile) {
+            // Load without logging (for similarity search)
+            const profilePaths = this.getProfilePath(profileName);
+            for (const profilePath of profilePaths) {
+              try {
+                const content = await readFile(profilePath, 'utf-8');
+                if (content.length > 100 * 1024) continue;
+                const data = load(content) as any;
+                profile = this.buildProfile(data, profileName);
+                this.cache.set(profileName, profile);
+                break;
+              } catch (error) {
+                if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+                  continue;
+                }
+                throw error;
+              }
+            }
+          }
+
+          if (profile) {
+            const roleDistance = this.levenshteinDistance(query.toLowerCase(), profile.role.toLowerCase());
+            minDistance = Math.min(minDistance, roleDistance);
+
+            similarities.push({
+              name: profileName,
+              displayName: displayName || undefined,
+              role: profile.role,
+              distance: minDistance
+            });
+          } else {
+            // Profile not found, just use name/displayName distance
+            similarities.push({
+              name: profileName,
+              displayName: displayName || undefined,
+              distance: minDistance
+            });
+          }
+        } catch {
+          // If profile fails to load, just use name/displayName distance
+          similarities.push({
+            name: profileName,
+            displayName: displayName || undefined,
+            distance: minDistance
+          });
+        }
+      } catch (error) {
+        // Skip profiles that fail
+        logger.debug('Failed to calculate similarity', { profileName, error });
+      }
+    }
+
+    // Sort by distance (lower is better) and return top N
+    return similarities
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, maxResults);
+  }
+
+  /**
    * Validate profile structure
    */
   validateProfile(profile: AgentProfile): boolean {

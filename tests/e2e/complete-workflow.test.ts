@@ -144,7 +144,8 @@ describe('E2E Complete Workflows', () => {
       // Step 1: Try to run non-existent agent (should fail)
       const run1 = await execCLI(env, ['run', 'nonexistent', 'test']);
       expect(run1.exitCode).not.toBe(0);
-      assertOutputContains(run1.stderr, /not found|error/i);
+      // v4.7.5+: Shows intelligent suggestions instead of simple "not found"
+      assertOutputContains(run1.stderr + run1.stdout, /Agent not found|Did you mean|Available agents/i);
 
       // Step 2: Create the agent
       await createAgentProfile(env, 'nonexistent');

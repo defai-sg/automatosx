@@ -164,7 +164,7 @@ export interface Session {
  * Orchestration Configuration - Agent collaboration capabilities
  *
  * Defines what an agent can do in terms of delegation and workspace access.
- * Uses whitelist approach for security.
+ * Since v4.7.2: Whitelist approach removed - agents can delegate to any other agent.
  *
  * @example
  * ```yaml
@@ -186,7 +186,11 @@ export interface OrchestrationConfig {
   /** Whether this agent can delegate tasks to other agents */
   canDelegate?: boolean;
 
-  /** Whitelist of agents this agent can delegate to */
+  /**
+   * @deprecated Since v4.7.2 - No longer enforced. Agents can delegate to any other agent.
+   * Safety is ensured through cycle detection, depth limits, and timeouts.
+   * This field is kept for backward compatibility and will be ignored.
+   */
   canDelegateTo?: string[];
 
   /**

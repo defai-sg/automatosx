@@ -1,4 +1,4 @@
-# AutomatosX v4.7.1
+# AutomatosX v4.7.5
 
 > **The control tower for shipping customer-facing ideas—without the chaos**
 > Orchestrate specialized AI agents to move work from slide decks to production, keeping product, engineering, and stakeholders in sync.
@@ -6,7 +6,7 @@
 [![npm version](https://img.shields.io/npm/v/@defai.sg/automatosx.svg)](https://www.npmjs.com/package/@defai.sg/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-986%20passing-brightgreen.svg)](#production-ready-toolkit)
+[![Tests](https://img.shields.io/badge/tests-892%20passing-brightgreen.svg)](#production-ready-toolkit)
 
 **Teams and solo builders choose AutomatosX because:**
 - 🎯 **Keeps people aligned, not just code moving** – track roadmaps, builds, and launch tasks in one place
@@ -14,17 +14,24 @@
 - ⚡ **Shortens idea-to-impact gap** – organized workflows mean faster onboarding, tighter handoffs, confident timelines
 - 💰 **10× more cost-effective** – CLI-based orchestration beats expensive assistants APIs
 
-**Status**: ✅ Production Release · **Version**: 4.7.1 · **Released**: October 2025
+**Status**: ✅ Production Release · **Version**: 4.7.5 · **Released**: October 2025
 
 ---
 
 ## 🎉 What's New in v4.7
 
-### v4.7.1 (Latest) - Bug Fixes & Security
+### v4.7.5 (Latest) - Autonomous Multi-Agent Delegation
+- 🚀 **COMPLETE Delegation System**: Agents now autonomously delegate tasks to each other
+- ✨ **Auto-Detection**: System parses `DELEGATE TO [agent]: [task]` from agent responses
+- 🔓 **No Whitelist**: Agents can collaborate with ANY other agent (removed `canDelegateTo` restriction)
+- 🔧 **Critical Fix**: WorkspaceManager now always initialized (delegation works without `--session`)
+- 🎯 **Type Safety**: Improved error handling with `instanceof` checks
+- ⚡ **Optimized Prompts**: Limited agent list to prevent overly long prompts
+
+### v4.7.1 - Bug Fixes & Security
 - ✅ **12 Critical Fixes**: Session cleanup, UUID collision protection, date validation
 - 🔒 **Security Enhancements**: File size limits, circular reference protection, path validation
 - ⚡ **Performance**: Static regex optimization, prioritized cleanup
-- ✅ **986 tests passing** (93% increase from v3.1)
 
 ### v4.7.0 - Multi-Agent Orchestration
 - 🤝 **Agent-to-Agent Delegation**: Agents can delegate tasks to specialized agents
@@ -33,7 +40,7 @@
 - 🔄 **Session Persistence**: File-based session tracking with atomic writes
 - 🎯 **CLI Commands**: `ax session create/list/status`, `ax workspace list/stats`
 
-**Upgrade**: `npm install -g @defai.sg/automatosx@4.7.1`
+**Upgrade**: `npm install -g @defai.sg/automatosx@4.7.5`
 
 ---
 

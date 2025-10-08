@@ -11,6 +11,7 @@ import { StageExecutor } from '../../agents/stage-executor.js';
 import { AdvancedStageExecutor } from '../../agents/advanced-stage-executor.js';
 import type { MultiStageExecutionResult } from '../../agents/stage-executor.js';
 import type { Stage } from '../../types/agent.js';
+import { AgentNotFoundError } from '../../types/agent.js';
 import { MemoryManagerVec } from '../../core/memory-manager-vec.js';
 import { Router } from '../../core/router.js';
 import { PathResolver } from '../../core/path-resolver.js';
@@ -210,21 +211,21 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         fallbackEnabled: true
       });
 
-      // 5. Initialize orchestration managers (if session specified)
+      // 5. Initialize orchestration managers
+      // Note: Always initialize these to enable delegation, even without sessions
       let sessionManager: SessionManager | undefined;
       let workspaceManager: WorkspaceManager | undefined;
 
+      // Always initialize WorkspaceManager (required for delegation)
+      workspaceManager = new WorkspaceManager(projectDir);
+      await workspaceManager.initialize();
+
+      // Initialize SessionManager if session is specified OR if delegation is needed
       if (argv.session) {
-        // Initialize SessionManager with persistence
         sessionManager = new SessionManager({
           persistencePath: join(projectDir, '.automatosx', 'sessions', 'sessions.json')
         });
         await sessionManager.initialize();
-
-        workspaceManager = new WorkspaceManager(projectDir);
-
-        // Initialize workspace structure
-        await workspaceManager.initialize();
 
         // Verify session exists
         const session = await sessionManager.getSession(argv.session);
@@ -260,16 +261,60 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         console.log();
       }
 
-      context = await contextManager.createContext(
-        argv.agent as string,
-        argv.task as string,
-        {
-          provider: argv.provider,
-          model: argv.model,
-          skipMemory: !argv.memory,
-          sessionId: argv.session
+      try {
+        context = await contextManager.createContext(
+          argv.agent as string,
+          argv.task as string,
+          {
+            provider: argv.provider,
+            model: argv.model,
+            skipMemory: !argv.memory,
+            sessionId: argv.session
+          }
+        );
+      } catch (error) {
+        // Handle agent not found error with suggestions
+        if (error instanceof AgentNotFoundError) {
+          const agentName = argv.agent as string;
+          console.log(chalk.red.bold(`\n❌ Agent not found: ${agentName}\n`));
+
+          // Find similar agents (loads profiles silently from cache or disk)
+          const suggestions = await profileLoader.findSimilarAgents(agentName, 3);
+
+          if (suggestions.length > 0) {
+            // Filter to only very similar agents (distance <= 3)
+            const closeSuggestions = suggestions.filter(s => s.distance <= 3);
+
+            if (closeSuggestions.length > 0) {
+              console.log(chalk.yellow('💡 Did you mean:\n'));
+              closeSuggestions.forEach((s, i) => {
+                const displayInfo = s.displayName ? `${s.displayName} (${s.name})` : s.name;
+                const roleInfo = s.role ? ` - ${s.role}` : '';
+                console.log(chalk.cyan(`  ${i + 1}. ${displayInfo}${roleInfo}`));
+              });
+
+              console.log(chalk.gray('\nTo use one of these agents:'));
+              console.log(chalk.gray(`  automatosx run ${closeSuggestions[0]!.name} "${argv.task}"`));
+              console.log();
+            } else {
+              // No close matches, show all available agents
+              console.log(chalk.yellow('💡 Available agents:\n'));
+              const allAgents = await profileLoader.listProfiles();
+              allAgents.slice(0, 10).forEach(name => {
+                console.log(chalk.cyan(`  • ${name}`));
+              });
+              if (allAgents.length > 10) {
+                console.log(chalk.gray(`  ... and ${allAgents.length - 10} more`));
+              }
+              console.log(chalk.gray('\nRun "automatosx list agents" to see all agents\n'));
+            }
+          }
+
+          process.exit(1);
         }
-      );
+        // Re-throw other errors
+        throw error;
+      }
 
       // 8. Detect if agent has multi-stage workflow
       const hasStages = context.agent.stages && context.agent.stages.length > 0;

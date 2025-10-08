@@ -372,19 +372,20 @@ describe('AgentExecutor - Delegation', () => {
       );
     });
 
-    it('should reject delegation when toAgent not in canDelegateTo whitelist', async () => {
+    it('should allow delegation even when toAgent not in canDelegateTo (v4.7.2+)', async () => {
+      // v4.7.2+: canDelegateTo whitelist is deprecated and not enforced
+      // Agents can delegate to any other agent for autonomous collaboration
       const request: DelegationRequest = {
         fromAgent: 'backend',
-        toAgent: 'unauthorized', // Not in backend's canDelegateTo
+        toAgent: 'unauthorized', // Not in backend's canDelegateTo, but should still work
         task: 'Some task'
       };
 
-      await expect(executor.delegateToAgent(request)).rejects.toThrow(
-        DelegationError
-      );
-      await expect(executor.delegateToAgent(request)).rejects.toThrow(
-        "Agent 'backend' is not authorized to delegate to 'unauthorized'"
-      );
+      // Should succeed (whitelist no longer enforced)
+      const result = await executor.delegateToAgent(request);
+      expect(result).toBeDefined();
+      expect(result.fromAgent).toBe('backend');
+      expect(result.toAgent).toBe('unauthorized');
     });
 
     it('should allow delegation to any agent when canDelegateTo is undefined', async () => {

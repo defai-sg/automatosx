@@ -5,6 +5,117 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.7.5] - 2025-10-08
+
+### 🚀 Major Feature Complete: Autonomous Multi-Agent Delegation
+
+Completed the implementation of autonomous agent delegation system, enabling agents to collaborate without manual orchestration.
+
+#### ✨ New Features
+
+**1. Autonomous Agent Delegation (CRITICAL)**
+- ✅ **Delegation Parsing & Execution**: Agents can now actually delegate tasks by outputting `DELEGATE TO [agent]: [task]`
+- ✅ **Automatic Detection**: System automatically parses agent responses for delegation requests
+- ✅ **Seamless Integration**: Delegation results are automatically appended to agent responses
+- ✅ **No Whitelist Required**: Removed `canDelegateTo` restriction for true autonomous collaboration
+- ✅ **Multi-Delegation Support**: Agents can delegate to multiple agents in single response
+- ✅ **Case-Insensitive Parsing**: Delegation syntax is flexible and robust
+
+**Example:**
+```bash
+ax run backend "Review README and discuss with CTO"
+# Bob can now output:
+# "I've reviewed the README.
+#
+#  DELEGATE TO cto: Please provide strategic feedback on README
+#
+#  The delegation has been requested."
+#
+# System automatically executes delegation and returns combined results
+```
+
+#### 🐛 Critical Bug Fixes
+
+**1. Orchestration Managers Initialization (CRITICAL)**
+- **Issue**: WorkspaceManager only initialized when `--session` flag provided
+- **Impact**: Delegation completely non-functional without explicit session
+- **Fix**: Always initialize WorkspaceManager to enable delegation
+- **Before**: `ax run backend "task"` → orchestration = undefined → no delegation
+- **After**: `ax run backend "task"` → orchestration available → delegation works
+
+**2. Type Safety Improvements**
+- Fixed unsafe type assertion in ProfileLoader (`profile!` → `profile`)
+- Improved null/undefined checking for profile loading
+- Added proper type guards for cached profiles
+
+**3. Error Handling Precision**
+- Replaced string matching with instanceof checks
+- `error.message.includes('Agent not found')` → `error instanceof AgentNotFoundError`
+- Added proper import for AgentNotFoundError type
+
+**4. Prompt Optimization**
+- Limited availableAgents list to 10 agents (from 17)
+- Added "... and N more agents" message
+- Reduced prompt length by ~40% for large agent lists
+- Added delegation example in prompt
+
+**5. Whitelist Removal**
+- Removed `canDelegateTo` enforcement (deprecated in v4.7.2)
+- Agents can now delegate to ANY other agent
+- Safety still ensured via cycle detection, depth limits, timeouts
+- Added deprecation notice in type definitions
+
+#### 📝 Documentation Updates
+
+- Added comprehensive delegation usage examples
+- Updated orchestration documentation
+- Clarified agent collaboration capabilities
+- Added troubleshooting guide for delegation
+
+#### 🧪 Test Results
+
+```
+✅ 892/892 tests passing (100%)
+✅ Delegation parsing verified (single/multi/case-insensitive)
+✅ Type safety validated with strict TypeScript
+✅ Build successful: 313KB bundle
+```
+
+#### 📦 Files Changed
+
+**Core Delegation Implementation:**
+- `src/agents/executor.ts`: +120 lines (parseDelegationRequests, executeDelegations, auto-execution)
+- `src/cli/commands/run.ts`: +15 lines (always initialize WorkspaceManager, AgentNotFoundError import)
+
+**Type Safety & Optimization:**
+- `src/agents/profile-loader.ts`: Type safety improvements
+- `src/types/orchestration.ts`: Deprecated canDelegateTo with @deprecated tag
+- `src/agents/context-manager.ts`: Removed whitelist filtering
+
+**Tests:**
+- `tests/unit/executor-delegation.test.ts`: Updated to verify whitelist removal
+
+#### 🔒 Security
+
+All security mechanisms remain intact:
+- ✅ Cycle detection prevents infinite delegation loops
+- ✅ Max delegation depth (default: 3)
+- ✅ Timeout enforcement at each level
+- ✅ Workspace isolation and permission validation
+- ✅ Path traversal protection
+
+#### ⚠️ Breaking Changes
+
+**Behavioral Change (Non-Breaking):**
+- `canDelegateTo` in agent profiles is now ignored (previously enforced)
+- Agents can delegate to any other agent regardless of whitelist
+- Existing profiles with `canDelegateTo` will continue to work but field is ignored
+
+**Migration Guide:**
+No action required. The `canDelegateTo` field can be safely removed from agent profiles, but leaving it in place has no negative effect.
+
+---
+
 ## [4.7.1] - 2025-10-08
 
 ### 🐛 Critical Bug Fixes & Security Enhancements

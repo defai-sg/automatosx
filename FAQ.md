@@ -331,6 +331,42 @@ automatosx config  # Shows config path
 
 Ensure you're editing the right file based on priority order.
 
+### AutomatosX not working after upgrading from older version
+
+If you're experiencing errors or unexpected behavior after upgrading, it may be due to:
+- **Old agent profiles** (YAML format or schema changes)
+- **Outdated configuration** (incompatible settings from previous versions)
+- **Old database format** (v3.x Milvus → v4.x SQLite migration)
+
+**Solution**: Reinitialize your AutomatosX setup with the force flag:
+
+```bash
+# Force reinitialize (overwrites existing configuration)
+ax init -f
+
+# This will:
+# - Create fresh .automatosx/ directory structure
+# - Generate updated agent profiles
+# - Create new SQLite database
+# - Reset configuration to v4.x defaults
+```
+
+**⚠️ Warning**: This will overwrite existing configuration. If you have custom agents or abilities, back them up first:
+
+```bash
+# Backup custom files before reinitializing
+cp -r .automatosx/agents ./backup-agents
+cp -r .automatosx/abilities ./backup-abilities
+cp .automatosx/config.json ./backup-config.json
+
+# Reinitialize
+ax init -f
+
+# Restore custom agents/abilities if needed
+cp ./backup-agents/* .automatosx/agents/
+cp ./backup-abilities/* .automatosx/abilities/
+```
+
 ### Vector search returns no results
 
 Verify memories exist and embedding provider is configured:
