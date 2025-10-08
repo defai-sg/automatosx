@@ -211,21 +211,23 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         fallbackEnabled: true
       });
 
-      // 5. Initialize orchestration managers
-      // Note: Always initialize these to enable delegation, even without sessions
+      // 5. Initialize orchestration managers (optional)
+      // Note: These are only needed for file-based delegation with persistent sessions
+      // For text-only delegation, only contextManager and profileLoader are required
       let sessionManager: SessionManager | undefined;
       let workspaceManager: WorkspaceManager | undefined;
 
-      // Always initialize WorkspaceManager (required for delegation)
-      workspaceManager = new WorkspaceManager(projectDir);
-      await workspaceManager.initialize();
-
-      // Initialize SessionManager if session is specified OR if delegation is needed
+      // Only initialize if session is explicitly requested
       if (argv.session) {
+        // Initialize SessionManager
         sessionManager = new SessionManager({
           persistencePath: join(projectDir, '.automatosx', 'sessions', 'sessions.json')
         });
         await sessionManager.initialize();
+
+        // Initialize WorkspaceManager
+        workspaceManager = new WorkspaceManager(projectDir);
+        await workspaceManager.initialize();
 
         // Verify session exists
         const session = await sessionManager.getSession(argv.session);
@@ -242,6 +244,8 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
           console.log(chalk.gray(`Session task: ${session.task}`));
           console.log(chalk.gray(`Agents in session: ${session.agents.join(', ')}\n`));
         }
+      } else if (argv.verbose) {
+        console.log(chalk.gray('Text-only delegation mode (no persistent sessions/workspaces)\n'));
       }
 
       // 6. Create context manager

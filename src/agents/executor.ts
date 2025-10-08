@@ -633,10 +633,11 @@ export class AgentExecutor {
    * ```
    */
   async delegateToAgent(request: DelegationRequest): Promise<DelegationResult> {
-    // Verify delegation support is configured
-    if (!this.contextManager || !this.sessionManager || !this.workspaceManager || !this.profileLoader) {
+    // Verify minimum required components for delegation
+    // Note: SessionManager and WorkspaceManager are optional (for text-only delegation)
+    if (!this.contextManager || !this.profileLoader) {
       throw new DelegationError(
-        'Delegation not configured - missing required managers',
+        'Delegation not configured - missing required managers (contextManager, profileLoader)',
         request.fromAgent,
         request.toAgent,
         'execution_failed'
@@ -709,44 +710,54 @@ export class AgentExecutor {
         );
       }
 
-      // 5. Session management
+      // 5. Session management (optional - only if SessionManager is available)
       let sessionId = request.context?.sessionId;
       let session;
 
-      if (sessionId) {
-        // Join existing session
-        session = await this.sessionManager.getSession(sessionId);
-        if (!session) {
-          throw new DelegationError(
-            `Session not found: ${sessionId}`,
-            request.fromAgent,
-            request.toAgent,
-            'execution_failed'
-          );
-        }
+      if (this.sessionManager && this.workspaceManager) {
+        // Session/Workspace managers available - use full collaboration features
+        if (sessionId) {
+          // Join existing session
+          session = await this.sessionManager.getSession(sessionId);
+          if (!session) {
+            throw new DelegationError(
+              `Session not found: ${sessionId}`,
+              request.fromAgent,
+              request.toAgent,
+              'execution_failed'
+            );
+          }
 
-        // Validate session is active
-        if (session.status !== 'active') {
-          throw new DelegationError(
-            `Cannot delegate to ${session.status} session: ${sessionId}`,
-            request.fromAgent,
-            request.toAgent,
-            'execution_failed'
-          );
-        }
+          // Validate session is active
+          if (session.status !== 'active') {
+            throw new DelegationError(
+              `Cannot delegate to ${session.status} session: ${sessionId}`,
+              request.fromAgent,
+              request.toAgent,
+              'execution_failed'
+            );
+          }
 
-        // Add toAgent to session
-        await this.sessionManager.addAgent(sessionId, request.toAgent);
+          // Add toAgent to session
+          await this.sessionManager.addAgent(sessionId, request.toAgent);
+        } else {
+          // Create new session
+          session = await this.sessionManager.createSession(request.task, request.fromAgent);
+          sessionId = session.id;
+
+          // Add toAgent to session
+          await this.sessionManager.addAgent(sessionId, request.toAgent);
+
+          // Create session workspace
+          await this.workspaceManager.createSessionWorkspace(sessionId);
+        }
       } else {
-        // Create new session
-        session = await this.sessionManager.createSession(request.task, request.fromAgent);
-        sessionId = session.id;
-
-        // Add toAgent to session
-        await this.sessionManager.addAgent(sessionId, request.toAgent);
-
-        // Create session workspace
-        await this.workspaceManager.createSessionWorkspace(sessionId);
+        // Simple text-only delegation mode (no persistent session/workspace)
+        logger.debug('Text-only delegation mode (no SessionManager/WorkspaceManager)', {
+          fromAgent: request.fromAgent,
+          toAgent: request.toAgent
+        });
+        sessionId = undefined;
       }
 
       // 6. Create execution context for delegated agent
@@ -767,11 +778,14 @@ export class AgentExecutor {
         showProgress: true
       });
 
-      // 8. Collect outputs
-      const files = await this.workspaceManager.listSessionFiles(
-        sessionId,
-        request.toAgent
-      );
+      // 8. Collect outputs (only if WorkspaceManager is available)
+      let files: string[] = [];
+      if (this.workspaceManager && sessionId) {
+        files = await this.workspaceManager.listSessionFiles(
+          sessionId,
+          request.toAgent
+        );
+      }
 
       // 9. Memory IDs collection
       // TODO: Implement memory saving in future enhancement
