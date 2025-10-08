@@ -1,4 +1,4 @@
-# AutomatosX v4.7.8
+# AutomatosX v4.8.0
 
 > **The control tower for shipping customer-facing ideas—without the chaos**
 > Orchestrate specialized AI agents to move work from slide decks to production, keeping product, engineering, and stakeholders in sync.
@@ -14,13 +14,21 @@
 - ⚡ **Shortens idea-to-impact gap** – organized workflows mean faster onboarding, tighter handoffs, confident timelines
 - 💰 **10× more cost-effective** – CLI-based orchestration beats expensive assistants APIs
 
-**Status**: ✅ Production Release · **Version**: 4.7.8 · **Released**: October 2025
+**Status**: ✅ Production Release · **Version**: 4.8.0 · **Released**: October 2025
 
 ---
 
-## 🎉 What's New in v4.7
+## 🎉 What's New in v4.8
 
-### v4.7.8 (Latest) - Natural Language Delegation
+### v4.8.0 (Latest) - Universal Agent Delegation
+- 🌟 **All Agents Can Delegate**: Removed `canDelegate: true` requirement - every agent can now delegate by default
+- ⚡ **Always-On Orchestration**: SessionManager and WorkspaceManager auto-initialize - no `--session` flag needed
+- 🚀 **True Autonomous Collaboration**: Agents autonomously collaborate without configuration barriers
+- 🔧 **Simplified Configuration**: Agent profiles no longer need `orchestration.canDelegate` field
+- 🛡️ **Maintained Safety**: Cycle detection, depth limits, and timeout enforcement still active
+- 📝 **Enhanced Logging**: Orchestration status now visible in execution context logs
+
+### v4.7.8 - Natural Language Delegation
 - 🗣️ **Natural Language Syntax**: Agents delegate using human-readable patterns (@agent, DELEGATE TO, please ask, I need)
 - 🌐 **Multilingual Support**: Full support for English and Chinese delegation commands
 - 🔄 **Multiple Delegations**: Same agent can receive multiple distinct tasks in one execution

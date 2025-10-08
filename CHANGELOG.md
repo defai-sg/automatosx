@@ -5,6 +5,134 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.8.0] - 2025-10-08
+
+### 🌟 Universal Agent Delegation - True Autonomous Collaboration
+
+This release removes all remaining barriers to agent delegation, enabling **every agent to delegate by default** without any configuration requirements.
+
+#### 🎯 Breaking Changes
+
+**Orchestration Configuration Simplified**
+- ✅ **New Behavior**: All agents can delegate regardless of `canDelegate` setting
+- ✅ **Auto-Initialization**: SessionManager and WorkspaceManager automatically initialize (no `--session` flag required)
+- 🔧 **Optional Field**: `orchestration.canDelegate` is now optional (defaults to `true`)
+- 📝 **Backward Compatible**: Existing agent profiles continue to work without changes
+
+**Migration Guide:**
+```yaml
+# Before (v4.7.8 and earlier)
+orchestration:
+  canDelegate: true      # ❌ Required for delegation
+  maxDelegationDepth: 3
+
+# After (v4.8.0+)
+orchestration:           # ✨ Orchestration block now optional!
+  maxDelegationDepth: 3  # Only specify if different from default (3)
+
+# Or simply omit orchestration block entirely:
+# (agent can still delegate with default settings)
+```
+
+#### ✨ Features
+
+**1. Universal Delegation**
+- **Changed**: `context-manager.ts` no longer checks `agent.orchestration?.canDelegate`
+- **Result**: All agents receive orchestration metadata automatically
+- **Benefit**: Zero configuration needed for basic delegation
+
+**2. Always-On Orchestration Managers**
+- **Changed**: `run.ts` always initializes SessionManager and WorkspaceManager
+- **Previous**: Required `--session` flag to enable delegation
+- **Result**: Delegation works immediately without additional flags
+- **Benefit**: Seamless agent-to-agent collaboration
+
+**3. Removed Permission Checks**
+- **Changed**: `executor.ts` no longer validates `canDelegate` permission
+- **Safety**: Maintained via cycle detection, depth limits, timeout enforcement
+- **Benefit**: Autonomous collaboration without artificial restrictions
+
+**4. Enhanced Type Safety**
+- **Added**: `maxDelegationDepth` to `OrchestrationMetadata` interface
+- **Changed**: Made `maxDelegationDepth` optional with default value (3)
+- **Benefit**: Better TypeScript inference and runtime safety
+
+**5. Improved Logging**
+- **Added**: `hasOrchestration` and `canDelegate` to execution context logs
+- **Benefit**: Better debugging and visibility into orchestration status
+
+#### 🔧 Technical Changes
+
+**Modified Files:**
+- `src/agents/context-manager.ts`: Removed `canDelegate` check, always create orchestration metadata
+- `src/agents/executor.ts`: Removed delegation permission validation, added optional chaining for `maxDelegationDepth`
+- `src/cli/commands/run.ts`: Always initialize SessionManager and WorkspaceManager
+- `src/types/orchestration.ts`: Added `maxDelegationDepth` field to `OrchestrationMetadata`
+
+**Code Changes:**
+```typescript
+// Before (v4.7.8)
+if (agent.orchestration?.canDelegate &&
+    this.config.workspaceManager &&
+    this.config.profileLoader) {
+  // Create orchestration metadata
+}
+
+// After (v4.8.0)
+if (this.config.workspaceManager &&
+    this.config.profileLoader) {
+  // Always create orchestration metadata
+  const maxDelegationDepth = agent.orchestration?.maxDelegationDepth ?? 3;
+}
+```
+
+#### 🧪 Testing
+
+**Test Coverage:**
+- ✅ All existing tests passing (922 tests)
+- ✅ Delegation works without `orchestration` block in agent profiles
+- ✅ Delegation works without `--session` flag
+- ✅ Multiple agents can delegate in sequence
+- ✅ Sessions automatically created and tracked
+
+**Verified Scenarios:**
+1. Agent without `orchestration` block can delegate ✅
+2. Multiple sequential delegations (A→B→C) work ✅
+3. Session creation and persistence automatic ✅
+4. Workspace isolation maintained ✅
+
+#### 📦 Files Changed
+
+**Core Changes:**
+- `src/agents/context-manager.ts`: Universal orchestration metadata creation
+- `src/agents/executor.ts`: Removed permission checks, optional `maxDelegationDepth`
+- `src/cli/commands/run.ts`: Always initialize orchestration managers
+- `src/types/orchestration.ts`: Added `maxDelegationDepth` to metadata interface
+
+**Documentation Updates:**
+- `README.md`: Updated to v4.8.0, added Universal Agent Delegation section
+- `CHANGELOG.md`: This changelog entry
+- `.automatosx/agents/*.yaml`: Updated example agent profiles (orchestration optional)
+
+#### 🎉 Impact
+
+**Developer Experience:**
+- 🚀 **Faster Setup**: No configuration needed for delegation
+- 💡 **Clearer Intent**: Agents collaborate naturally without artificial barriers
+- 🔧 **Less Config**: Agent profiles are simpler and more maintainable
+
+**System Behavior:**
+- ✅ **More Autonomous**: Agents decide collaboration without permission checks
+- 🛡️ **Still Safe**: Cycle detection, depth limits, timeouts prevent abuse
+- 📊 **Better Visibility**: Logging shows orchestration status clearly
+
+**Backward Compatibility:**
+- ✅ Existing agent profiles continue to work
+- ✅ `canDelegate: true` is still respected (but no longer required)
+- ✅ `--session` flag still works (but no longer required)
+
+---
+
 ## [4.7.6] - 2025-10-08
 
 ### 🔓 Complete Whitelist Removal

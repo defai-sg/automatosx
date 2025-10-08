@@ -211,24 +211,23 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         fallbackEnabled: true
       });
 
-      // 5. Initialize orchestration managers (optional)
-      // Note: These are only needed for file-based delegation with persistent sessions
-      // For text-only delegation, only contextManager and profileLoader are required
+      // 5. Initialize orchestration managers
+      // v4.7.8+: Always initialize for delegation support (all agents can delegate)
       let sessionManager: SessionManager | undefined;
       let workspaceManager: WorkspaceManager | undefined;
 
-      // Only initialize if session is explicitly requested
+      // Initialize SessionManager
+      sessionManager = new SessionManager({
+        persistencePath: join(projectDir, '.automatosx', 'sessions', 'sessions.json')
+      });
+      await sessionManager.initialize();
+
+      // Initialize WorkspaceManager
+      workspaceManager = new WorkspaceManager(projectDir);
+      await workspaceManager.initialize();
+
+      // If session ID provided, verify and join it
       if (argv.session) {
-        // Initialize SessionManager
-        sessionManager = new SessionManager({
-          persistencePath: join(projectDir, '.automatosx', 'sessions', 'sessions.json')
-        });
-        await sessionManager.initialize();
-
-        // Initialize WorkspaceManager
-        workspaceManager = new WorkspaceManager(projectDir);
-        await workspaceManager.initialize();
-
         // Verify session exists
         const session = await sessionManager.getSession(argv.session);
         if (!session) {
@@ -244,8 +243,6 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
           console.log(chalk.gray(`Session task: ${session.task}`));
           console.log(chalk.gray(`Agents in session: ${session.agents.join(', ')}\n`));
         }
-      } else if (argv.verbose) {
-        console.log(chalk.gray('Text-only delegation mode (no persistent sessions/workspaces)\n'));
       }
 
       // 6. Create context manager

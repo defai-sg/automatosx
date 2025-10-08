@@ -189,13 +189,15 @@ describe('Orchestration Types', () => {
         canDelegate: true,
         availableAgents: ['frontend', 'backend', 'data'],
         sharedWorkspace: '/path/to/shared',
-        delegationChain: ['backend']
+        delegationChain: ['backend'],
+        maxDelegationDepth: 3
       };
 
       expect(metadata.canDelegate).toBe(true);
       expect(metadata.availableAgents).toHaveLength(3);
       expect(metadata.sharedWorkspace).toBe('/path/to/shared');
       expect(metadata.delegationChain).toHaveLength(1);
+      expect(metadata.maxDelegationDepth).toBe(3);
     });
   });
 

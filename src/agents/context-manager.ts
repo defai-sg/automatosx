@@ -122,15 +122,13 @@ export class ContextManager {
       session = foundSession;
     }
 
-    // 8. Build orchestration metadata (if agent has orchestration config)
+    // 8. Build orchestration metadata (v4.7.8+: all agents can delegate)
     let orchestration: OrchestrationMetadata | undefined;
-    if (agent.orchestration?.canDelegate &&
-        this.config.workspaceManager &&
-        this.config.profileLoader) {
+    if (this.config.workspaceManager && this.config.profileLoader) {
       // Get list of available agents for delegation
       const allAgents = await this.config.profileLoader.listProfiles();
 
-      // v4.7.2+: All agents are available for delegation (no whitelist)
+      // v4.7.8+: All agents can delegate by default
       // Only exclude self to prevent direct self-delegation (cycles still detected)
       const availableAgents = allAgents.filter(a => a !== agent.name);
 
@@ -139,17 +137,22 @@ export class ContextManager {
         ? join(projectDir, '.automatosx', 'workspaces', 'shared', 'sessions', session.id)
         : join(projectDir, '.automatosx', 'workspaces', 'shared', 'persistent');
 
+      // Respect maxDelegationDepth from agent config, default to 3
+      const maxDelegationDepth = agent.orchestration?.maxDelegationDepth ?? 3;
+
       orchestration = {
         canDelegate: true,
         availableAgents,
         sharedWorkspace,
-        delegationChain: options?.delegationChain || []
+        delegationChain: options?.delegationChain || [],
+        maxDelegationDepth
       };
 
       logger.debug('Orchestration metadata built', {
         availableAgents,
         sharedWorkspace,
-        delegationChain: orchestration.delegationChain
+        delegationChain: orchestration.delegationChain,
+        maxDelegationDepth
       });
     }
 
@@ -181,7 +184,9 @@ export class ContextManager {
       agent: agent.name,
       provider: provider.name,
       memoryEntries: context.memory.length,
-      hasAbilities: abilities.length > 0
+      hasAbilities: abilities.length > 0,
+      hasOrchestration: !!orchestration,
+      canDelegate: orchestration?.canDelegate ?? false
     });
 
     return context;

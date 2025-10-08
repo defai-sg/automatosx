@@ -636,17 +636,8 @@ export class AgentExecutor {
       const fromAgentProfile = await this.profileLoader.loadProfile(request.fromAgent);
       const toAgentProfile = await this.profileLoader.loadProfile(request.toAgent);
 
-      // 2. Permission check: fromAgent must be authorized to delegate to toAgent
-      if (!fromAgentProfile.orchestration?.canDelegate) {
-        throw new DelegationError(
-          `Agent '${request.fromAgent}' is not authorized to delegate tasks`,
-          request.fromAgent,
-          request.toAgent,
-          'unauthorized'
-        );
-      }
-
-      // Note: Autonomous agent collaboration - agents can delegate to any other agent
+      // 2. v4.7.8+: All agents can delegate by default
+      // Permission check removed - autonomous agent collaboration enabled
       // Safety ensured by:
       // - Cycle detection (below)
       // - Max depth limit (below)
@@ -668,7 +659,8 @@ export class AgentExecutor {
       // If chain = ['A', 'B'], this means A→B has happened, and B is now delegating (3rd delegation)
       // maxDepth = 3 allows up to 3 delegations: A→B (1st), B→C (2nd), C→D (3rd)
       // So we reject when delegationChain.length >= maxDepth (4th delegation attempt)
-      const maxDepth = fromAgentProfile.orchestration.maxDelegationDepth ?? 3;
+      // v4.7.8+: Default to 3 if not configured
+      const maxDepth = fromAgentProfile.orchestration?.maxDelegationDepth ?? 3;
       if (delegationChain.length >= maxDepth) {
         throw new DelegationError(
           `Max delegation depth (${maxDepth}) exceeded. Chain: ${delegationChain.join(' -> ')} (length ${delegationChain.length})`,

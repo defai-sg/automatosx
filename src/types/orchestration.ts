@@ -207,9 +207,10 @@ export interface OrchestrationConfig {
  * Orchestration Metadata - Runtime orchestration information in execution context
  *
  * Added to ExecutionContext when agent has orchestration capabilities.
+ * v4.7.8+: All agents can delegate by default.
  */
 export interface OrchestrationMetadata {
-  /** Whether agent can delegate (copied from config for convenience) */
+  /** Whether agent can delegate (always true in v4.7.8+) */
   canDelegate: boolean;
 
   /** List of available agents for delegation */
@@ -220,6 +221,9 @@ export interface OrchestrationMetadata {
 
   /** Current delegation chain (for cycle detection) */
   delegationChain: string[];
+
+  /** Maximum delegation depth (default: 3) */
+  maxDelegationDepth: number;
 }
 
 /**

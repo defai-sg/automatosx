@@ -340,34 +340,34 @@ describe('AgentExecutor - Delegation', () => {
   });
 
   describe('Permission Checks', () => {
-    it('should reject delegation when fromAgent cannot delegate', async () => {
+    it('should allow delegation even when fromAgent has canDelegate: false (v4.8.0+)', async () => {
+      // v4.8.0+: All agents can delegate regardless of canDelegate setting
       const request: DelegationRequest = {
         fromAgent: 'database',
         toAgent: 'backend',
         task: 'Some task'
       };
 
-      await expect(executor.delegateToAgent(request)).rejects.toThrow(
-        DelegationError
-      );
-      await expect(executor.delegateToAgent(request)).rejects.toThrow(
-        "Agent 'database' is not authorized to delegate tasks"
-      );
+      const result = await executor.delegateToAgent(request);
+
+      expect(result).toBeDefined();
+      expect(result.fromAgent).toBe('database');
+      expect(result.toAgent).toBe('backend');
     });
 
-    it('should reject delegation when fromAgent has no orchestration config', async () => {
+    it('should allow delegation even when fromAgent has no orchestration config (v4.8.0+)', async () => {
+      // v4.8.0+: Agents without orchestration config can still delegate
       const request: DelegationRequest = {
         fromAgent: 'unauthorized',
         toAgent: 'backend',
         task: 'Some task'
       };
 
-      await expect(executor.delegateToAgent(request)).rejects.toThrow(
-        DelegationError
-      );
-      await expect(executor.delegateToAgent(request)).rejects.toThrow(
-        "Agent 'unauthorized' is not authorized to delegate tasks"
-      );
+      const result = await executor.delegateToAgent(request);
+
+      expect(result).toBeDefined();
+      expect(result.fromAgent).toBe('unauthorized');
+      expect(result.toAgent).toBe('backend');
     });
 
     it('should allow delegation to any agent (autonomous collaboration)', async () => {
