@@ -12,36 +12,36 @@ Research shows humans remember names better than roles. Instead of remembering "
 
 | Name | Role | Expertise | Best For | Primary Provider | Fallback |
 |------|------|-----------|----------|------------------|----------|
-| **Alex** | General Assistant | General purpose tasks, planning, questions | Quick questions, brainstorming, planning | 🟣 Claude Code | 🟢 OpenAI → 🔵 Gemini → 🟣 Claude |
-| **Charlie** | Software Developer | Code generation, implementation | Writing new code, implementing features | 🟣 Claude Code | 🟢 OpenAI → 🔵 Gemini → 🟣 Claude |
-| **Ryan** | Code Reviewer | Code review, quality assurance | PR reviews, code quality checks | 🟣 Claude Code | 🟢 OpenAI → 🔵 Gemini → 🟣 Claude |
-| **Danny** | Debug Expert | Debugging, troubleshooting | Fixing bugs, error analysis | 🟣 Claude Code | 🟢 OpenAI → 🔵 Gemini → 🟣 Claude |
-| **Wendy** | Technical Writer | Documentation, content creation | Writing docs, README files | 🟣 Claude Code | 🟢 OpenAI → 🔵 Gemini → 🟣 Claude |
+| **Alex** | General Assistant | General purpose tasks, planning, questions | Quick questions, brainstorming, planning | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Charlie** | Software Developer | Code generation, implementation | Writing new code, implementing features | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Ryan** | Code Reviewer | Code review, quality assurance | PR reviews, code quality checks | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Danny** | Debug Expert | Debugging, troubleshooting | Fixing bugs, error analysis | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Wendy** | Technical Writer | Documentation, content creation | Writing docs, README files | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
 
 ### 💻 Engineering
 
 | Name | Role | Expertise | Best For | Primary Provider | Fallback |
 |------|------|-----------|----------|------------------|----------|
-| **Bob** | Backend Engineer | Server-side architecture, APIs, databases | Backend development, API design | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini → 🟣 Claude |
-| **Frank** | Frontend Developer | React, UI/UX, performance | Frontend development, components | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini → 🟣 Claude |
-| **Oliver** | DevOps Engineer | Infrastructure, CI/CD, deployment | DevOps, deployment, monitoring | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini → 🟣 Claude |
-| **Steve** | Security Engineer | Application security, threat modeling | Security review, vulnerability assessment | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini → 🟣 Claude |
-| **Queenie** | QA Engineer | Testing, quality assurance | Test planning, test automation | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini → 🟣 Claude |
+| **Bob** | Backend Engineer | Server-side architecture, APIs, databases | Backend development, API design | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Frank** | Frontend Developer | React, UI/UX, performance | Frontend development, components | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Oliver** | DevOps Engineer | Infrastructure, CI/CD, deployment | DevOps, deployment, monitoring | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Steve** | Security Engineer | Application security, threat modeling | Security review, vulnerability assessment | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Queenie** | QA Engineer | Testing, quality assurance | Test planning, test automation | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
 
 ### 📊 Business & Product
 
 | Name | Role | Expertise | Best For | Primary Provider | Fallback |
 |------|------|-----------|----------|------------------|----------|
-| **Eric** | CEO | Business strategy, vision | Strategy, business decisions | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini → 🟣 Claude |
-| **Tony** | CTO | Technology strategy, leadership | Tech strategy, architecture decisions | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini → 🟣 Claude |
-| **Paris** | Product Manager | Product strategy, user research | Product planning, feature prioritization | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini → 🟣 Claude |
-| **Daisy** | Data Scientist | Data analysis, machine learning | Analytics, ML models, insights | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini → 🟣 Claude |
+| **Eric** | CEO | Business strategy, vision | Strategy, business decisions | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Tony** | CTO | Technology strategy, leadership | Tech strategy, architecture decisions | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Paris** | Product Manager | Product strategy, user research | Product planning, feature prioritization | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Daisy** | Data Scientist | Data analysis, machine learning | Analytics, ML models, insights | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
 
 ### 🎨 Design
 
 | Name | Role | Expertise | Best For | Primary Provider | Fallback |
 |------|------|-----------|----------|------------------|----------|
-| **Debbee** | UX/UI Designer | User experience, visual design | UX design, prototyping, design systems | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini → 🟣 Claude |
+| **Debbee** | UX/UI Designer | User experience, visual design | UX design, prototyping, design systems | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
 
 ## Provider Configuration
 
@@ -49,23 +49,21 @@ AutomatosX uses a **3-layer fallback system** for maximum reliability:
 
 1. **Primary Provider**: Each agent's preferred AI provider (configured in agent YAML)
 2. **Fallback Provider**: Optional per-agent fallback (can be configured via `fallbackProvider` field)
-3. **Router Fallback**: Auto-routing through multiple providers (OpenAI → Gemini → Claude)
+3. **Router Fallback**: Auto-routing through multiple providers (OpenAI → Gemini)
 
 ### Supported AI Providers
 
-| Brand | Provider Name | CLI Tool | Best For |
-|-------|---------------|----------|----------|
-| 🟣 **Claude** | `claude` | `claude` | General purpose, coding, analysis |
-| 🟣 **Claude Code** | `claude-code` | `claude-code` | Advanced coding, debugging |
-| 🟢 **OpenAI** | `codex` | `codex` | Code generation, planning |
-| 🔵 **Gemini** | `gemini` | `gemini` | Creative tasks, multimodal |
+| Brand | CLI Tool | Best For |
+|-------|----------|----------|
+| 🟣 **Claude** | `claude` or `claude-code` | General purpose, coding, analysis, debugging |
+| 🟢 **OpenAI** | `codex` | Code generation, planning |
+| 🔵 **Gemini** | `gemini` | Creative tasks, multimodal |
 
 ### Current Provider Distribution
 
-| AI Brand | Agent Count | Agents |
-|----------|-------------|--------|
-| 🟣 **Claude Code** | 5 | Alex, Charlie, Ryan, Danny, Wendy |
-| 🟣 **Claude** | 11 | Bob, Frank, Oliver, Steve, Queenie, Eric, Tony, Paris, Daisy, Debbee, + 1 more |
+| AI Provider | Agent Count | Agents |
+|-------------|-------------|--------|
+| 🟣 **Claude** | 16 | All agents (Alex, Charlie, Ryan, Danny, Wendy, Bob, Frank, Oliver, Steve, Queenie, Eric, Tony, Paris, Daisy, Debbee, + 1 more) |
 | 🟢 **OpenAI** | 0 | Available via auto-routing |
 | 🔵 **Gemini** | 0 | Available via auto-routing |
 
@@ -79,14 +77,13 @@ Try Fallback Provider (if configured)
 Use Auto-Routing Priority:
     1. 🟢 OpenAI
     2. 🔵 Gemini
-    3. 🟣 Claude (final fallback)
 ```
 
-**Example**: If Charlie (primary: 🟣 **Claude Code**) encounters an error:
+**Example**: If Charlie (primary: 🟣 **Claude**) encounters an error:
 
-1. Try 🟣 **Claude Code** first
+1. Try 🟣 **Claude** first
 2. No fallback configured, skip to auto-routing
-3. Router tries 🟢 **OpenAI** → 🔵 **Gemini** → 🟣 **Claude** until one succeeds
+3. Router tries 🟢 **OpenAI** → 🔵 **Gemini** until one succeeds
 
 ### Customizing Provider Configuration
 
@@ -96,20 +93,18 @@ You can customize provider preferences for any agent:
 # In .automatosx/agents/my-agent.yaml
 name: my-agent
 displayName: MyAgent
-provider: claude-code          # Primary: 🟣 Claude Code
+provider: claude               # Primary: 🟣 Claude (can use 'claude' or 'claude-code')
 fallbackProvider: codex        # Fallback: 🟢 OpenAI (v4.9.5+)
 
 # Available provider options:
-# - claude-code  (🟣 Claude Code)
-# - claude       (🟣 Claude)
-# - codex        (🟢 OpenAI)
-# - gemini       (🔵 Gemini)
+# - claude or claude-code  (🟣 Claude - both are Anthropic Claude)
+# - codex                  (🟢 OpenAI)
+# - gemini                 (🔵 Gemini)
 ```
 
 **Why choose each provider?**
 
-- 🟣 **Claude**: Best for general reasoning, long-context tasks, and detailed analysis
-- 🟣 **Claude Code**: Specialized for coding tasks with enhanced debugging capabilities
+- 🟣 **Claude**: Best for general reasoning, long-context tasks, detailed analysis, and coding
 - 🟢 **OpenAI**: Excellent for code generation and technical planning
 - 🔵 **Gemini**: Great for creative tasks and multimodal processing
 
