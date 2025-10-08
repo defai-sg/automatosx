@@ -1,4 +1,4 @@
-# AutomatosX v4.9.1
+# AutomatosX v4.9.6
 
 > **The control tower for shipping customer-facing ideas—without the chaos**
 > Orchestrate specialized AI agents to move work from slide decks to production, keeping product, engineering, and stakeholders in sync.
@@ -6,7 +6,7 @@
 [![npm version](https://img.shields.io/npm/v/@defai.sg/automatosx.svg)](https://www.npmjs.com/package/@defai.sg/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-928%20passing-brightgreen.svg)](#production-ready-toolkit)
+[![Tests](https://img.shields.io/badge/tests-1026%20passing-brightgreen.svg)](#production-ready-toolkit)
 
 **Teams and solo builders choose AutomatosX because:**
 - 🎯 **Keeps people aligned, not just code moving** – track roadmaps, builds, and launch tasks in one place
@@ -14,13 +14,20 @@
 - ⚡ **Shortens idea-to-impact gap** – organized workflows mean faster onboarding, tighter handoffs, confident timelines
 - 💰 **10× more cost-effective** – CLI-based orchestration beats expensive assistants APIs
 
-**Status**: ✅ Production Release · **Version**: 4.9.1 · **Released**: October 2025
+**Status**: ✅ Production Release · **Version**: 4.9.6 · **Released**: October 2025
 
 ---
 
 ## 🎉 What's New in v4.9
 
-### v4.9.1 (Latest) - Display Name Resolution & Enhanced Stability
+### v4.9.6 (Latest) - Delegation Parser Bug Fix
+- 🐛 **Fixed Regex Whitespace Handling**: Delegation parser now correctly handles indented syntax
+- ✅ **Robust Multi-Delegation**: All 7 delegation patterns properly separate multiple delegations
+- 🔧 **Enhanced Pattern Matching**: Lookahead assertions support mixed formatting (tabs, spaces, no indentation)
+- ✨ **Example Fix**: `@frontend Create UI` and `@backend Implement API` now parse correctly when indented
+- 📊 **All Tests Passing**: 1026 tests passing (fixed 2 previously failing tests)
+
+### v4.9.1 - Display Name Resolution & Enhanced Stability
 - 🏷️ **Display Name Support**: Agents can now delegate using friendly display names (@Oliver, @Tony, @Steve)
 - 🔍 **Smart Resolution**: Automatic display name → agent name mapping with case-insensitive matching
 - ⚠️ **Duplicate Detection**: System warns when duplicate display names are found and handles gracefully
@@ -69,7 +76,7 @@
 - 🔄 **Session Persistence**: File-based session tracking with atomic writes
 - 🎯 **CLI Commands**: `ax session create/list/status`, `ax workspace list/stats`
 
-**Upgrade**: `npm install -g @defai.sg/automatosx@4.9.1`
+**Upgrade**: `npm install -g @defai.sg/automatosx@4.9.6`
 
 ---
 
