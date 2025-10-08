@@ -400,6 +400,7 @@ export class AgentExecutor {
           startTime: new Date(),
           endTime: new Date(),
           duration: 0,
+          status: 'failure',
           response: {
             content: `Delegation failed: ${err.message}`,
             model: 'error',
