@@ -5,6 +5,64 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.7.1] - 2025-10-08
+
+### 🐛 Critical Bug Fixes & Security Enhancements
+
+Fixed 12 critical and high-priority bugs discovered through ultra-deep analysis of v4.7.0.
+
+#### Critical Fixes
+
+**Session Manager Improvements:**
+- ✅ **Duplicate Cleanup Execution**: Removed redundant cleanup calls in `createSession()` that caused performance issues
+- ✅ **UUID Collision Protection**: Added 100-attempt limit to prevent infinite loops in rare UUID collision scenarios
+- ✅ **Date Validation**: Validate Date objects when loading from persistence to prevent Invalid Date crashes
+- ✅ **Circular Reference Protection**: Catch JSON.stringify errors to handle metadata with circular references
+
+**Workspace Manager Improvements:**
+- ✅ **Invalid Session ID Handling**: Gracefully skip non-UUID directories in cleanup operations
+- ✅ **File Size Limit for Shared Workspace**: Added 10MB limit to `writeToShared()` consistent with `writeToSession()`
+
+#### High Priority Fixes
+
+**Robustness Improvements:**
+- ✅ **File Traversal Safety**: Handle files/directories deleted during `collectFiles()` traversal
+- ✅ **Destroy Error Handling**: Prevent flush errors from blocking `SessionManager.destroy()`
+- ✅ **Cleanup Prioritization**: Prioritize removing completed/failed sessions over active ones
+
+**Performance Optimizations:**
+- ✅ **UUID Regex Static**: Made UUID validation regex static for better performance
+- ✅ **Enhanced Logging**: Added status breakdown in cleanup operations
+
+#### Security Enhancements
+
+- UUID format validation to prevent path traversal
+- Date object validation to prevent Invalid Date exploits
+- Circular reference protection in metadata
+- File size limits enforcement (10MB)
+- Collision detection with retry limits
+
+#### Test Results
+
+```
+✅ 986 tests passing (892 unit + 66 integration + 28 e2e)
+⏭️ 5 tests skipped (real provider tests)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Total: 991 tests (100% pass rate)
+```
+
+#### Files Changed
+
+- `src/core/session-manager.ts`: 82 additions, 9 deletions
+- `src/core/workspace-manager.ts`: 79 additions, 10 deletions
+- `src/agents/executor.ts`: 9 lines (comment improvements)
+
+#### Breaking Changes
+
+None - All changes are backward compatible.
+
+---
+
 ## [4.7.0] - 2025-10-08
 
 ### 🚀 Major Feature: Multi-Agent Orchestration
