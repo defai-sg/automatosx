@@ -6,6 +6,8 @@
  */
 
 import { randomUUID } from 'crypto';
+import { readFile, writeFile, mkdir, rename, copyFile, unlink } from 'fs/promises';
+import { dirname } from 'path';
 import type { Session } from '../types/orchestration.js';
 import { SessionError } from '../types/orchestration.js';
 import { logger } from '../utils/logger.js';
@@ -42,7 +44,97 @@ export class SessionManager {
   private activeSessions: Map<string, Session> = new Map();
 
   /** Maximum number of sessions to keep in memory (oldest are cleaned up) */
-  private readonly MAX_SESSIONS = 100;
+  private readonly MAX_SESSIONS: number;
+
+  /** Path to persistence file (optional) */
+  private readonly persistencePath?: string;
+
+  /** Pending save operation (for debouncing) */
+  private saveTimeout?: NodeJS.Timeout;
+
+  /** Pending save promise (for flushing) */
+  private pendingSave?: Promise<void>;
+
+  /** Maximum metadata size (10 KB) */
+  private readonly MAX_METADATA_SIZE = 10 * 1024;
+
+  /** UUID v4 validation regex (static for performance) */
+  private static readonly UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+  /**
+   * Validate session ID format (must be valid UUID v4)
+   *
+   * @param sessionId - Session ID to validate
+   * @throws {SessionError} If session ID is invalid
+   * @private
+   */
+  private validateSessionId(sessionId: string): void {
+    // Check for empty/whitespace session ID
+    if (!sessionId || sessionId.trim().length === 0) {
+      throw new SessionError(
+        'Session ID cannot be empty. Must be a valid UUID v4.',
+        sessionId,
+        'invalid_format'
+      );
+    }
+
+    // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+    // where y is 8, 9, a, or b
+    if (!SessionManager.UUID_V4_REGEX.test(sessionId)) {
+      throw new SessionError(
+        `Invalid session ID format: ${sessionId}. Session IDs must be valid UUID v4.`,
+        sessionId,
+        'invalid_format'
+      );
+    }
+  }
+
+  /**
+   * Create SessionManager instance
+   *
+   * @param config - Configuration options
+   * @param config.persistencePath - Optional path to JSON file for persistence
+   * @param config.maxSessions - Maximum sessions to keep in memory (default: 100)
+   *
+   * @example
+   * ```typescript
+   * // In-memory only (no persistence)
+   * const sessionManager = new SessionManager();
+   *
+   * // With persistence
+   * const sessionManager = new SessionManager({
+   *   persistencePath: '.automatosx/sessions/sessions.json'
+   * });
+   * await sessionManager.initialize();
+   *
+   * // With custom limit
+   * const sessionManager = new SessionManager({
+   *   persistencePath: '.automatosx/sessions/sessions.json',
+   *   maxSessions: 1000  // For large-scale systems
+   * });
+   * ```
+   */
+  constructor(config?: { persistencePath?: string; maxSessions?: number }) {
+    this.persistencePath = config?.persistencePath;
+    this.MAX_SESSIONS = config?.maxSessions ?? 100;
+  }
+
+  /**
+   * Initialize session manager (load from persistence if configured)
+   *
+   * @example
+   * ```typescript
+   * const sessionManager = new SessionManager({
+   *   persistencePath: '.automatosx/sessions/sessions.json'
+   * });
+   * await sessionManager.initialize();
+   * ```
+   */
+  async initialize(): Promise<void> {
+    if (this.persistencePath) {
+      await this.loadFromFile();
+    }
+  }
 
   /**
    * Create a new session
@@ -61,8 +153,23 @@ export class SessionManager {
    * ```
    */
   async createSession(task: string, initiator: string): Promise<Session> {
+    // Auto cleanup if approaching limit (prevent memory exhaustion)
+    if (this.activeSessions.size >= this.MAX_SESSIONS) {
+      logger.info('Session limit approaching, running auto cleanup', {
+        current: this.activeSessions.size,
+        limit: this.MAX_SESSIONS
+      });
+      await this.cleanup();  // Remove oldest completed sessions
+    }
+
+    // Generate unique session ID (handle extremely rare UUID collisions)
+    let sessionId = randomUUID();
+    while (this.activeSessions.has(sessionId)) {
+      sessionId = randomUUID();
+    }
+
     const session: Session = {
-      id: randomUUID(),
+      id: sessionId,
       initiator,
       task,
       agents: [initiator],  // Initiator is first agent
@@ -89,6 +196,9 @@ export class SessionManager {
     // 2. Cleanup old completed/failed sessions (prevents memory leak)
     await this.cleanupOldSessions(7); // Clean sessions older than 7 days
 
+    // Persist to file
+    this.saveToFile();
+
     return session;
   }
 
@@ -106,6 +216,9 @@ export class SessionManager {
    * ```
    */
   async addAgent(sessionId: string, agentName: string): Promise<void> {
+    // Validate session ID format
+    this.validateSessionId(sessionId);
+
     const session = this.activeSessions.get(sessionId);
 
     if (!session) {
@@ -126,6 +239,9 @@ export class SessionManager {
         agentName,
         totalAgents: session.agents.length
       });
+
+      // Persist to file
+      this.saveToFile();
     }
   }
 
@@ -144,6 +260,13 @@ export class SessionManager {
    * ```
    */
   async getSession(sessionId: string): Promise<Session | null> {
+    // Validate session ID format (return null for invalid IDs)
+    try {
+      this.validateSessionId(sessionId);
+    } catch {
+      return null;  // Invalid format = session doesn't exist
+    }
+
     return this.activeSessions.get(sessionId) ?? null;
   }
 
@@ -196,6 +319,9 @@ export class SessionManager {
    * ```
    */
   async completeSession(sessionId: string): Promise<void> {
+    // Validate session ID format
+    this.validateSessionId(sessionId);
+
     const session = this.activeSessions.get(sessionId);
 
     if (!session) {
@@ -222,6 +348,9 @@ export class SessionManager {
       agents: session.agents.length,
       agentList: session.agents.join(', ')
     });
+
+    // Persist to file
+    this.saveToFile();
   }
 
   /**
@@ -241,6 +370,14 @@ export class SessionManager {
    * ```
    */
   async failSession(sessionId: string, error: Error): Promise<void> {
+    // Validate session ID format (gracefully handle invalid IDs)
+    try {
+      this.validateSessionId(sessionId);
+    } catch {
+      logger.warn('Cannot fail session - invalid ID format', { sessionId });
+      return;
+    }
+
     const session = this.activeSessions.get(sessionId);
 
     if (!session) {
@@ -262,6 +399,9 @@ export class SessionManager {
       error: error.message,
       agents: session.agents.join(', ')
     });
+
+    // Persist to file
+    this.saveToFile();
   }
 
   /**
@@ -283,6 +423,9 @@ export class SessionManager {
     sessionId: string,
     metadata: Record<string, any>
   ): Promise<void> {
+    // Validate session ID format
+    this.validateSessionId(sessionId);
+
     const session = this.activeSessions.get(sessionId);
 
     if (!session) {
@@ -293,16 +436,33 @@ export class SessionManager {
       );
     }
 
-    session.metadata = {
+    // Merge metadata
+    const newMetadata = {
       ...session.metadata,
       ...metadata
     };
+
+    // Check metadata size (prevent DoS attacks)
+    // Use Buffer.byteLength for accurate byte count (handles multi-byte characters)
+    const metadataSize = Buffer.byteLength(JSON.stringify(newMetadata), 'utf-8');
+    if (metadataSize > this.MAX_METADATA_SIZE) {
+      throw new SessionError(
+        `Metadata too large: ${metadataSize} bytes (max: ${this.MAX_METADATA_SIZE} bytes)`,
+        sessionId,
+        'metadata_too_large'
+      );
+    }
+
+    session.metadata = newMetadata;
     session.updatedAt = new Date();
 
     logger.debug('Session metadata updated', {
       sessionId,
       metadata: Object.keys(metadata)
     });
+
+    // Persist to file
+    this.saveToFile();
   }
 
   /**
@@ -341,6 +501,9 @@ export class SessionManager {
         removed: toRemoveCount,
         remaining: this.activeSessions.size
       });
+
+      // Persist to file
+      this.saveToFile();
     }
 
     return toRemoveCount;
@@ -353,18 +516,22 @@ export class SessionManager {
    * This prevents memory leaks from inactive sessions.
    *
    * @param maxAgeDays - Maximum age in days (default: 7 days)
-   * @returns Number of sessions removed
+   * @returns Object with removed count and removed session IDs
    *
    * @example
    * ```typescript
    * // Clean up sessions older than 7 days
-   * const removed = await sessionManager.cleanupOldSessions();
+   * const result = await sessionManager.cleanupOldSessions();
+   * console.log(`Removed ${result.removedCount} sessions`);
    *
-   * // Clean up sessions older than 1 day
-   * const removed = await sessionManager.cleanupOldSessions(1);
+   * // Use removedSessionIds to cleanup corresponding workspaces
+   * await workspaceManager.cleanupSessionWorkspaces(result.removedSessionIds);
    * ```
    */
-  async cleanupOldSessions(maxAgeDays: number = 7): Promise<number> {
+  async cleanupOldSessions(maxAgeDays: number = 7): Promise<{
+    removedCount: number;
+    removedSessionIds: string[];
+  }> {
     const cutoffTime = Date.now() - (maxAgeDays * 24 * 60 * 60 * 1000);
     const sessions = Array.from(this.activeSessions.values());
 
@@ -374,17 +541,25 @@ export class SessionManager {
       s.updatedAt.getTime() < cutoffTime
     );
 
+    const removedSessionIds = toRemove.map(s => s.id);
     toRemove.forEach(s => this.activeSessions.delete(s.id));
 
     if (toRemove.length > 0) {
       logger.info('Old sessions cleaned up', {
         removed: toRemove.length,
         cutoffDays: maxAgeDays,
-        remaining: this.activeSessions.size
+        remaining: this.activeSessions.size,
+        removedSessionIds: removedSessionIds.slice(0, 5)  // Log first 5 IDs
       });
+
+      // Persist to file
+      this.saveToFile();
     }
 
-    return toRemove.length;
+    return {
+      removedCount: toRemove.length,
+      removedSessionIds
+    };
   }
 
   /**
@@ -403,9 +578,135 @@ export class SessionManager {
 
     if (count > 0) {
       logger.info('All sessions cleared', { count });
+
+      // Persist to file
+      this.saveToFile();
     }
 
     return count;
+  }
+
+  /**
+   * Destroy session manager (cleanup resources)
+   *
+   * Clears pending save timeout and flushes any pending save operations.
+   * Should be called before discarding the SessionManager instance.
+   *
+   * @example
+   * ```typescript
+   * const sessionManager = new SessionManager({...});
+   * // ... use sessionManager ...
+   * await sessionManager.destroy();
+   * ```
+   */
+  async destroy(): Promise<void> {
+    // Clear timeout
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+      this.saveTimeout = undefined;
+    }
+
+    // Flush pending save
+    await this.flushSave();
+
+    logger.debug('SessionManager destroyed', {
+      sessions: this.activeSessions.size
+    });
+  }
+
+  /**
+   * Flush pending save operation (wait for completion)
+   *
+   * Forces immediate save if there's a pending debounced save.
+   *
+   * @private
+   */
+  private async flushSave(): Promise<void> {
+    // If there's a debounced save pending, cancel it and do immediate save
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+      this.saveTimeout = undefined;
+
+      // If there's also a pendingSave, wait for it first to avoid concurrent saves
+      if (this.pendingSave) {
+        try {
+          await this.pendingSave;
+        } catch (err) {
+          // Ignore errors from previous save, we'll try again below
+        }
+      }
+
+      // Do immediate save
+      await this.doSave();
+      return;
+    }
+
+    // No timeout, but there might be a pending save - wait for it
+    if (this.pendingSave) {
+      try {
+        await this.pendingSave;
+      } catch (err) {
+        // Re-throw so destroy() knows there was a problem
+        throw err;
+      }
+    }
+  }
+
+  /**
+   * Perform actual save operation (internal)
+   *
+   * @private
+   */
+  private async doSave(): Promise<void> {
+    if (!this.persistencePath) {
+      return;
+    }
+
+    try {
+      // Ensure directory exists
+      await mkdir(dirname(this.persistencePath), { recursive: true });
+
+      // Convert sessions to plain objects (Date -> string)
+      const sessionsArray = Array.from(this.activeSessions.values()).map(session => ({
+        id: session.id,
+        initiator: session.initiator,
+        task: session.task,
+        agents: session.agents,
+        status: session.status,
+        createdAt: session.createdAt.toISOString(),
+        updatedAt: session.updatedAt.toISOString(),
+        metadata: session.metadata
+      }));
+
+      const data = JSON.stringify(sessionsArray, null, 2);
+
+      // Atomic write: write to temp file then rename (prevents corruption)
+      const tempPath = `${this.persistencePath}.tmp`;
+
+      try {
+        await writeFile(tempPath, data, 'utf-8');
+        await rename(tempPath, this.persistencePath);
+
+        logger.debug('Sessions saved to persistence', {
+          path: this.persistencePath,
+          count: sessionsArray.length
+        });
+      } catch (renameError) {
+        // Clean up temp file if rename failed (prevents accumulation)
+        try {
+          await unlink(tempPath);
+        } catch (unlinkError) {
+          // Ignore unlink errors (file might not exist)
+        }
+        throw renameError;
+      }
+    } catch (error) {
+      logger.error('Failed to save sessions to persistence', {
+        path: this.persistencePath,
+        error: (error as Error).message
+      });
+      throw error; // Re-throw for caller to handle
+    }
   }
 
   /**
@@ -433,5 +734,118 @@ export class SessionManager {
       completed: sessions.filter(s => s.status === 'completed').length,
       failed: sessions.filter(s => s.status === 'failed').length
     };
+  }
+
+  /**
+   * Load sessions from persistence file
+   *
+   * @private
+   */
+  private async loadFromFile(): Promise<void> {
+    if (!this.persistencePath) {
+      return;
+    }
+
+    try {
+      const data = await readFile(this.persistencePath, 'utf-8');
+      const sessionsArray = JSON.parse(data) as Array<{
+        id: string;
+        initiator: string;
+        task: string;
+        agents: string[];
+        status: 'active' | 'completed' | 'failed';
+        createdAt: string;
+        updatedAt: string;
+        metadata: Record<string, any>;
+      }>;
+
+      // Convert date strings back to Date objects
+      this.activeSessions.clear();
+      let skippedCount = 0;
+
+      for (const sessionData of sessionsArray) {
+        // Validate session ID before loading (security check)
+        try {
+          this.validateSessionId(sessionData.id);
+        } catch (error) {
+          skippedCount++;
+          logger.warn('Skipping invalid session ID from persistence', {
+            sessionId: sessionData.id,
+            error: (error as Error).message
+          });
+          continue;
+        }
+
+        const session: Session = {
+          ...sessionData,
+          createdAt: new Date(sessionData.createdAt),
+          updatedAt: new Date(sessionData.updatedAt)
+        };
+        this.activeSessions.set(session.id, session);
+      }
+
+      logger.info('Sessions loaded from persistence', {
+        path: this.persistencePath,
+        loaded: this.activeSessions.size,
+        skipped: skippedCount,
+        total: sessionsArray.length
+      });
+    } catch (error) {
+      const err = error as NodeJS.ErrnoException;
+
+      // File not found is OK (first time initialization)
+      if (err.code === 'ENOENT') {
+        logger.debug('No existing sessions file, starting fresh', {
+          path: this.persistencePath
+        });
+        return;
+      }
+
+      // For other errors (corrupted JSON, permission issues, etc.),
+      // backup the corrupted file and start fresh
+      try {
+        const backupPath = `${this.persistencePath}.corrupted.${Date.now()}`;
+        await copyFile(this.persistencePath, backupPath);
+
+        logger.error('Corrupted sessions file backed up, starting fresh', {
+          path: this.persistencePath,
+          backupPath,
+          error: err.message
+        });
+      } catch (backupError) {
+        // If backup fails, just log and continue
+        logger.error('Failed to backup corrupted sessions file', {
+          path: this.persistencePath,
+          error: err.message,
+          backupError: (backupError as Error).message
+        });
+      }
+    }
+  }
+
+  /**
+   * Save sessions to persistence file (debounced)
+   *
+   * @private
+   */
+  private saveToFile(): void {
+    if (!this.persistencePath) {
+      return;
+    }
+
+    // Debounce saves to avoid excessive file writes
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+    }
+
+    this.saveTimeout = setTimeout(() => {
+      this.pendingSave = this.doSave().catch(err => {
+        logger.error('Debounced save failed', {
+          error: err.message
+        });
+        // Re-throw to keep promise rejected (so flushSave can detect failures)
+        throw err;
+      });
+    }, 100); // 100ms debounce
   }
 }

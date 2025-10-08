@@ -250,7 +250,7 @@ export class SessionError extends Error {
   constructor(
     message: string,
     public readonly sessionId?: string,
-    public readonly reason?: 'not_found' | 'already_completed' | 'creation_failed'
+    public readonly reason?: 'not_found' | 'already_completed' | 'creation_failed' | 'invalid_format' | 'metadata_too_large'
   ) {
     super(message);
     this.name = 'SessionError';
@@ -264,7 +264,7 @@ export class WorkspaceError extends Error {
   constructor(
     message: string,
     public readonly workspacePath?: string,
-    public readonly reason?: 'permission_denied' | 'not_found' | 'conflict' | 'quota_exceeded' | 'creation_failed'
+    public readonly reason?: 'permission_denied' | 'not_found' | 'conflict' | 'quota_exceeded' | 'creation_failed' | 'invalid_session_id'
   ) {
     super(message);
     this.name = 'WorkspaceError';

@@ -6,8 +6,7 @@
 
 import type { CommandModule } from 'yargs';
 import { WorkspaceManager } from '../../core/workspace-manager.js';
-import { SessionManager } from '../../core/session-manager.js';
-import { logger } from '../../utils/logger.js';
+import { createSessionManager } from '../utils/session-utils.js';
 import chalk from 'chalk';
 import Table from 'cli-table3';
 
@@ -52,7 +51,7 @@ const listCommand: CommandModule<Record<string, unknown>, WorkspaceListOptions> 
       const workspaceManager = new WorkspaceManager(projectDir);
 
       if (argv.session) {
-        const sessionManager = new SessionManager();
+        const sessionManager = await createSessionManager();
         const session = await sessionManager.getSession(argv.session);
 
         if (!session) {
@@ -168,7 +167,7 @@ const cleanupCommand: CommandModule<Record<string, unknown>, WorkspaceCleanupOpt
       const { detectProjectRoot } = await import('../../core/path-resolver.js');
       const projectDir = await detectProjectRoot(process.cwd());
       const workspaceManager = new WorkspaceManager(projectDir);
-      const sessionManager = new SessionManager();
+      const sessionManager = await createSessionManager();
 
       // Get active sessions
       const activeSessions = await sessionManager.getActiveSessions();

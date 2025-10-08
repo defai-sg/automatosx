@@ -5,8 +5,7 @@
  */
 
 import type { CommandModule, Argv } from 'yargs';
-import { SessionManager } from '../../core/session-manager.js';
-import { logger } from '../../utils/logger.js';
+import { createSessionManager } from '../utils/session-utils.js';
 import chalk from 'chalk';
 import Table from 'cli-table3';
 
@@ -57,7 +56,7 @@ const createCommand: CommandModule<Record<string, unknown>, SessionCreateOptions
 
   handler: async (argv) => {
     try {
-      const sessionManager = new SessionManager();
+      const sessionManager = await createSessionManager();
 
       const session = await sessionManager.createSession(argv.task, argv.initiator);
 
@@ -105,7 +104,7 @@ const listCommand: CommandModule<Record<string, unknown>, SessionListOptions> = 
 
   handler: async (argv) => {
     try {
-      const sessionManager = new SessionManager();
+      const sessionManager = await createSessionManager();
 
       let sessions = argv.agent
         ? await sessionManager.getActiveSessionsForAgent(argv.agent)
@@ -179,7 +178,7 @@ const statusCommand: CommandModule<Record<string, unknown>, SessionStatusOptions
 
   handler: async (argv) => {
     try {
-      const sessionManager = new SessionManager();
+      const sessionManager = await createSessionManager();
       const session = await sessionManager.getSession(argv.id);
 
       if (!session) {
@@ -235,7 +234,7 @@ const completeCommand: CommandModule<Record<string, unknown>, SessionCompleteOpt
 
   handler: async (argv) => {
     try {
-      const sessionManager = new SessionManager();
+      const sessionManager = await createSessionManager();
       await sessionManager.completeSession(argv.id);
 
       console.log(chalk.green.bold(`\n✓ Session marked as completed: ${argv.id}\n`));
@@ -265,7 +264,7 @@ const failCommand: CommandModule<Record<string, unknown>, SessionFailOptions> = 
 
   handler: async (argv) => {
     try {
-      const sessionManager = new SessionManager();
+      const sessionManager = await createSessionManager();
       await sessionManager.failSession(argv.id, new Error('Manually marked as failed'));
 
       console.log(chalk.yellow.bold(`\n⚠ Session marked as failed: ${argv.id}\n`));

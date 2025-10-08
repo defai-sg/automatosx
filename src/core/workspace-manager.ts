@@ -83,6 +83,9 @@ export class WorkspaceManager {
   private readonly sessionsRoot: string;
   private readonly persistentRoot: string;
 
+  /** Maximum file size for writeToSession (10 MB) */
+  private readonly MAX_FILE_SIZE = 10 * 1024 * 1024;
+
   constructor(projectDir: string) {
     this.workspacesRoot = path.join(projectDir, '.automatosx', 'workspaces');
     this.sharedRoot = path.join(this.workspacesRoot, 'shared');
@@ -157,12 +160,33 @@ export class WorkspaceManager {
   }
 
   /**
+   * Validate session ID format (must be valid UUID v4)
+   *
+   * @param sessionId - Session ID to validate
+   * @throws {WorkspaceError} If session ID is invalid
+   */
+  private validateSessionId(sessionId: string): void {
+    // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+    // where y is 8, 9, a, or b
+    const uuidV4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+    if (!uuidV4Regex.test(sessionId)) {
+      throw new WorkspaceError(
+        `Invalid session ID format: ${sessionId}. Session IDs must be valid UUID v4.`,
+        undefined,
+        'invalid_session_id'
+      );
+    }
+  }
+
+  /**
    * Get session directory path
    *
    * @param sessionId - Session ID
    * @returns Session directory path
    */
   private getSessionDir(sessionId: string): string {
+    this.validateSessionId(sessionId);
     return path.join(this.sessionsRoot, sessionId);
   }
 
@@ -235,7 +259,8 @@ export class WorkspaceManager {
    * @param agentName - Agent writing the file
    * @param filePath - Relative file path within agent's output
    * @param content - File content
-   * @throws {WorkspaceError} If write fails or path is invalid
+   * @param callerAgent - Optional: Agent profile of the caller (for permission verification)
+   * @throws {WorkspaceError} If write fails, path is invalid, or permission denied
    *
    * @example
    * ```typescript
@@ -243,7 +268,8 @@ export class WorkspaceManager {
    *   'session-123',
    *   'backend',
    *   'api/users.ts',
-   *   'export interface User { ... }'
+   *   'export interface User { ... }',
+   *   backendProfile  // Verify caller is actually 'backend'
    * );
    * ```
    */
@@ -251,12 +277,32 @@ export class WorkspaceManager {
     sessionId: string,
     agentName: string,
     filePath: string,
-    content: string
+    content: string,
+    callerAgent?: AgentProfile
   ): Promise<void> {
+    // Permission check: Verify caller is the agent they claim to be
+    if (callerAgent && callerAgent.name !== agentName) {
+      throw new WorkspaceError(
+        `Agent '${callerAgent.name}' is not authorized to write to '${agentName}' workspace`,
+        undefined,
+        'permission_denied'
+      );
+    }
+
     const agentOutputDir = this.getAgentOutputDir(sessionId, agentName);
 
     // Validate path security (prevents path traversal)
     const fullPath = await this.validatePath(agentOutputDir, filePath);
+
+    // Check file size (prevent disk quota exhaustion)
+    const fileSize = Buffer.byteLength(content, 'utf-8');
+    if (fileSize > this.MAX_FILE_SIZE) {
+      throw new WorkspaceError(
+        `File too large: ${fileSize} bytes (max: ${this.MAX_FILE_SIZE} bytes)`,
+        fullPath,
+        'quota_exceeded'
+      );
+    }
 
     try {
       // Ensure directory exists
@@ -508,6 +554,53 @@ export class WorkspaceManager {
       });
       return 0;
     }
+  }
+
+  /**
+   * Cleanup specific session workspaces by session IDs
+   *
+   * Removes workspace directories for the specified session IDs.
+   * Useful when coordinating with SessionManager cleanup.
+   *
+   * @param sessionIds - Session IDs to remove
+   * @returns Number of workspaces removed
+   *
+   * @example
+   * ```typescript
+   * const result = await sessionManager.cleanupOldSessions(7);
+   * await workspaceManager.cleanupSessionWorkspaces(result.removedSessionIds);
+   * ```
+   */
+  async cleanupSessionWorkspaces(sessionIds: string[]): Promise<number> {
+    let removed = 0;
+
+    for (const sessionId of sessionIds) {
+      try {
+        const sessionDir = this.getSessionDir(sessionId);
+        await fs.rm(sessionDir, { recursive: true, force: true });
+        removed++;
+
+        logger.debug('Session workspace removed', { sessionId });
+      } catch (error) {
+        const err = error as NodeJS.ErrnoException;
+        // Ignore ENOENT errors (workspace already doesn't exist)
+        if (err.code !== 'ENOENT') {
+          logger.warn('Failed to remove session workspace', {
+            sessionId,
+            error: err.message
+          });
+        }
+      }
+    }
+
+    if (removed > 0) {
+      logger.info('Session workspaces cleaned up', {
+        removed,
+        total: sessionIds.length
+      });
+    }
+
+    return removed;
   }
 
   /**

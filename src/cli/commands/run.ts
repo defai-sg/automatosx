@@ -215,7 +215,12 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
       let workspaceManager: WorkspaceManager | undefined;
 
       if (argv.session) {
-        sessionManager = new SessionManager();
+        // Initialize SessionManager with persistence
+        sessionManager = new SessionManager({
+          persistencePath: join(projectDir, '.automatosx', 'sessions', 'sessions.json')
+        });
+        await sessionManager.initialize();
+
         workspaceManager = new WorkspaceManager(projectDir);
 
         // Initialize workspace structure
@@ -365,7 +370,13 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
 
       } else {
         // Use regular AgentExecutor for single-stage execution
-        const executor = new AgentExecutor();
+        // Configure with orchestration support if managers are available
+        const executor = new AgentExecutor({
+          sessionManager,
+          workspaceManager,
+          contextManager,
+          profileLoader
+        });
         let result: ExecutionResult;
 
         if (argv.timeout) {

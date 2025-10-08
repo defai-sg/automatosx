@@ -9,6 +9,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
+import { randomUUID } from 'crypto';
 import { WorkspaceManager } from '../../src/core/workspace-manager.js';
 import { WorkspaceError } from '../../src/types/orchestration.js';
 import type { AgentProfile } from '../../src/types/agent.js';
@@ -52,7 +53,7 @@ describe('WorkspaceManager', () => {
 
   describe('Session Workspace Creation', () => {
     it('should create session workspace with proper structure', async () => {
-      const sessionId = 'test-session-123';
+      const sessionId = randomUUID();
       await workspaceManager.createSessionWorkspace(sessionId);
 
       const workspacesRoot = path.join(testProjectDir, '.automatosx', 'workspaces');
@@ -72,7 +73,7 @@ describe('WorkspaceManager', () => {
     });
 
     it('should handle duplicate session workspace creation gracefully', async () => {
-      const sessionId = 'test-session-123';
+      const sessionId = randomUUID();
 
       await workspaceManager.createSessionWorkspace(sessionId);
       await expect(
@@ -83,7 +84,7 @@ describe('WorkspaceManager', () => {
 
   describe('Writing to Session', () => {
     it('should write file to session workspace', async () => {
-      const sessionId = 'test-session-123';
+      const sessionId = randomUUID();
       await workspaceManager.createSessionWorkspace(sessionId);
 
       const content = '# API Specification\n\nGET /users';
@@ -110,7 +111,7 @@ describe('WorkspaceManager', () => {
     });
 
     it('should create nested directories when writing', async () => {
-      const sessionId = 'test-session-123';
+      const sessionId = randomUUID();
       await workspaceManager.createSessionWorkspace(sessionId);
 
       await workspaceManager.writeToSession(
@@ -136,7 +137,7 @@ describe('WorkspaceManager', () => {
     });
 
     it('should reject path traversal attempts', async () => {
-      const sessionId = 'test-session-123';
+      const sessionId = randomUUID();
       await workspaceManager.createSessionWorkspace(sessionId);
 
       await expect(
@@ -150,7 +151,7 @@ describe('WorkspaceManager', () => {
     });
 
     it('should reject absolute paths', async () => {
-      const sessionId = 'test-session-123';
+      const sessionId = randomUUID();
       await workspaceManager.createSessionWorkspace(sessionId);
 
       await expect(
@@ -164,7 +165,7 @@ describe('WorkspaceManager', () => {
     });
 
     it('should reject complex path traversal with multiple ..', async () => {
-      const sessionId = 'test-session-123';
+      const sessionId = randomUUID();
       await workspaceManager.createSessionWorkspace(sessionId);
 
       await expect(
@@ -178,7 +179,7 @@ describe('WorkspaceManager', () => {
     });
 
     it('should reject path traversal with mixed separators', async () => {
-      const sessionId = 'test-session-123';
+      const sessionId = randomUUID();
       await workspaceManager.createSessionWorkspace(sessionId);
 
       await expect(
@@ -192,7 +193,7 @@ describe('WorkspaceManager', () => {
     });
 
     it('should allow valid nested paths', async () => {
-      const sessionId = 'test-session-123';
+      const sessionId = randomUUID();
       await workspaceManager.createSessionWorkspace(sessionId);
 
       // Valid path with ./
@@ -239,7 +240,7 @@ describe('WorkspaceManager', () => {
     });
 
     it('should read file from authorized agent workspace', async () => {
-      const sessionId = 'test-session-123';
+      const sessionId = randomUUID();
       await workspaceManager.createSessionWorkspace(sessionId);
 
       const content = '# API Spec';
@@ -263,7 +264,7 @@ describe('WorkspaceManager', () => {
     });
 
     it('should deny reading without permission', async () => {
-      const sessionId = 'test-session-123';
+      const sessionId = randomUUID();
       await workspaceManager.createSessionWorkspace(sessionId);
 
       await workspaceManager.writeToSession(
@@ -286,7 +287,7 @@ describe('WorkspaceManager', () => {
     });
 
     it('should deny reading when canReadWorkspaces is undefined', async () => {
-      const sessionId = 'test-session-123';
+      const sessionId = randomUUID();
       await workspaceManager.createSessionWorkspace(sessionId);
 
       await workspaceManager.writeToSession(
@@ -309,7 +310,7 @@ describe('WorkspaceManager', () => {
     });
 
     it('should throw error when file not found', async () => {
-      const sessionId = 'test-session-123';
+      const sessionId = randomUUID();
       await workspaceManager.createSessionWorkspace(sessionId);
 
       const frontendProfile = createAgentProfile('frontend', ['backend']);
@@ -390,7 +391,7 @@ describe('WorkspaceManager', () => {
 
   describe('Listing Session Files', () => {
     it('should list files in session workspace', async () => {
-      const sessionId = 'test-session-123';
+      const sessionId = randomUUID();
       await workspaceManager.createSessionWorkspace(sessionId);
 
       await workspaceManager.writeToSession(
@@ -417,7 +418,7 @@ describe('WorkspaceManager', () => {
     });
 
     it('should return empty array when no files exist', async () => {
-      const sessionId = 'test-session-123';
+      const sessionId = randomUUID();
       await workspaceManager.createSessionWorkspace(sessionId);
 
       const files = await workspaceManager.listSessionFiles(
@@ -432,35 +433,40 @@ describe('WorkspaceManager', () => {
   describe('Session Cleanup', () => {
     it('should remove inactive session workspaces', async () => {
       // Create multiple sessions
-      await workspaceManager.createSessionWorkspace('session-1');
-      await workspaceManager.createSessionWorkspace('session-2');
-      await workspaceManager.createSessionWorkspace('session-3');
+      const session1 = randomUUID();
+      const session2 = randomUUID();
+      const session3 = randomUUID();
+
+      await workspaceManager.createSessionWorkspace(session1);
+      await workspaceManager.createSessionWorkspace(session2);
+      await workspaceManager.createSessionWorkspace(session3);
 
       // Cleanup, keeping only session-1 and session-2
       const removed = await workspaceManager.cleanupSessions([
-        'session-1',
-        'session-2'
+        session1,
+        session2
       ]);
 
       expect(removed).toBe(1);
 
       // Verify session-3 is removed
       const workspacesRoot = path.join(testProjectDir, '.automatosx', 'workspaces');
-      const session3Dir = path.join(workspacesRoot, 'shared', 'sessions', 'session-3');
+      const session3Dir = path.join(workspacesRoot, 'shared', 'sessions', session3);
 
       await expect(fs.stat(session3Dir)).rejects.toThrow();
     });
 
     it('should not remove active sessions', async () => {
-      await workspaceManager.createSessionWorkspace('session-1');
+      const session1 = randomUUID();
+      await workspaceManager.createSessionWorkspace(session1);
 
-      const removed = await workspaceManager.cleanupSessions(['session-1']);
+      const removed = await workspaceManager.cleanupSessions([session1]);
 
       expect(removed).toBe(0);
 
       // Verify session-1 still exists
       const workspacesRoot = path.join(testProjectDir, '.automatosx', 'workspaces');
-      const session1Dir = path.join(workspacesRoot, 'shared', 'sessions', 'session-1');
+      const session1Dir = path.join(workspacesRoot, 'shared', 'sessions', session1);
 
       const stat = await fs.stat(session1Dir);
       expect(stat.isDirectory()).toBe(true);
@@ -469,8 +475,8 @@ describe('WorkspaceManager', () => {
 
   describe('Workspace Statistics', () => {
     it('should return accurate workspace statistics', async () => {
-      await workspaceManager.createSessionWorkspace('session-1');
-      await workspaceManager.createSessionWorkspace('session-2');
+      await workspaceManager.createSessionWorkspace(randomUUID());
+      await workspaceManager.createSessionWorkspace(randomUUID());
       await workspaceManager.createAgentWorkspace('backend');
 
       const stats = await workspaceManager.getStats();
@@ -506,6 +512,45 @@ describe('WorkspaceManager', () => {
       expect(agentStat.isDirectory()).toBe(true);
       expect(draftsStat.isDirectory()).toBe(true);
       expect(tempStat.isDirectory()).toBe(true);
+    });
+  });
+
+  describe('File Size Limits', () => {
+    it('should reject files exceeding 10MB', async () => {
+      const sessionId = randomUUID();
+      await workspaceManager.createSessionWorkspace(sessionId);
+
+      // Create content larger than 10MB
+      const largeContent = 'x'.repeat(11 * 1024 * 1024);
+
+      await expect(
+        workspaceManager.writeToSession(sessionId, 'agent', 'large.txt', largeContent)
+      ).rejects.toThrow('File too large');
+    });
+
+    it('should accept files under 10MB', async () => {
+      const sessionId = randomUUID();
+      await workspaceManager.createSessionWorkspace(sessionId);
+
+      // Create content under 10MB (5MB)
+      const content = 'x'.repeat(5 * 1024 * 1024);
+
+      await expect(
+        workspaceManager.writeToSession(sessionId, 'agent', 'ok.txt', content)
+      ).resolves.not.toThrow();
+    });
+
+    it('should handle multi-byte characters in file size calculation', async () => {
+      const sessionId = randomUUID();
+      await workspaceManager.createSessionWorkspace(sessionId);
+
+      // Chinese characters are 3 bytes each
+      // 3.5M characters * 3 bytes = 10.5MB (over limit)
+      const largeContent = '測試'.repeat(3500000);
+
+      await expect(
+        workspaceManager.writeToSession(sessionId, 'agent', 'chinese.txt', largeContent)
+      ).rejects.toThrow('File too large');
     });
   });
 });

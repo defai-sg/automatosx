@@ -64,14 +64,14 @@ describe('CLI Entry Point (index.ts)', () => {
     it('should display version with --version', async () => {
       const result = await execCLI(['--version']);
 
-      expect(result.stdout).toContain('4.5.2');
+      expect(result.stdout).toContain('4.7.0');
       expect(result.exitCode).toBe(0);
     });
 
     it('should display version with -v', async () => {
       const result = await execCLI(['-v']);
 
-      expect(result.stdout).toContain('4.5.2');
+      expect(result.stdout).toContain('4.7.0');
       expect(result.exitCode).toBe(0);
     });
 
@@ -102,7 +102,7 @@ describe('CLI Entry Point (index.ts)', () => {
       const result = await execCLI(['--debug', '--version']);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('4.5.2');
+      expect(result.stdout).toContain('4.7.0');
     });
 
     it('should accept -d flag (debug alias)', async () => {
@@ -243,7 +243,7 @@ describe('CLI Entry Point (index.ts)', () => {
       const result = await execCLI(['--debug', '--version']);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('4.5.2');
+      expect(result.stdout).toContain('4.7.0');
     });
   });
 
@@ -258,7 +258,7 @@ describe('CLI Entry Point (index.ts)', () => {
       const result = await execCLI(['--debug', '--config', '/tmp/test.json', '--version']);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('4.5.2');
+      expect(result.stdout).toContain('4.7.0');
     });
   });
 });

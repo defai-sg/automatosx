@@ -357,7 +357,8 @@ describe('SessionManager', () => {
       // Cleanup old sessions (default 7 days)
       const removed = await sessionManager.cleanupOldSessions();
 
-      expect(removed).toBe(2);
+      expect(removed.removedCount).toBe(2);
+      expect(removed.removedSessionIds).toHaveLength(2);
 
       const stats = await sessionManager.getStats();
       expect(stats.total).toBe(1); // Only session3 remains
@@ -375,7 +376,8 @@ describe('SessionManager', () => {
       // Cleanup should not remove active sessions
       const removed = await sessionManager.cleanupOldSessions();
 
-      expect(removed).toBe(0);
+      expect(removed.removedCount).toBe(0);
+      expect(removed.removedSessionIds).toHaveLength(0);
 
       const stats = await sessionManager.getStats();
       expect(stats.total).toBe(1);
@@ -394,7 +396,8 @@ describe('SessionManager', () => {
       // Cleanup old sessions
       const removed = await sessionManager.cleanupOldSessions();
 
-      expect(removed).toBe(1);
+      expect(removed.removedCount).toBe(1);
+      expect(removed.removedSessionIds).toHaveLength(1);
 
       const stats = await sessionManager.getStats();
       expect(stats.total).toBe(0);
@@ -411,11 +414,11 @@ describe('SessionManager', () => {
 
       // Cleanup with 7 day threshold - should not remove
       let removed = await sessionManager.cleanupOldSessions(7);
-      expect(removed).toBe(0);
+      expect(removed.removedCount).toBe(0);
 
       // Cleanup with 1 day threshold - should remove
       removed = await sessionManager.cleanupOldSessions(1);
-      expect(removed).toBe(1);
+      expect(removed.removedCount).toBe(1);
     });
   });
 
@@ -471,6 +474,74 @@ describe('SessionManager', () => {
       expect(stats.active).toBe(0);
       expect(stats.completed).toBe(0);
       expect(stats.failed).toBe(0);
+    });
+  });
+
+  describe('Resource Management', () => {
+    it('should destroy and cleanup resources', async () => {
+      const session = await sessionManager.createSession('Task', 'agent');
+      await sessionManager.updateMetadata(session.id, { test: 'data' });
+
+      // Destroy should not throw
+      await expect(sessionManager.destroy()).resolves.not.toThrow();
+    });
+
+    it('should reject metadata exceeding size limit', async () => {
+      const session = await sessionManager.createSession('Task', 'agent');
+
+      // Create metadata larger than 10KB
+      const largeMetadata = { data: 'x'.repeat(11 * 1024) };
+
+      await expect(
+        sessionManager.updateMetadata(session.id, largeMetadata)
+      ).rejects.toThrow('Metadata too large');
+    });
+
+    it('should handle multi-byte characters in metadata size calculation', async () => {
+      const session = await sessionManager.createSession('Task', 'agent');
+
+      // Chinese characters are 3 bytes each in UTF-8
+      // 3000 characters * 3 bytes = 9000 bytes (under 10KB limit)
+      const metadata = { text: '測試'.repeat(1500) };
+
+      await expect(
+        sessionManager.updateMetadata(session.id, metadata)
+      ).resolves.not.toThrow();
+
+      // 4000 characters * 3 bytes = 12000 bytes (over 10KB limit)
+      const largeMetadata = { text: '測試'.repeat(2000) };
+
+      await expect(
+        sessionManager.updateMetadata(session.id, largeMetadata)
+      ).rejects.toThrow('Metadata too large');
+    });
+  });
+
+  describe('Session ID Validation', () => {
+    it('should reject empty session ID in getSession', async () => {
+      const session = await sessionManager.getSession('');
+      expect(session).toBeNull();
+    });
+
+    it('should reject whitespace session ID in completeSession', async () => {
+      await expect(
+        sessionManager.completeSession('   ')
+      ).rejects.toThrow('Session ID cannot be empty');
+    });
+
+    it('should reject invalid format in addAgent', async () => {
+      await expect(
+        sessionManager.addAgent('not-a-uuid', 'agent')
+      ).rejects.toThrow('Invalid session ID format');
+    });
+  });
+
+  describe('Configuration', () => {
+    it('should accept custom maxSessions limit', async () => {
+      const customManager = new SessionManager({ maxSessions: 50 });
+
+      // This should work without errors
+      expect(customManager).toBeDefined();
     });
   });
 });

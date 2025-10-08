@@ -106,18 +106,27 @@ export class ContextManager {
 
     // 7. Handle session (if sessionId provided)
     let session: Session | undefined;
-    if (options?.sessionId && this.config.sessionManager) {
+    if (options?.sessionId) {
+      if (!this.config.sessionManager) {
+        throw new Error(
+          `SessionManager not configured but session ID was provided: ${options.sessionId}`
+        );
+      }
+
       const foundSession = await this.config.sessionManager.getSession(options.sessionId);
       if (!foundSession) {
-        logger.warn('Session not found', { sessionId: options.sessionId });
-      } else {
-        session = foundSession;
+        throw new Error(
+          `Session not found: ${options.sessionId}. Please verify the session ID or create a new session.`
+        );
       }
+      session = foundSession;
     }
 
     // 8. Build orchestration metadata (if agent has orchestration config)
     let orchestration: OrchestrationMetadata | undefined;
-    if (agent.orchestration?.canDelegate && this.config.workspaceManager) {
+    if (agent.orchestration?.canDelegate &&
+        this.config.workspaceManager &&
+        this.config.profileLoader) {
       // Get list of available agents for delegation
       const allAgents = await this.config.profileLoader.listProfiles();
       const canDelegateTo = agent.orchestration.canDelegateTo || [];
