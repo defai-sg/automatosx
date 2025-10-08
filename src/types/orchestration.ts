@@ -163,15 +163,14 @@ export interface Session {
 /**
  * Orchestration Configuration - Agent collaboration capabilities
  *
- * Defines what an agent can do in terms of delegation and workspace access.
- * Agents can delegate to any other agent. Safety is ensured through cycle detection,
- * depth limits, and timeouts.
+ * Defines workspace access and delegation depth limits for agents.
+ * All agents can delegate by default (v4.9.0+). Safety is ensured through
+ * cycle detection, depth limits, and timeouts.
  *
  * @example
  * ```yaml
  * # .automatosx/agents/backend.yaml
  * orchestration:
- *   canDelegate: true
  *   maxDelegationDepth: 3
  *   canReadWorkspaces:
  *     - frontend
@@ -180,9 +179,6 @@ export interface Session {
  * ```
  */
 export interface OrchestrationConfig {
-  /** Whether this agent can delegate tasks to other agents */
-  canDelegate?: boolean;
-
   /**
    * Maximum delegation chain depth (default: 3)
    *
@@ -206,12 +202,13 @@ export interface OrchestrationConfig {
 /**
  * Orchestration Metadata - Runtime orchestration information in execution context
  *
- * Added to ExecutionContext when agent has orchestration capabilities.
- * v4.7.8+: All agents can delegate by default.
+ * Added to ExecutionContext when orchestration system is enabled.
+ * v4.9.0+: All agents can delegate by default. This metadata indicates whether
+ * the orchestration infrastructure (SessionManager, WorkspaceManager) is available.
  */
 export interface OrchestrationMetadata {
-  /** Whether agent can delegate (always true in v4.7.8+) */
-  canDelegate: boolean;
+  /** Whether orchestration system is enabled (SessionManager/WorkspaceManager available) */
+  isDelegationEnabled: boolean;
 
   /** List of available agents for delegation */
   availableAgents: string[];

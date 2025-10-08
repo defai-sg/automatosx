@@ -234,7 +234,6 @@ describe('WorkspaceManager', () => {
       systemPrompt: 'Test',
       abilities: [],
       orchestration: {
-        canDelegate: true,
         canReadWorkspaces
       }
     });
@@ -337,7 +336,6 @@ describe('WorkspaceManager', () => {
       systemPrompt: 'Test',
       abilities: [],
       orchestration: {
-        canDelegate: true,
         canWriteToShared
       }
     });

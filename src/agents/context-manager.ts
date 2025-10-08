@@ -141,7 +141,7 @@ export class ContextManager {
       const maxDelegationDepth = agent.orchestration?.maxDelegationDepth ?? 3;
 
       orchestration = {
-        canDelegate: true,
+        isDelegationEnabled: true,
         availableAgents,
         sharedWorkspace,
         delegationChain: options?.delegationChain || [],
@@ -186,7 +186,7 @@ export class ContextManager {
       memoryEntries: context.memory.length,
       hasAbilities: abilities.length > 0,
       hasOrchestration: !!orchestration,
-      canDelegate: orchestration?.canDelegate ?? false
+      isDelegationEnabled: orchestration?.isDelegationEnabled ?? false
     });
 
     return context;

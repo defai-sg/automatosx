@@ -106,7 +106,7 @@ All tasks delegated.`,
       systemPrompt: 'You are a frontend developer.',
       abilities: [],
       orchestration: {
-        canDelegate: false
+        maxDelegationDepth: 3
       }
     };
 
@@ -117,7 +117,6 @@ All tasks delegated.`,
       systemPrompt: 'You coordinate tasks.',
       abilities: [],
       orchestration: {
-        canDelegate: true,
         maxDelegationDepth: 3
       }
     };
@@ -146,11 +145,12 @@ All tasks delegated.`,
           workspace: `/test/.automatosx/workspaces/${agentName}`,
           agentWorkspace: `/test/.automatosx/workspaces/${agentName}`,
           createdAt: new Date(),
-          orchestration: profile.orchestration?.canDelegate ? {
-            canDelegate: true,
+          orchestration: profile.orchestration ? {
+            isDelegationEnabled: true,
             availableAgents: ['frontend', 'backend'],
             sharedWorkspace: '/test/.automatosx/workspaces/shared',
-            delegationChain: []
+            delegationChain: [],
+            maxDelegationDepth: profile.orchestration.maxDelegationDepth ?? 3
           } : undefined
         } as ExecutionContext;
       })

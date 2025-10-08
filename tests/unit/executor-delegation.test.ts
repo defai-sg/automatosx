@@ -33,7 +33,6 @@ describe('AgentExecutor - Delegation', () => {
     systemPrompt: 'You are a backend developer',
     abilities: [],
     orchestration: {
-      canDelegate: true,
       maxDelegationDepth: 3
     }
   };
@@ -45,7 +44,6 @@ describe('AgentExecutor - Delegation', () => {
     systemPrompt: 'You are a frontend developer',
     abilities: [],
     orchestration: {
-      canDelegate: true,
       maxDelegationDepth: 3
     }
   };
@@ -57,7 +55,7 @@ describe('AgentExecutor - Delegation', () => {
     systemPrompt: 'You are a database specialist',
     abilities: [],
     orchestration: {
-      canDelegate: false
+      maxDelegationDepth: 3
     }
   };
 
@@ -340,8 +338,8 @@ describe('AgentExecutor - Delegation', () => {
   });
 
   describe('Permission Checks', () => {
-    it('should allow delegation even when fromAgent has canDelegate: false (v4.8.0+)', async () => {
-      // v4.8.0+: All agents can delegate regardless of canDelegate setting
+    it('should allow delegation for all agents (v4.9.0+)', async () => {
+      // v4.9.0+: All agents can delegate by default
       const request: DelegationRequest = {
         fromAgent: 'database',
         toAgent: 'backend',
@@ -355,8 +353,8 @@ describe('AgentExecutor - Delegation', () => {
       expect(result.toAgent).toBe('backend');
     });
 
-    it('should allow delegation even when fromAgent has no orchestration config (v4.8.0+)', async () => {
-      // v4.8.0+: Agents without orchestration config can still delegate
+    it('should allow delegation even when fromAgent has no orchestration config (v4.9.0+)', async () => {
+      // v4.9.0+: Agents without orchestration config can still delegate
       const request: DelegationRequest = {
         fromAgent: 'unauthorized',
         toAgent: 'backend',
@@ -419,13 +417,13 @@ describe('AgentExecutor - Delegation', () => {
         }
       };
 
-      // Override database profile to allow delegation for this test
+      // Override mock implementation for cycle detection test
       (mockProfileLoader.loadProfile as any).mockImplementation(async (name: string) => {
         if (name === 'database') {
           return {
             ...databaseProfile,
             orchestration: {
-              canDelegate: true
+              maxDelegationDepth: 3
             }
           };
         }
@@ -504,8 +502,7 @@ describe('AgentExecutor - Delegation', () => {
         systemPrompt: 'Test',
         abilities: [],
         orchestration: {
-          canDelegate: true
-          // maxDelegationDepth not specified
+          // maxDelegationDepth not specified - should default to 3
         }
       };
 

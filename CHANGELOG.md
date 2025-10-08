@@ -5,6 +5,110 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.9.0] - 2025-10-08
+
+### 🧹 Complete Removal of canDelegate Field - Clean Architecture
+
+This release completes the architectural cleanup by **fully removing the `canDelegate` field** from the codebase, eliminating confusion and technical debt introduced in earlier versions.
+
+#### 🎯 Breaking Changes
+
+**`canDelegate` Field Removed**
+- ❌ **Removed**: `orchestration.canDelegate` field no longer exists in `OrchestrationConfig` type
+- ✅ **Behavior**: All agents can delegate by default (unchanged from v4.8.0)
+- ⚠️ **Warning**: Agent profiles with `canDelegate` will show deprecation warning but continue to work
+- 📝 **Action Required**: Remove `canDelegate` from your agent YAML files (optional, not breaking)
+
+**Migration Guide:**
+```yaml
+# Before (v4.8.0 and earlier)
+orchestration:
+  canDelegate: true          # ❌ No longer valid (shows warning)
+  maxDelegationDepth: 3
+
+# After (v4.9.0+)
+orchestration:
+  maxDelegationDepth: 3      # ✅ Clean configuration
+```
+
+#### ✨ Features
+
+**1. Clean Type Definitions**
+- **Removed**: `canDelegate?: boolean` from `OrchestrationConfig` interface
+- **Updated**: Documentation reflects universal delegation (all agents can delegate)
+- **Benefit**: No confusion about whether agents can delegate
+
+**2. Improved Runtime Metadata**
+- **Renamed**: `OrchestrationMetadata.canDelegate` → `isDelegationEnabled`
+- **Clarification**: Field now clearly indicates whether orchestration system is available
+- **Semantic**: `isDelegationEnabled` = "Is SessionManager/WorkspaceManager available?" not "Can this agent delegate?"
+
+**3. Deprecation Warning**
+- **Added**: Warning when loading agent profiles with deprecated `canDelegate` field
+- **Message**: "orchestration.canDelegate is deprecated and ignored (v4.9.0+). All agents can delegate by default."
+- **Impact**: Zero breaking changes for existing profiles
+
+**4. Test Suite Updated**
+- **Updated**: 988 tests now use `isDelegationEnabled` instead of `canDelegate`
+- **Removed**: All obsolete permission check tests
+- **Result**: Cleaner, more maintainable test suite
+
+#### 🔧 Technical Details
+
+**Files Changed:**
+- `src/types/orchestration.ts` - Removed `canDelegate` from `OrchestrationConfig`, renamed in `OrchestrationMetadata`
+- `src/agents/profile-loader.ts` - Added deprecation warning for old `canDelegate` usage
+- `src/agents/context-manager.ts` - Uses `isDelegationEnabled` for logging
+- `examples/agents/*.yaml` - Updated to remove `canDelegate`
+- `CLAUDE.md` - Updated documentation to reflect v4.9.0 changes
+- All test files - Updated to use new API
+
+**Backward Compatibility:**
+- ✅ Existing agent profiles with `canDelegate` continue to work (with warning)
+- ✅ No changes needed to delegation behavior or API
+- ✅ Runtime behavior identical to v4.8.0
+
+#### 📊 Validation
+
+- ✅ TypeScript compilation: Pass
+- ✅ Unit tests: 922 passed
+- ✅ Integration tests: 66 passed
+- ✅ Total: 988 tests passed
+
+#### 🎨 Why This Change?
+
+**Problem:**
+- v4.8.0 claimed "all agents can delegate" but `canDelegate` field still existed
+- Caused confusion: developers unsure if they need to set `canDelegate: true`
+- Technical debt: validation code, tests, documentation for unused field
+
+**Solution:**
+- Complete removal of `canDelegate` from type system
+- Clearer naming: `isDelegationEnabled` indicates system availability
+- Simpler configuration: agents just work without field
+
+**Result:**
+- Zero configuration needed for delegation
+- API matches behavior exactly
+- Reduced maintenance burden
+
+#### 🚀 Upgrade Path
+
+1. **Optional**: Remove `canDelegate` from agent YAML files
+2. **Automatic**: Profiles with `canDelegate` show warning but work normally
+3. **No code changes**: Runtime behavior unchanged
+
+**Example Update:**
+```bash
+# Find all agent profiles with canDelegate
+grep -r "canDelegate" .automatosx/agents/
+
+# Remove the field (optional)
+sed -i '' '/canDelegate:/d' .automatosx/agents/*.yaml
+```
+
+---
+
 ## [4.8.0] - 2025-10-08
 
 ### 🌟 Universal Agent Delegation - True Autonomous Collaboration

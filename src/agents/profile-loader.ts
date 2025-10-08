@@ -533,8 +533,11 @@ export class ProfileLoader {
         throw new AgentValidationError('orchestration must be an object');
       }
 
-      if (orch.canDelegate !== undefined && typeof orch.canDelegate !== 'boolean') {
-        throw new AgentValidationError('orchestration.canDelegate must be a boolean');
+      // v4.9.0: canDelegate is deprecated and ignored
+      if ((orch as any).canDelegate !== undefined) {
+        logger.warn('orchestration.canDelegate is deprecated and ignored (v4.9.0+). All agents can delegate by default.', {
+          agent: profile.name
+        });
       }
 
       if (orch.maxDelegationDepth !== undefined) {

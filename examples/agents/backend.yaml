@@ -20,9 +20,9 @@ abilities:
 temperature: 0.3
 maxTokens: 4000
 
-# v4.7.0+ Multi-Agent Orchestration
+# v4.9.0+ Multi-Agent Orchestration
+# All agents can delegate by default - no canDelegate field needed
 orchestration:
-  canDelegate: true
   maxDelegationDepth: 3
   canReadWorkspaces:
     - frontend
