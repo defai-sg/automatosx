@@ -1,4 +1,4 @@
-# AutomatosX v4.6.0
+# AutomatosX v4.7.1
 
 > **The control tower for shipping customer-facing ideas—without the chaos**
 > Orchestrate specialized AI agents to move work from slide decks to production, keeping product, engineering, and stakeholders in sync.
@@ -6,7 +6,7 @@
 [![npm version](https://img.shields.io/npm/v/@defai.sg/automatosx.svg)](https://www.npmjs.com/package/@defai.sg/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-846%20passing-brightgreen.svg)](#production-ready-toolkit)
+[![Tests](https://img.shields.io/badge/tests-986%20passing-brightgreen.svg)](#production-ready-toolkit)
 
 **Teams and solo builders choose AutomatosX because:**
 - 🎯 **Keeps people aligned, not just code moving** – track roadmaps, builds, and launch tasks in one place
@@ -14,7 +14,26 @@
 - ⚡ **Shortens idea-to-impact gap** – organized workflows mean faster onboarding, tighter handoffs, confident timelines
 - 💰 **10× more cost-effective** – CLI-based orchestration beats expensive assistants APIs
 
-**Status**: ✅ Production Release · **Version**: 4.6.0 · **Released**: October 2025
+**Status**: ✅ Production Release · **Version**: 4.7.1 · **Released**: October 2025
+
+---
+
+## 🎉 What's New in v4.7
+
+### v4.7.1 (Latest) - Bug Fixes & Security
+- ✅ **12 Critical Fixes**: Session cleanup, UUID collision protection, date validation
+- 🔒 **Security Enhancements**: File size limits, circular reference protection, path validation
+- ⚡ **Performance**: Static regex optimization, prioritized cleanup
+- ✅ **986 tests passing** (93% increase from v3.1)
+
+### v4.7.0 - Multi-Agent Orchestration
+- 🤝 **Agent-to-Agent Delegation**: Agents can delegate tasks to specialized agents
+- 📋 **Session Management**: Track multi-agent collaborative workflows
+- 🔐 **Workspace Isolation**: Each agent gets isolated workspace with permission controls
+- 🔄 **Session Persistence**: File-based session tracking with atomic writes
+- 🎯 **CLI Commands**: `ax session create/list/status`, `ax workspace list/stats`
+
+**Upgrade**: `npm install -g @defai.sg/automatosx@4.7.1`
 
 ---
 
@@ -197,7 +216,7 @@ Strict TypeScript, CLI ergonomics, and rich docs unblock contributors quickly.
 
 ```bash
 npm run dev -- run assistant "test"  # Dev mode with hot reload
-npm test                              # 841 tests with Vitest
+npm test                              # 986 tests with Vitest
 npm run typecheck                     # Strict TS validation
 ```
 
@@ -213,9 +232,9 @@ automatosx/
 │   ├── providers/   # Claude, Gemini, OpenAI adapters
 │   └── utils/       # logger, performance tracking
 ├── tests/
-│   ├── unit/        # 677 tests (core modules)
-│   ├── integration/ # 78 tests (CLI commands)
-│   └── e2e/         # 17 tests (complete workflows)
+│   ├── unit/        # 892 tests (core modules)
+│   ├── integration/ # 66 tests (CLI commands)
+│   └── e2e/         # 28 tests (complete workflows)
 ├── docs/            # guides, references, troubleshooting
 └── examples/        # agent profiles and abilities
 ```
@@ -226,12 +245,12 @@ Strict mode TypeScript + Vitest ensures every module is covered before it ships.
 
 ## Production-Ready Toolkit
 
-| Metric | v3.1 | v4.0 | Improvement |
-|--------|------|------|-------------|
+| Metric | v3.1 | v4.7.1 | Improvement |
+|--------|------|--------|-------------|
 | Bundle size | 340 MB | 46 MB | **87% ↓** |
 | Vector search | 45 ms | 0.72 ms | **62× ↑** |
 | Dependencies | 589 | 158 | **73% ↓** |
-| Tests passing | 512 | 841 | **64% ↑** |
+| Tests passing | 512 | 986 | **93% ↑** |
 
 **Run the essentials:**
 ```bash
