@@ -292,10 +292,18 @@ npm run typecheck                     # Strict TS validation
 ```text
 automatosx/
 ├── src/
-│   ├── core/        # config, routing, memory, path resolution
+│   ├── core/        # config, routing, memory, path resolution, team-manager (v4.10.0+)
 │   ├── cli/         # command definitions (run, chat, memory, etc.)
+│   ├── agents/      # profile-loader, abilities-manager, context-manager
 │   ├── providers/   # Claude, Gemini, Codex adapters
+│   ├── types/       # TypeScript type definitions (agent, team, provider, etc.)
 │   └── utils/       # logger, performance tracking
+├── .automatosx/
+│   ├── agents/      # Agent YAML profiles (17 agents)
+│   ├── teams/       # 🆕 Team YAML configs (4 teams) - v4.10.0+
+│   ├── abilities/   # Markdown knowledge bases
+│   ├── memory/      # SQLite vector database
+│   └── workspaces/  # Agent isolated workspaces
 ├── tests/
 │   ├── unit/        # 928 tests (core modules)
 │   ├── integration/ # 66 tests (CLI commands)
@@ -303,6 +311,11 @@ automatosx/
 ├── docs/            # guides, references, troubleshooting
 └── examples/        # agent profiles and abilities
 ```
+
+**v4.10.0 Highlights:**
+- 🆕 `.automatosx/teams/` - Team-based configuration (4 teams)
+- 🆕 `src/core/team-manager.ts` - Team configuration management
+- 🆕 `src/types/team.ts` - TeamConfig type definitions
 
 Strict mode TypeScript + Vitest ensures every module is covered before it ships.
 
@@ -405,6 +418,8 @@ automatosx memory search "session storage comparison"
 
 ## Configuration
 
+### Global Configuration
+
 AutomatosX uses JSON configuration with priority order:
 
 1. `.automatosx/config.json` (project-specific)
@@ -416,7 +431,7 @@ AutomatosX uses JSON configuration with priority order:
 ```json
 {
   "$schema": "https://automatosx.com/schema/config.json",
-  "version": "4.0.0",
+  "version": "4.10.0",
   "providers": {
     "preferred": "claude",
     "claude": {
@@ -436,6 +451,51 @@ AutomatosX uses JSON configuration with priority order:
 }
 ```
 
+### Team Configuration (v4.10.0+)
+
+**NEW**: Organize agents into teams with shared provider configurations:
+
+```yaml
+# .automatosx/teams/engineering.yaml
+name: engineering
+displayName: "Engineering Team"
+description: Software development specialists
+
+# Provider configuration (inherited by all team members)
+provider:
+  primary: codex
+  fallbackChain: [codex, gemini, claude]
+
+# Shared abilities (automatically added to all team agents)
+sharedAbilities:
+  - our-coding-standards
+  - code-generation
+  - refactoring
+  - testing
+
+# Team-level orchestration defaults
+orchestration:
+  maxDelegationDepth: 3
+
+metadata:
+  owner: "Engineering Lead"
+  created: "2025-10-08"
+```
+
+**Built-in Teams:**
+- **core**: Quality assurance (primary: claude)
+- **engineering**: Software development (primary: codex)
+- **business**: Product & planning (primary: gemini)
+- **design**: Design & content (primary: gemini)
+
+**Benefits:**
+- ✅ Agents inherit provider settings from their team
+- ✅ Change provider for entire team at once
+- ✅ Shared abilities automatically included
+- ✅ No duplication across agent configs
+
+### Provider Configuration
+
 **How it works:**
 
 - AutomatosX calls your installed CLI commands (`claude`, `gemini`, `codex`)
@@ -444,6 +504,12 @@ AutomatosX uses JSON configuration with priority order:
 - You manage your own subscription/plan directly with the provider
 - No API keys stored in AutomatosX—your CLI handles authentication
 - Pay only for what you use via your existing CLI plan
+
+**Provider Selection Priority** (v4.10.0+):
+1. **CLI option** (highest): `ax run agent "task" --provider gemini`
+2. **Team config**: From `.automatosx/teams/<team>.yaml`
+3. **Agent config** (deprecated): From agent's `provider` field
+4. **Router fallback** (lowest): Global provider routing
 
 ---
 
