@@ -21,13 +21,36 @@
 
 ## 📣 What's New
 
-**v4.10.0 (October 2025)**: Team-Based Configuration System
+**v5.0.0 (October 2025)**: Agent Template System
 
-- 🎯 **No more configuration duplication** - Agents inherit provider settings from their team
-- 👥 **4 built-in teams** - Core, Engineering, Business, Design with optimized provider selection
-- ♻️ **Shared abilities** - Team-wide abilities automatically included in all team members
-- 🔄 **Flexible fallback** - Team-level provider fallback chains with automatic failover
-- 📦 **Backward compatible** - Old agent configs still work (deprecated)
+- 🎉 **Quick agent creation** - Create agents from templates in seconds with `ax agent create`
+- 📋 **5 pre-built templates** - Ready-to-use templates for common roles (developer, analyst, designer, qa, basic)
+- 🛠️ **Complete CLI toolset** - `ax agent templates`, `list`, `show`, `create`, `remove`
+- 🔄 **Interactive mode** - Guided creation with prompts for all values
+- ⚡ **One-line creation** - Fast creation with all parameters in command line
+- 📦 **Auto-installation** - Templates automatically installed on `ax init`
+
+**New Commands**:
+```bash
+# Quick agent creation from template
+ax agent create backend --template developer --interactive
+
+# List all agents by team
+ax agent list --by-team engineering
+
+# Show agent details
+ax agent show backend
+```
+
+**v4.11.0 (October 2025)**: FTS5 Full-Text Search
+- 🎯 **No embedding costs** - Removed OpenAI embedding dependency
+- ⚡ **< 1ms search** - Pure SQLite FTS5 for blazing fast text search
+- 🔒 **Better privacy** - All data stays local (no cloud API calls)
+
+**v4.10.0 (October 2025)**: Team-Based Configuration
+- 🎯 **No configuration duplication** - Agents inherit settings from team
+- 👥 **4 built-in teams** - Core, Engineering, Business, Design
+- ♻️ **Shared abilities** - Team-wide abilities automatically included
 
 For detailed release notes, new features, and upgrade instructions, see:
 
