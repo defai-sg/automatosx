@@ -24,6 +24,12 @@
 
 ## 📣 What's New
 
+**v5.0.3 (October 2025)**: FTS5 Special Character Support
+- 🐛 **Memory search fixed** - File paths, URLs, dates, and emails now work correctly
+- 🔍 **Extended sanitization** - Handles 26 special characters (up from 15)
+- ✅ **Comprehensive testing** - Added 29 new tests covering all real-world scenarios
+- 🚀 **Zero regressions** - All 1,079 tests passing with complete backward compatibility
+
 **v5.0.2 (October 2025)**: Documentation & Schema Improvements
 - 📚 **Comprehensive documentation** - Added multi-agent orchestration guide (600+ lines)
 - 🎯 **Self-contained JSON Schema** - Configuration validation now built into repository
