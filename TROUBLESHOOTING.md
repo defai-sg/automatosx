@@ -16,6 +16,44 @@ This guide helps you resolve common issues when using AutomatosX.
 
 ## Installation Issues
 
+### Updating AutomatosX to Latest Version
+
+**Recommended**: Use the built-in `ax update` command
+
+```bash
+# Check for updates and install latest version
+ax update
+
+# Or using full command name
+automatosx update
+
+# Check for updates without installing
+ax update --check
+
+# Update without confirmation prompt
+ax update --yes
+```
+
+**Alternative**: Manual update via npm
+
+```bash
+# Update to latest version
+npm install -g @defai.digital/automatosx@latest
+
+# Update to specific version
+npm install -g @defai.digital/automatosx@5.0.1
+
+# Verify installation
+ax --version
+```
+
+**What the update command does**:
+1. Checks current installed version
+2. Fetches latest version from npm registry
+3. Shows changelog and what's new
+4. Prompts for confirmation (unless `--yes` flag used)
+5. Installs the update automatically
+
 ### Error: Node version not supported
 
 **Symptom**: Installation fails with error about Node.js version
@@ -82,6 +120,62 @@ npm install -g automatosx
 
 ## Configuration Problems
 
+### Initializing or Reinitializing AutomatosX
+
+#### First Time Setup
+
+```bash
+# Initialize in current directory
+ax init
+
+# Initialize in specific directory
+ax init /path/to/project
+```
+
+#### Force Reinitialization (IMPORTANT)
+
+**Use `--force` flag when you need to:**
+- Update to new template structure (v5.0+)
+- Fix broken or missing configuration files
+- Reinstall example agents and abilities
+- Reset to default configuration
+
+```bash
+# Force reinitialize (overwrites existing files)
+ax init --force
+
+# Or using short flag
+ax init -f
+
+# Force init in specific directory
+ax init /path/to/project --force
+```
+
+**⚠️ Important**: By default, `ax init` will NOT overwrite existing files or folders if `.automatosx/` already exists. This prevents accidental data loss. **Use `--force` flag to overwrite.**
+
+**What `ax init --force` does**:
+1. ✅ Creates/overwrites `.automatosx/` directory structure
+2. ✅ Installs/updates 5 example agents
+3. ✅ Installs/updates 15 example abilities
+4. ✅ Installs/updates 5 agent templates (v5.0+)
+5. ✅ Creates/updates `automatosx.config.json`
+6. ✅ Sets up Claude Code integration (`.claude/` directory)
+7. ✅ Updates `.gitignore` with AutomatosX entries
+
+**Common scenarios requiring `--force`**:
+
+```bash
+# After upgrading to v5.0+ (to get new templates)
+npm install -g @defai.digital/automatosx@latest
+ax init --force
+
+# When .automatosx directory is corrupted
+ax init --force
+
+# To reset all example files to defaults
+ax init --force
+```
+
 ### Error: Config file not found
 
 **Symptom**: `Configuration file not found`
@@ -91,6 +185,9 @@ npm install -g automatosx
 ```bash
 # Initialize configuration in your project
 automatosx init
+
+# Or force reinitialize if already exists
+automatosx init --force
 
 # Or manually create config
 mkdir -p .automatosx
@@ -573,6 +670,34 @@ automatosx memory search "config json settings"
 
 # Instead of: "timeout (300ms)"
 automatosx memory search "timeout 300ms"
+```
+
+---
+
+## Quick Reference
+
+### Most Common Solutions
+
+1. **Update to latest version**: `ax update`
+2. **Force reinitialize**: `ax init --force`
+3. **Check system status**: `ax status`
+4. **Enable debug mode**: `ax run <agent> "<task>" --debug`
+5. **Verify configuration**: `ax config show`
+
+### Upgrade Checklist (v5.0.0 → v5.0.1+)
+
+```bash
+# 1. Update to latest version
+ax update
+
+# 2. Force reinitialize to get updated templates
+ax init --force
+
+# 3. Verify version
+ax --version  # Should show 5.0.1 or higher
+
+# 4. Test with a simple command
+ax run assistant "Hello"
 ```
 
 ---

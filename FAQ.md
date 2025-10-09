@@ -29,15 +29,33 @@ v5.0.0 (October 2025) introduces agent template system:
 - **Complete CLI toolset**: `ax agent` command suite (templates, create, list, show, remove)
 - **No hardcoded values**: All execution parameters now configurable
 
+### What's new in v4.11.0?
+
+v4.11.0 (October 2025) removes vector search for pure FTS5:
+
+- **No embedding costs**: Removed OpenAI embedding dependency
+- **< 1ms search**: Pure SQLite FTS5 for blazing fast text search
+- **Better privacy**: All data stays local (no cloud API calls)
+- **Simpler**: No vector dependencies, just SQLite
+
+### What's new in v4.10.0?
+
+v4.10.0 (October 2025) introduces team-based configuration:
+
+- **No duplication**: Agents inherit settings from their team
+- **4 built-in teams**: Core, Engineering, Business, Design
+- **Shared abilities**: Team-wide abilities automatically included
+- **Centralized management**: Change provider for entire team at once
+
 ### What's new in v4.0?
 
 v4.0 is a complete TypeScript rewrite with major improvements:
 
 - **87% smaller**: Bundle reduced from 340MB to <50MB
-- **SQLite + vec**: Replaced Milvus with lightweight SQLite-based vector search
+- **CLI-based**: No API keys stored, uses provider CLI tools
 - **TypeScript**: 100% type-safe codebase
 - **Better security**: Enhanced path resolution and workspace isolation
-- **Faster**: 60% faster startup, 62x faster vector search
+- **Faster**: 60% faster startup, 62x faster search
 
 See [CHANGELOG.md](./CHANGELOG.md) for detailed changes.
 
@@ -54,23 +72,32 @@ No, v4.0 requires a clean installation due to major breaking changes:
 
 ### What AI providers are supported?
 
-AutomatosX supports:
+AutomatosX supports multiple AI providers through their official CLI tools:
 
-- **Claude** (Anthropic): claude-3-opus, claude-3-sonnet, claude-3-haiku
-- **Gemini** (Google): gemini-1.5-pro, gemini-1.5-flash
-- **OpenAI**: For embeddings (text-embedding-3-small/large)
+- **Claude** (via `claude` CLI): Latest Sonnet and other Claude models
+- **Gemini** (via `gemini` CLI): gemini-1.5-pro, gemini-1.5-flash, and newer models
+- **OpenAI** (via `codex` CLI): GPT-4, GPT-3.5, and other OpenAI models
+
+**How it works**: AutomatosX calls your installed CLI commands (`claude`, `gemini`, `codex`). Each CLI uses its own authentication and automatically updates to the latest models.
 
 You can use multiple providers simultaneously with automatic fallback.
 
 ### How much does it cost to use?
 
-AutomatosX itself is free and open-source (Apache-2.0 license). However, you need API keys from providers:
+AutomatosX itself is **free and open-source** (Apache-2.0 license).
 
+**Pricing model (v4.0+)**:
+- You pay only for what you use via your existing CLI subscriptions
+- No API keys stored in AutomatosX
+- No additional subscription fees
+- **10× more cost-effective** than expensive assistant APIs
+
+**Provider costs** (pay directly to provider):
 - **Claude**: ~$3-15 per 1M tokens (varies by model)
 - **Gemini**: Free tier available, paid tier ~$0.35-7 per 1M tokens
-- **OpenAI**: ~$0.02-0.13 per 1M tokens for embeddings
+- **OpenAI**: ~$0.02-0.06 per 1M tokens (via Codex CLI)
 
-Actual costs depend on your usage patterns.
+Actual costs depend on your usage patterns and chosen models.
 
 ## Installation & Setup
 
@@ -84,40 +111,66 @@ Actual costs depend on your usage patterns.
 ### How do I install AutomatosX?
 
 ```bash
-# Option 1: Global installation
-npm install -g automatosx
+# Step 1: Install AutomatosX CLI
+npm install -g @defai.digital/automatosx
 
-# Option 2: Use with npx (no installation)
-npx automatosx --help
+# Step 2: Install at least one provider CLI
+# Option A: Claude CLI
+brew install claude
+# or follow: https://github.com/anthropics/claude-cli
 
-# Option 3: Local project installation
-npm install --save-dev automatosx
+# Option B: Gemini CLI
+# Follow: https://ai.google.dev/gemini-api/docs/cli
+
+# Option C: Codex CLI
+# Follow: https://github.com/anthropics/codex-cli
+
+# Step 3: Verify installation
+ax --version
 ```
 
-### How do I set up API keys?
+**Alternative (no installation)**:
+```bash
+npx @defai.digital/automatosx --help
+```
+
+### How do I set up authentication?
+
+**v4.0+ (Current)**: AutomatosX uses CLI tools, which handle authentication separately:
 
 ```bash
-# Method 1: Environment variables (recommended for development)
-export ANTHROPIC_API_KEY="sk-ant-..."
-export GOOGLE_API_KEY="your-key"
-export OPENAI_API_KEY="sk-..."
+# Each CLI has its own auth setup:
 
-# Method 2: Configuration file (recommended for production)
-automatosx init
-automatosx config --set providers.claude.apiKey --value "sk-ant-..."
-automatosx config --set providers.gemini.apiKey --value "your-key"
+# Claude CLI
+claude auth login
+# Follow the prompts to authenticate
 
-# Method 3: Per-command
-automatosx run assistant "hello" --api-key "sk-ant-..."
+# Gemini CLI
+gemini auth login
+# Follow the prompts to authenticate
+
+# Codex CLI
+codex auth login
+# Follow the prompts to authenticate
 ```
 
-### Can I use AutomatosX without API keys?
+**No API keys needed in AutomatosX** - the CLI tools handle all authentication!
 
-No, you need at least one provider API key to use AutomatosX. However:
+**For older versions (v3.x)**: Used API keys directly (see migration guide)
 
-- Gemini offers a generous free tier
-- You can use different providers for different tasks
-- Tests run with mock providers (no API needed)
+### Can I use AutomatosX without any provider CLIs?
+
+No, you need at least one provider CLI installed and authenticated:
+
+- **Recommended**: Install `claude` CLI (most capable)
+- **Free option**: Gemini CLI offers generous free tier
+- **For testing**: Use mock providers (`AUTOMATOSX_MOCK_PROVIDERS=true`)
+
+```bash
+# Test without real providers
+export AUTOMATOSX_MOCK_PROVIDERS=true
+ax run assistant "Hello"
+```
 
 ## Configuration
 
@@ -137,12 +190,27 @@ automatosx init
 
 ### How do I change the default provider?
 
-```bash
-# Set preferred provider
-automatosx config --set providers.preferred --value claude
+**v4.10.0+ (Team-based)**: Configure at team level:
 
-# Or specify per command
-automatosx run assistant "hello" --provider gemini
+```bash
+# Edit team configuration
+# .automatosx/teams/engineering.yaml
+provider:
+  primary: codex
+  fallbackChain: [codex, gemini, claude]
+```
+
+**Per-command override**:
+
+```bash
+# Specify provider for single command
+ax run assistant "hello" --provider gemini
+
+# Provider selection priority:
+# 1. CLI option (--provider)
+# 2. Team config
+# 3. Agent config (deprecated)
+# 4. Router fallback
 ```
 
 ### Can I have different configs for different projects?
@@ -184,13 +252,34 @@ abilities:
 
 ### How do I create a custom agent?
 
+**v5.0.0+ (Recommended)**: Use agent templates:
+
 ```bash
-# 1. Create agent profile
+# Interactive mode - guided creation
+ax agent create my-agent --template developer --interactive
+
+# One-line creation
+ax agent create my-agent \
+  --template developer \
+  --display-name "Mike" \
+  --role "Senior Backend Engineer" \
+  --team engineering
+
+# List available templates
+ax agent templates
+
+# Available templates: developer, analyst, designer, qa-specialist, basic-agent
+```
+
+**Manual creation (advanced)**:
+
+```bash
+# 1. Create agent profile (v4.10.0+ team-based config)
 cat > .automatosx/agents/my-agent.yaml << EOF
 name: my-agent
+team: engineering              # Inherits provider from team
+displayName: "Mike"
 description: My custom agent
-model: claude-3-sonnet-20240229
-temperature: 0.7
 abilities:
   - search
   - code_analysis
@@ -199,7 +288,8 @@ systemPrompt: |
 EOF
 
 # 2. Test agent
-automatosx run my-agent "Hello, introduce yourself"
+ax run my-agent "Hello, introduce yourself"
+# Or use display name: ax run Mike "..."
 ```
 
 See [examples/agents/](./examples/agents/) for more examples.
@@ -239,63 +329,75 @@ This ensures agents can read your code but only write to isolated workspaces.
 
 ### How does the memory system work?
 
-AutomatosX stores conversation history and data in a SQLite database with vector search:
+**v4.11.0+ (Current)**: AutomatosX uses pure SQLite FTS5 full-text search:
 
-- **Storage**: `.automatosx/memory.db`
-- **Vector search**: HNSW algorithm via sqlite-vec extension
-- **Embeddings**: OpenAI text-embedding-3-small (default)
+- **Storage**: `.automatosx/memory/memories.db`
+- **Search**: FTS5 full-text search (< 1ms average)
+- **No embeddings**: Removed OpenAI embedding dependency
+- **Cost**: Zero - all local, no API calls
+- **Privacy**: All data stays on your machine
 
-Memories persist across sessions and can be searched semantically.
+**v5.0.1**: Enhanced special character handling (15+ characters supported)
+
+Memories persist across sessions and can be searched instantly.
 
 ### How do I search memories?
 
 ```bash
-# Semantic search
-automatosx memory search "how to implement authentication"
+# Full-text search (v4.11.0+)
+ax memory search "how to implement authentication"
 
 # List all memories
-automatosx memory list
+ax memory list
 
 # Limit results
-automatosx memory search "query" --limit 10
+ax memory search "query" --limit 10
+
+# v5.0.1+: Special characters are automatically handled
+ax memory search "config.json settings"  # Works!
+ax memory search "coverage: 95%"         # Works!
+ax memory search "timeout (300ms)"       # Works!
 ```
 
 ### Can I export/import memories?
 
 ```bash
 # Export to JSON
-automatosx memory export --output backup.json
+ax memory export --output backup.json
 
 # Import from JSON
-automatosx memory import --input backup.json
+ax memory import --input backup.json
 
-# Validate before import
-automatosx memory import --input backup.json --validate
+# Clear all memories
+ax memory clear
 ```
 
 ### How do I clear old memories?
 
 ```bash
-# Option 1: Export, edit, re-import
-automatosx memory export --output backup.json
-# Edit backup.json to remove unwanted entries
-rm .automatosx/memory.db
-automatosx memory import --input backup.json
+# Clear all memories
+ax memory clear
 
-# Option 2: Delete database (nuclear option)
-rm .automatosx/memory.db
+# Backup before clearing
+ax memory export --output backup.json
+ax memory clear
+
+# Delete database manually (advanced)
+rm -rf .automatosx/memory/
 # Will be recreated on next use
 ```
 
-### Why do I need OpenAI API for memory search?
+### Do I need any API for memory search?
 
-Vector search requires converting text to numerical embeddings. AutomatosX uses OpenAI's embedding API by default because it's:
+**No!** (as of v4.11.0)
 
-- High quality
-- Cost-effective ($0.02 per 1M tokens)
-- Fast and reliable
+- Memory search uses **pure SQLite FTS5** (local, no API calls)
+- No embedding costs
+- No external dependencies
+- All data stays on your machine
+- Blazing fast (< 1ms average)
 
-You can configure a different embedding provider if needed.
+**Older versions (v3.x - v4.10.x)**: Required OpenAI API for vector embeddings (deprecated)
 
 ## Performance
 
@@ -478,14 +580,21 @@ cp ./backup-agents/* .automatosx/agents/
 cp ./backup-abilities/* .automatosx/abilities/
 ```
 
-### Vector search returns no results
+### Memory search returns no results
 
-Verify memories exist and embedding provider is configured:
+Verify memories exist:
 
 ```bash
-automatosx memory list
-automatosx config --get providers.openai.embeddingApiKey
+ax memory list
+
+# If empty, try storing a memory first
+ax run assistant "Remember: Project Alpha launches Q1 2025"
+
+# Then search
+ax memory search "when does Alpha launch"
 ```
+
+**v4.11.0+**: Vector search removed, now uses FTS5 text search (no embedding API needed)
 
 ## Development & Contributing
 
@@ -569,12 +678,14 @@ echo ".automatosx/" >> .gitignore
 
 The `.automatosx/` directory contains:
 
-- API keys (sensitive!)
 - Local database
 - Conversation history
 - Agent workspaces
+- Session data
 
-**Do commit**: Agent profiles and abilities if you want to share them.
+**v4.0+**: No API keys stored (CLIs handle auth separately)
+
+**Do commit**: Example agent profiles and abilities in `examples/` directory if you want to share them.
 
 ## Licensing & Usage
 
