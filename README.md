@@ -550,8 +550,11 @@ metadata:
 - **Guides**: `docs/guide/` (installation, quick start, core concepts)
 - **FAQ**: `FAQ.md`
 - **Troubleshooting**: `TROUBLESHOOTING.md`
-- **Issues**: [GitHub Issues](https://github.com/defai-digital/automatosx/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/defai-digital/automatosx/discussions)
+- **Issues & Support**: [GitHub Issues](https://github.com/defai-digital/automatosx/issues)
+  - 🐛 Bug reports
+  - ✨ Feature requests (use "enhancement" label)
+  - ❓ Questions
+  - 💡 Wishlist & Ideas
 - **npm**: <https://www.npmjs.com/package/@defai.digital/automatosx>
 - **Website**: <https://automatosx.com>
 

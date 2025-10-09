@@ -732,6 +732,8 @@ If your issue is not covered here:
    - Include system info
    - Describe steps to reproduce
 
-6. **Join Community**:
-   - Discussions: [GitHub Discussions](https://github.com/defai-digital/automatosx/discussions)
-   - Issues: [GitHub Issues](https://github.com/defai-digital/automatosx/issues)
+6. **Get Help**:
+   - GitHub Issues: [Report bugs, ask questions, or request features](https://github.com/defai-digital/automatosx/issues)
+     - 🐛 Bug reports
+     - ✨ Feature requests (use "enhancement" label)
+     - ❓ Questions

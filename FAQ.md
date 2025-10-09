@@ -709,6 +709,8 @@ Powered by AutomatosX (https://github.com/defai-digital/automatosx)
 
 ## Still Have Questions?
 
-- **GitHub Discussions**: [Ask the community](https://github.com/defai-digital/automatosx/discussions)
-- **GitHub Issues**: [Report bugs or request features](https://github.com/defai-digital/automatosx/issues)
-- **Email**: <support@defai.digital>
+- **GitHub Issues**: [Report bugs, ask questions, or request features](https://github.com/defai-digital/automatosx/issues)
+  - 🐛 Bug reports: Use the bug report template
+  - ✨ Feature requests/Wishlist: Use the "enhancement" label
+  - ❓ Questions: Use the "question" label
+- **Email**: <support@defai.digital> for private inquiries

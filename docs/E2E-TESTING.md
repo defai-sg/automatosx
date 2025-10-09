@@ -424,4 +424,4 @@ at completeWorkflow.test.ts:45
 
 ---
 
-**Questions?** Ask in [GitHub Discussions](https://github.com/defai-digital/automatosx/discussions)
+**Questions?** Open an issue at [GitHub Issues](https://github.com/defai-digital/automatosx/issues) (use "question" label)

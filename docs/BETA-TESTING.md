@@ -332,7 +332,7 @@ Any other relevant information
 
 ### Reporting Feedback
 
-For general feedback, use [GitHub Discussions](https://github.com/defai-digital/automatosx/discussions):
+For general feedback, use [GitHub Issues](https://github.com/defai-digital/automatosx/issues) with appropriate labels:
 
 **Categories**:
 
@@ -393,9 +393,11 @@ As a thank you for beta testing:
 
 ## Communication Channels
 
-- **GitHub Issues**: Bug reports and feature requests
-- **GitHub Discussions**: General feedback and questions
-- **Email**: <support@defai.digital>
+- **GitHub Issues**: Bug reports, feature requests, questions, and feedback
+  - Use "bug" label for bugs
+  - Use "enhancement" label for feature requests/wishlist
+  - Use "question" label for questions
+- **Email**: <support@defai.digital> for private inquiries
 
 ## Beta Testing Timeline
 
@@ -472,4 +474,4 @@ Your participation makes AutomatosX better for everyone. We appreciate your time
 
 ---
 
-**Questions?** Email <support@defai.digital> or ask in [GitHub Discussions](https://github.com/defai-digital/automatosx/discussions)
+**Questions?** Open an issue at [GitHub Issues](https://github.com/defai-digital/automatosx/issues) (use "question" label) or email <support@defai.digital>

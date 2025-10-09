@@ -339,7 +339,10 @@ if (!isValidPath(path)) {
 
 - Check existing [documentation](docs/)
 - Search [existing issues](https://github.com/defai-digital/automatosx/issues)
-- Ask in [GitHub Discussions](https://github.com/defai-digital/automatosx/discussions)
+- Open a new issue for questions, bugs, or feature requests
+  - Use "bug" label for bugs
+  - Use "enhancement" label for feature requests/wishlist
+  - Use "question" label for questions
 
 ## License
 
