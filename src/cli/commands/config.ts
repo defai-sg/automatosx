@@ -214,7 +214,7 @@ async function validateConfigFile(
 async function resetConfig(path: string, verbose: boolean): Promise<void> {
   const config = {
     ...DEFAULT_CONFIG,
-    $schema: 'https://automatosx.dev/schema/config.json',
+    $schema: './schema/config.json',
     version: '5.0.0'  // v5.0+ with YAML support
   };
 

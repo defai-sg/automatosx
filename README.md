@@ -24,6 +24,13 @@
 
 ## 📣 What's New
 
+**v5.0.2 (October 2025)**: Documentation & Schema Improvements
+- 📚 **Comprehensive documentation** - Added multi-agent orchestration guide (600+ lines)
+- 🎯 **Self-contained JSON Schema** - Configuration validation now built into repository
+- 🔗 **GitHub-based schema** - No external dependencies, works offline with caching
+- 📖 **Enhanced guides** - Team configuration and agent templates fully documented
+- 🗂️ **Organized docs** - Beta testing guide archived, outdated content cleaned
+
 **v5.0.1 (October 2025)**: Critical Bug Fixes
 - 🐛 **Provider timeout fixed** - Complex tasks no longer timeout (15 min timeout now consistent)
 - 🐛 **Delegation parser improved** - Zero false positives from documentation examples

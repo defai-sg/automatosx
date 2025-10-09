@@ -252,7 +252,7 @@ async function createDefaultConfig(
   const config = {
     ...DEFAULT_CONFIG,
     // Add metadata
-    $schema: 'https://automatosx.dev/schema/config.json',
+    $schema: './schema/config.json',
     version: '5.0.0'
   };
 

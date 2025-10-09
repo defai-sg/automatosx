@@ -233,6 +233,65 @@ automatosx config --reset
 
 ## Agents & Abilities
 
+### What are agent templates? (v5.0.0+)
+
+**Agent templates** are pre-configured agent blueprints that let you create new agents in seconds instead of writing YAML from scratch.
+
+**5 Built-in Templates**:
+- `basic-agent` - Minimal configuration (core team)
+- `developer` - Software development (engineering team)
+- `analyst` - Business analysis (business team)
+- `designer` - UI/UX design (design team)
+- `qa-specialist` - Quality assurance (core team)
+
+**Quick Start**:
+```bash
+# Interactive creation (guided prompts)
+ax agent create my-agent --template developer --interactive
+
+# One-line creation
+ax agent create backend --template developer \
+  --display-name "Bob" \
+  --role "Backend Engineer" \
+  --team engineering
+```
+
+**Benefits**:
+- ✅ 10-20x faster than manual creation
+- ✅ Consistent structure and best practices
+- ✅ Auto-assigned to appropriate teams
+- ✅ Beginner-friendly with interactive mode
+
+See [Agent Templates Guide](docs/guide/agent-templates.md) for details.
+
+### What is team-based configuration? (v4.10.0+)
+
+**Team-based configuration** organizes agents into teams with shared settings, eliminating configuration duplication.
+
+**4 Built-in Teams**:
+- **core** - QA specialists (primary: claude)
+- **engineering** - Software development (primary: codex)
+- **business** - Product & planning (primary: gemini)
+- **design** - Design & content (primary: gemini)
+
+**Example**:
+```yaml
+# Agent inherits provider + shared abilities from team
+name: backend
+team: engineering        # Inherits codex provider + team abilities
+role: Backend Engineer
+abilities:
+  - backend-development  # Agent-specific abilities
+```
+
+**Benefits**:
+- ✅ No provider configuration duplication
+- ✅ Change provider for entire team at once
+- ✅ Shared abilities automatically included
+- ✅ Clear organizational structure
+
+See [Team Configuration Guide](docs/guide/team-configuration.md) for details.
+
 ### What's the difference between agents and abilities?
 
 - **Agents**: High-level personas with goals and behaviors (YAML files)
@@ -249,6 +308,38 @@ abilities:
   - summarize     # Ability
   - code_analysis # Ability
 ```
+
+### How do I update my agents to use teams? (v4.10.0+)
+
+**Migration Steps**:
+
+1. **Identify common configurations** across your agents
+2. **Choose appropriate team** (core, engineering, business, design)
+3. **Update agent profile**:
+
+```yaml
+# Before v4.10.0
+name: backend
+provider: codex
+temperature: 0.7
+abilities:
+  - code-generation
+  - backend-development
+
+# After v4.10.0
+name: backend
+team: engineering       # Add this line
+abilities:
+  - backend-development # Remove duplicated abilities
+```
+
+4. **Test the agent**:
+```bash
+ax agent show backend  # Verify team assignment
+ax run backend "test"  # Test execution
+```
+
+Team abilities (like `code-generation`) are automatically inherited.
 
 ### How do I create a custom agent?
 

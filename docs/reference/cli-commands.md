@@ -33,16 +33,20 @@ automatosx --version
 
 ## Commands Overview
 
-AutomatosX provides **6 core commands**:
+AutomatosX provides **10 core commands**:
 
 | Command | Purpose | Usage |
 |---------|---------|-------|
 | [`init`](#init) | Initialize project | One-time setup |
 | [`run`](#run) | Execute agent | Primary command |
+| [`agent`](#agent) | Manage agents | Agent operations (v5.0.0+) |
 | [`list`](#list) | List resources | Discovery |
-| [`status`](#status) | System health | Diagnostics |
-| [`config`](#config) | Configuration | Setup & management |
 | [`memory`](#memory) | Memory operations | Context management |
+| [`session`](#session) | Multi-agent sessions | Orchestration (v4.7.0+) |
+| [`workspace`](#workspace) | Workspace management | Cleanup & stats (v4.7.0+) |
+| [`config`](#config) | Configuration | Setup & management |
+| [`status`](#status) | System health | Diagnostics |
+| [`update`](#update) | Update AutomatosX | Version management |
 
 ---
 
@@ -158,15 +162,17 @@ automatosx run <agent> <task> [options]
 ### Options
 
 ```bash
---provider <name>     Override AI provider (claude, gemini)
+--provider <name>     Override AI provider (claude, gemini, codex)
 --model <name>        Override model name
+--team <name>         Override team (v4.10.0+)
+--session <id>        Join multi-agent session (v4.7.0+)
 --memory              Enable memory context (default: from profile)
 --no-memory           Disable memory context
 --save-memory         Save interaction to memory
 --verbose             Show detailed execution info
 --format <type>       Output format: text, json, markdown
 --save <path>         Save output to file
---timeout <seconds>   Execution timeout
+--timeout <ms>        Execution timeout in milliseconds (default: 900000)
 ```
 
 ### Examples
@@ -234,6 +240,152 @@ Key features:
   "memoryUsed": true,
   "memorySaved": true
 }
+```
+
+---
+
+## `agent`
+
+Manage agents (create, list, show, remove). **v5.0.0+**
+
+### Syntax
+
+```bash
+automatosx agent <subcommand> [options]
+```
+
+### Subcommands
+
+- `templates` - List available agent templates
+- `create` - Create agent from template
+- `list` - List all agents
+- `show` - Show agent details
+- `remove` - Remove agent
+
+### `agent templates`
+
+List available agent templates.
+
+```bash
+automatosx agent templates
+```
+
+**Output**:
+```
+Available Agent Templates:
+
+┌───────────────┬────────────┬──────────────────────────┐
+│ Template      │ Team       │ Description              │
+├───────────────┼────────────┼──────────────────────────┤
+│ basic-agent   │ core       │ Minimal agent config     │
+│ developer     │ engineering│ Software development     │
+│ analyst       │ business   │ Business analysis        │
+│ designer      │ design     │ UI/UX design            │
+│ qa-specialist │ core       │ Quality assurance       │
+└───────────────┴────────────┴──────────────────────────┘
+```
+
+### `agent create`
+
+Create a new agent from a template.
+
+**Syntax**:
+```bash
+automatosx agent create <name> [options]
+```
+
+**Options**:
+```bash
+--template <name>      Template to use (required)
+--interactive, -i      Interactive mode with prompts
+--display-name <name>  Agent display name
+--role <role>          Agent role description
+--team <team>          Team assignment (core, engineering, business, design)
+--description <desc>   Agent description
+--force, -f            Overwrite if exists
+```
+
+**Examples**:
+```bash
+# Interactive mode (guided prompts)
+automatosx agent create backend --template developer --interactive
+
+# One-line creation
+automatosx agent create backend \
+  --template developer \
+  --display-name "Bob" \
+  --role "Senior Backend Engineer" \
+  --team engineering
+
+# Create from basic template
+automatosx agent create my-agent --template basic-agent
+
+# Force overwrite existing agent
+automatosx agent create backend --template developer --force
+```
+
+### `agent list`
+
+List all agents.
+
+**Syntax**:
+```bash
+automatosx agent list [options]
+```
+
+**Options**:
+```bash
+--by-team <team>    Filter by team (core, engineering, business, design)
+--format <format>   Output format: table, json, yaml
+```
+
+**Examples**:
+```bash
+# List all agents
+automatosx agent list
+
+# List engineering team agents
+automatosx agent list --by-team engineering
+
+# JSON output
+automatosx agent list --format json
+```
+
+### `agent show`
+
+Show detailed information about an agent.
+
+**Syntax**:
+```bash
+automatosx agent show <name>
+```
+
+**Example**:
+```bash
+automatosx agent show backend
+```
+
+### `agent remove`
+
+Remove an agent.
+
+**Syntax**:
+```bash
+automatosx agent remove <name> [options]
+```
+
+**Options**:
+```bash
+--force, -f    Skip confirmation prompt
+```
+
+**Examples**:
+```bash
+# With confirmation
+automatosx agent remove old-agent
+
+# Skip confirmation
+automatosx agent remove old-agent --force
 ```
 
 ---
@@ -833,6 +985,217 @@ Performance:
   Avg Query Time: 0.72ms
   Last Cleanup: 2 days ago
   Next Cleanup: in 28 days
+```
+
+---
+
+## `session`
+
+Multi-agent session management. **v4.7.0+**
+
+### Syntax
+
+```bash
+automatosx session <subcommand> [options]
+```
+
+### Subcommands
+
+- `create` - Create new multi-agent session
+- `list` - List all sessions
+- `add` - Add agent to session
+- `complete` - Mark session as complete
+- `show` - Show session details
+
+### `session create`
+
+Create a new multi-agent collaborative session.
+
+**Syntax**:
+```bash
+automatosx session create <task> <agent> [options]
+```
+
+**Parameters**:
+- `task` (required) - Session task description
+- `agent` (required) - Primary agent name
+
+**Options**:
+```bash
+--name <name>         Session name (auto-generated if not provided)
+--description <desc>  Session description
+--timeout <ms>        Session timeout in milliseconds
+```
+
+**Examples**:
+```bash
+# Create session with backend agent
+automatosx session create "Build auth API" backend
+
+# With custom name
+automatosx session create "Build auth API" backend \
+  --name "auth-implementation"
+
+# With timeout
+automatosx session create "Complex task" coordinator \
+  --timeout 1800000  # 30 minutes
+```
+
+### `session list`
+
+List all sessions.
+
+**Syntax**:
+```bash
+automatosx session list [options]
+```
+
+**Options**:
+```bash
+--status <status>   Filter by status (active, completed, failed)
+--format <format>   Output format: table, json
+--limit <number>    Limit results
+```
+
+### `session add`
+
+Add agent to existing session.
+
+**Syntax**:
+```bash
+automatosx session add <session-id> <agent>
+```
+
+### `session complete`
+
+Mark session as complete.
+
+**Syntax**:
+```bash
+automatosx session complete <session-id> [options]
+```
+
+**Options**:
+```bash
+--success         Mark as successfully completed (default)
+--failed          Mark as failed
+--reason <text>   Failure reason (if --failed)
+```
+
+---
+
+## `workspace`
+
+Workspace management commands. **v4.7.0+**
+
+### Syntax
+
+```bash
+automatosx workspace <subcommand> [options]
+```
+
+### Subcommands
+
+- `stats` - Show workspace statistics
+- `clean` - Clean up workspace files
+- `list` - List agent workspaces
+
+### `workspace stats`
+
+Show workspace statistics.
+
+**Syntax**:
+```bash
+automatosx workspace stats [options]
+```
+
+**Options**:
+```bash
+--agent <name>    Show stats for specific agent
+--format <format> Output format: table, json
+```
+
+### `workspace clean`
+
+Clean up workspace files.
+
+**Syntax**:
+```bash
+automatosx workspace clean [options]
+```
+
+**Options**:
+```bash
+--agent <name>       Clean specific agent workspace
+--older-than <days>  Clean files older than N days (default: 7)
+--dry-run            Show what would be deleted without deleting
+--force              Skip confirmation prompt
+```
+
+### `workspace list`
+
+List all agent workspaces.
+
+**Syntax**:
+```bash
+automatosx workspace list [options]
+```
+
+**Options**:
+```bash
+--format <format> Output format: table, json
+--sort <field>    Sort by: name, size, modified
+```
+
+---
+
+## `update`
+
+Update AutomatosX to the latest version.
+
+### Syntax
+
+```bash
+automatosx update [options]
+```
+
+### Options
+
+```bash
+--check          Check for updates without installing
+--yes, -y        Skip confirmation prompt
+--version <ver>  Update to specific version
+```
+
+### Examples
+
+```bash
+# Check for updates
+automatosx update --check
+
+# Update to latest
+automatosx update
+
+# Update without confirmation
+automatosx update --yes
+
+# Update to specific version
+automatosx update --version 5.0.1
+```
+
+### Post-Update Steps
+
+After updating, run:
+
+```bash
+# Update configuration and templates
+ax init --force
+
+# Verify version
+ax --version
+
+# Test with simple command
+ax status
 ```
 
 ---

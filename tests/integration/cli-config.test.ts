@@ -31,7 +31,7 @@ describe('CLI: config command', () => {
     // Create a valid config file
     const config: AutomatosXConfig = {
       ...DEFAULT_CONFIG,
-      $schema: 'https://automatosx.dev/schema/config.json',
+      $schema: './schema/config.json',
       version: '5.0.0'
     };
     await writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
@@ -211,7 +211,7 @@ describe('CLI: config command', () => {
       const content = await readFile(configPath, 'utf-8');
       const config = JSON.parse(content);
       expect(config.logging.level).toBe(DEFAULT_CONFIG.logging.level);
-      expect(config.$schema).toBe('https://automatosx.dev/schema/config.json');
+      expect(config.$schema).toBe('./schema/config.json');
       expect(config.version).toBe('5.0.0');
     }, 10000);
   });

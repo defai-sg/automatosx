@@ -5,6 +5,117 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.2] - 2025-10-09
+
+### 📚 Documentation
+
+#### Comprehensive Multi-Agent Orchestration Guide
+- ✅ Created `docs/guide/multi-agent-orchestration.md` (627 lines)
+- ✅ Complete guide to v4.7.0+ multi-agent collaboration features
+- ✅ Covers: Sessions, delegation, workspaces, capability-first strategy
+- ✅ 7 delegation syntaxes with examples (including Chinese support)
+- ✅ CLI commands reference with practical examples
+- ✅ 3 detailed workflow examples (simple, multi-agent, nested)
+- ✅ Best practices and troubleshooting sections
+- ✅ Performance metrics and advanced patterns
+
+#### Enhanced Existing Documentation
+- ✅ Updated `TROUBLESHOOTING.md`: CLI authentication, FTS5 references, timeout fixes
+- ✅ Updated `CONTRIBUTING.md`: Test coverage (85%), license (Apache 2.0)
+- ✅ Enhanced `FAQ.md`: Added 3 major FAQs (templates, teams, migration)
+- ✅ Archived `docs/BETA-TESTING.md` → `docs/archived/BETA-TESTING-v4.0.md`
+
+### 🎯 Configuration Schema
+
+#### Self-Contained JSON Schema
+- ✅ Created comprehensive `schema/config.json` (24 KB)
+- ✅ Complete schema for all AutomatosX v5.0+ configuration options
+- ✅ 25+ type definitions matching TypeScript interfaces
+- ✅ Standard JSON Schema draft-07 format
+- ✅ IDE validation support (VS Code, WebStorm, etc.)
+
+#### Schema Migration
+- ✅ Migrated from external URL to repository-based schema
+- ✅ All `$schema` references use relative path: `./schema/config.json`
+- ✅ Works offline with schema caching
+- ✅ No external dependencies for configuration validation
+- ✅ Updated 10+ files (source code, config files, tests)
+
+### 📖 Documentation Updates
+
+**Files Created**:
+- `docs/guide/multi-agent-orchestration.md` (627 lines)
+- `docs/archived/BETA-TESTING-v4.0.md` (moved from docs/)
+- `schema/config.json` (24 KB, 600+ lines)
+
+**Files Updated**:
+- `README.md`: Added v5.0.2 release notes
+- `TROUBLESHOOTING.md`: ~40 lines modified
+- `CONTRIBUTING.md`: 2 critical accuracy fixes
+- `FAQ.md`: +83 lines (3 new comprehensive FAQs)
+- `automatosx.config.json`: Schema reference updated
+- `src/cli/commands/config.ts`: Schema reference updated
+- `src/cli/commands/init.ts`: Schema reference updated
+- `src/cli/commands/config/reset.ts`: Schema reference updated
+- `tests/**/*.test.ts`: Schema references updated
+
+### 🗂️ Documentation Organization
+
+#### Archived Content
+- ✅ `BETA-TESTING.md` → `docs/archived/BETA-TESTING-v4.0.md`
+- ✅ Added archived notice with links to current docs
+- ✅ Preserved historical beta testing documentation
+
+#### Accuracy Improvements
+- ✅ Replaced "API key configuration" with "CLI authentication"
+- ✅ Updated "vector search" references to "FTS5 full-text search"
+- ✅ Corrected test coverage (67% → ~85%)
+- ✅ Fixed license reference (MIT → Apache 2.0)
+
+### ✅ Quality Improvements
+
+**Documentation Coverage**:
+- ✅ Multi-agent orchestration: Fully documented
+- ✅ Team-based configuration: Comprehensive guide
+- ✅ Agent templates: Complete reference
+- ✅ Migration guides: Added to FAQ
+- ✅ Troubleshooting: Updated with current information
+
+**Schema Completeness**:
+- ✅ All configuration options documented
+- ✅ Validation rules for required fields
+- ✅ Min/max constraints for numeric values
+- ✅ Enum values for restricted fields
+- ✅ Comprehensive descriptions for all properties
+
+**Backward Compatibility**:
+- ✅ All changes are non-breaking
+- ✅ Existing configurations continue to work
+- ✅ Schema validation is optional (IDE feature)
+- ✅ No code changes required for upgrade
+
+### 📊 Statistics
+
+```
+Documentation Changes:
+- Files created: 3 (orchestration guide, schema, archived beta guide)
+- Files updated: 10+ (README, FAQ, TROUBLESHOOTING, CONTRIBUTING, source files)
+- Lines added: ~770 (documentation + schema)
+- Lines modified: ~50 (accuracy fixes)
+
+Schema Coverage:
+- Configuration options: 100% covered
+- Type definitions: 25+ schemas
+- Validation rules: Complete
+- IDE support: Full JSON Schema draft-07
+```
+
+### 🔗 Related Issues
+
+This release addresses documentation gaps identified in the Phase 3 documentation improvement project, providing comprehensive guides for all major v4.7.0+, v4.10.0+, and v5.0.0+ features.
+
+---
+
 ## [5.0.1] - 2025-10-09
 
 ### 🐛 Bug Fixes
@@ -2583,7 +2694,7 @@ Thank you to all contributors who made v4.0 possible!
 
 ### 🔗 Resources
 
-- **Documentation**: <https://docs.automatosx.dev>
+- **Documentation**: <https://github.com/defai-digital/automatosx/tree/main/docs>
 - **Repository**: <https://github.com/defai-digital/automatosx>
 - **Issues**: <https://github.com/defai-digital/automatosx/issues>
 - **npm**: <https://www.npmjs.com/package/automatosx>

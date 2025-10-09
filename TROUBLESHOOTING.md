@@ -193,7 +193,7 @@ automatosx init --force
 mkdir -p .automatosx
 cat > .automatosx/config.json << EOF
 {
-  "$schema": "https://automatosx.dev/schema/config.json",
+  "$schema": "https://raw.githubusercontent.com/defai-digital/automatosx/main/schema/config.json",
   "version": "4.0.0",
   "providers": {
     "claude": {
@@ -204,23 +204,26 @@ cat > .automatosx/config.json << EOF
 EOF
 ```
 
-### Error: Invalid API key
+### Error: Provider CLI not authenticated
 
-**Symptom**: `Invalid API key` or `401 Unauthorized`
+**Symptom**: `Authentication required` or `401 Unauthorized`
 
-**Solution**:
+**Solution**: AutomatosX v4.0+ uses CLI tools for authentication. Each CLI manages its own credentials.
 
 ```bash
-# Check your API key is set
-automatosx config --get providers.claude.apiKey
+# Claude CLI authentication
+claude auth login
 
-# Set API key via config
-automatosx config --set providers.claude.apiKey --value "sk-ant-..."
+# Gemini CLI authentication
+gemini auth login
 
-# Or use environment variable
-export ANTHROPIC_API_KEY="sk-ant-..."
-export GOOGLE_API_KEY="your-key"
-export OPENAI_API_KEY="sk-..."
+# Codex CLI authentication
+codex auth login
+
+# Verify authentication
+claude --version
+gemini --version
+codex --version
 ```
 
 ### Config priority not working as expected
@@ -266,22 +269,25 @@ rm .automatosx/memory.db
 automatosx memory list  # Will recreate database
 ```
 
-### Vector search returns no results
+### Memory search returns no results
 
 **Symptom**: Memory search returns empty results despite having data
 
-**Solution**:
+**Solution**: AutomatosX v4.11.0+ uses FTS5 full-text search (no embeddings).
 
 ```bash
 # Check if memories exist
 automatosx memory list
 
-# Check embedding provider is configured
-automatosx config --get providers.openai.embeddingApiKey
+# Check database exists
+ls -lh .automatosx/memory/memories.db
 
-# Rebuild vector index
+# Try broader search terms
+automatosx memory search "auth"  # Instead of "authentication API"
+
+# Rebuild if corrupted
 automatosx memory export --output backup.json
-rm .automatosx/memory.db
+rm -rf .automatosx/memory/
 automatosx memory import --input backup.json
 ```
 
@@ -519,26 +525,26 @@ automatosx memory list
 # Delete old or unneeded memories manually
 ```
 
-### Vector search is slow
+### Memory search is slow
 
-**Issue**: Memory search takes too long
+**Issue**: Memory search takes too long (should be < 1ms with FTS5)
 
 **Solution**:
 
 ```bash
 # Check database size
-ls -lh .automatosx/memory.db
+ls -lh .automatosx/memory/memories.db
 
 # Optimize database
-sqlite3 .automatosx/memory.db "VACUUM; ANALYZE;"
+sqlite3 .automatosx/memory/memories.db "VACUUM; ANALYZE;"
 
 # Reduce search results
 automatosx memory search "query" --limit 10  # Default is 50
 
-# Consider cleaning old memories
+# Clean old memories (v4.11.0+: pure FTS5 is very fast)
 automatosx memory export --output backup.json
 # Edit backup.json to remove old entries
-rm .automatosx/memory.db
+rm -rf .automatosx/memory/
 automatosx memory import --input backup.json
 ```
 

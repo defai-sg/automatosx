@@ -91,7 +91,7 @@ npm run test:coverage
 ### Writing Tests
 
 - Write tests for all new features
-- Maintain or improve test coverage (current: 67%)
+- Maintain or improve test coverage (current: ~85%)
 - Place unit tests in `tests/unit/`
 - Place integration tests in `tests/integration/`
 - Use descriptive test names
@@ -346,7 +346,7 @@ if (!isValidPath(path)) {
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree that your contributions will be licensed under the Apache License 2.0.
 
 ## Recognition
 

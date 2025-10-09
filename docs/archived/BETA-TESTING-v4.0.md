@@ -1,4 +1,23 @@
-# Beta Testing Guide
+# Beta Testing Guide (v4.0 - ARCHIVED)
+
+> **⚠️ ARCHIVED DOCUMENT**
+>
+> This document was used for AutomatosX v4.0.0 beta testing program (completed).
+>
+> - **Beta version tested**: v4.0.0-beta.1
+> - **Release date**: 2024
+> - **Current stable version**: v5.0.1 (October 2025)
+> - **Status**: Beta testing complete, document archived for historical reference
+>
+> **For current contribution guidelines**, see:
+> - [CONTRIBUTING.md](../../CONTRIBUTING.md) - How to contribute to AutomatosX
+> - [README.md](../../README.md) - Getting started with stable version
+> - [FAQ.md](../../FAQ.md) - Frequently asked questions
+> - [TROUBLESHOOTING.md](../../TROUBLESHOOTING.md) - Common issues and solutions
+>
+> **Note**: Information below may be outdated. Please refer to current documentation.
+
+---
 
 Thank you for participating in AutomatosX v4.0 beta testing! Your feedback is crucial for ensuring a stable and high-quality release.
 

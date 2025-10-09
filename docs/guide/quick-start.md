@@ -6,14 +6,14 @@ Get started with AutomatosX in under 5 minutes.
 
 ## What is AutomatosX?
 
-AutomatosX is an **agent execution tool** designed to run inside **Claude Code**. It allows you to:
+AutomatosX is a **CLI-based AI agent orchestration platform** that allows you to:
 
 - Execute AI agents with a single command
 - Manage agent memory and context
 - Use multiple AI providers (Claude, Gemini, Codex)
 - Build reusable agent profiles and abilities
 
-**Key Point**: AutomatosX is **not a standalone chat application**. It's a tool for Claude Code to execute agents and manage their state.
+**Key Point**: AutomatosX works anywhere as a general-purpose CLI tool, and is optimized for integration with Claude Code and other development environments.
 
 ---
 
@@ -29,7 +29,7 @@ AutomatosX is an **agent execution tool** designed to run inside **Claude Code**
 
 ### For End Users
 
-Simply install AutomatosX via npm:
+Install AutomatosX via npm:
 
 ```bash
 npm install -g @defai.digital/automatosx
@@ -41,7 +41,15 @@ Or use npx without installation:
 npx @defai.digital/automatosx --version
 ```
 
-**That's it!** You're ready to use AutomatosX.
+**Update to latest version**:
+
+```bash
+# Use built-in update command
+ax update
+
+# Or via npm
+npm install -g @defai.digital/automatosx@latest
+```
 
 ### For Developers
 
@@ -84,17 +92,45 @@ This creates:
 - `automatosx.config.json` - Project configuration
 - `.automatosx/agents/` - Agent profiles (5 examples included)
 - `.automatosx/abilities/` - Agent abilities (15 examples included)
+- `.automatosx/teams/` - Team configurations (4 teams)
 - `.automatosx/memory/` - FTS5 memory database (full-text search)
-- `.automatosx/logs/` - Execution logs
+- `examples/templates/` - Agent templates (v5.0.0+)
+
+**Force reinitialize** (update existing installation):
+
+```bash
+ax init --force   # Overwrites with latest templates and config
+```
 
 ---
 
 ## Your First Agent
 
+### Option 1: Use Example Agent
+
 Run an agent with a simple command:
 
 ```bash
 automatosx run assistant "What is TypeScript?"
+```
+
+### Option 2: Create from Template (v5.0.0+)
+
+Quickly create a custom agent:
+
+```bash
+# Interactive creation with prompts
+ax agent create my-agent --template developer --interactive
+
+# Or one-line creation
+ax agent create my-agent \
+  --template developer \
+  --display-name "Mike" \
+  --role "Backend Engineer" \
+  --team engineering
+
+# Run your new agent
+ax run my-agent "Help me design an API"
 ```
 
 **What happens**:
@@ -242,13 +278,13 @@ Edit `automatosx.config.json`:
     "claude-code": {
       "enabled": true,
       "priority": 1,
-      "timeout": 120000,
+      "timeout": 900000,
       "command": "claude"
     },
     "gemini-cli": {
       "enabled": true,
       "priority": 2,
-      "timeout": 180000,
+      "timeout": 900000,
       "command": "gemini"
     }
   },
@@ -268,28 +304,37 @@ Edit `automatosx.config.json`:
 
 ### Provider Setup
 
-AutomatosX uses AI providers via their CLI tools:
+AutomatosX calls provider CLI tools directly - **no API keys stored in AutomatosX**.
 
-**Claude** (via Claude Code):
-
+**Claude CLI**:
 ```bash
-# Already available in Claude Code environment
-# No additional setup needed
+# Install Claude CLI
+brew install claude
+# or follow: https://github.com/anthropics/claude-cli
+
+# Authenticate (handled by CLI)
+claude auth login
 ```
 
-**Gemini** (Google AI):
-
+**Gemini CLI**:
 ```bash
-# Install Gemini CLI if needed
-npm install -g @google/generative-ai
+# Follow setup instructions at:
+# https://ai.google.dev/gemini-api/docs/cli
 
-# Set API key (if required)
-export GEMINI_API_KEY="your-api-key"
+# Authenticate (handled by CLI)
+gemini auth login
 ```
 
-**No Additional Setup Required**:
+**Codex CLI**:
+```bash
+# Follow setup instructions at:
+# https://github.com/anthropics/codex-cli
 
-AutomatosX memory uses local SQLite FTS5 search - no external API keys needed!
+# Authenticate (handled by CLI)
+codex auth login
+```
+
+**Important**: v4.0+ uses CLI tools for authentication. Each CLI manages its own API keys - AutomatosX never stores them.
 
 ---
 
@@ -329,10 +374,13 @@ A: Yes, AutomatosX is designed to run inside Claude Code. It's not a standalone 
 A: Yes, you can use it from any terminal, but it's optimized for Claude Code workflows.
 
 **Q: Why isn't there a `chat` command?**
-A: AutomatosX focuses on single-shot agent execution. Claude Code provides the interactive chat interface.
+A: AutomatosX focuses on single-shot agent execution. Claude Code and other tools provide the interactive chat interface.
 
 **Q: How do I update AutomatosX?**
-A: Simply run `npm update -g automatosx` (global) or `npm update automatosx` (local).
+A: Use the built-in command `ax update` or run `npm install -g @defai.digital/automatosx@latest`.
+
+**Q: How do I create a custom agent?**
+A: Use `ax agent create <name> --template <template>` to create from templates, or manually create `.automatosx/agents/<name>.yaml`.
 
 **Q: Where is my data stored?**
 A: All data is stored in `.automatosx/` directory in your project root. This includes configuration, memory, logs, and workspaces.
@@ -378,7 +426,7 @@ For more help, see [Troubleshooting Guide](../troubleshooting/common-issues.md).
 
 ## Getting Help
 
-- **Documentation**: [docs.automatosx.dev](https://docs.automatosx.dev) (coming soon)
+- **Documentation**: [docs.automatosx.dev](https://github.com/defai-digital/automatosx/tree/main/docs) (coming soon)
 - **GitHub Issues**: [github.com/defai-digital/automatosx/issues](https://github.com/defai-digital/automatosx/issues)
 - **Examples**: Check `.automatosx/agents/` and `.automatosx/abilities/` after running `init`
 

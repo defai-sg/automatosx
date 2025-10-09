@@ -11,9 +11,10 @@ AutomatosX is built around a few core concepts:
 1. **Agents** - AI entities with specific roles and capabilities
 2. **Profiles** - YAML configuration files that define agent behavior
 3. **Abilities** - Reusable skills that agents can use
-4. **Memory** - Persistent storage with vector search
-5. **Providers** - AI service backends (Claude, Gemini, OpenAI)
+4. **Memory** - Persistent storage with FTS5 full-text search
+5. **Providers** - AI service backends (Claude, Gemini, Codex)
 6. **Workspaces** - Isolated execution environments
+7. **Teams** - Organizational groups with shared configuration (v4.10.0+)
 
 ---
 
@@ -235,6 +236,8 @@ abilities:
 
 **Memory** is AutomatosX's persistent storage system using **SQLite FTS5** for fast, local full-text search.
 
+**v4.11.0 Update**: Vector search has been removed. AutomatosX now uses pure FTS5 full-text search for faster performance (< 1ms) and no embedding costs.
+
 ### Memory Operations
 
 **Add Memory**: Store information with metadata
@@ -252,13 +255,17 @@ automatosx memory list --tags typescript
 **Text Search**: Fast local full-text search with FTS5
 
 ```bash
-# Search by text query (< 1ms, all local)
+# Search by text query (< 1ms, all local, no API calls)
 automatosx memory search "benefits of static typing"
 
-# Returns relevant memories ranked by relevance
+# Returns relevant memories ranked by FTS5 relevance score
 # - "TypeScript is a typed superset of JavaScript"
 # - "Static typing catches errors at compile time"
 # - "Type systems improve code quality"
+
+# v5.0.1+: Enhanced special character support
+automatosx memory search "config.json settings"  # Works!
+automatosx memory search "timeout (300ms)"       # Works!
 ```
 
 ### Memory Structure
@@ -552,7 +559,61 @@ User → Claude Code → AutomatosX → AI Provider
 
 - ❌ Store sensitive information
 - ❌ Let memory grow unbounded
-- ❌ Forget to set up OpenAI key for search
+- ❌ Use special FTS5 operators without sanitization (v5.0.1+ handles this automatically)
+
+---
+
+## Teams (v4.10.0+)
+
+### What is a Team?
+
+A **team** is an organizational group that provides shared configuration for agents. Teams eliminate configuration duplication by centralizing provider settings and shared abilities.
+
+### Built-in Teams
+
+AutomatosX includes 4 built-in teams:
+
+- **core**: Quality assurance specialists (primary: claude)
+- **engineering**: Software development teams (primary: codex)
+- **business**: Business and product teams (primary: gemini)
+- **design**: Design and content teams (primary: gemini)
+
+### Team Benefits
+
+**No Configuration Duplication**:
+```yaml
+# Before v4.10.0 - Repeat for every agent
+provider: codex
+temperature: 0.7
+maxTokens: 4096
+
+# v4.10.0+ - Inherit from team
+team: engineering  # Gets provider + shared abilities automatically
+```
+
+**Centralized Management**: Change provider for entire team at once
+
+**Shared Abilities**: Team-wide abilities automatically included in all team agents
+
+### Agent Template System (v5.0.0+)
+
+Create agents quickly using pre-built templates:
+
+```bash
+# Interactive creation
+ax agent create backend --template developer --interactive
+
+# One-line creation
+ax agent create backend \
+  --template developer \
+  --display-name "Bob" \
+  --team engineering
+
+# List templates
+ax agent templates
+```
+
+**5 Available Templates**: basic-agent, developer, analyst, designer, qa-specialist
 
 ---
 
