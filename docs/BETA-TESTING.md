@@ -393,9 +393,8 @@ As a thank you for beta testing:
 
 ## Communication Channels
 
-- **GitHub Issues**: Bug reports
-- **GitHub Discussions**: General feedback
-- **Discord**: Real-time chat (coming soon)
+- **GitHub Issues**: Bug reports and feature requests
+- **GitHub Discussions**: General feedback and questions
 - **Email**: <support@defai.digital>
 
 ## Beta Testing Timeline

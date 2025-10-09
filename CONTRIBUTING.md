@@ -338,9 +338,8 @@ if (!isValidPath(path)) {
 ## Getting Help
 
 - Check existing [documentation](docs/)
-- Search [existing issues](https://github.com/automatosx/automatosx/issues)
-- Ask in [discussions](https://github.com/automatosx/automatosx/discussions)
-- Join our [Discord](https://discord.gg/automatosx) (coming soon)
+- Search [existing issues](https://github.com/defai-digital/automatosx/issues)
+- Ask in [GitHub Discussions](https://github.com/defai-digital/automatosx/discussions)
 
 ## License
 

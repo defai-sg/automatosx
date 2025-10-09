@@ -733,5 +733,5 @@ If your issue is not covered here:
    - Describe steps to reproduce
 
 6. **Join Community**:
-   - Discord: [discord.gg/automatosx](https://discord.gg/automatosx)
    - Discussions: [GitHub Discussions](https://github.com/defai-digital/automatosx/discussions)
+   - Issues: [GitHub Issues](https://github.com/defai-digital/automatosx/issues)

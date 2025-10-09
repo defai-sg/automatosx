@@ -190,7 +190,7 @@ Ready to build your first agent?
 - **GitHub** - Source code and issues (available with v4.0 launch)
 - **Documentation** - Check the docs/ directory for guides and API reference
 
-> **Note**: Community resources (Discord, Discussions) will be available after v4.0 official launch.
+> **Note**: Get help via [GitHub Discussions](https://github.com/defai-digital/automatosx/discussions) or report issues at [GitHub Issues](https://github.com/defai-digital/automatosx/issues).
 
 ## Next Steps
 

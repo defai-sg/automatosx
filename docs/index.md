@@ -122,7 +122,7 @@ npx @defai.digital/automatosx run assistant "What is the weather like?"
 ## Community
 
 ::: tip Coming Soon
-Community resources (Discord, Discussions) will be available after v4.0 launch.
+Community resources available: [GitHub Discussions](https://github.com/defai-digital/automatosx/discussions) and [GitHub Issues](https://github.com/defai-digital/automatosx/issues).
 
 For now, please use [GitHub Issues](https://github.com/yourusername/automatosx/issues) for bug reports and questions.
 :::
