@@ -354,12 +354,12 @@ Strict mode TypeScript + Vitest ensures every module is covered before it ships.
 
 ## Production-Ready Toolkit
 
-| Metric | v3.1 | v4.10.0 | Improvement |
-|--------|------|---------|-------------|
-| Bundle size | 340 MB | 46 MB | **87% ↓** |
-| Text search (FTS5) | 45 ms | 0.72 ms | **62× ↑** |
-| Dependencies | 589 | 158 | **73% ↓** |
-| Tests passing | 512 | 994 | **94% ↑** |
+| Metric | v3.1 | v4.10.0 | v5.0.1 |
+|--------|------|---------|--------|
+| Bundle size | 340 MB | 46 MB | **381 KB** |
+| Text search (FTS5) | 45 ms | 0.72 ms | **< 1 ms** |
+| Dependencies | 589 | 158 | **19** |
+| Tests passing | 512 | 994 | **1,050** |
 
 **Run the essentials:**
 
