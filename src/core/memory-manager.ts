@@ -296,11 +296,11 @@ export class MemoryManager implements IMemoryManager {
 
       // FTS5 query syntax: escape special characters and use simple query
       // Remove FTS5 special characters that can cause syntax errors
-      // Special chars: . : " * ( ) [ ] { } ^ $ + | \ - % AND OR NOT
+      // Special chars: . : " * ( ) [ ] { } ^ $ + | \ - % < > ~ / @ # & = ? ! ; ' ` , AND OR NOT
       const ftsQuery = query.text
-        .replace(/[.:"*()[\]{}^$+|\\%<>~-]/g, ' ')  // Replace special chars with spaces
-        .replace(/\b(AND|OR|NOT)\b/gi, ' ')          // Remove boolean operators
-        .replace(/\s+/g, ' ')                         // Normalize whitespace
+        .replace(/[.:"*()[\]{}^$+|\\%<>~\-/@#&=?!;'`,]/g, ' ')  // Replace special chars with spaces
+        .replace(/\b(AND|OR|NOT)\b/gi, ' ')                      // Remove boolean operators
+        .replace(/\s+/g, ' ')                                     // Normalize whitespace
         .trim();
 
       // If query becomes empty after sanitization, return empty results

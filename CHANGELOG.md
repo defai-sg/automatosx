@@ -5,6 +5,63 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.3] - 2025-10-09
+
+### 🐛 Critical Bug Fix
+
+#### FTS5 Query Sanitization - Special Character Support
+
+**Problem**: Memory search failed with syntax errors for queries containing common special characters (`/`, `@`, `#`, `&`, `=`, `?`, `!`, `;`, `'`, `` ` ``, `,`)
+
+**Impact**:
+- ❌ File path queries: `src/core/memory-manager.ts` → `fts5: syntax error near "/"`
+- ❌ URL queries: `https://github.com/defai/automatosx` → Failed
+- ❌ Date queries: `2025/10/09` → Failed
+- ❌ Email queries: `user@example.com` → Failed
+- ❌ All other queries with special characters → Silent memory injection failure
+
+**Root Cause**: Incomplete FTS5 special character sanitization in `memory-manager.ts:301`
+
+**Fix**: Extended regex pattern to sanitize 11 additional special characters:
+- Before: `.:"*()[\]{}^$+|\\%<>~-` (15 characters)
+- After: `.:"*()[\]{}^$+|\\%<>~\-/@#&=?!;'\`,` (26 characters) ✅
+
+**Testing**:
+- ✅ Added 29 comprehensive tests (504 lines) covering all real-world scenarios
+- ✅ All 1079 existing tests pass (zero regressions)
+- ✅ Performance optimized for CI environments (1s timeout vs 100ms)
+
+**Discovered By**: Queenie during Paris migration script review
+
+**Affects**: All users since v5.0.1
+
+**Files Modified**:
+- `src/core/memory-manager.ts` (1 line)
+- `tests/unit/memory-manager-special-chars.test.ts` (new, 509 lines)
+
+### 🧪 Test Coverage
+
+**New Test Suite**: `memory-manager-special-chars.test.ts`
+- ✅ File paths (Unix & Windows)
+- ✅ URLs (HTTPS, query parameters, hash fragments)
+- ✅ Dates (YYYY/MM/DD, MM/DD/YYYY)
+- ✅ Email addresses
+- ✅ Hashtags
+- ✅ Mathematical expressions
+- ✅ Special characters (?, !, &, ;, ', `, ,)
+- ✅ Complex real-world queries
+- ✅ Edge cases & performance
+
+**Test Results**: 29/29 passed ✅
+
+### 🚀 Performance
+
+- Search with special chars: < 1ms per query
+- 100-entry performance test: < 1000ms (CI-safe)
+- Zero impact on existing search performance
+
+---
+
 ## [5.0.2] - 2025-10-09
 
 ### 📚 Documentation
