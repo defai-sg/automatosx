@@ -57,7 +57,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'Check C:/Program Files/AutomatosX/config.json',
         null,
-        { type: 'note', agentId: 'test', source: 'user' }
+        { type: 'other', agentId: 'test', source: 'user' }
       );
 
       const results = await memoryManager.search({
@@ -87,7 +87,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'Check documentation at https://github.com/defai/automatosx',
         null,
-        { type: 'note', agentId: 'test', source: 'user' }
+        { type: 'other', agentId: 'test', source: 'user' }
       );
 
       const results = await memoryManager.search({
@@ -102,7 +102,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'API endpoint: https://api.example.com/search?q=test&limit=10',
         null,
-        { type: 'api', agentId: 'test', source: 'system' }
+        { type: 'other', agentId: 'test', source: 'system' }
       );
 
       const results = await memoryManager.search({
@@ -116,7 +116,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'See docs: https://example.com/docs#getting-started',
         null,
-        { type: 'reference', agentId: 'test', source: 'user' }
+        { type: 'other', agentId: 'test', source: 'user' }
       );
 
       const results = await memoryManager.search({
@@ -132,7 +132,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'Release scheduled for 2025/10/09',
         null,
-        { type: 'plan', agentId: 'test', source: 'user' }
+        { type: 'other', agentId: 'test', source: 'user' }
       );
 
       const results = await memoryManager.search({
@@ -146,7 +146,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'Meeting on 10/09/2025 at 3pm',
         null,
-        { type: 'event', agentId: 'test', source: 'calendar' }
+        { type: 'other', agentId: 'test', source: 'calendar' }
       );
 
       const results = await memoryManager.search({
@@ -162,7 +162,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'Contact user@example.com for more information',
         null,
-        { type: 'contact', agentId: 'test', source: 'user' }
+        { type: 'other', agentId: 'test', source: 'user' }
       );
 
       const results = await memoryManager.search({
@@ -176,7 +176,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'Support email: support@mail.example.com',
         null,
-        { type: 'contact', agentId: 'test', source: 'system' }
+        { type: 'other', agentId: 'test', source: 'system' }
       );
 
       const results = await memoryManager.search({
@@ -193,7 +193,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
         'Important reminder #urgent #priority1',
         null,
         {
-          type: 'note',
+          type: 'other',
           agentId: 'test',
           source: 'user',
           tags: ['urgent', 'priority1']
@@ -232,7 +232,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'Approximately 3/4 of users prefer dark mode',
         null,
-        { type: 'analysis', agentId: 'test', source: 'analytics' }
+        { type: 'other', agentId: 'test', source: 'analytics' }
       );
 
       const results = await memoryManager.search({
@@ -246,7 +246,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'Formula: price = base * 1.1 + shipping',
         null,
-        { type: 'calculation', agentId: 'test', source: 'system' }
+        { type: 'other', agentId: 'test', source: 'system' }
       );
 
       const results = await memoryManager.search({
@@ -262,7 +262,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'User asked: How do I reset my password?',
         null,
-        { type: 'question', agentId: 'test', source: 'support' }
+        { type: 'other', agentId: 'test', source: 'support' }
       );
 
       const results = await memoryManager.search({
@@ -278,7 +278,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'URGENT! Production server is down!',
         null,
-        { type: 'alert', agentId: 'test', source: 'monitoring' }
+        { type: 'other', agentId: 'test', source: 'monitoring' }
       );
 
       const results = await memoryManager.search({
@@ -294,7 +294,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'Meeting with Smith & Johnson LLC',
         null,
-        { type: 'meeting', agentId: 'test', source: 'calendar' }
+        { type: 'other', agentId: 'test', source: 'calendar' }
       );
 
       const results = await memoryManager.search({
@@ -310,7 +310,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'Bug found at src/core/memory-manager.ts:301',
         null,
-        { type: 'bug', agentId: 'test', source: 'review' }
+        { type: 'other', agentId: 'test', source: 'review' }
       );
 
       const results = await memoryManager.search({
@@ -324,7 +324,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'See [docs](https://example.com/docs#api)',
         null,
-        { type: 'reference', agentId: 'test', source: 'documentation' }
+        { type: 'other', agentId: 'test', source: 'documentation' }
       );
 
       const results = await memoryManager.search({
@@ -338,7 +338,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'fix: resolve issue #123 in src/utils/parser.ts',
         null,
-        { type: 'commit', agentId: 'test', source: 'git' }
+        { type: 'other', agentId: 'test', source: 'git' }
       );
 
       const results = await memoryManager.search({
@@ -352,7 +352,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'Install @defai.digital/automatosx package',
         null,
-        { type: 'instruction', agentId: 'test', source: 'documentation' }
+        { type: 'other', agentId: 'test', source: 'documentation' }
       );
 
       const results = await memoryManager.search({
@@ -370,7 +370,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         `Special test: ${specialQuery}`,
         null,
-        { type: 'test', agentId: 'test', source: 'system' }
+        { type: 'other', agentId: 'test', source: 'system' }
       );
 
       // Should not throw syntax error
@@ -418,7 +418,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'Simple text without special characters',
         null,
-        { type: 'note', agentId: 'test', source: 'user' }
+        { type: 'other', agentId: 'test', source: 'user' }
       );
 
       const results = await memoryManager.search({
@@ -432,7 +432,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'The quick brown fox jumps over the lazy dog',
         null,
-        { type: 'note', agentId: 'test', source: 'user' }
+        { type: 'other', agentId: 'test', source: 'user' }
       );
 
       const results = await memoryManager.search({
@@ -448,7 +448,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
         await memoryManager.add(
           `Test entry number ${i}`,
           null,
-          { type: 'test', agentId: 'test', source: 'system' }
+          { type: 'other', agentId: 'test', source: 'system' }
         );
       }
 
@@ -470,7 +470,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
       await memoryManager.add(
         'Note entry',
         null,
-        { type: 'note', agentId: 'test', source: 'user' }
+        { type: 'other', agentId: 'test', source: 'user' }
       );
 
       const results = await memoryManager.search({
@@ -490,7 +490,7 @@ describe('MemoryManager - FTS5 Special Character Handling', () => {
         await memoryManager.add(
           `Entry ${i}: Check file src/core/test-${i}.ts`,
           null,
-          { type: 'test', agentId: 'test', source: 'system' }
+          { type: 'other', agentId: 'test', source: 'system' }
         );
       }
 
