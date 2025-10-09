@@ -18,6 +18,7 @@
 **🤖 4 Specialized Teams**: AutomatosX agents are [organized into 4 professional teams](https://github.com/defai-digital/automatosx/blob/main/examples/AGENTS_INFO.md) (Core, Engineering, Business, Design), each optimized with the best AI provider for their domain—**Claude** for deep reasoning, **Gemini** for strategic thinking, and **OpenAI** for fast execution. Every team uses intelligent fallback strategies to ensure maximum reliability across all your workflows.
 
 **Status**: ✅ Production Release · **Latest**: October 2025
+📖 **[Project History](docs/PROJECT-HISTORY.md)**: From Tokyo AI Expo (Nov 2024) to v5.0.1 - The complete journey
 
 ---
 
