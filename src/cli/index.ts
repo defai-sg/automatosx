@@ -17,7 +17,7 @@ import { globalTracker } from '../utils/performance.js';
 
 // Read version from package.json using require (works in both dev and installed)
 const require = createRequire(import.meta.url);
-let VERSION = '4.9.8'; // Fallback version
+let VERSION = '4.11.0'; // Fallback version
 try {
   const packageJson = require('../../package.json');
   VERSION = packageJson.version;
@@ -36,6 +36,7 @@ import { sessionCommand } from './commands/session.js';
 import { statusCommand } from './commands/status.js';
 import { updateCommand } from './commands/update.js';
 import { workspaceCommand } from './commands/workspace.js';
+import { agentCommand } from './commands/agent/index.js';
 
 // Mark CLI startup
 globalTracker.mark('cli_start');
@@ -47,6 +48,8 @@ const argv = await yargs(hideBin(process.argv))
   .usage('$0 <command> [options]')
   .usage('\nAI Agent Orchestration Platform')
   .example('$0 init', 'Initialize project')
+  .example('$0 agent create backend --template developer', 'Create agent from template')
+  .example('$0 agent list', 'List all agents')
   .example('$0 run assistant "Hello"', 'Run assistant agent')
   .example('$0 session create "Build API" backend', 'Create multi-agent session')
   .example('$0 session list', 'List all sessions')
@@ -78,6 +81,7 @@ const argv = await yargs(hideBin(process.argv))
 
   // Commands
   .command(initCommand)
+  .command(agentCommand)
   .command(listCommand)
   .command(runCommand)
   .command(sessionCommand)

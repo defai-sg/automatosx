@@ -295,7 +295,19 @@ export class MemoryManager implements IMemoryManager {
       `;
 
       // FTS5 query syntax: escape special characters and use simple query
-      const ftsQuery = query.text.replace(/[:"*]/g, ' ').trim();
+      // Remove FTS5 special characters that can cause syntax errors
+      // Special chars: . : " * ( ) [ ] { } ^ $ + | \ - % AND OR NOT
+      const ftsQuery = query.text
+        .replace(/[.:"*()[\]{}^$+|\\%<>~-]/g, ' ')  // Replace special chars with spaces
+        .replace(/\b(AND|OR|NOT)\b/gi, ' ')          // Remove boolean operators
+        .replace(/\s+/g, ' ')                         // Normalize whitespace
+        .trim();
+
+      // If query becomes empty after sanitization, return empty results
+      if (!ftsQuery) {
+        logger.debug('FTS5 query empty after sanitization', { originalQuery: query.text });
+        return [];
+      }
 
       const finalParams = [ftsQuery, ...params, limit];
 

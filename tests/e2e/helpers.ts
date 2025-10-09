@@ -45,7 +45,7 @@ export async function createTestEnv(): Promise<E2ETestEnv> {
 
   // Create default config (matching DEFAULT_CONFIG structure)
   const defaultConfig = {
-    version: '4.0.0',
+    version: '5.0.0',
     providers: {
       'claude-code': {
         enabled: true,
@@ -62,19 +62,19 @@ export async function createTestEnv(): Promise<E2ETestEnv> {
     },
     memory: {
       maxEntries: 10000,
-      persistPath: join(automatosxDir, 'memory'),
+      persistPath: '.automatosx/memory',
       autoCleanup: true,
       cleanupDays: 30
     },
     workspace: {
-      basePath: join(automatosxDir, 'workspaces'),
+      basePath: '.automatosx/workspaces',
       autoCleanup: true,
       cleanupDays: 7,
       maxFiles: 100
     },
     logging: {
       level: 'info',
-      path: join(automatosxDir, 'logs'),
+      path: '.automatosx/logs',
       console: true
     }
   };

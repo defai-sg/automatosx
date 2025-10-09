@@ -134,10 +134,10 @@ Install AutomatosX via npm:
 
 ```bash
 # Global installation
-npm install -g @defai.sg/automatosx
+npm install -g @defai.digital/automatosx
 
 # Or use npx
-npx @defai.sg/automatosx --version
+npx @defai.digital/automatosx --version
 ```
 
 Initialize your project:
@@ -210,8 +210,8 @@ AutomatosX is [MIT licensed](../LICENSE).
 
 ## 🔗 Links
 
-- **GitHub**: [github.com/defai-sg/automatosx](https://github.com/defai-sg/automatosx)
-- **Issues**: [github.com/defai-sg/automatosx/issues](https://github.com/defai-sg/automatosx/issues)
+- **GitHub**: [github.com/defai-digital/automatosx](https://github.com/defai-digital/automatosx)
+- **Issues**: [github.com/defai-digital/automatosx/issues](https://github.com/defai-digital/automatosx/issues)
 - **npm**: [npmjs.com/package/automatosx](https://npmjs.com/package/automatosx)
 
 ---
@@ -219,7 +219,7 @@ AutomatosX is [MIT licensed](../LICENSE).
 ## 📮 Get Help
 
 - **Documentation**: You're reading it!
-- **Issues**: [Report bugs or request features](https://github.com/defai-sg/automatosx/issues)
+- **Issues**: [Report bugs or request features](https://github.com/defai-digital/automatosx/issues)
 - **Examples**: Check `.automatosx/agents/` after running `init`
 
 ---

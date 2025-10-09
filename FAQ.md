@@ -6,6 +6,29 @@
 
 AutomatosX is an AI agent orchestration platform that allows you to create, configure, and run AI agents with different capabilities and behaviors. It supports multiple AI providers (Claude, Gemini, Codex) with intelligent fallback, and features a powerful memory system with vector search.
 
+### What's new in v5.0.1?
+
+v5.0.1 (October 2025) includes critical bug fixes:
+
+- **Provider timeout fixed**: All provider timeouts increased from 5 min → 15 min to match agent timeout
+- **Delegation parser improved**: Zero false positives from documentation examples
+- **FTS5 search stabilized**: Enhanced special character handling (15+ characters)
+- **1050 tests passing**: 100% pass rate with comprehensive test coverage
+
+**Update recommended if you experience:**
+- Agent timeout errors on complex tasks
+- Unwanted delegation cycles
+- FTS5 "syntax error" warnings
+
+### What's new in v5.0.0?
+
+v5.0.0 (October 2025) introduces agent template system:
+
+- **Quick agent creation**: Create agents from templates with `ax agent create`
+- **5 pre-built templates**: Developer, analyst, designer, qa-specialist, basic-agent
+- **Complete CLI toolset**: `ax agent` command suite (templates, create, list, show, remove)
+- **No hardcoded values**: All execution parameters now configurable
+
 ### What's new in v4.0?
 
 v4.0 is a complete TypeScript rewrite with major improvements:
@@ -346,6 +369,78 @@ automatosx config  # Shows config path
 
 Ensure you're editing the right file based on priority order.
 
+### Agent tasks timeout with "Request timeout after 300000ms"
+
+**Problem**: Complex agent tasks fail with timeout errors even though the default agent timeout is 15 minutes.
+
+**Cause**: Provider timeout (5 minutes) is shorter than agent timeout (15 minutes), causing the provider to timeout first.
+
+**Solution (v5.0.1+)**: Update to v5.0.1 which fixes this issue automatically, or manually update your config:
+
+```bash
+# Check your current version
+automatosx --version
+
+# If < v5.0.1, update your configuration manually:
+automatosx config set providers.claude-code.timeout 900000
+automatosx config set providers.gemini-cli.timeout 900000
+automatosx config set providers.openai.timeout 900000
+
+# Or update to v5.0.1:
+npm install -g @defai.digital/automatosx@latest
+```
+
+**Verify the fix**:
+```bash
+# Check provider timeout settings
+automatosx config show | grep -A2 "timeout"
+# Should show 900000 (15 minutes) for all providers
+```
+
+### Agents delegate to wrong agents or delegation cycles occur
+
+**Problem**: Agents incorrectly parse documentation examples as actual delegation requests, causing unwanted delegation cycles.
+
+**Example Error**:
+```
+[ERROR] Delegation cycle detected: quality -> frontend -> frontend
+[INFO] Parsed 6 delegation(s)  # Should be 0
+```
+
+**Cause**: Delegation parser was too aggressive and parsed quoted examples or numbered lists as real delegations.
+
+**Solution**: Update to v5.0.1 which includes improved delegation parsing:
+
+```bash
+npm install -g @defai.digital/automatosx@5.0.1
+```
+
+**Verification**:
+```bash
+# Test delegation parsing with documentation
+ax run coordinator "Explain delegation syntax with examples"
+# Should not trigger any false delegations
+```
+
+### FTS5 search fails with "syntax error near" message
+
+**Problem**: Memory search fails with errors like `fts5: syntax error near "."` when query contains special characters.
+
+**Cause**: FTS5 search was not sanitizing special characters properly (v5.0.0 and earlier).
+
+**Solution**: Update to v5.0.1 which includes enhanced FTS5 sanitization:
+
+```bash
+npm install -g @defai.digital/automatosx@5.0.1
+```
+
+**Workaround (if can't update)**:
+```bash
+# Avoid special characters in memory searches
+# Instead of: "config.json settings"
+# Use: "config json settings"
+```
+
 ### AutomatosX not working after upgrading from older version
 
 If you're experiencing errors or unexpected behavior after upgrading, it may be due to:
@@ -401,7 +496,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 Quick start:
 
 ```bash
-git clone https://github.com/defai-sg/automatosx.git
+git clone https://github.com/defai-digital/automatosx.git
 cd automatosx
 npm install
 npm test
@@ -437,8 +532,8 @@ npm test memory-manager
 
 ### How do I report a bug?
 
-1. Check [existing issues](https://github.com/defai-sg/automatosx/issues)
-2. Create a [new issue](https://github.com/defai-sg/automatosx/issues/new)
+1. Check [existing issues](https://github.com/defai-digital/automatosx/issues)
+2. Create a [new issue](https://github.com/defai-digital/automatosx/issues/new)
 3. Include:
    - AutomatosX version (`automatosx --version`)
    - Node version (`node --version`)
@@ -496,14 +591,14 @@ Yes! Apache 2.0 license allows commercial use with no restrictions.
 Not required, but appreciated! You can mention:
 
 ```
-Powered by AutomatosX (https://github.com/defai-sg/automatosx)
+Powered by AutomatosX (https://github.com/defai-digital/automatosx)
 ```
 
 ---
 
 ## Still Have Questions?
 
-- **GitHub Discussions**: [Ask the community](https://github.com/defai-sg/automatosx/discussions)
+- **GitHub Discussions**: [Ask the community](https://github.com/defai-digital/automatosx/discussions)
 - **Discord**: [Join our Discord](https://discord.gg/automatosx)
 - **Email**: <support@defai.digital>
 - **Twitter**: [@automatosx](https://twitter.com/automatosx)

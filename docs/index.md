@@ -14,7 +14,7 @@ hero:
       link: /guide/introduction
     - theme: alt
       text: View on GitHub
-      link: https://github.com/defai-sg/automatosx
+      link: https://github.com/defai-digital/automatosx
     - theme: alt
       text: API Reference
       link: /api/
@@ -50,13 +50,13 @@ features:
 
 ```bash
 # Install
-npm install @defai.sg/automatosx
+npm install @defai.digital/automatosx
 
 # Initialize project
-npx @defai.sg/automatosx init
+npx @defai.digital/automatosx init
 
 # Create your first agent
-npx @defai.sg/automatosx run assistant "Help me write a README"
+npx @defai.digital/automatosx run assistant "Help me write a README"
 ```
 
 ## Why AutomatosX v4.0?
@@ -85,7 +85,7 @@ npx @defai.sg/automatosx run assistant "Help me write a README"
 ### 1. Install AutomatosX
 
 ```bash
-npm install @defai.sg/automatosx
+npm install @defai.digital/automatosx
 # or
 pnpm add automatosx
 # or
@@ -95,7 +95,7 @@ yarn add automatosx
 ### 2. Initialize Your Project
 
 ```bash
-npx @defai.sg/automatosx init
+npx @defai.digital/automatosx init
 ```
 
 This creates:
@@ -108,13 +108,13 @@ This creates:
 ### 3. Configure Providers
 
 ```bash
-npx @defai.sg/automatosx config --set providers.claude.apiKey --value "your-api-key"
+npx @defai.digital/automatosx config --set providers.claude.apiKey --value "your-api-key"
 ```
 
 ### 4. Run Your First Agent
 
 ```bash
-npx @defai.sg/automatosx run assistant "What is the weather like?"
+npx @defai.digital/automatosx run assistant "What is the weather like?"
 ```
 
 </div>
@@ -129,4 +129,4 @@ For now, please use [GitHub Issues](https://github.com/yourusername/automatosx/i
 
 ## License
 
-[MIT License](https://github.com/defai-sg/automatosx/blob/main/LICENSE) © 2024-present AutomatosX Team
+[MIT License](https://github.com/defai-digital/automatosx/blob/main/LICENSE) © 2024-present AutomatosX Team

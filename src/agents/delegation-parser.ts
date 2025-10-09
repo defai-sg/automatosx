@@ -179,6 +179,18 @@ export class DelegationParser {
         continue;
       }
 
+      // Skip if in quoted text (e.g., examples in documentation)
+      if (this.isInQuotedText(response, match.index)) {
+        logger.debug('Skipping quoted text', { toAgent, position: match.index });
+        continue;
+      }
+
+      // Skip if part of documentation examples
+      if (this.isDocumentationExample(response, match.index)) {
+        logger.debug('Skipping documentation example', { toAgent, position: match.index });
+        continue;
+      }
+
       // Resolve agent name (supports display names like "Oliver" → "devops")
       if (this.profileLoader) {
         try {
@@ -287,6 +299,101 @@ export class DelegationParser {
 
     if (singleBacktickCount % 2 === 1) {
       return true; // Inside inline code on current line
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if position is within quoted text (surrounded by " or ')
+   * This helps avoid parsing delegation examples in documentation.
+   *
+   * @private
+   */
+  private isInQuotedText(text: string, position: number): boolean {
+    // Get context before and after the match (up to 200 chars each)
+    const before = text.substring(Math.max(0, position - 200), position);
+    const after = text.substring(position, Math.min(text.length, position + 200));
+
+    // Check if the match is enclosed in quotes on the same or adjacent lines
+    // Look for opening quote in before text
+    const lastDoubleQuote = before.lastIndexOf('"');
+    const lastSingleQuote = before.lastIndexOf("'");
+    const lastNewline = before.lastIndexOf('\n');
+
+    // If we found a quote after the last newline, check for closing quote
+    if (lastDoubleQuote > lastNewline) {
+      const closingDoubleQuote = after.indexOf('"');
+      if (closingDoubleQuote !== -1 && closingDoubleQuote < after.indexOf('\n\n')) {
+        return true; // Enclosed in double quotes
+      }
+    }
+
+    if (lastSingleQuote > lastNewline) {
+      const closingSingleQuote = after.indexOf("'");
+      if (closingSingleQuote !== -1 && closingSingleQuote < after.indexOf('\n\n')) {
+        return true; // Enclosed in single quotes
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if position is part of documentation examples
+   * Detects patterns like:
+   * - Lines starting with "Example:", "範例:", "Supported syntaxes:"
+   * - Numbered lists with quoted text: 1. "...", 2. "...", etc.
+   * - Lines preceded by "// " comments
+   * - Test code patterns: it(, test(, describe(, async () =>
+   *
+   * @private
+   */
+  private isDocumentationExample(text: string, position: number): boolean {
+    // Get context before and after the match
+    const before = text.substring(Math.max(0, position - 500), position);  // Increased from 300
+    const after = text.substring(position, Math.min(text.length, position + 200));
+
+    // Split into lines for analysis
+    const lines = before.split('\n');
+    const recentLines = lines.slice(-10); // Last 10 lines including current (increased from 5)
+
+    // Check for example markers in recent lines
+    const exampleMarkers = /(?:example|範例|supported syntaxes|syntaxes|patterns?|用法)[:：]/i;
+    if (recentLines.some(line => exampleMarkers.test(line))) {
+      return true;
+    }
+
+    // Check if current line is part of a numbered list (with or without quotes)
+    // Pattern: "1. " or "2) " at start of line
+    const currentLine = recentLines[recentLines.length - 1] || '';
+    if (/^\s*\d+[.)]\s+/.test(currentLine)) {
+      // Check if previous lines also have numbering (indicates a list)
+      const hasNumberedContext = recentLines.slice(-5).some(line => /^\s*\d+[.)]\s+/.test(line));
+      if (hasNumberedContext) {
+        return true;
+      }
+    }
+
+    // Check if preceded by comment markers (// or #)
+    if (/^\s*(?:\/\/|#)\s*\d+[.)]\s*/.test(currentLine)) {
+      return true;
+    }
+
+    // Check for test code patterns in surrounding context
+    // Look for: it(, test(, describe(, expect(, async () =>, function()
+    const testCodePatterns = /(?:it|test|describe|expect)\s*\(|async\s*\(\)\s*=>|function\s*\(/i;
+    if (testCodePatterns.test(before) || testCodePatterns.test(after)) {
+      return true;
+    }
+
+    // Check if the match is part of a string literal in code
+    // Look for patterns like: 'text...@agent...' or "text...@agent..."
+    // where the quote starts before the match and ends after it
+    const combinedContext = before.slice(-100) + after.slice(0, 100);
+    const stringLiteralPattern = /['"`][^'"`]{0,100}@[a-zA-Z0-9-_]+[^'"`]{0,100}['"`]/;
+    if (stringLiteralPattern.test(combinedContext)) {
+      return true;
     }
 
     return false;

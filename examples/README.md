@@ -431,4 +431,4 @@ Share your agents and abilities:
 
 ---
 
-**Need help?** Ask in [GitHub Discussions](https://github.com/defai-sg/automatosx/discussions) or join our [Discord](https://discord.gg/automatosx).
+**Need help?** Ask in [GitHub Discussions](https://github.com/defai-digital/automatosx/discussions) or join our [Discord](https://discord.gg/automatosx).

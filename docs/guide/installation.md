@@ -46,7 +46,7 @@ Choose your preferred package manager:
 ### Method 1: npm (Recommended for most users)
 
 ```bash
-npm install @defai.sg/automatosx
+npm install @defai.digital/automatosx
 ```
 
 ### Method 2: pnpm (Recommended for performance)
@@ -70,7 +70,7 @@ yarn add automatosx
 Install globally for system-wide access:
 
 ```bash
-npm install -g @defai.sg/automatosx
+npm install -g @defai.digital/automatosx
 # or
 pnpm add -g automatosx
 # or
@@ -84,14 +84,14 @@ yarn global add automatosx
 Check that AutomatosX is installed correctly:
 
 ```bash
-npx @defai.sg/automatosx --version
+npx @defai.digital/automatosx --version
 # Should output: 4.0.0
 ```
 
 Show help to see available commands:
 
 ```bash
-npx @defai.sg/automatosx --help
+npx @defai.digital/automatosx --help
 ```
 
 Expected output:
@@ -122,7 +122,7 @@ Global Options:
 Create a new AutomatosX project:
 
 ```bash
-npx @defai.sg/automatosx init
+npx @defai.digital/automatosx init
 ```
 
 This command creates:
@@ -237,7 +237,7 @@ codex --version
 Check your configuration:
 
 ```bash
-npx @defai.sg/automatosx status
+npx @defai.digital/automatosx status
 ```
 
 Expected output:
@@ -272,7 +272,7 @@ Status: Ready ✓
 Run a simple test:
 
 ```bash
-npx @defai.sg/automatosx run assistant "Say hello"
+npx @defai.digital/automatosx run assistant "Say hello"
 ```
 
 Expected output:
@@ -291,8 +291,8 @@ Expected output:
 
 **Solutions**:
 
-1. Use `npx @defai.sg/automatosx` instead of `automatosx`
-2. Install globally: `npm install -g @defai.sg/automatosx`
+1. Use `npx @defai.digital/automatosx` instead of `automatosx`
+2. Install globally: `npm install -g @defai.digital/automatosx`
 3. Add `./node_modules/.bin` to your PATH
 
 ### API Key Not Working
@@ -332,7 +332,7 @@ Expected output:
 
 **Solutions**:
 
-1. Reinstall: `npm install @defai.sg/automatosx`
+1. Reinstall: `npm install @defai.digital/automatosx`
 2. Clear node_modules: `rm -rf node_modules && npm install`
 3. Check `package.json` includes automatosx
 
@@ -368,7 +368,7 @@ Works out of the box. Install via Homebrew:
 
 ```bash
 brew install node@20
-npm install @defai.sg/automatosx
+npm install @defai.digital/automatosx
 ```
 
 ### Linux

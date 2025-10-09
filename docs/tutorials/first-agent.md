@@ -19,7 +19,7 @@ In this tutorial, you'll create a **Code Reviewer Agent** that:
 
 ## Prerequisites
 
-- AutomatosX installed (`npm install -g @defai.sg/automatosx`)
+- AutomatosX installed (`npm install -g @defai.digital/automatosx`)
 - Project initialized (`automatosx init`)
 - Basic understanding of YAML
 - Familiarity with your preferred AI provider (Claude, Gemini, etc.)
@@ -688,4 +688,4 @@ You've learned to:
 
 ---
 
-**Need help?** Check [Troubleshooting Guide](../troubleshooting/common-issues.md) or [open an issue](https://github.com/defai-sg/automatosx/issues).
+**Need help?** Check [Troubleshooting Guide](../troubleshooting/common-issues.md) or [open an issue](https://github.com/defai-digital/automatosx/issues).

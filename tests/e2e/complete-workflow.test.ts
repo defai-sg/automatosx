@@ -116,7 +116,7 @@ describe('E2E Complete Workflows', () => {
     it('should persist configuration changes', async () => {
       // Step 1: Read initial config
       const config1 = await readConfig(env);
-      expect(config1.version).toBe('4.0.0');
+      expect(config1.version).toBe('5.0.0');
 
       // Step 2: Update config via CLI
       const configResult = await execCLI(env, [

@@ -495,4 +495,79 @@ describe('DelegationParser', () => {
       }
     });
   });
+
+  describe('Documentation Example Filtering (v5.0.1)', () => {
+    it('should skip delegations in quoted text', async () => {
+      const response = `
+        Here are some examples of delegation syntax:
+        1. "DELEGATE TO frontend: Create login UI"
+        2. "@frontend Create login UI"
+        3. "Please ask backend to implement auth API"
+
+        These are just examples, not actual delegations.
+      `;
+      const delegations = await parser.parse(response, 'coordinator');
+
+      // Should not parse any of the quoted examples
+      expect(delegations).toHaveLength(0);
+    });
+
+    it('should skip delegations in documentation examples', async () => {
+      const response = `
+        Supported syntaxes for delegation:
+        1. @frontend Create UI
+        2. DELEGATE TO backend: Implement API
+        3. Please ask database to design schema
+      `;
+      const delegations = await parser.parse(response, 'coordinator');
+
+      // Should skip examples after "Supported syntaxes:" with numbered list
+      expect(delegations).toHaveLength(0);
+    });
+
+    it('should skip delegations in test code patterns', async () => {
+      const response = `
+        it('should parse "@frontend Create UI"', async () => {
+          const response = '@frontend Create login component';
+          expect(result).toBeTruthy();
+        });
+      `;
+      const delegations = await parser.parse(response, 'backend');
+
+      // Should skip test code
+      expect(delegations).toHaveLength(0);
+    });
+
+    it('should parse actual delegations but skip examples', async () => {
+      const response = `
+        I'll delegate this task to the frontend team.
+
+        @frontend Create the user dashboard with real-time updates.
+
+        Example delegation syntax:
+        "@frontend Create login UI"
+
+        The above is just an example.
+      `;
+      const delegations = await parser.parse(response, 'coordinator');
+
+      // Should parse only the actual delegation, not the example
+      expect(delegations).toHaveLength(1);
+      expect(delegations[0]?.toAgent).toBe('frontend');
+      expect(delegations[0]?.task).toContain('dashboard');
+    });
+
+    it('should handle numbered lists with quoted examples', async () => {
+      const response = `
+        Delegation patterns:
+        1. "@frontend Create UI"
+        2. "DELEGATE TO backend: API"
+        3. "Request database: schema"
+      `;
+      const delegations = await parser.parse(response, 'coordinator');
+
+      // Should skip all numbered list examples
+      expect(delegations).toHaveLength(0);
+    });
+  });
 });

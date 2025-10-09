@@ -565,4 +565,4 @@ User → Claude Code → AutomatosX → AI Provider
 
 ---
 
-**Questions?** Check the [Troubleshooting Guide](../troubleshooting/common-issues.md) or [open an issue](https://github.com/defai-sg/automatosx/issues).
+**Questions?** Check the [Troubleshooting Guide](../troubleshooting/common-issues.md) or [open an issue](https://github.com/defai-digital/automatosx/issues).

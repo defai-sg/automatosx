@@ -27,7 +27,7 @@ import { printError } from '../../utils/error-formatter.js';
 
 // Read version from package.json using require (works in both dev and installed)
 const require = createRequire(import.meta.url);
-let VERSION = '4.9.8'; // Fallback version
+let VERSION = '4.11.0'; // Fallback version
 try {
   const packageJson = require('../../../package.json');
   VERSION = packageJson.version;

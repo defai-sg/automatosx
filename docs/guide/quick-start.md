@@ -32,13 +32,13 @@ AutomatosX is an **agent execution tool** designed to run inside **Claude Code**
 Simply install AutomatosX via npm:
 
 ```bash
-npm install -g @defai.sg/automatosx
+npm install -g @defai.digital/automatosx
 ```
 
 Or use npx without installation:
 
 ```bash
-npx @defai.sg/automatosx --version
+npx @defai.digital/automatosx --version
 ```
 
 **That's it!** You're ready to use AutomatosX.
@@ -49,7 +49,7 @@ If you want to contribute to AutomatosX development:
 
 ```bash
 # Clone repository
-git clone https://github.com/defai-sg/automatosx.git
+git clone https://github.com/defai-digital/automatosx.git
 cd automatosx
 
 # Install dependencies
@@ -345,10 +345,10 @@ A: All data is stored in `.automatosx/` directory in your project root. This inc
 
 ```bash
 # If installed globally
-npm install -g @defai.sg/automatosx
+npm install -g @defai.digital/automatosx
 
 # Or use npx
-npx @defai.sg/automatosx --version
+npx @defai.digital/automatosx --version
 ```
 
 **Provider connection failed**
@@ -379,7 +379,7 @@ For more help, see [Troubleshooting Guide](../troubleshooting/common-issues.md).
 ## Getting Help
 
 - **Documentation**: [docs.automatosx.dev](https://docs.automatosx.dev) (coming soon)
-- **GitHub Issues**: [github.com/defai-sg/automatosx/issues](https://github.com/defai-sg/automatosx/issues)
+- **GitHub Issues**: [github.com/defai-digital/automatosx/issues](https://github.com/defai-digital/automatosx/issues)
 - **Examples**: Check `.automatosx/agents/` and `.automatosx/abilities/` after running `init`
 
 ---

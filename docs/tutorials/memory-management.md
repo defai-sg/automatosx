@@ -74,7 +74,7 @@ Memory System (v4.11.0+)
 ### Install AutomatosX
 
 ```bash
-npm install -g @defai.sg/automatosx
+npm install -g @defai.digital/automatosx
 automatosx init
 ```
 
@@ -782,4 +782,4 @@ You've learned to:
 
 ---
 
-**Questions?** Check the [FAQ](../troubleshooting/faq.md) or [open an issue](https://github.com/defai-sg/automatosx/issues).
+**Questions?** Check the [FAQ](../troubleshooting/faq.md) or [open an issue](https://github.com/defai-digital/automatosx/issues).

@@ -314,23 +314,53 @@ ls -la .automatosx/abilities/
 
 ### Agent execution timeout
 
-**Symptom**: `Error: Execution timeout`
+**Symptom**: `Error: Request timeout after 300000ms` or `Provider codex execution failed`
+
+**Root Cause (v5.0.0 and earlier)**: Provider timeout (5 minutes) was shorter than agent timeout (15 minutes), causing premature failures.
 
 **Solution**:
 
-```bash
-# Increase timeout in agent profile
-cat > .automatosx/agents/assistant.yaml << EOF
-name: assistant
-description: General-purpose assistant
-timeout: 300000  # 5 minutes (default is 60000)
-abilities:
-  - search
-  - code_analysis
-EOF
+#### ✅ Recommended: Update to v5.0.1+
 
-# Or in config
-automatosx config --set agents.defaultTimeout --value 300000
+v5.0.1 fixes this issue by setting all provider timeouts to 15 minutes:
+
+```bash
+# Update to latest version
+npm install -g @defai.digital/automatosx@latest
+
+# Verify the version
+automatosx --version  # Should be 5.0.1 or higher
+```
+
+#### ⚙️ Manual Fix (if you can't update)
+
+```bash
+# Set all provider timeouts to 15 minutes (900000ms)
+automatosx config set providers.claude-code.timeout 900000
+automatosx config set providers.gemini-cli.timeout 900000
+automatosx config set providers.openai.timeout 900000
+
+# Verify the changes
+automatosx config show | grep -A2 "timeout"
+# All provider timeouts should show 900000
+```
+
+#### 📝 For very long-running tasks (30+ minutes)
+
+```bash
+# Increase both agent and provider timeouts
+automatosx config set execution.defaultTimeout 1800000  # 30 minutes
+automatosx config set providers.claude-code.timeout 1800000
+automatosx config set providers.gemini-cli.timeout 1800000
+automatosx config set providers.openai.timeout 1800000
+```
+
+**Verification**:
+
+```bash
+# Run a complex task to test
+automatosx run assistant "Perform comprehensive code review"
+# Should no longer timeout prematurely
 ```
 
 ### Path resolution errors
@@ -477,6 +507,74 @@ npm install -g automatosx
 npx automatosx --help
 ```
 
+### `Delegation cycle detected: agent -> agent -> agent`
+
+**Symptom**: Error message showing delegation cycles like `quality -> frontend -> frontend`
+
+**Cause (v5.0.0 and earlier)**: Delegation parser incorrectly parsed documentation examples, test code, or quoted text as actual delegation requests.
+
+**Example of False Positive**:
+```
+Agent response contains: '1. "@frontend Create login UI"' (example)
+→ Parsed as actual delegation ❌
+→ Caused delegation cycle
+```
+
+**Solution**:
+
+#### ✅ Update to v5.0.1+
+
+v5.0.1 includes improved delegation parsing that skips:
+- Quoted examples: `"@frontend Create UI"`
+- Documentation markers: "Example:", "Supported syntaxes:"
+- Numbered lists: `1. "...", 2. "..."`
+- Test code: `it('...', async () => ...)`
+
+```bash
+# Update to latest version
+npm install -g @defai.digital/automatosx@latest
+
+# Verify
+automatosx --version  # Should be 5.0.1 or higher
+```
+
+#### ⚙️ Workaround (if you can't update)
+
+Avoid including delegation syntax examples in your agent instructions or system prompts.
+
+### `fts5: syntax error near "."`
+
+**Symptom**: Memory search fails with `Search failed: fts5: syntax error near "."` or similar errors for special characters
+
+**Cause (v5.0.0 and earlier)**: FTS5 search was not sanitizing special characters properly (`.`, `%`, `()`, etc.)
+
+**Solution**:
+
+#### ✅ Update to v5.0.1+
+
+v5.0.1 includes enhanced FTS5 sanitization for 15+ special characters:
+
+```bash
+# Update to latest version
+npm install -g @defai.digital/automatosx@latest
+
+# Test with special characters
+automatosx memory add "Config file: config.json (port: 3000)"
+automatosx memory search "config.json"  # Now works!
+```
+
+#### ⚙️ Workaround (if you can't update)
+
+Remove special characters from your search queries:
+
+```bash
+# Instead of: "config.json settings"
+automatosx memory search "config json settings"
+
+# Instead of: "timeout (300ms)"
+automatosx memory search "timeout 300ms"
+```
+
 ---
 
 ## Getting More Help
@@ -488,7 +586,7 @@ If your issue is not covered here:
    - [FAQ.md](./FAQ.md) - Frequently asked questions
    - [API Documentation](./docs/) - Detailed API reference
 
-2. **Search Issues**: Check [GitHub Issues](https://github.com/defai-sg/automatosx/issues)
+2. **Search Issues**: Check [GitHub Issues](https://github.com/defai-digital/automatosx/issues)
 
 3. **Enable Debug Logging**:
 
@@ -504,11 +602,11 @@ If your issue is not covered here:
    npm --version
    ```
 
-5. **Report a Bug**: [Create an issue](https://github.com/defai-sg/automatosx/issues/new)
+5. **Report a Bug**: [Create an issue](https://github.com/defai-digital/automatosx/issues/new)
    - Include debug output
    - Include system info
    - Describe steps to reproduce
 
 6. **Join Community**:
    - Discord: [discord.gg/automatosx](https://discord.gg/automatosx)
-   - Discussions: [GitHub Discussions](https://github.com/defai-sg/automatosx/discussions)
+   - Discussions: [GitHub Discussions](https://github.com/defai-digital/automatosx/discussions)

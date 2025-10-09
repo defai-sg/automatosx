@@ -267,7 +267,7 @@ describe('Config Command', () => {
 
       expect(resetConfig.logging.level).toBe(DEFAULT_CONFIG.logging.level);
       expect(resetConfig.$schema).toBe('https://automatosx.dev/schema/config.json');
-      expect(resetConfig.version).toBe('4.0.0');
+      expect(resetConfig.version).toBe('5.0.0');
 
       consoleSpy.mockRestore();
     });

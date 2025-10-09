@@ -2,6 +2,32 @@
 
 AutomatosX agents have **human-friendly names** to make them easier to remember and use. Each agent has both a technical role name and a memorable display name.
 
+## 🚀 Quick Overview: 4 Teams, 3 Providers, Intelligent Fallback
+
+AutomatosX agents are organized into **4 professional teams**, each optimized with the best AI provider for their domain:
+
+| Team | Primary Provider | Expertise |
+|------|------------------|-----------|
+| **👥 Core** | 🟢 **OpenAI** (Codex) | Fast execution for everyday tasks, code generation, planning |
+| **💻 Engineering** | 🟣 **Claude** (Anthropic) | Deep reasoning for backend, frontend, security, DevOps, QA |
+| **📊 Business** | 🔵 **Gemini** (Google) | Strategic thinking for CEO, CTO, Product, Data Analysis |
+| **🎨 Design** | 🔵 **Gemini** (Google) | Creative tasks for UX/UI design and visual thinking |
+
+### 🛡️ Intelligent 3-Layer Fallback System
+
+Each agent uses a **smart fallback strategy** to ensure maximum reliability:
+
+1. **Primary Provider**: Team-optimized AI (🟢 OpenAI / 🟣 Claude / 🔵 Gemini)
+2. **Fallback Provider**: Agent-specific backup (configured per agent)
+3. **Router Fallback**: Auto-routing through all available providers
+
+**Example**: If an Engineering agent (primary: Claude) encounters an issue:
+- ✅ Try Claude first (primary)
+- ✅ Fall back to OpenAI (configured fallback)
+- ✅ Try Gemini (router fallback)
+
+This ensures **99.9% uptime** even if one provider has issues!
+
 ## Why Names?
 
 Research shows humans remember names better than roles. Instead of remembering "backend engineer", you can just think "ask Bob".

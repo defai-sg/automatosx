@@ -1,14 +1,105 @@
 /**
- * Configuration types
+ * Configuration types for AutomatosX v5.0+
+ *
+ * Complete configuration system with YAML support.
+ * All hardcoded values moved to configuration.
  */
 
 import type { LogLevel } from './logger.js';
+
+// ========================================
+// Provider Configuration
+// ========================================
+
+export interface ProviderHealthCheckConfig {
+  enabled: boolean;
+  interval: number;  // milliseconds
+  timeout: number;   // milliseconds
+}
+
+/**
+ * Provider default model parameters (v5.0+)
+ */
+export interface ProviderDefaultsConfig {
+  maxTokens?: number;      // Default max output tokens
+  temperature?: number;    // Default temperature (0-1)
+  topP?: number;           // Default top_p (0-1)
+}
 
 export interface ProviderConfig {
   enabled: boolean;
   priority: number;
   timeout: number;
   command: string;
+  healthCheck?: ProviderHealthCheckConfig;
+  defaults?: ProviderDefaultsConfig;  // v5.0: Default model parameters
+}
+
+// ========================================
+// Execution Configuration
+// ========================================
+
+export interface RetryConfig {
+  maxAttempts: number;
+  initialDelay: number;      // milliseconds
+  maxDelay: number;          // milliseconds
+  backoffFactor: number;     // exponential backoff multiplier
+  retryableErrors?: string[]; // error codes/messages that trigger retry (optional, has defaults)
+}
+
+export interface ExecutionProviderConfig {
+  maxWaitMs: number;      // max wait time for provider response
+  fallbackDelay?: number; // v5.0: delay before trying fallback provider (ms)
+}
+
+export interface ExecutionConfig {
+  defaultTimeout: number;  // default execution timeout (ms)
+  retry: RetryConfig;
+  provider: ExecutionProviderConfig;
+}
+
+// ========================================
+// Orchestration Configuration
+// ========================================
+
+export interface SessionConfig {
+  maxSessions: number;         // max sessions in memory
+  maxMetadataSize: number;     // max metadata size (bytes)
+  saveDebounce: number;        // save debounce delay (ms)
+  cleanupAfterDays: number;    // cleanup old sessions after N days
+  maxUuidAttempts: number;     // max UUID generation attempts
+  persistPath: string;         // session persistence path
+}
+
+export interface DelegationConfig {
+  maxDepth: number;            // max delegation chain depth
+  timeout: number;             // delegation timeout (ms)
+  enableCycleDetection: boolean;
+}
+
+export interface WorkspaceSystemConfig {
+  maxFileSize: number;         // max file size (bytes)
+  maxFiles: number;            // max files per workspace
+  cleanupAfterDays: number;    // cleanup old workspaces after N days
+  autoCleanup: boolean;
+  permissions: number;         // Unix permissions (e.g., 0o700)
+  basePath: string;
+}
+
+export interface OrchestrationConfigSystem {
+  session: SessionConfig;
+  delegation: DelegationConfig;
+  workspace: WorkspaceSystemConfig;
+}
+
+// ========================================
+// Memory Configuration
+// ========================================
+
+export interface MemorySearchConfig {
+  defaultLimit: number;  // default search result limit
+  maxLimit: number;      // max search result limit
+  timeout: number;       // search timeout (ms)
 }
 
 export interface MemoryConfig {
@@ -16,7 +107,150 @@ export interface MemoryConfig {
   persistPath: string;
   autoCleanup: boolean;
   cleanupDays: number;
+  search?: MemorySearchConfig;  // Optional for backward compatibility
 }
+
+// ========================================
+// Abilities Configuration
+// ========================================
+
+export interface AbilitiesCacheConfig {
+  enabled: boolean;
+  maxEntries: number;
+  ttl: number;           // time to live (ms)
+  maxSize: number;       // max cache size (bytes)
+  cleanupInterval: number; // cleanup interval (ms)
+}
+
+export interface AbilitiesLimitsConfig {
+  maxFileSize: number;   // max ability file size (bytes)
+}
+
+export interface AbilitiesConfig {
+  basePath: string;
+  fallbackPath: string;
+  cache: AbilitiesCacheConfig;
+  limits: AbilitiesLimitsConfig;
+}
+
+// ========================================
+// Logging Configuration
+// ========================================
+
+export interface LoggingRetentionConfig {
+  maxSizeBytes: number;
+  maxAgeDays: number;
+  compress: boolean;
+}
+
+export interface LoggingConfig {
+  level: LogLevel;
+  path: string;
+  console: boolean;
+  retention?: LoggingRetentionConfig;  // Optional for backward compatibility
+}
+
+// ========================================
+// Performance Configuration
+// ========================================
+
+export interface CacheConfig {
+  enabled: boolean;
+  maxEntries: number;
+  ttl: number;           // time to live (ms)
+  cleanupInterval: number; // cleanup interval (ms)
+}
+
+export interface ProfileCacheConfig extends CacheConfig {}
+
+export interface TeamCacheConfig extends CacheConfig {}
+
+export interface ProviderCacheConfig extends CacheConfig {}
+
+export interface RateLimitConfig {
+  enabled: boolean;
+  requestsPerMinute: number;
+  burstSize: number;
+}
+
+export interface PerformanceConfig {
+  profileCache: ProfileCacheConfig;
+  teamCache: TeamCacheConfig;
+  providerCache: ProviderCacheConfig;
+  rateLimit: RateLimitConfig;
+}
+
+// ========================================
+// Advanced Configuration
+// ========================================
+
+export interface EmbeddingConfig {
+  timeout: number;
+  retryDelay: number;
+  dimensions: number;
+  maxRetries: number;
+}
+
+export interface SecurityConfig {
+  enablePathValidation: boolean;
+  allowedExtensions: string[];
+}
+
+export interface DevelopmentConfig {
+  mockProviders: boolean;
+  profileMode: boolean;
+}
+
+export interface AdvancedConfig {
+  embedding?: EmbeddingConfig;
+  security: SecurityConfig;
+  development: DevelopmentConfig;
+}
+
+// ========================================
+// Integration Configuration (v5.5+ VS Code)
+// ========================================
+
+export interface VSCodeIntegrationConfig {
+  enabled: boolean;
+  apiPort: number;
+  autoStart: boolean;
+  outputPanel: boolean;
+  notifications: boolean;
+}
+
+export interface IntegrationConfig {
+  vscode: VSCodeIntegrationConfig;
+}
+
+// ========================================
+// CLI Configuration (Optional)
+// ========================================
+
+export interface CLIRunConfig {
+  defaultMemory: boolean;
+  defaultSaveMemory: boolean;
+  defaultFormat: 'text' | 'json' | 'markdown';
+  defaultVerbose: boolean;
+}
+
+export interface CLISessionConfig {
+  defaultShowAgents: boolean;
+}
+
+export interface CLIMemoryConfig {
+  defaultLimit: number;
+}
+
+export interface CLIConfig {
+  run: CLIRunConfig;
+  session: CLISessionConfig;
+  memory: CLIMemoryConfig;
+}
+
+// ========================================
+// Legacy (for backward compatibility)
+// ========================================
 
 export interface WorkspaceConfig {
   basePath: string;
@@ -25,63 +259,249 @@ export interface WorkspaceConfig {
   maxFiles: number;
 }
 
-export interface LoggingConfig {
-  level: LogLevel;
-  path: string;
-  console: boolean;
-}
-
 export interface OpenAIConfig {
   apiKey?: string;
   model?: string;
 }
 
+// ========================================
+// Main Configuration
+// ========================================
+
 export interface AutomatosXConfig {
   $schema?: string;
   version?: string;
   providers: Record<string, ProviderConfig>;
+  execution?: ExecutionConfig;
+  orchestration?: OrchestrationConfigSystem;
   memory: MemoryConfig;
-  workspace: WorkspaceConfig;
+  abilities?: AbilitiesConfig;
+  workspace: WorkspaceConfig;  // legacy, kept for backward compatibility
   logging: LoggingConfig;
-  openai?: OpenAIConfig;
+  performance?: PerformanceConfig;
+  advanced?: AdvancedConfig;
+  integration?: IntegrationConfig;
+  cli?: CLIConfig;
+  openai?: OpenAIConfig;  // legacy
 }
+
+// ========================================
+// Default Configuration
+// ========================================
 
 export const DEFAULT_CONFIG: AutomatosXConfig = {
   providers: {
     'claude-code': {
       enabled: true,
       priority: 3,
-      timeout: 900000,
-      command: 'claude'
+      timeout: 900000,  // 15 minutes (v5.0.1: increased from 5 min to match execution timeout)
+      command: 'claude',
+      healthCheck: {
+        enabled: true,
+        interval: 300000,  // 5 minutes (v5.0: reduced frequency from 1 min)
+        timeout: 5000      // 5 seconds
+      },
+      defaults: {
+        maxTokens: 4096,      // v5.0: Default max tokens for Claude
+        temperature: 0.7,
+        topP: 1.0
+      }
     },
     'gemini-cli': {
       enabled: true,
       priority: 2,
-      timeout: 900000,
-      command: 'gemini'
+      timeout: 900000,  // 15 minutes (v5.0.1: increased from 5 min to match execution timeout)
+      command: 'gemini',
+      healthCheck: {
+        enabled: true,
+        interval: 300000,  // 5 minutes (v5.0: reduced frequency)
+        timeout: 5000
+      },
+      defaults: {
+        maxTokens: 8192,      // v5.0: Gemini 1.5 has larger default
+        temperature: 0.7,
+        topP: 1.0
+      }
     },
     'openai': {
       enabled: true,
       priority: 1,
-      timeout: 900000,
-      command: 'codex'
+      timeout: 900000,  // 15 minutes (v5.0.1: increased from 5 min to match execution timeout)
+      command: 'codex',
+      healthCheck: {
+        enabled: true,
+        interval: 300000,  // 5 minutes (v5.0: reduced frequency)
+        timeout: 5000
+      },
+      defaults: {
+        maxTokens: 4096,      // v5.0: Default max tokens for OpenAI
+        temperature: 0.7,
+        topP: 1.0
+      }
     }
   },
+
+  execution: {
+    defaultTimeout: 900000,  // 15 minutes
+    retry: {
+      maxAttempts: 3,
+      initialDelay: 1000,    // 1 second
+      maxDelay: 10000,       // 10 seconds
+      backoffFactor: 2,
+      retryableErrors: [
+        'ECONNREFUSED',
+        'ETIMEDOUT',
+        'ENOTFOUND',
+        'rate_limit',
+        'overloaded',
+        'timeout'
+      ]
+    },
+    provider: {
+      maxWaitMs: 60000,      // 1 minute
+      fallbackDelay: 5000    // v5.0: Wait 5s before trying fallback provider
+    }
+  },
+
+  orchestration: {
+    session: {
+      maxSessions: 100,
+      maxMetadataSize: 10240,     // 10 KB
+      saveDebounce: 1000,         // 1 second (v5.0: increased from 100ms to reduce I/O)
+      cleanupAfterDays: 7,
+      maxUuidAttempts: 100,
+      persistPath: '.automatosx/sessions'
+    },
+    delegation: {
+      maxDepth: 2,
+      timeout: 900000,  // 15 minutes
+      enableCycleDetection: true
+    },
+    workspace: {
+      maxFileSize: 10485760,  // 10 MB
+      maxFiles: 100,
+      cleanupAfterDays: 7,
+      autoCleanup: true,
+      permissions: 0o700,
+      basePath: '.automatosx/workspaces'
+    }
+  },
+
   memory: {
     maxEntries: 10000,
     persistPath: '.automatosx/memory',
     autoCleanup: true,
-    cleanupDays: 30
+    cleanupDays: 30,
+    search: {
+      defaultLimit: 10,
+      maxLimit: 100,
+      timeout: 5000  // 5 seconds
+    }
   },
+
+  abilities: {
+    basePath: '.automatosx/abilities',
+    fallbackPath: 'examples/abilities',
+    cache: {
+      enabled: true,
+      maxEntries: 50,
+      ttl: 600000,         // 10 minutes
+      maxSize: 5242880,    // 5 MB
+      cleanupInterval: 120000  // 2 minutes
+    },
+    limits: {
+      maxFileSize: 524288  // 500 KB
+    }
+  },
+
   workspace: {
     basePath: '.automatosx/workspaces',
     autoCleanup: true,
     cleanupDays: 7,
     maxFiles: 100
   },
+
   logging: {
     level: 'info',
     path: '.automatosx/logs',
-    console: true
+    console: true,
+    retention: {
+      maxSizeBytes: 104857600,  // 100 MB
+      maxAgeDays: 30,
+      compress: true
+    }
+  },
+
+  performance: {
+    profileCache: {
+      enabled: true,
+      maxEntries: 20,
+      ttl: 600000,         // 10 minutes (v5.0: standardized from 5 min)
+      cleanupInterval: 120000  // 2 minutes (v5.0: standardized)
+    },
+    teamCache: {
+      enabled: true,
+      maxEntries: 10,
+      ttl: 600000,         // 10 minutes
+      cleanupInterval: 120000  // 2 minutes
+    },
+    providerCache: {
+      enabled: true,       // v5.0: enabled by default (safe for deterministic responses)
+      maxEntries: 100,
+      ttl: 600000,         // 10 minutes (v5.0: reduced from 1 hour)
+      cleanupInterval: 120000  // 2 minutes (v5.0: standardized)
+    },
+    rateLimit: {
+      enabled: false,      // Keep disabled by default (opt-in)
+      requestsPerMinute: 60,
+      burstSize: 10
+    }
+  },
+
+  advanced: {
+    embedding: {
+      timeout: 30000,
+      retryDelay: 1000,
+      dimensions: 1536,
+      maxRetries: 3
+    },
+    security: {
+      enablePathValidation: true,
+      allowedExtensions: [
+        '.ts', '.js', '.tsx', '.jsx',
+        '.py', '.go', '.rs', '.java',
+        '.yaml', '.yml', '.json', '.toml',
+        '.md', '.txt', '.csv'
+      ]
+    },
+    development: {
+      mockProviders: false,
+      profileMode: false
+    }
+  },
+
+  integration: {
+    vscode: {
+      enabled: false,  // v5.5+ will enable
+      apiPort: 3000,
+      autoStart: true,
+      outputPanel: true,
+      notifications: true
+    }
+  },
+
+  cli: {
+    run: {
+      defaultMemory: true,
+      defaultSaveMemory: true,
+      defaultFormat: 'text',
+      defaultVerbose: false
+    },
+    session: {
+      defaultShowAgents: true
+    },
+    memory: {
+      defaultLimit: 10
+    }
   }
 };

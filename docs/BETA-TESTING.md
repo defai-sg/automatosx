@@ -29,7 +29,7 @@ Beta testing helps us:
 ### Option 1: Global Installation
 
 ```bash
-npm install -g @defai.sg/automatosx@beta
+npm install -g @defai.digital/automatosx@beta
 ```
 
 ### Option 2: Test in Isolated Project
@@ -38,7 +38,7 @@ npm install -g @defai.sg/automatosx@beta
 mkdir automatosx-beta-test
 cd automatosx-beta-test
 npm init -y
-npm install @defai.sg/automatosx@beta
+npm install @defai.digital/automatosx@beta
 ```
 
 ### Verify Installation
@@ -290,7 +290,7 @@ If you have time:
 
 ### Reporting Bugs
 
-Use [GitHub Issues](https://github.com/defai-sg/automatosx/issues/new):
+Use [GitHub Issues](https://github.com/defai-digital/automatosx/issues/new):
 
 **Title**: Brief description of the issue
 
@@ -332,7 +332,7 @@ Any other relevant information
 
 ### Reporting Feedback
 
-For general feedback, use [GitHub Discussions](https://github.com/defai-sg/automatosx/discussions):
+For general feedback, use [GitHub Discussions](https://github.com/defai-digital/automatosx/discussions):
 
 **Categories**:
 
@@ -438,16 +438,16 @@ Yes, use different directories:
 
 ```bash
 mkdir test-beta-1 && cd test-beta-1
-npm install @defai.sg/automatosx@4.0.0-beta.1
+npm install @defai.digital/automatosx@4.0.0-beta.1
 
 mkdir test-beta-2 && cd test-beta-2
-npm install @defai.sg/automatosx@4.0.0-beta.2
+npm install @defai.digital/automatosx@4.0.0-beta.2
 ```
 
 ### How do I revert to stable version?
 
 ```bash
-npm install -g @defai.sg/automatosx@3.1.5
+npm install -g @defai.digital/automatosx@3.1.5
 ```
 
 ### Will I be charged for API usage?
@@ -473,4 +473,4 @@ Your participation makes AutomatosX better for everyone. We appreciate your time
 
 ---
 
-**Questions?** Email <support@defai.digital> or ask in [GitHub Discussions](https://github.com/defai-sg/automatosx/discussions)
+**Questions?** Email <support@defai.digital> or ask in [GitHub Discussions](https://github.com/defai-digital/automatosx/discussions)

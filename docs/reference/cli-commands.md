@@ -891,4 +891,4 @@ export AUTOMATOSX_QUIET=true
 
 ---
 
-**Questions?** [Open an issue](https://github.com/defai-sg/automatosx/issues)
+**Questions?** [Open an issue](https://github.com/defai-digital/automatosx/issues)

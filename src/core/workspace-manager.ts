@@ -14,6 +14,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import type { AgentProfile } from '../types/agent.js';
+import type { WorkspaceSystemConfig } from '../types/config.js';
 import { WorkspaceError } from '../types/orchestration.js';
 import { logger } from '../utils/logger.js';
 
@@ -83,17 +84,26 @@ export class WorkspaceManager {
   private readonly sessionsRoot: string;
   private readonly persistentRoot: string;
 
-  /** Maximum file size for writeToSession (10 MB) */
-  private readonly MAX_FILE_SIZE = 10 * 1024 * 1024;
+  /** Maximum file size for writeToSession (from config) */
+  private readonly maxFileSize: number;
 
   /** UUID v4 validation regex (static for performance) */
   private static readonly UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-  constructor(projectDir: string) {
+  /**
+   * Create WorkspaceManager
+   *
+   * @param projectDir - Project directory path
+   * @param config - Workspace configuration (optional, defaults to 10MB max file size)
+   */
+  constructor(projectDir: string, config?: WorkspaceSystemConfig) {
     this.workspacesRoot = path.join(projectDir, '.automatosx', 'workspaces');
     this.sharedRoot = path.join(this.workspacesRoot, 'shared');
     this.sessionsRoot = path.join(this.sharedRoot, 'sessions');
     this.persistentRoot = path.join(this.sharedRoot, 'persistent');
+
+    // v5.0: Use config value instead of hardcoded constant
+    this.maxFileSize = config?.maxFileSize ?? 10 * 1024 * 1024; // Default: 10 MB
   }
 
   /**
@@ -297,9 +307,9 @@ export class WorkspaceManager {
 
     // Check file size (prevent disk quota exhaustion)
     const fileSize = Buffer.byteLength(content, 'utf-8');
-    if (fileSize > this.MAX_FILE_SIZE) {
+    if (fileSize > this.maxFileSize) {
       throw new WorkspaceError(
-        `File too large: ${fileSize} bytes (max: ${this.MAX_FILE_SIZE} bytes)`,
+        `File too large: ${fileSize} bytes (max: ${this.maxFileSize} bytes)`,
         fullPath,
         'quota_exceeded'
       );
@@ -437,9 +447,9 @@ export class WorkspaceManager {
 
     // Check file size (prevent disk quota exhaustion)
     const fileSize = Buffer.byteLength(content, 'utf-8');
-    if (fileSize > this.MAX_FILE_SIZE) {
+    if (fileSize > this.maxFileSize) {
       throw new WorkspaceError(
-        `File too large: ${fileSize} bytes (max: ${this.MAX_FILE_SIZE} bytes)`,
+        `File too large: ${fileSize} bytes (max: ${this.maxFileSize} bytes)`,
         fullPath,
         'quota_exceeded'
       );

@@ -1,5 +1,5 @@
 {
-  "name": "@defai.sg/automatosx",
+  "name": "@defai.digital/automatosx",
   "version": "5.0.0",
   "description": "AI Agent Orchestration Platform",
   "type": "module",
@@ -74,10 +74,10 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/defai-sg/automatosx.git"
+    "url": "https://github.com/defai-digital/automatosx.git"
   },
   "bugs": {
-    "url": "https://github.com/defai-sg/automatosx/issues"
+    "url": "https://github.com/defai-digital/automatosx/issues"
   },
   "homepage": "https://automatosx.com",
   "overrides": {

@@ -3,7 +3,7 @@
 > **The control tower for shipping customer-facing ideas—without the chaos**
 > Orchestrate specialized AI agents to move work from slide decks to production, keeping product, engineering, and stakeholders in sync.
 
-[![npm version](https://img.shields.io/npm/v/@defai.sg/automatosx.svg)](https://www.npmjs.com/package/@defai.sg/automatosx)
+[![npm version](https://img.shields.io/npm/v/@defai.digital/automatosx.svg)](https://www.npmjs.com/package/@defai.digital/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](#production-ready-toolkit)
@@ -15,11 +15,19 @@
 - ⚡ **Shortens idea-to-impact gap** – organized workflows mean faster onboarding, tighter handoffs, confident timelines
 - 💰 **10× more cost-effective** – CLI-based orchestration beats expensive assistants APIs
 
+**🤖 4 Specialized Teams**: AutomatosX agents are [organized into 4 professional teams](https://github.com/defai-digital/automatosx/blob/main/examples/AGENTS_INFO.md) (Core, Engineering, Business, Design), each optimized with the best AI provider for their domain—**Claude** for deep reasoning, **Gemini** for strategic thinking, and **OpenAI** for fast execution. Every team uses intelligent fallback strategies to ensure maximum reliability across all your workflows.
+
 **Status**: ✅ Production Release · **Latest**: October 2025
 
 ---
 
 ## 📣 What's New
+
+**v5.0.1 (October 2025)**: Critical Bug Fixes
+- 🐛 **Provider timeout fixed** - Complex tasks no longer timeout (15 min timeout now consistent)
+- 🐛 **Delegation parser improved** - Zero false positives from documentation examples
+- 🐛 **FTS5 search stabilized** - Handles all special characters reliably
+- ✅ **1050 tests passing** - 100% pass rate with comprehensive test coverage
 
 **v5.0.0 (October 2025)**: Agent Template System
 
@@ -54,13 +62,13 @@ ax agent show backend
 
 For detailed release notes, new features, and upgrade instructions, see:
 
-- 📋 **[Release Notes](https://github.com/defai-sg/automatosx/releases)** - Latest updates and changes
+- 📋 **[Release Notes](https://github.com/defai-digital/automatosx/releases)** - Latest updates and changes
 - 📝 **[Changelog](CHANGELOG.md)** - Complete version history
 
 **Quick Install:**
 
 ```bash
-npm install -g @defai.sg/automatosx
+npm install -g @defai.digital/automatosx
 ```
 
 ---
@@ -176,9 +184,9 @@ See `examples/` for ready-to-run agent profiles.
 ### 1. Install
 
 ```bash
-npm install -g @defai.sg/automatosx
+npm install -g @defai.digital/automatosx
 # or run without installing
-npx @defai.sg/automatosx --help
+npx @defai.digital/automatosx --help
 ```
 
 ### 2. Setup Provider CLI (one-time)
@@ -541,9 +549,9 @@ metadata:
 - **Guides**: `docs/guide/` (installation, quick start, core concepts)
 - **FAQ**: `FAQ.md`
 - **Troubleshooting**: `TROUBLESHOOTING.md`
-- **Issues**: [GitHub Issues](https://github.com/defai-sg/automatosx/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/defai-sg/automatosx/discussions)
-- **npm**: <https://www.npmjs.com/package/@defai.sg/automatosx>
+- **Issues**: [GitHub Issues](https://github.com/defai-digital/automatosx/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/defai-digital/automatosx/discussions)
+- **npm**: <https://www.npmjs.com/package/@defai.digital/automatosx>
 - **Website**: <https://automatosx.com>
 
 ---
@@ -575,7 +583,7 @@ We welcome contributions! Please:
 **Development setup:**
 
 ```bash
-git clone https://github.com/defai-sg/automatosx.git
+git clone https://github.com/defai-digital/automatosx.git
 cd automatosx
 npm install
 npm test

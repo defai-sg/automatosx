@@ -3,7 +3,8 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { AgentExecutor, type RetryConfig } from '../../src/agents/executor.js';
+import { AgentExecutor } from '../../src/agents/executor.js';
+import type { RetryConfig } from '../../src/types/config.js';
 import type { ExecutionContext } from '../../src/types/agent.js';
 import type { BaseProvider } from '../../src/providers/base-provider.js';
 

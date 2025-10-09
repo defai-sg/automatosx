@@ -202,7 +202,8 @@ describe('Config Management', () => {
       };
 
       const errors = validateConfig(config);
-      expect(errors.some(e => e.includes('priority must be >= 1'))).toBe(true);
+      // v5.0: Enhanced validation with type checking
+      expect(errors.some(e => e.includes('priority must be a positive integer'))).toBe(true);
     });
 
     it('should detect invalid provider timeout', () => {
@@ -261,7 +262,8 @@ describe('Config Management', () => {
       };
 
       const errors = validateConfig(config);
-      expect(errors.some(e => e.includes('maxEntries must be >= 1'))).toBe(true);
+      // v5.0: Enhanced validation with type checking
+      expect(errors.some(e => e.includes('maxEntries must be a positive integer'))).toBe(true);
     });
 
     it('should detect invalid memory.cleanupDays', () => {
@@ -287,7 +289,8 @@ describe('Config Management', () => {
       };
 
       const errors = validateConfig(config);
-      expect(errors.some(e => e.includes('Memory: cleanupDays must be >= 1'))).toBe(true);
+      // v5.0: Enhanced validation with type checking
+      expect(errors.some(e => e.includes('cleanupDays must be a positive integer'))).toBe(true);
     });
 
     it('should detect invalid workspace.cleanupDays', () => {
@@ -313,7 +316,8 @@ describe('Config Management', () => {
       };
 
       const errors = validateConfig(config);
-      expect(errors.some(e => e.includes('Workspace: cleanupDays must be >= 1'))).toBe(true);
+      // v5.0: Enhanced validation with type checking
+      expect(errors.some(e => e.includes('cleanupDays must be a positive integer'))).toBe(true);
     });
 
     it('should detect invalid workspace.maxFiles', () => {
@@ -339,7 +343,8 @@ describe('Config Management', () => {
       };
 
       const errors = validateConfig(config);
-      expect(errors.some(e => e.includes('maxFiles must be >= 1'))).toBe(true);
+      // v5.0: Enhanced validation with type checking
+      expect(errors.some(e => e.includes('maxFiles must be a positive integer'))).toBe(true);
     });
 
     it('should detect multiple validation errors', () => {

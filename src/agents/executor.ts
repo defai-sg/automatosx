@@ -11,6 +11,7 @@
 import type { ExecutionContext } from '../types/agent.js';
 import type { ExecutionResponse } from '../types/provider.js';
 import type { DelegationRequest, DelegationResult } from '../types/orchestration.js';
+import type { RetryConfig } from '../types/config.js';
 import { DelegationError } from '../types/orchestration.js';
 import type { SessionManager } from '../core/session-manager.js';
 import type { WorkspaceManager } from '../core/workspace-manager.js';
@@ -22,14 +23,6 @@ import { randomUUID } from 'crypto';
 import { logger } from '../utils/logger.js';
 import chalk from 'chalk';
 import ora from 'ora';
-
-export interface RetryConfig {
-  maxAttempts: number;
-  initialDelay: number;
-  maxDelay: number;
-  backoffFactor: number;
-  retryableErrors?: string[];
-}
 
 export interface ExecutionOptions {
   verbose?: boolean;
@@ -53,6 +46,8 @@ export interface AgentExecutorConfig {
   workspaceManager?: WorkspaceManager;
   contextManager?: ContextManager;
   profileLoader?: ProfileLoader;
+  /** Default retry configuration (v5.0+) */
+  defaultRetryConfig?: RetryConfig;
 }
 
 /**
@@ -69,22 +64,9 @@ export class AgentExecutor {
   private delegationParser: DelegationParser;
 
   /**
-   * Default retry configuration
+   * Default retry configuration (v5.0: from config instead of hardcoded)
    */
-  private readonly DEFAULT_RETRY_CONFIG: RetryConfig = {
-    maxAttempts: 3,
-    initialDelay: 1000,
-    maxDelay: 10000,
-    backoffFactor: 2,
-    retryableErrors: [
-      'ECONNREFUSED',
-      'ETIMEDOUT',
-      'ENOTFOUND',
-      'rate_limit',
-      'overloaded',
-      'timeout'
-    ]
-  };
+  private readonly defaultRetryConfig: RetryConfig;
 
   /**
    * Create AgentExecutor with optional delegation support
@@ -97,6 +79,22 @@ export class AgentExecutor {
     this.contextManager = config?.contextManager;
     this.profileLoader = config?.profileLoader;
     this.delegationParser = new DelegationParser(config?.profileLoader);
+
+    // v5.0: Use config value instead of hardcoded constant
+    this.defaultRetryConfig = config?.defaultRetryConfig ?? {
+      maxAttempts: 3,
+      initialDelay: 1000,
+      maxDelay: 10000,
+      backoffFactor: 2,
+      retryableErrors: [
+        'ECONNREFUSED',
+        'ETIMEDOUT',
+        'ENOTFOUND',
+        'rate_limit',
+        'overloaded',
+        'timeout'
+      ]
+    };
   }
 
   /**
@@ -136,7 +134,7 @@ export class AgentExecutor {
     context: ExecutionContext,
     options: ExecutionOptions
   ): Promise<ExecutionResult> {
-    const retryConfig = { ...this.DEFAULT_RETRY_CONFIG, ...options.retry };
+    const retryConfig = { ...this.defaultRetryConfig, ...options.retry };
     const { maxAttempts, initialDelay, maxDelay, backoffFactor, retryableErrors } = retryConfig;
     const { verbose = false } = options;
 
@@ -573,7 +571,7 @@ export class AgentExecutor {
    * Check if error is retryable
    */
   private isRetryableError(error: any, retryableErrors?: string[]): boolean {
-    const patterns = retryableErrors || this.DEFAULT_RETRY_CONFIG.retryableErrors!;
+    const patterns = retryableErrors || this.defaultRetryConfig.retryableErrors!;
 
     const errorString = (error.message || error.code || '').toLowerCase();
 

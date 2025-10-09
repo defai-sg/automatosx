@@ -3,27 +3,120 @@
     "claude-code": {
       "enabled": true,
       "priority": 3,
-      "timeout": 300000,
-      "command": "claude"
+      "timeout": 900000,
+      "command": "claude",
+      "healthCheck": {
+        "enabled": true,
+        "interval": 300000,
+        "timeout": 5000
+      },
+      "defaults": {
+        "maxTokens": 4096,
+        "temperature": 0.7,
+        "topP": 1
+      }
     },
     "gemini-cli": {
       "enabled": true,
       "priority": 2,
-      "timeout": 300000,
-      "command": "gemini"
+      "timeout": 900000,
+      "command": "gemini",
+      "healthCheck": {
+        "enabled": true,
+        "interval": 300000,
+        "timeout": 5000
+      },
+      "defaults": {
+        "maxTokens": 8192,
+        "temperature": 0.7,
+        "topP": 1
+      }
     },
     "openai": {
       "enabled": true,
       "priority": 1,
-      "timeout": 300000,
-      "command": "codex"
+      "timeout": 900000,
+      "command": "codex",
+      "healthCheck": {
+        "enabled": true,
+        "interval": 300000,
+        "timeout": 5000
+      },
+      "defaults": {
+        "maxTokens": 4096,
+        "temperature": 0.7,
+        "topP": 1
+      }
+    }
+  },
+  "execution": {
+    "defaultTimeout": 900000,
+    "retry": {
+      "maxAttempts": 3,
+      "initialDelay": 1000,
+      "maxDelay": 10000,
+      "backoffFactor": 2,
+      "retryableErrors": [
+        "ECONNREFUSED",
+        "ETIMEDOUT",
+        "ENOTFOUND",
+        "rate_limit",
+        "overloaded",
+        "timeout"
+      ]
+    },
+    "provider": {
+      "maxWaitMs": 60000,
+      "fallbackDelay": 5000
+    }
+  },
+  "orchestration": {
+    "session": {
+      "maxSessions": 100,
+      "maxMetadataSize": 10240,
+      "saveDebounce": 1000,
+      "cleanupAfterDays": 7,
+      "maxUuidAttempts": 100,
+      "persistPath": ".automatosx/sessions"
+    },
+    "delegation": {
+      "maxDepth": 2,
+      "timeout": 900000,
+      "enableCycleDetection": true
+    },
+    "workspace": {
+      "maxFileSize": 10485760,
+      "maxFiles": 100,
+      "cleanupAfterDays": 7,
+      "autoCleanup": true,
+      "permissions": 448,
+      "basePath": ".automatosx/workspaces"
     }
   },
   "memory": {
     "maxEntries": 10000,
     "persistPath": ".automatosx/memory",
     "autoCleanup": true,
-    "cleanupDays": 30
+    "cleanupDays": 30,
+    "search": {
+      "defaultLimit": 10,
+      "maxLimit": 100,
+      "timeout": 5000
+    }
+  },
+  "abilities": {
+    "basePath": ".automatosx/abilities",
+    "fallbackPath": "examples/abilities",
+    "cache": {
+      "enabled": true,
+      "maxEntries": 50,
+      "ttl": 600000,
+      "maxSize": 5242880,
+      "cleanupInterval": 120000
+    },
+    "limits": {
+      "maxFileSize": 524288
+    }
   },
   "workspace": {
     "basePath": ".automatosx/workspaces",
@@ -34,8 +127,93 @@
   "logging": {
     "level": "info",
     "path": ".automatosx/logs",
-    "console": true
+    "console": true,
+    "retention": {
+      "maxSizeBytes": 104857600,
+      "maxAgeDays": 30,
+      "compress": true
+    }
+  },
+  "performance": {
+    "profileCache": {
+      "enabled": true,
+      "maxEntries": 20,
+      "ttl": 600000,
+      "cleanupInterval": 120000
+    },
+    "teamCache": {
+      "enabled": true,
+      "maxEntries": 10,
+      "ttl": 600000,
+      "cleanupInterval": 120000
+    },
+    "providerCache": {
+      "enabled": true,
+      "maxEntries": 100,
+      "ttl": 600000,
+      "cleanupInterval": 120000
+    },
+    "rateLimit": {
+      "enabled": false,
+      "requestsPerMinute": 60,
+      "burstSize": 10
+    }
+  },
+  "advanced": {
+    "embedding": {
+      "timeout": 30000,
+      "retryDelay": 1000,
+      "dimensions": 1536,
+      "maxRetries": 3
+    },
+    "security": {
+      "enablePathValidation": true,
+      "allowedExtensions": [
+        ".ts",
+        ".js",
+        ".tsx",
+        ".jsx",
+        ".py",
+        ".go",
+        ".rs",
+        ".java",
+        ".yaml",
+        ".yml",
+        ".json",
+        ".toml",
+        ".md",
+        ".txt",
+        ".csv"
+      ]
+    },
+    "development": {
+      "mockProviders": false,
+      "profileMode": false
+    }
+  },
+  "integration": {
+    "vscode": {
+      "enabled": false,
+      "apiPort": 3000,
+      "autoStart": true,
+      "outputPanel": true,
+      "notifications": true
+    }
+  },
+  "cli": {
+    "run": {
+      "defaultMemory": true,
+      "defaultSaveMemory": true,
+      "defaultFormat": "text",
+      "defaultVerbose": false
+    },
+    "session": {
+      "defaultShowAgents": true
+    },
+    "memory": {
+      "defaultLimit": 10
+    }
   },
   "$schema": "https://automatosx.dev/schema/config.json",
-  "version": "4.0.0"
+  "version": "5.0.0"
 }

@@ -371,4 +371,4 @@ systemPrompt: |
 
 ---
 
-**Questions?** Ask in [GitHub Discussions](https://github.com/defai-sg/automatosx/discussions)
+**Questions?** Ask in [GitHub Discussions](https://github.com/defai-digital/automatosx/discussions)

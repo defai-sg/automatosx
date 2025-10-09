@@ -88,6 +88,11 @@ export const initCommand: CommandModule<Record<string, unknown>, InitOptions> = 
       await copyExampleAbilities(automatosxDir);
       console.log(chalk.green('   ✓ 15 example abilities installed'));
 
+      // Copy agent templates (v5.0+)
+      console.log(chalk.cyan('📋 Installing agent templates...'));
+      await copyExampleTemplates(automatosxDir);
+      console.log(chalk.green('   ✓ 5 agent templates installed'));
+
       // Create default config
       console.log(chalk.cyan('⚙️  Generating configuration...'));
       const configPath = join(projectDir, 'automatosx.config.json');
@@ -155,7 +160,9 @@ async function createDirectoryStructure(baseDir: string): Promise<void> {
   const dirs = [
     baseDir,
     join(baseDir, 'agents'),
+    join(baseDir, 'teams'),
     join(baseDir, 'abilities'),
+    join(baseDir, 'templates'),      // v5.0: Agent templates
     join(baseDir, 'memory'),
     join(baseDir, 'workspaces'),
     join(baseDir, 'logs')
@@ -209,6 +216,27 @@ async function copyExampleAbilities(baseDir: string): Promise<void> {
 }
 
 /**
+ * Copy agent templates to user's .automatosx directory (v5.0+)
+ */
+async function copyExampleTemplates(baseDir: string): Promise<void> {
+  const { readdir, copyFile } = await import('fs/promises');
+
+  const examplesDir = join(getPackageRoot(), 'examples/templates');
+  const targetDir = join(baseDir, 'templates');
+
+  try {
+    const files = await readdir(examplesDir);
+    for (const file of files) {
+      if (file.endsWith('.yaml')) {
+        await copyFile(join(examplesDir, file), join(targetDir, file));
+      }
+    }
+  } catch (error) {
+    logger.warn('Could not copy agent templates', { error: (error as Error).message });
+  }
+}
+
+/**
  * Create default configuration file
  */
 async function createDefaultConfig(
@@ -225,7 +253,7 @@ async function createDefaultConfig(
     ...DEFAULT_CONFIG,
     // Add metadata
     $schema: 'https://automatosx.dev/schema/config.json',
-    version: '4.0.0'
+    version: '5.0.0'
   };
 
   const content = JSON.stringify(config, null, 2);

@@ -3,7 +3,7 @@
  */
 
 import type { CommandModule } from 'yargs';
-import { readFile, writeFile, access } from 'fs/promises';
+import { access } from 'fs/promises';
 import { resolve } from 'path';
 import { constants } from 'fs';
 import chalk from 'chalk';
@@ -13,6 +13,7 @@ import { logger } from '../../utils/logger.js';
 import { printError } from '../../utils/error-formatter.js';
 import { printSuccess, formatInfo, formatKeyValue, formatWarning } from '../../utils/message-formatter.js';
 import { validateConfig, formatValidationErrors } from '../../utils/config-validator.js';
+import { loadConfigFile, saveConfigFile } from '../../core/config.js';
 
 interface ConfigOptions {
   get?: string;
@@ -122,8 +123,8 @@ export const configCommand: CommandModule<Record<string, unknown>, ConfigOptions
         process.exit(1);
       }
 
-      // Load config
-      const config = await loadConfig(configPath);
+      // Load config (supports both YAML and JSON)
+      const config = await loadConfigFile(configPath);
 
       // Handle operations
       if (argv.reset) {
@@ -171,22 +172,6 @@ async function checkExists(path: string): Promise<boolean> {
 }
 
 /**
- * Load configuration from file
- */
-async function loadConfig(path: string): Promise<AutomatosXConfig> {
-  const content = await readFile(path, 'utf-8');
-  return JSON.parse(content);
-}
-
-/**
- * Save configuration to file
- */
-async function saveConfig(path: string, config: AutomatosXConfig): Promise<void> {
-  const content = JSON.stringify(config, null, 2);
-  await writeFile(path, content, 'utf-8');
-}
-
-/**
  * Validate configuration file
  */
 async function validateConfigFile(
@@ -230,10 +215,10 @@ async function resetConfig(path: string, verbose: boolean): Promise<void> {
   const config = {
     ...DEFAULT_CONFIG,
     $schema: 'https://automatosx.dev/schema/config.json',
-    version: '4.0.0'
+    version: '5.0.0'  // v5.0+ with YAML support
   };
 
-  await saveConfig(path, config);
+  await saveConfigFile(path, config);
   printSuccess('Configuration reset to defaults');
 
   if (verbose) {
@@ -391,8 +376,8 @@ async function setConfig(
     process.exit(1);
   }
 
-  // Save config
-  await saveConfig(path, config);
+  // Save config (supports both YAML and JSON)
+  await saveConfigFile(path, config);
   printSuccess(`Configuration updated: ${key} = ${value}`);
 
   if (verbose) {

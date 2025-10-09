@@ -66,7 +66,7 @@ export const updateCommand: CommandModule<Record<string, unknown>, UpdateOptions
         // If only checking, exit here
         if (argv.check) {
           console.log(chalk.gray('\nTo install the update, run:'));
-          console.log(chalk.cyan(`  npm install -g @defai.sg/automatosx@${latestVersion}\n`));
+          console.log(chalk.cyan(`  npm install -g @defai.digital/automatosx@${latestVersion}\n`));
           return;
         }
 
@@ -122,9 +122,9 @@ export const updateCommand: CommandModule<Record<string, unknown>, UpdateOptions
  */
 async function getCurrentVersion(): Promise<string> {
   try {
-    const { stdout } = await execAsync('npm list -g @defai.sg/automatosx --depth=0 --json');
+    const { stdout } = await execAsync('npm list -g @defai.digital/automatosx --depth=0 --json');
     const result = JSON.parse(stdout);
-    return result.dependencies['@defai.sg/automatosx']?.version || 'unknown';
+    return result.dependencies['@defai.digital/automatosx']?.version || 'unknown';
   } catch (error) {
     // Fallback to package.json
     const { readFile } = await import('fs/promises');
@@ -145,7 +145,7 @@ async function getCurrentVersion(): Promise<string> {
  * Get latest version from npm registry
  */
 async function getLatestVersion(): Promise<string> {
-  const { stdout } = await execAsync('npm view @defai.sg/automatosx version');
+  const { stdout } = await execAsync('npm view @defai.digital/automatosx version');
   return stdout.trim();
 }
 
@@ -171,7 +171,7 @@ async function showChangelog(from: string, to: string): Promise<void> {
 
     // Fetch changelog from GitHub
     const { stdout } = await execAsync(
-      `curl -s https://api.github.com/repos/defai-sg/automatosx/releases/tags/v${to}`
+      `curl -s https://api.github.com/repos/defai-digital/automatosx/releases/tags/v${to}`
     );
 
     const release = JSON.parse(stdout);
@@ -187,7 +187,7 @@ async function showChangelog(from: string, to: string): Promise<void> {
         }
       });
       console.log(chalk.gray('\n...'));
-      console.log(chalk.gray(`Full changelog: https://github.com/defai-sg/automatosx/releases/tag/v${to}`));
+      console.log(chalk.gray(`Full changelog: https://github.com/defai-digital/automatosx/releases/tag/v${to}`));
     }
   } catch (error) {
     // If changelog fetch fails, continue silently
@@ -201,7 +201,7 @@ async function showChangelog(from: string, to: string): Promise<void> {
 async function installUpdate(version: string): Promise<void> {
   try {
     const { stdout, stderr } = await execAsync(
-      `npm install -g @defai.sg/automatosx@${version}`,
+      `npm install -g @defai.digital/automatosx@${version}`,
       { maxBuffer: 10 * 1024 * 1024 }
     );
 
