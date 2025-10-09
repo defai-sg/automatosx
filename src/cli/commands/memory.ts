@@ -4,7 +4,7 @@
 
 import type { CommandModule } from 'yargs';
 import { resolve } from 'path';
-import { MemoryManagerVec } from '../../core/memory-manager-vec.js';
+import { MemoryManager } from '../../core/memory-manager.js';
 import chalk from 'chalk';
 import Table from 'cli-table3';
 import { printError } from '../../utils/error-formatter.js';
@@ -16,8 +16,7 @@ interface BaseMemoryArgs {
 }
 
 interface SearchArgs extends BaseMemoryArgs {
-  query?: string;
-  vectorFile?: string;
+  query: string;  // v4.11.0: Required, no vector file support
   limit?: number;
   threshold?: number;
   type?: string;
@@ -30,7 +29,7 @@ interface ExportArgs extends BaseMemoryArgs {
   type?: string;
   from?: string;
   to?: string;
-  includeEmbeddings?: boolean;
+  // v4.11.0: includeEmbeddings removed (no embeddings in FTS5 mode)
 }
 
 interface ImportArgs extends BaseMemoryArgs {
@@ -55,43 +54,14 @@ const DEFAULT_DB_PATH = '.automatosx/memory/memory.db';
 
 /**
  * Get memory manager instance
+ *
+ * v4.11.0: No embedding provider needed (uses FTS5)
  */
-async function getMemoryManager(dbPath?: string): Promise<MemoryManagerVec> {
+async function getMemoryManager(dbPath?: string): Promise<MemoryManager> {
   const path = dbPath || DEFAULT_DB_PATH;
 
-  // Check for embedding provider (optional for basic operations)
-  let embeddingProvider;
-
-  // In test environment with mock providers
-  if (process.env.AUTOMATOSX_MOCK_PROVIDERS === 'true') {
-    try {
-      const { MockEmbeddingProvider } = await import('../../providers/mock-embedding-provider.js');
-      embeddingProvider = new MockEmbeddingProvider({
-        model: 'mock-embedding-model'
-      });
-    } catch (error) {
-      // Mock provider not available, continue without embedding
-    }
-  } else {
-    // Production: Check for OpenAI API key
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (apiKey) {
-      try {
-        const { OpenAIEmbeddingProvider } = await import('../../providers/openai-embedding-provider.js');
-        embeddingProvider = new OpenAIEmbeddingProvider({
-          provider: 'openai',
-          apiKey,
-          model: 'text-embedding-3-small'
-        });
-      } catch (error) {
-        // OpenAI provider not available
-      }
-    }
-  }
-
-  return await MemoryManagerVec.create({
+  return await MemoryManager.create({
     dbPath: resolve(path),
-    embeddingProvider,
     maxEntries: 100000,
     autoCleanup: false,
     trackAccess: true
@@ -100,19 +70,17 @@ async function getMemoryManager(dbPath?: string): Promise<MemoryManagerVec> {
 
 /**
  * Memory search command
+ *
+ * v4.11.0: FTS5 full-text search only (no vector file support)
  */
 export const searchCommand: CommandModule = {
-  command: 'search [query]',
-  describe: 'Search memory entries',
+  command: 'search <query>',
+  describe: 'Search memory entries using full-text search',
   builder: (yargs) => {
     return (yargs as any).positional('query', {
-        describe: 'Search query text',
-        type: 'string'
-      })
-      .option('vector-file', {
-        alias: 'v',
-        describe: 'Path to vector embedding file (JSON)',
-        type: 'string'
+        describe: 'Search query text (required)',
+        type: 'string',
+        demandOption: true
       })
       .option('limit', {
         alias: 'l',
@@ -145,33 +113,18 @@ export const searchCommand: CommandModule = {
       .option('db', {
         describe: 'Database path',
         type: 'string'
-      })
-      .check((argv: any) => {
-        if (!argv.query && !argv.vectorFile) {
-          throw new Error('Must provide either query text or --vector-file');
-        }
-        return true;
       });
   },
   handler: async (argv: any) => {
     try {
       const manager = await getMemoryManager(argv.db);
 
-      // Build search query
+      // Build search query (v4.11.0: FTS5 text search only)
       const searchQuery: any = {
+        text: argv.query,
         limit: argv.limit,
-        threshold: argv.threshold,
-        includeEmbeddings: false
+        threshold: argv.threshold
       };
-
-      // Add text or vector
-      if (argv.query) {
-        searchQuery.text = argv.query;
-      } else if (argv.vectorFile) {
-        const { readFile } = await import('fs/promises');
-        const vectorData = JSON.parse(await readFile(argv.vectorFile, 'utf-8'));
-        searchQuery.vector = vectorData;
-      }
 
       // Add filters
       if (argv.type || argv.tags) {
@@ -266,11 +219,6 @@ export const exportCommand: CommandModule = {
         describe: 'End date (ISO format)',
         type: 'string'
       })
-      .option('include-embeddings', {
-        describe: 'Include embeddings in export',
-        type: 'boolean',
-        default: false
-      })
       .option('db', {
         describe: 'Database path',
         type: 'string'
@@ -280,9 +228,9 @@ export const exportCommand: CommandModule = {
     try {
       const manager = await getMemoryManager(argv.db);
 
-      // Build export options
+      // Build export options (v4.11.0: no embeddings in FTS5 mode)
       const exportOptions: any = {
-        includeEmbeddings: argv.includeEmbeddings,
+        includeEmbeddings: false,
         pretty: true
       };
 

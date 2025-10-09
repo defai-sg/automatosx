@@ -10,38 +10,38 @@ Research shows humans remember names better than roles. Instead of remembering "
 
 ### 👥 Core Team
 
-| Name | Role | Expertise | Best For | Primary Provider | Fallback |
-|------|------|-----------|----------|------------------|----------|
-| **Alex** | General Assistant | General purpose tasks, planning, questions | Quick questions, brainstorming, planning | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
-| **Charlie** | Software Developer | Code generation, implementation | Writing new code, implementing features | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
-| **Ryan** | Code Reviewer | Code review, quality assurance | PR reviews, code quality checks | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
-| **Danny** | Debug Expert | Debugging, troubleshooting | Fixing bugs, error analysis | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
-| **Wendy** | Technical Writer | Documentation, content creation | Writing docs, README files | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
+| Name | Agent | Expertise | Best For | Primary Provider | Fallback |
+|------|-------|-----------|----------|------------------|----------|
+| **Alex** | assistant | General purpose tasks, planning, questions | Quick questions, brainstorming, planning | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
+| **Sofia** | coder | Code generation, implementation | Writing new code, implementing features | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
+| **Ryan** | reviewer | Code review, quality assurance | PR reviews, code quality checks | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
+| **Danny** | debugger | Debugging, troubleshooting | Fixing bugs, error analysis | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
+| **Wendy** | writer | Documentation, content creation | Writing docs, README files | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
 
 ### 💻 Engineering
 
-| Name | Role | Expertise | Best For | Primary Provider | Fallback |
-|------|------|-----------|----------|------------------|----------|
-| **Bob** | Backend Engineer | Server-side architecture, APIs, databases | Backend development, API design | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
-| **Frank** | Frontend Developer | React, UI/UX, performance | Frontend development, components | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
-| **Oliver** | DevOps Engineer | Infrastructure, CI/CD, deployment | DevOps, deployment, monitoring | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
-| **Steve** | Security Engineer | Application security, threat modeling | Security review, vulnerability assessment | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
-| **Queenie** | QA Engineer | Testing, quality assurance | Test planning, test automation | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| Name | Agent | Expertise | Best For | Primary Provider | Fallback |
+|------|-------|-----------|----------|------------------|----------|
+| **Bob** | backend | Server-side architecture, APIs, databases | Backend development, API design | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Frank** | frontend | React, UI/UX, performance | Frontend development, components | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Oliver** | devops | Infrastructure, CI/CD, deployment | DevOps, deployment, monitoring | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Steve** | security | Application security, threat modeling | Security review, vulnerability assessment | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+| **Queenie** | quality | Testing, quality assurance | Test planning, test automation | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
 
 ### 📊 Business & Product
 
-| Name | Role | Expertise | Best For | Primary Provider | Fallback |
-|------|------|-----------|----------|------------------|----------|
-| **Eric** | CEO | Business strategy, vision | Strategy, business decisions | 🔵 Gemini | 🟣 Claude → 🟢 OpenAI |
-| **Tony** | CTO | Technology strategy, leadership | Tech strategy, architecture decisions | 🔵 Gemini | 🟣 Claude → 🟢 OpenAI |
-| **Paris** | Product Manager | Product strategy, user research | Product planning, feature prioritization | 🔵 Gemini | 🟣 Claude → 🟢 OpenAI |
-| **Daisy** | Data Scientist | Data analysis, machine learning | Analytics, ML models, insights | 🔵 Gemini | 🟣 Claude → 🟢 OpenAI |
+| Name | Agent | Expertise | Best For | Primary Provider | Fallback |
+|------|-------|-----------|----------|------------------|----------|
+| **Eric** | ceo | Business strategy, vision | Strategy, business decisions | 🔵 Gemini | 🟣 Claude → 🟢 OpenAI |
+| **Tony** | cto | Technology strategy, leadership | Tech strategy, architecture decisions | 🔵 Gemini | 🟣 Claude → 🟢 OpenAI |
+| **Paris** | product | Product strategy, user research | Product planning, feature prioritization | 🔵 Gemini | 🟣 Claude → 🟢 OpenAI |
+| **Daisy** | data | Data analysis, machine learning | Analytics, ML models, insights | 🔵 Gemini | 🟣 Claude → 🟢 OpenAI |
 
 ### 🎨 Design
 
-| Name | Role | Expertise | Best For | Primary Provider | Fallback |
-|------|------|-----------|----------|------------------|----------|
-| **Debbee** | UX/UI Designer | User experience, visual design | UX design, prototyping, design systems | 🔵 Gemini | 🟢 OpenAI → 🟣 Claude |
+| Name | Agent | Expertise | Best For | Primary Provider | Fallback |
+|------|-------|-----------|----------|------------------|----------|
+| **Debbee** | design | User experience, visual design | UX design, prototyping, design systems | 🔵 Gemini | 🟢 OpenAI → 🟣 Claude |
 
 ## Provider Configuration
 
@@ -63,7 +63,7 @@ AutomatosX uses a **3-layer fallback system** for maximum reliability:
 
 | AI Provider | Agent Count | Agents |
 |-------------|-------------|--------|
-| 🟢 **OpenAI** | 5 | Core Team (Alex, Charlie, Ryan, Danny, Wendy) |
+| 🟢 **OpenAI** | 5 | Core Team (Alex, Sofia, Ryan, Danny, Wendy) |
 | 🟣 **Claude** | 5 | Engineering Team (Bob, Frank, Oliver, Steve, Queenie) |
 | 🔵 **Gemini** | 5 | Business & Product + Design (Eric, Tony, Paris, Daisy, Debbee) |
 
@@ -80,7 +80,7 @@ Use Auto-Routing Priority:
     3. 🟣 Claude (priority 3)
 ```
 
-**Example 1**: If Charlie (Core Team: primary 🟢 **OpenAI**, fallback 🟣 **Claude**) encounters an error:
+**Example 1**: If Sofia (Core Team: primary 🟢 **OpenAI**, fallback 🟣 **Claude**) encounters an error:
 
 1. Try 🟢 **OpenAI** first
 2. If fails, try fallback 🟣 **Claude**
@@ -141,10 +141,10 @@ fallbackProvider: openai       # Fallback: 🟢 OpenAI
 
 ## Usage Examples
 
-### Using Technical Role Names
+### Using Agent Names
 
 ```bash
-# Traditional way (still works)
+# Use the agent name from the table above
 automatosx run backend "Design a RESTful API for user management"
 automatosx run frontend "Create a React login component"
 automatosx run security "Review this authentication code"
@@ -153,7 +153,7 @@ automatosx run security "Review this authentication code"
 ### Using Display Names (Human-Friendly)
 
 ```bash
-# More memorable!
+# More memorable! Use the human-friendly display name
 automatosx run Bob "Design a RESTful API for user management"
 automatosx run Frank "Create a React login component"
 automatosx run Steve "Review this authentication code"
@@ -174,23 +174,23 @@ automatosx run Debbee "Review this dashboard design"
 
 For reference, here are the names from AutomatosX v3.x:
 
-| v4.0 Name | v3.x Name | Role |
-|-----------|-----------|------|
-| Alex | Alex | General Assistant |
-| Charlie | - | Coder (new) |
-| Ryan | - | Reviewer (new) |
-| Danny | - | Debugger (new) |
-| Wendy | - | Writer (new) |
-| Bob | Bob | Backend Engineer |
-| Frank | Frank | Frontend Developer |
-| Oliver | Oliver | DevOps Engineer |
-| Steve | Steve | Security Engineer |
-| Queenie | Queenie | QA Engineer |
-| Eric | Eric | CEO |
-| Tony | Tony | CTO |
-| Paris | Paris | Product Manager |
-| Daisy | Daisy | Data Scientist |
-| Debbee | Debbee | UX/UI Designer |
+| v4.0 Name | v3.x Name | Agent |
+|-----------|-----------|-------|
+| Alex | Alex | assistant |
+| Sofia | - | coder (new) |
+| Ryan | - | reviewer (new) |
+| Danny | - | debugger (new) |
+| Wendy | - | writer (new) |
+| Bob | Bob | backend |
+| Frank | Frank | frontend |
+| Oliver | Oliver | devops |
+| Steve | Steve | security |
+| Queenie | Queenie | quality |
+| Eric | Eric | ceo |
+| Tony | Tony | cto |
+| Paris | Paris | product |
+| Daisy | Daisy | data |
+| Debbee | Debbee | design |
 
 ### Additional Agents from v3.x
 

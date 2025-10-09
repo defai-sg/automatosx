@@ -167,6 +167,18 @@ export class DelegationParser {
         continue;
       }
 
+      // Skip JSDoc annotations (e.g., @returns, @param)
+      if (this.isJSDocAnnotation(response, match.index)) {
+        logger.debug('Skipping JSDoc annotation', { toAgent, position: match.index });
+        continue;
+      }
+
+      // Skip if in code block (between ``` or `)
+      if (this.isInCodeBlock(response, match.index)) {
+        logger.debug('Skipping code block', { toAgent, position: match.index });
+        continue;
+      }
+
       // Resolve agent name (supports display names like "Oliver" → "devops")
       if (this.profileLoader) {
         try {
@@ -223,5 +235,60 @@ export class DelegationParser {
     // Agent names should be alphanumeric with hyphens/underscores
     // 3-50 characters
     return /^[a-zA-Z0-9-_]{3,50}$/.test(name);
+  }
+
+  /**
+   * Check if position is within a JSDoc comment block
+   *
+   * @private
+   */
+  private isJSDocAnnotation(text: string, position: number): boolean {
+    // Get context before the match (up to 100 chars)
+    const before = text.substring(Math.max(0, position - 100), position);
+
+    // Check if preceded by JSDoc comment patterns
+    // Common patterns: " * @", "* @", " *@"
+    if (/[*\s]+@\w+\s*$/.test(before)) {
+      return true;
+    }
+
+    // Check if within a JSDoc block (/** ... */)
+    const beforeFull = text.substring(0, position);
+    const lastJSDocStart = beforeFull.lastIndexOf('/**');
+    const lastJSDocEnd = beforeFull.lastIndexOf('*/');
+
+    if (lastJSDocStart > lastJSDocEnd) {
+      // Inside JSDoc block
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if position is within a code block (between ``` or `)
+   *
+   * @private
+   */
+  private isInCodeBlock(text: string, position: number): boolean {
+    const before = text.substring(0, position);
+
+    // Check for triple backticks (```) - count should be even if not in block
+    const tripleBacktickCount = (before.match(/```/g) || []).length;
+    if (tripleBacktickCount % 2 === 1) {
+      return true; // Inside ``` code block
+    }
+
+    // Check for inline code (`) - more complex due to single backticks
+    // Only check if not in triple backtick block
+    const lines = before.split('\n');
+    const currentLine = lines[lines.length - 1] || '';
+    const singleBacktickCount = (currentLine.match(/`/g) || []).length;
+
+    if (singleBacktickCount % 2 === 1) {
+      return true; // Inside inline code on current line
+    }
+
+    return false;
   }
 }

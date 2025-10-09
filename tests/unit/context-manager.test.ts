@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ContextManager } from '../../src/agents/context-manager.js';
 import { ProfileLoader } from '../../src/agents/profile-loader.js';
 import { AbilitiesManager } from '../../src/agents/abilities-manager.js';
-import { MemoryManagerVec } from '../../src/core/memory-manager-vec.js';
+import { MemoryManager } from '../../src/core/memory-manager.js';
 import { Router } from '../../src/core/router.js';
 import { PathResolver } from '../../src/core/path-resolver.js';
 import { ClaudeProvider } from '../../src/providers/claude-provider.js';
@@ -19,7 +19,7 @@ describe('ContextManager', () => {
   let manager: ContextManager;
   let profileLoader: ProfileLoader;
   let abilitiesManager: AbilitiesManager;
-  let memoryManager: MemoryManagerVec;
+  let memoryManager: MemoryManager;
   let router: Router;
   let pathResolver: PathResolver;
 
@@ -52,7 +52,7 @@ temperature: 0.7
     // Initialize components
     profileLoader = new ProfileLoader(join(testDir, 'agents'));
     abilitiesManager = new AbilitiesManager(join(testDir, 'abilities'));
-    memoryManager = await MemoryManagerVec.create({
+    memoryManager = await MemoryManager.create({
       dbPath: join(testDir, 'memory.db')
     });
 

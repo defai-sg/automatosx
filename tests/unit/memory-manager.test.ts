@@ -7,7 +7,7 @@ import { rm } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { existsSync } from 'fs';
-import { MemoryManagerVec as MemoryManager } from '../../src/core/memory-manager-vec.js';
+import { MemoryManager } from '../../src/core/memory-manager.js';
 import type { MemoryMetadata } from '../../src/types/memory.js';
 
 describe('MemoryManager', () => {
@@ -44,13 +44,13 @@ describe('MemoryManager', () => {
 
   describe('Add Memory', () => {
     it('should add a memory entry', async () => {
-      const embedding = new Array(1536).fill(0.1);
+      // v4.11.0: No embedding needed (FTS5 only)
       const metadata: MemoryMetadata = {
         type: 'conversation',
         source: 'test'
       };
 
-      const entry = await manager.add('Test content', embedding, metadata);
+      const entry = await manager.add('Test content', null, metadata);
 
       expect(entry).toBeDefined();
       expect(entry.id).toBe(1);
@@ -59,37 +59,22 @@ describe('MemoryManager', () => {
       expect(entry.accessCount).toBe(0);
     });
 
-    it('should throw error for invalid embedding dimensions', async () => {
-      const invalidEmbedding = new Array(100).fill(0.1); // Wrong size
-      const metadata: MemoryMetadata = {
-        type: 'conversation',
-        source: 'test'
-      };
-
-      await expect(
-        manager.add('Test', invalidEmbedding, metadata)
-      ).rejects.toThrow('Invalid embedding dimensions');
-    });
-
-    // Note: sqlite-vec doesn't have hard capacity limits like HNSW
-    // SQLite can handle millions of entries efficiently
-    it('should handle large number of entries (sqlite-vec scaling)', async () => {
-      // Test that sqlite-vec can handle many entries without issues
+    // v4.11.0: FTS5 mode - SQLite can handle millions of entries efficiently
+    it('should handle large number of entries (FTS5 scaling)', async () => {
+      // Test that FTS5 can handle many entries without issues
       const entries = 50; // Reasonable number for unit test
 
       for (let i = 0; i < entries; i++) {
-        const embedding = new Array(1536).fill(i / entries);
         const metadata: MemoryMetadata = {
           type: 'other',
           source: 'capacity-test'
         };
-        await manager.add(`Entry ${i}`, embedding, metadata);
+        await manager.add(`Entry ${i}`, null, metadata);
       }
 
-      // Verify all entries are stored and searchable
-      const searchEmbedding = new Array(1536).fill(0.5);
+      // Verify all entries are stored and searchable via FTS5
       const results = await manager.search({
-        vector: searchEmbedding,
+        text: 'Entry',
         limit: 10
       });
 
@@ -100,13 +85,13 @@ describe('MemoryManager', () => {
 
   describe('Get Memory', () => {
     it('should get memory by ID', async () => {
-      const embedding = new Array(1536).fill(0.1);
+      // v4.11.0: No embedding needed (FTS5 only)
       const metadata: MemoryMetadata = {
         type: 'code',
         source: 'editor'
       };
 
-      const added = await manager.add('Get test', embedding, metadata);
+      const added = await manager.add('Get test', null, metadata);
       const retrieved = await manager.get(added.id);
 
       expect(retrieved).toBeDefined();
@@ -122,7 +107,7 @@ describe('MemoryManager', () => {
 
   describe('Search Memory', () => {
     beforeEach(async () => {
-      // Add test entries
+      // Add test entries (v4.11.0: No embedding needed)
       const entries = [
         { content: 'Python code example', type: 'code' as const, tags: ['python', 'example'] },
         { content: 'JavaScript tutorial', type: 'document' as const, tags: ['javascript', 'tutorial'] },
@@ -130,8 +115,7 @@ describe('MemoryManager', () => {
       ];
 
       for (const entry of entries) {
-        const embedding = new Array(1536).fill(Math.random());
-        await manager.add(entry.content, embedding, {
+        await manager.add(entry.content, null, {
           type: entry.type,
           source: 'test',
           tags: entry.tags
@@ -139,25 +123,22 @@ describe('MemoryManager', () => {
       }
     });
 
-    it('should search with vector', async () => {
-      const queryVector = new Array(1536).fill(0.5);
-
+    it('should search with text query (FTS5)', async () => {
       const results = await manager.search({
-        vector: queryVector,
+        text: 'Python',
         limit: 3
       });
 
-      expect(results).toHaveLength(3);
+      expect(results.length).toBeGreaterThan(0);
       expect(results[0]).toHaveProperty('similarity');
       expect(results[0]).toHaveProperty('distance');
       expect(results[0]).toHaveProperty('entry');
+      expect(results[0]?.entry.content).toContain('Python');
     });
 
     it('should filter by type', async () => {
-      const queryVector = new Array(1536).fill(0.5);
-
       const results = await manager.search({
-        vector: queryVector,
+        text: 'code',
         filters: {
           type: 'code'
         },
@@ -171,10 +152,8 @@ describe('MemoryManager', () => {
     });
 
     it('should filter by tags', async () => {
-      const queryVector = new Array(1536).fill(0.5);
-
       const results = await manager.search({
-        vector: queryVector,
+        text: 'python',
         filters: {
           tags: ['python']
         },
@@ -187,10 +166,8 @@ describe('MemoryManager', () => {
     });
 
     it('should apply similarity threshold', async () => {
-      const queryVector = new Array(1536).fill(0.5);
-
       const results = await manager.search({
-        vector: queryVector,
+        text: 'example',
         threshold: 0.8, // High threshold
         limit: 10
       });
@@ -203,8 +180,8 @@ describe('MemoryManager', () => {
 
   describe('Update Memory', () => {
     it('should update memory metadata', async () => {
-      const embedding = new Array(1536).fill(0.1);
-      const entry = await manager.add('Update test', embedding, {
+      // v4.11.0: No embedding needed (FTS5 only)
+      const entry = await manager.add('Update test', null, {
         type: 'task',
         source: 'test'
       });
@@ -230,8 +207,8 @@ describe('MemoryManager', () => {
 
   describe('Delete Memory', () => {
     it('should delete memory entry', async () => {
-      const embedding = new Array(1536).fill(0.1);
-      const entry = await manager.add('Delete test', embedding, {
+      // v4.11.0: No embedding needed (FTS5 only)
+      const entry = await manager.add('Delete test', null, {
         type: 'other',
         source: 'test'
       });
@@ -251,12 +228,11 @@ describe('MemoryManager', () => {
 
   describe('Clear Memory', () => {
     it('should clear all memories', async () => {
-      const embedding = new Array(1536).fill(0.1);
-
+      // v4.11.0: No embedding needed (FTS5 only)
       // Add multiple entries
-      await manager.add('Entry 1', embedding, { type: 'other', source: 'test' });
-      await manager.add('Entry 2', embedding, { type: 'other', source: 'test' });
-      await manager.add('Entry 3', embedding, { type: 'other', source: 'test' });
+      await manager.add('Entry 1', null, { type: 'other', source: 'test' });
+      await manager.add('Entry 2', null, { type: 'other', source: 'test' });
+      await manager.add('Entry 3', null, { type: 'other', source: 'test' });
 
       const statsBefore = await manager.getStats();
       expect(statsBefore.totalEntries).toBe(3);
@@ -280,10 +256,9 @@ describe('MemoryManager', () => {
     });
 
     it('should show correct entry count', async () => {
-      const embedding = new Array(1536).fill(0.1);
-
-      await manager.add('Stats test 1', embedding, { type: 'other', source: 'test' });
-      await manager.add('Stats test 2', embedding, { type: 'other', source: 'test' });
+      // v4.11.0: No embedding needed (FTS5 only)
+      await manager.add('Stats test 1', null, { type: 'other', source: 'test' });
+      await manager.add('Stats test 2', null, { type: 'other', source: 'test' });
 
       const stats = await manager.getStats();
       expect(stats.totalEntries).toBe(2);
@@ -292,15 +267,14 @@ describe('MemoryManager', () => {
 
   describe('Cleanup', () => {
     it('should cleanup old entries', async () => {
-      const embedding = new Array(1536).fill(0.1);
-
+      // v4.11.0: No embedding needed (FTS5 only)
       // Create entries with different timestamps
-      await manager.add('Old entry', embedding, { type: 'other', source: 'test' });
+      await manager.add('Old entry', null, { type: 'other', source: 'test' });
 
       // Wait a bit
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      await manager.add('New entry', embedding, { type: 'other', source: 'test' });
+      await manager.add('New entry', null, { type: 'other', source: 'test' });
 
       // Cleanup entries older than 0 days (all entries from > now)
       const deleted = await manager.cleanup(0);
@@ -310,16 +284,15 @@ describe('MemoryManager', () => {
   });
 
   describe('Persistence', () => {
-    it('should save and load index (sqlite-vec auto-persists)', async () => {
-      const embedding = new Array(1536).fill(0.5);
-
-      await manager.add('Persist test', embedding, {
+    it('should save and load index (FTS5 auto-persists)', async () => {
+      // v4.11.0: No embedding needed (FTS5 only)
+      await manager.add('Persist test', null, {
         type: 'other',
         source: 'test'
       });
 
-      // sqlite-vec auto-persists to database, no separate .index file
-      await manager.saveIndex(); // No-op for sqlite-vec
+      // FTS5 auto-persists to database, no separate .index file
+      await manager.saveIndex(); // No-op for FTS5
 
       // Verify database file exists (not separate .index file)
       expect(existsSync(testDbPath)).toBe(true);
@@ -328,9 +301,8 @@ describe('MemoryManager', () => {
 
   describe('Access Tracking', () => {
     it('should track access when searching', async () => {
-      const embedding = new Array(1536).fill(0.5);
-
-      const entry = await manager.add('Access test', embedding, {
+      // v4.11.0: No embedding needed (FTS5 only)
+      const entry = await manager.add('Access test', null, {
         type: 'other',
         source: 'test'
       });
@@ -339,9 +311,9 @@ describe('MemoryManager', () => {
       const before = await manager.get(entry.id);
       expect(before?.accessCount).toBe(0);
 
-      // Search should increment access count
+      // Search should increment access count (FTS5 text search)
       await manager.search({
-        vector: embedding,
+        text: 'Access',
         limit: 1
       });
 
@@ -352,11 +324,10 @@ describe('MemoryManager', () => {
 
   describe('Get All Entries', () => {
     it('should return all entries without filters', async () => {
-      const embedding = new Array(1536).fill(0.5);
-
-      await manager.add('Entry 1', embedding, { type: 'conversation', source: 'test' });
-      await manager.add('Entry 2', embedding, { type: 'code', source: 'test' });
-      await manager.add('Entry 3', embedding, { type: 'document', source: 'test' });
+      // v4.11.0: No embedding needed (FTS5 only)
+      await manager.add('Entry 1', null, { type: 'conversation', source: 'test' });
+      await manager.add('Entry 2', null, { type: 'code', source: 'test' });
+      await manager.add('Entry 3', null, { type: 'document', source: 'test' });
 
       const all = await manager.getAll();
 
@@ -366,11 +337,10 @@ describe('MemoryManager', () => {
     });
 
     it('should filter by type', async () => {
-      const embedding = new Array(1536).fill(0.5);
-
-      await manager.add('Conv 1', embedding, { type: 'conversation', source: 'test' });
-      await manager.add('Code 1', embedding, { type: 'code', source: 'test' });
-      await manager.add('Conv 2', embedding, { type: 'conversation', source: 'test' });
+      // v4.11.0: No embedding needed (FTS5 only)
+      await manager.add('Conv 1', null, { type: 'conversation', source: 'test' });
+      await manager.add('Code 1', null, { type: 'code', source: 'test' });
+      await manager.add('Conv 2', null, { type: 'conversation', source: 'test' });
 
       const conversations = await manager.getAll({ type: 'conversation' });
 
@@ -379,11 +349,10 @@ describe('MemoryManager', () => {
     });
 
     it('should filter by tags', async () => {
-      const embedding = new Array(1536).fill(0.5);
-
-      await manager.add('Entry 1', embedding, { type: 'other', source: 'test', tags: ['important', 'work'] });
-      await manager.add('Entry 2', embedding, { type: 'other', source: 'test', tags: ['personal'] });
-      await manager.add('Entry 3', embedding, { type: 'other', source: 'test', tags: ['important'] });
+      // v4.11.0: No embedding needed (FTS5 only)
+      await manager.add('Entry 1', null, { type: 'other', source: 'test', tags: ['important', 'work'] });
+      await manager.add('Entry 2', null, { type: 'other', source: 'test', tags: ['personal'] });
+      await manager.add('Entry 3', null, { type: 'other', source: 'test', tags: ['important'] });
 
       const important = await manager.getAll({ tags: ['important'] });
 
@@ -392,10 +361,9 @@ describe('MemoryManager', () => {
     });
 
     it('should support pagination with limit and offset', async () => {
-      const embedding = new Array(1536).fill(0.5);
-
+      // v4.11.0: No embedding needed (FTS5 only)
       for (let i = 1; i <= 10; i++) {
-        await manager.add(`Entry ${i}`, embedding, { type: 'other', source: 'test' });
+        await manager.add(`Entry ${i}`, null, { type: 'other', source: 'test' });
       }
 
       const page1 = await manager.getAll({ limit: 3, offset: 0 });
@@ -407,13 +375,12 @@ describe('MemoryManager', () => {
     });
 
     it('should support ordering by created date', async () => {
-      const embedding = new Array(1536).fill(0.5);
-
-      await manager.add('First', embedding, { type: 'other', source: 'test' });
+      // v4.11.0: No embedding needed (FTS5 only)
+      await manager.add('First', null, { type: 'other', source: 'test' });
       await new Promise(resolve => setTimeout(resolve, 10));
-      await manager.add('Second', embedding, { type: 'other', source: 'test' });
+      await manager.add('Second', null, { type: 'other', source: 'test' });
       await new Promise(resolve => setTimeout(resolve, 10));
-      await manager.add('Third', embedding, { type: 'other', source: 'test' });
+      await manager.add('Third', null, { type: 'other', source: 'test' });
 
       const desc = await manager.getAll({ orderBy: 'created', order: 'desc' });
       const asc = await manager.getAll({ orderBy: 'created', order: 'asc' });
@@ -425,14 +392,12 @@ describe('MemoryManager', () => {
     });
 
     it('should support ordering by access count', async () => {
-      const embedding1 = new Array(1536).fill(0.5);
-      const embedding2 = new Array(1536).fill(0.3);
+      // v4.11.0: No embedding needed (FTS5 only)
+      const entry1 = await manager.add('Entry 1', null, { type: 'other', source: 'test' });
+      const entry2 = await manager.add('Entry 2', null, { type: 'other', source: 'test' });
 
-      const entry1 = await manager.add('Entry 1', embedding1, { type: 'other', source: 'test' });
-      const entry2 = await manager.add('Entry 2', embedding2, { type: 'other', source: 'test' });
-
-      // Access only entry1 specifically
-      await manager.search({ vector: embedding1, limit: 1 });
+      // Access only entry1 specifically (FTS5 text search)
+      await manager.search({ text: 'Entry 1', limit: 1 });
 
       const ordered = await manager.getAll({ orderBy: 'count', order: 'desc' });
 
@@ -443,11 +408,10 @@ describe('MemoryManager', () => {
     });
 
     it('should combine filters', async () => {
-      const embedding = new Array(1536).fill(0.5);
-
-      await manager.add('Conv 1', embedding, { type: 'conversation', source: 'test', tags: ['important'] });
-      await manager.add('Conv 2', embedding, { type: 'conversation', source: 'test', tags: ['casual'] });
-      await manager.add('Code 1', embedding, { type: 'code', source: 'test', tags: ['important'] });
+      // v4.11.0: No embedding needed (FTS5 only)
+      await manager.add('Conv 1', null, { type: 'conversation', source: 'test', tags: ['important'] });
+      await manager.add('Conv 2', null, { type: 'conversation', source: 'test', tags: ['casual'] });
+      await manager.add('Code 1', null, { type: 'code', source: 'test', tags: ['important'] });
 
       const result = await manager.getAll({
         type: 'conversation',

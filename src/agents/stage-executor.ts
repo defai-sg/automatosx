@@ -386,9 +386,9 @@ export class StageExecutor {
   }
 
   /**
-   * Save stage result to memory with embedding
+   * Save stage result to memory
    *
-   * Phase 3: Now enabled with embedding provider support
+   * v4.11.0: No embedding required (uses FTS5)
    */
   protected async saveStageToMemory(
     agentName: string,
@@ -399,22 +399,8 @@ export class StageExecutor {
     try {
       const memoryContent = `[${agentName}] Stage: ${stage.name}\n\n${result.output}`;
 
-      // Check if memory manager has embedding provider
-      const embeddingProvider = (memoryManager as any).embeddingProvider;
-
-      if (!embeddingProvider) {
-        logger.debug('Stage result memory save skipped (no embedding provider)', {
-          agent: agentName,
-          stage: stage.name
-        });
-        return;
-      }
-
-      // Generate embedding
-      const embedding = await embeddingProvider.generateEmbedding(memoryContent);
-
-      // Save to memory
-      await memoryManager.add(memoryContent, embedding, {
+      // v4.11.0: Save directly without embedding (uses FTS5)
+      await memoryManager.add(memoryContent, null, {
         type: 'task',
         source: agentName,
         agentId: agentName,
@@ -428,7 +414,8 @@ export class StageExecutor {
       logger.info('Stage result saved to memory', {
         agent: agentName,
         stage: stage.name,
-        contentLength: memoryContent.length
+        contentLength: memoryContent.length,
+        searchMethod: 'FTS5'
       });
 
     } catch (error) {

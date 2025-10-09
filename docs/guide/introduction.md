@@ -7,7 +7,7 @@ Welcome to **AutomatosX v4.0** - a modern AI agent orchestration platform built 
 AutomatosX is a platform that makes it easy to:
 
 - **Build AI Agents**: Define agents using simple YAML profiles and Markdown abilities
-- **Manage Memory**: Store and retrieve agent memories with vector search
+- **Manage Memory**: Store and retrieve agent memories with fast local FTS5 search
 - **Orchestrate Providers**: Use multiple AI providers (Claude, Gemini, OpenAI) with automatic fallback
 - **Scale Efficiently**: Optimized performance with caching and lazy loading
 
@@ -30,9 +30,10 @@ const response = await agent.run('Help me with this task');
 
 ### 🧠 Advanced Memory System
 
-Powered by SQLite + vec for efficient vector search with minimal overhead:
+Powered by SQLite FTS5 for efficient full-text search with minimal overhead:
 
-- **Lightning Fast**: 0.72ms average query latency
+- **Lightning Fast**: < 1ms average query latency
+- **Privacy First**: 100% local, no external API calls
 - **Lightweight**: 2-5MB database size (efficient storage)
 - **Semantic Search**: Find relevant memories by meaning, not just keywords
 - **Export/Import**: Backup and restore your agent's memory
@@ -117,7 +118,7 @@ search("Latest AI news")
 **Architecture**:
 
 - ✨ Complete TypeScript rewrite
-- ✨ SQLite + vec for vector storage
+- ✨ SQLite FTS5 for local full-text search
 - ✨ Modern ESM modules
 - ✨ Vitest for testing
 
@@ -165,7 +166,7 @@ Conduct research and summarize findings:
 
 ```bash
 npx @defai.sg/automatosx run researcher "Summarize recent AI advancements"
-npx @defai.sg/automatosx run researcher "Compare vector databases"
+npx @defai.sg/automatosx run researcher "Compare SQL full-text search solutions"
 ```
 
 ### 4. Multi-Agent Orchestration

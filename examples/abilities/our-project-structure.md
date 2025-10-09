@@ -73,7 +73,7 @@ automatosx/
 │
 ├── examples/                 # Example configurations
 │   ├── agents/               # Example agent profiles (YAML)
-│   │   ├── coder.yaml        # Charlie - Software Engineer
+│   │   ├── coder.yaml        # Sofia - Software Engineer
 │   │   ├── reviewer.yaml     # Code reviewer
 │   │   ├── assistant.yaml    # General assistant
 │   │   ├── backend.yaml      # Backend specialist
@@ -117,7 +117,7 @@ automatosx/
 │   ├── memory/               # Memory storage
 │   │   └── memory.db         # SQLite + vec database
 │   └── workspaces/           # Agent workspaces (isolated)
-│       ├── coder/            # Charlie's workspace
+│       ├── coder/            # Sofia's workspace
 │       ├── reviewer/
 │       └── ...
 │
@@ -370,7 +370,7 @@ dist/
 
 ```
 .automatosx/workspaces/
-├── coder/              # Charlie's workspace
+├── coder/              # Sofia's workspace
 │   ├── output.ts
 │   ├── test.ts
 │   └── ...

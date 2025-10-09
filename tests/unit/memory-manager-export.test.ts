@@ -1,17 +1,18 @@
 /**
  * Memory Manager Export Tests
  *
- * Tests the re-export wrapper that provides backwards compatibility
+ * Tests the memory manager exports
+ * v4.11.0: MemoryManagerVec renamed to MemoryManager
  */
 
 import { describe, it, expect } from 'vitest';
 import { MemoryManager } from '../../src/core/memory-manager.js';
-import { MemoryManagerVec } from '../../src/core/memory-manager-vec.js';
 import type { IMemoryManager } from '../../src/types/memory.js';
 
-describe('Memory Manager Re-export', () => {
-  it('should export MemoryManagerVec as MemoryManager', () => {
-    expect(MemoryManager).toBe(MemoryManagerVec);
+describe('Memory Manager Export', () => {
+  it('should export MemoryManager class', () => {
+    expect(MemoryManager).toBeDefined();
+    expect(MemoryManager.name).toBe('MemoryManager');
   });
 
   it('should export IMemoryManager interface type', () => {
@@ -20,7 +21,8 @@ describe('Memory Manager Re-export', () => {
     expect(checkType).toBeDefined();
   });
 
-  it('should be the same class reference', () => {
-    expect(MemoryManager.name).toBe('MemoryManagerVec');
+  it('should have create factory method', () => {
+    expect(MemoryManager.create).toBeDefined();
+    expect(typeof MemoryManager.create).toBe('function');
   });
 });

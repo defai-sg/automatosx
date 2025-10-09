@@ -730,7 +730,6 @@ automatosx memory export <output> [options]
 
 ```bash
 --format <type>     Export format: json, csv
---include-vectors   Include embeddings (increases size)
 ```
 
 **Examples**:
@@ -738,9 +737,6 @@ automatosx memory export <output> [options]
 ```bash
 # Export to JSON
 automatosx memory export ./backup.json
-
-# Export with vectors
-automatosx memory export ./full-backup.json --include-vectors
 
 # Export to CSV
 automatosx memory export ./memories.csv --format csv
@@ -868,9 +864,6 @@ echo $?  # 0 if successful, non-zero if error
 Configure AutomatosX via environment variables:
 
 ```bash
-# OpenAI API key (for embeddings)
-export OPENAI_API_KEY="sk-..."
-
 # Gemini API key (if using Gemini)
 export GEMINI_API_KEY="..."
 

@@ -286,8 +286,10 @@ export interface MemoryExport {
 export interface IMemoryManager {
   /**
    * Add a new memory entry
+   *
+   * v4.11.0: Embedding is now optional (null allowed for FTS5-only mode)
    */
-  add(content: string, embedding: number[], metadata: MemoryMetadata): Promise<MemoryEntry>;
+  add(content: string, embedding: number[] | null, metadata: MemoryMetadata): Promise<MemoryEntry>;
 
   /**
    * Search for similar memories

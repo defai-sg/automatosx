@@ -89,7 +89,7 @@ automatosx memory search "What did sales promise Customer #1234?"
 |-------------------|-----------------|
 | 📋 Scattered docs, Slack threads, "who owns this?" | 🎯 Single source of truth—everyone works from the same playbook |
 | 🐌 New hires take weeks to ramp | ⚡ Organized workflows = onboarding in days |
-| 💸 $200/mo per seat (ChatGPT Pro + APIs) | 💰 $20/mo total (pay-per-use CLI) = 10× savings |
+| 💸 Expensive subscription plans per seat | 💰 Pay-per-use CLI pricing = significant cost savings |
 | 🤯 Release notes forgotten, compliance skipped | 🛡️ Built-in guardrails catch gaps before launch |
 | ⏳ 3 weeks from plan to production | 🚀 3 days—agents handle research, build, review, docs in parallel |
 
@@ -225,7 +225,7 @@ sharedAbilities:
 **Benefits**: No need to specify `provider`, `model`, `temperature` in each agent—just assign a team!
 
 **Intelligent Memory**
-SQLite + `vec` delivers millisecond semantic recall with export/import, quotas, and deterministic search.
+SQLite FTS5 full-text search delivers millisecond recall with export/import, quotas, and deterministic search.
 
 ```bash
 # Store information
@@ -244,22 +244,22 @@ Agents collaborate autonomously through natural language delegation—no complex
 automatosx run coordinator "Build authentication feature"
 
 # Agent response includes natural language delegations:
-# "@frontend Create login UI with email/password fields."
-# "@backend Implement JWT auth API."
+# "@agent-a Create login UI with email/password fields."
+# "@agent-b Implement JWT auth API."
 #
 # System automatically:
-# 1. Detects delegation requests (@frontend, @backend)
+# 1. Detects delegation requests (@agent-a, @agent-b)
 # 2. Executes delegated tasks in parallel
 # 3. Collects and returns all results
 ```
 
 **Supported delegation syntaxes:**
 
-- `@frontend Create login UI` - Concise mention
-- `DELEGATE TO backend: Implement API` - Explicit command
-- `Please ask database to design schema` - Natural request
-- `I need frontend to handle the UI` - Need expression
-- `請 frontend 建立 UI` - Chinese support
+- `@[agent-name] Create login UI` - Concise mention
+- `DELEGATE TO [agent]: Implement API` - Explicit command
+- `Please ask [agent] to design schema` - Natural request
+- `I need [agent] to handle the UI` - Need expression
+- `請 [agent] 建立 UI` - Chinese support
 
 **Safety features:**
 
@@ -302,7 +302,7 @@ automatosx/
 │   ├── agents/      # Agent YAML profiles (17 agents)
 │   ├── teams/       # 🆕 Team YAML configs (4 teams) - v4.10.0+
 │   ├── abilities/   # Markdown knowledge bases
-│   ├── memory/      # SQLite vector database
+│   ├── memory/      # SQLite FTS5 database
 │   └── workspaces/  # Agent isolated workspaces
 ├── tests/
 │   ├── unit/        # 928 tests (core modules)
@@ -326,7 +326,7 @@ Strict mode TypeScript + Vitest ensures every module is covered before it ships.
 | Metric | v3.1 | v4.10.0 | Improvement |
 |--------|------|---------|-------------|
 | Bundle size | 340 MB | 46 MB | **87% ↓** |
-| Vector search | 45 ms | 0.72 ms | **62× ↑** |
+| Text search (FTS5) | 45 ms | 0.72 ms | **62× ↑** |
 | Dependencies | 589 | 158 | **73% ↓** |
 | Tests passing | 512 | 994 | **94% ↑** |
 
@@ -445,8 +445,7 @@ AutomatosX uses JSON configuration with priority order:
     }
   },
   "memory": {
-    "maxEntries": 10000,
-    "embeddingDimensions": 1536
+    "maxEntries": 10000
   }
 }
 ```
@@ -532,7 +531,7 @@ metadata:
 
 **Key changes:**
 
-- Vector DB: Milvus → SQLite + vec
+- Memory: Milvus vector DB → SQLite FTS5 full-text search
 - Language: JavaScript → TypeScript
 - Config: `.defai/` → `.automatosx/`, YAML → JSON
 - Bundle: 340MB → 46MB (87% reduction)

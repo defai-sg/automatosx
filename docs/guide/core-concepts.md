@@ -233,11 +233,11 @@ abilities:
 
 ### What is Memory?
 
-**Memory** is AutomatosX's persistent storage system using **SQLite + vec** for vector search.
+**Memory** is AutomatosX's persistent storage system using **SQLite FTS5** for fast, local full-text search.
 
-### Memory Types
+### Memory Operations
 
-**Text Memory**: Store and retrieve by keywords
+**Add Memory**: Store information with metadata
 
 ```bash
 # Add a memory
@@ -245,17 +245,17 @@ automatosx memory add "TypeScript is a typed superset of JavaScript" \
   --type knowledge \
   --tags programming,typescript
 
-# Search by text
+# Search by tags
 automatosx memory list --tags typescript
 ```
 
-**Vector Memory**: Semantic search using embeddings
+**Text Search**: Fast local full-text search with FTS5
 
 ```bash
-# Search by meaning (requires OpenAI API key)
-automatosx memory search "What are the benefits of static typing?"
+# Search by text query (< 1ms, all local)
+automatosx memory search "benefits of static typing"
 
-# Returns relevant memories even if keywords don't match
+# Returns relevant memories ranked by relevance
 # - "TypeScript is a typed superset of JavaScript"
 # - "Static typing catches errors at compile time"
 # - "Type systems improve code quality"
@@ -277,8 +277,7 @@ Each memory entry contains:
     accessedAt: "2025-10-06T...",
     accessCount: 5
   },
-  embedding: [0.123, -0.456, ...],  // 1536-dimension vector
-  similarity: 0.89  // when returned from search
+  similarity: 0.89  // FTS5 relevance score (when returned from search)
 }
 ```
 
@@ -302,11 +301,11 @@ memory:
 
 ### Storage Details
 
-- **Database**: SQLite with vec extension
+- **Database**: SQLite with FTS5 full-text search
 - **Location**: `.automatosx/memory/memory.db`
 - **Size**: ~2-5MB for 10,000 entries
-- **Performance**: 0.72ms average query latency
-- **Dimensions**: 1536 (OpenAI text-embedding-3-small)
+- **Performance**: < 1ms average query latency
+- **Privacy**: 100% local, no external API calls
 
 ---
 

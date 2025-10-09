@@ -5,6 +5,100 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.11.0] - 2025-10-09
+
+### 🎯 Major Changes
+
+#### FTS5 Full-Text Search (Removed Vector Search)
+
+**Revolutionary simplification**: Memory system now uses SQLite FTS5 full-text search exclusively, eliminating OpenAI embedding dependency and associated costs.
+
+**What Changed**:
+- ✅ **No External API Dependency**: Removed OpenAI embedding requirement
+- ✅ **Zero Embedding Costs**: No API calls for generating embeddings
+- ✅ **Simplified Architecture**: Pure SQLite FTS5 for text search
+- ✅ **Same Performance**: Maintains < 1ms search performance
+- ✅ **Better Privacy**: All data stays local (no cloud API calls)
+
+### 🔧 Breaking Changes
+
+#### Memory System
+
+- **Removed**: OpenAI embedding provider dependency
+- **Removed**: `embeddingDimensions` configuration option
+- **Renamed**: `MemoryManagerVec` class → `MemoryManager`
+- **Renamed**: `memory-manager-vec.ts` → `memory-manager.ts`
+- **Changed**: Memory search now requires `text` parameter (FTS5 query)
+- **Removed**: Vector-based similarity search
+
+**Migration Guide**:
+```typescript
+// Before (v4.10.0):
+const results = await memory.search({
+  vector: embedding,  // Required embedding
+  limit: 5
+});
+
+// After (v4.11.0):
+const results = await memory.search({
+  text: 'search query',  // Direct text query
+  limit: 5
+});
+```
+
+#### CLI Changes
+
+- **Memory search**: Now requires text query (no vector file support)
+  ```bash
+  # Before: ax memory search --vector-file embeddings.json
+  # After: ax memory search "your query text"
+  ```
+
+#### Configuration Changes
+
+- **Removed**: `memory.embeddingDimensions` from config
+  ```json
+  // Before:
+  {
+    "memory": {
+      "maxEntries": 10000,
+      "embeddingDimensions": 1536
+    }
+  }
+
+  // After:
+  {
+    "memory": {
+      "maxEntries": 10000
+    }
+  }
+  ```
+
+### ✨ Improvements
+
+- **Cost Reduction**: Eliminated embedding API costs
+- **Privacy**: All memory operations stay local
+- **Simplicity**: Removed embedding provider setup
+- **Reliability**: No external API dependencies
+- **Performance**: Maintained < 1ms search speed
+
+### 📝 Documentation
+
+- Updated README.md to reflect FTS5-only architecture
+- Removed vector search references
+- Removed specific pricing amounts (cost savings noted generically)
+- Updated example configurations
+
+### 🔄 Migration Notes
+
+**No Data Loss**: Existing memory databases will continue to work. The FTS5 tables are already present and functional.
+
+**Action Required**:
+1. Update code using `MemoryManagerVec` → `MemoryManager`
+2. Change search calls to use `text` parameter instead of `vector`
+3. Remove `embeddingDimensions` from config files
+4. Update CLI scripts using `--vector-file` flag
+
 ## [4.10.0] - 2025-10-08
 
 ### 🎯 Major Features

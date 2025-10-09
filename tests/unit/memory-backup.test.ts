@@ -7,7 +7,7 @@ import { rm } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { existsSync } from 'fs';
-import { MemoryManagerVec as MemoryManager } from '../../src/core/memory-manager-vec.js';
+import { MemoryManager } from '../../src/core/memory-manager.js';
 import type { MemoryMetadata } from '../../src/types/memory.js';
 
 describe('MemoryManager Backup/Restore', () => {
@@ -136,14 +136,13 @@ describe('MemoryManager Backup/Restore', () => {
       expect(statsRestored.totalEntries).toBe(statsBefore.totalEntries);
     });
 
-    it('should restore and preserve vector search capability', async () => {
-      // Save and backup (sqlite-vec: vectors embedded in DB)
+    it('should restore and preserve FTS5 search capability', async () => {
+      // v4.11.0: FTS5 search (no vectors)
       await manager.saveIndex(); // No-op
       await manager.backup(backupPath);
 
       // Add more data
-      const embedding = new Array(1536).fill(0.5);
-      await manager.add('New entry', embedding, {
+      await manager.add('New entry for testing', null, {
         type: 'other',
         source: 'test'
       });
@@ -151,9 +150,9 @@ describe('MemoryManager Backup/Restore', () => {
       // Restore
       await manager.restore(backupPath);
 
-      // Search should still work (vectors restored with database)
+      // Search should still work (FTS5 index restored with database)
       const results = await manager.search({
-        vector: embedding,
+        text: 'test',
         limit: 5
       });
 
@@ -214,26 +213,25 @@ describe('MemoryManager Backup/Restore', () => {
     });
 
     it('should maintain search functionality after restore', async () => {
-      const queryVector = new Array(1536).fill(0.5);
-
+      // v4.11.0: FTS5 text search (no vectors)
       // Save index first
       await manager.saveIndex();
 
       // Search before backup
       const resultsBefore = await manager.search({
-        vector: queryVector,
+        text: 'entry',
         limit: 5
       });
 
       expect(resultsBefore.length).toBeGreaterThan(0);
 
-      // Backup (including index) and restore
+      // Backup (including FTS5 index) and restore
       await manager.backup(backupPath);
       await manager.restore(backupPath);
 
       // Search after restore
       const resultsAfter = await manager.search({
-        vector: queryVector,
+        text: 'entry',
         limit: 5
       });
 

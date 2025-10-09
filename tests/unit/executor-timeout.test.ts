@@ -228,7 +228,7 @@ describe('AgentExecutor - Timeout Handling', () => {
       } as any;
 
       const result = await executor.execute(context, {
-        timeout: 300000, // 5 minutes
+        timeout: 900000, // 15 minutes
         showProgress: false
       });
 

@@ -12,7 +12,7 @@ import { AdvancedStageExecutor } from '../../agents/advanced-stage-executor.js';
 import type { MultiStageExecutionResult } from '../../agents/stage-executor.js';
 import type { Stage } from '../../types/agent.js';
 import { AgentNotFoundError } from '../../types/agent.js';
-import { MemoryManagerVec } from '../../core/memory-manager-vec.js';
+import { MemoryManager } from '../../core/memory-manager.js';
 import { Router } from '../../core/router.js';
 import { PathResolver } from '../../core/path-resolver.js';
 import { SessionManager } from '../../core/session-manager.js';
@@ -118,7 +118,7 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
     console.log(chalk.blue.bold(`\n🤖 AutomatosX - Running ${argv.agent}\n`));
 
     // Declare resources in outer scope for cleanup
-    let memoryManager: MemoryManagerVec | undefined;
+    let memoryManager: MemoryManager | undefined;
     let router: Router | undefined;
     let contextManager: ContextManager | undefined;
     let context: any;
@@ -152,30 +152,17 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         join(projectDir, '.automatosx', 'abilities')
       );
 
-      // Initialize memory manager with embedding provider
+      // Initialize memory manager (v4.11.0: No embedding provider required)
       try {
-        // Only initialize if API key is available
-        const hasOpenAI = process.env.OPENAI_API_KEY || config.openai?.apiKey;
-
-        if (hasOpenAI && argv.memory) {
-          const { OpenAIEmbeddingProvider } = await import('../../providers/openai-embedding-provider.js');
-          const embeddingProvider = new OpenAIEmbeddingProvider({
-            provider: 'openai',
-            apiKey: process.env.OPENAI_API_KEY || config.openai?.apiKey || '',
-            model: 'text-embedding-3-small'
+        if (argv.memory) {
+          // v4.11.0: Memory uses FTS5, no embedding provider needed
+          memoryManager = await MemoryManager.create({
+            dbPath: join(projectDir, '.automatosx', 'memory', 'memory.db')
           });
 
-          memoryManager = await MemoryManagerVec.create({
-            dbPath: join(projectDir, '.automatosx', 'memory', 'memory.db'),
-            embeddingProvider
-          });
-        } else {
-          // Skip memory if no API key
-          if (argv.verbose && argv.memory) {
-            console.log(chalk.yellow('⚠ Memory features disabled: OPENAI_API_KEY not set\n'));
+          if (argv.verbose) {
+            console.log(chalk.green('✓ Memory system initialized (FTS5 full-text search)\n'));
           }
-          argv.memory = false;
-          argv.saveMemory = false;
         }
       } catch (error) {
         // Graceful fallback if memory initialization fails

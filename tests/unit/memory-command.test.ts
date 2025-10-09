@@ -43,7 +43,8 @@ describe('Memory Commands', () => {
   describe('Search Command', () => {
     describe('Command Definition', () => {
       it('should have correct command string', () => {
-        expect(searchCommand.command).toBe('search [query]');
+        // v4.11.0: query is required (FTS5 only, no vector-file support)
+        expect(searchCommand.command).toBe('search <query>');
       });
 
       it('should have description', () => {
@@ -139,33 +140,7 @@ describe('Memory Commands', () => {
         }));
       });
 
-      it('should have validation check function', () => {
-        const mockYargs = {
-          positional: vi.fn().mockReturnThis(),
-          option: vi.fn().mockReturnThis(),
-          check: vi.fn().mockReturnThis()
-        };
-
-        (searchCommand.builder as Function)(mockYargs);
-
-        expect(mockYargs.check).toHaveBeenCalled();
-      });
-    });
-
-    describe('Validation Logic', () => {
-      it('should require either query or vector-file', () => {
-        // This validates the check function logic
-        const checkFunction = (argv: any) => {
-          if (!argv.query && !argv.vectorFile) {
-            throw new Error('Must provide either query text or --vector-file');
-          }
-          return true;
-        };
-
-        expect(() => checkFunction({ query: 'test' })).not.toThrow();
-        expect(() => checkFunction({ vectorFile: 'test.json' })).not.toThrow();
-        expect(() => checkFunction({})).toThrow('Must provide either query text or --vector-file');
-      });
+      // v4.11.0: No validation check needed - query is required parameter
     });
   });
 
@@ -409,19 +384,7 @@ describe('Memory Commands', () => {
         }));
       });
 
-      it('should define includeEmbeddings option', () => {
-        const mockYargs = {
-          positional: vi.fn().mockReturnThis(),
-          option: vi.fn().mockReturnThis()
-        };
-
-        (exportCommand.builder as Function)(mockYargs);
-
-        expect(mockYargs.option).toHaveBeenCalledWith('include-embeddings', expect.objectContaining({
-          type: 'boolean',
-          default: false
-        }));
-      });
+      // v4.11.0: No includeEmbeddings option - FTS5 only, no embeddings
     });
   });
 

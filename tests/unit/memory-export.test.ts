@@ -7,7 +7,7 @@ import { rm } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { existsSync } from 'fs';
-import { MemoryManagerVec as MemoryManager } from '../../src/core/memory-manager-vec.js';
+import { MemoryManager } from '../../src/core/memory-manager.js';
 import type { MemoryMetadata } from '../../src/types/memory.js';
 
 describe('MemoryManager Export/Import', () => {
@@ -67,10 +67,11 @@ describe('MemoryManager Export/Import', () => {
     });
 
     it('should export with embeddings if requested', async () => {
+      // v4.11.0: No embeddings in FTS5 mode (always false)
       await manager.saveIndex();
 
       const result = await manager.exportToJSON(exportPath, {
-        includeEmbeddings: true
+        includeEmbeddings: true  // Ignored in v4.11.0
       });
 
       expect(result.entriesExported).toBe(3);
@@ -80,9 +81,9 @@ describe('MemoryManager Export/Import', () => {
       const content = await readFile(exportPath, 'utf-8');
       const data = JSON.parse(content);
 
-      expect(data.metadata.includesEmbeddings).toBe(true);
-      expect(data.entries[0].embedding).toBeDefined();
-      expect(data.entries[0].embedding).toHaveLength(1536);
+      // v4.11.0: includesEmbeddings always false (FTS5 only, no vectors)
+      expect(data.metadata.includesEmbeddings).toBe(false);
+      // v4.11.0: No embeddings in entries
     });
 
     it('should export with filters', async () => {
@@ -294,14 +295,15 @@ describe('MemoryManager Export/Import', () => {
 
   describe('Export/Import Integration', () => {
     it('should preserve all data after export and import', async () => {
+      // v4.11.0: FTS5 only, no embeddings
       // Get all entries before export
       const statsBefore = await manager.getStats();
       expect(statsBefore.totalEntries).toBe(3);
 
-      // Export with embeddings
+      // Export (no embeddings in v4.11.0)
       await manager.saveIndex();
       await manager.exportToJSON(exportPath, {
-        includeEmbeddings: true
+        includeEmbeddings: false
       });
 
       // Clear and import
@@ -315,9 +317,9 @@ describe('MemoryManager Export/Import', () => {
       const statsAfter = await manager.getStats();
       expect(statsAfter.totalEntries).toBe(statsBefore.totalEntries);
 
-      // Verify content by searching
+      // Verify content by searching (FTS5)
       const allEntries = await manager.search({
-        vector: new Array(1536).fill(0.5),
+        text: 'entry',
         limit: 10
       });
 
@@ -325,22 +327,21 @@ describe('MemoryManager Export/Import', () => {
     });
 
     it('should maintain search functionality after import', async () => {
-      const queryVector = new Array(1536).fill(0.5);
-
+      // v4.11.0: FTS5 text search (no vectors)
       await manager.saveIndex();
 
-      // Export with embeddings
+      // Export (no embeddings in v4.11.0)
       await manager.exportToJSON(exportPath, {
-        includeEmbeddings: true
+        includeEmbeddings: false
       });
 
       // Clear and import
       await manager.clear();
       await manager.importFromJSON(exportPath);
 
-      // Search should work
+      // Search should work (FTS5)
       const results = await manager.search({
-        vector: queryVector,
+        text: 'test',
         limit: 5
       });
 

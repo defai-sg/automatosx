@@ -6,21 +6,20 @@ Learn how to use AutomatosX's memory system for context-aware AI agents.
 
 ## What You'll Learn
 
-- How the memory system works (SQLite + vec)
+- How the memory system works (SQLite FTS5 full-text search)
 - Adding and managing memories
-- Searching with vector embeddings
+- Searching with text queries
 - Using memory in agent profiles
 - Best practices for memory management
 
-**Time Required**: 20-25 minutes
+**Time Required**: 15-20 minutes
 
 ---
 
 ## Prerequisites
 
 - AutomatosX installed and initialized
-- OpenAI API key (for vector search)
-- Basic understanding of vector embeddings (helpful but not required)
+- No external API keys required (all local)
 
 ---
 
@@ -28,10 +27,11 @@ Learn how to use AutomatosX's memory system for context-aware AI agents.
 
 ### What is Memory?
 
-AutomatosX uses **SQLite with vec extension** for hybrid search:
+AutomatosX uses **SQLite FTS5** for fast, local full-text search:
 
-- **Text Search**: Keyword-based lookup (tags, type)
-- **Vector Search**: Semantic similarity search using embeddings
+- **Text Search**: Fast keyword and phrase search with ranking
+- **No External Dependencies**: All processing happens locally
+- **Privacy First**: No data sent to external APIs
 
 ### Why Memory?
 
@@ -60,11 +60,11 @@ automatosx run code-reviewer "Review auth.ts" --memory
 ### Memory Architecture
 
 ```
-Memory System
+Memory System (v4.11.0+)
 ├── Storage: SQLite database (.automatosx/memory/memory.db)
-├── Vector Index: HNSW algorithm (sqlite-vec)
-├── Embeddings: OpenAI text-embedding-3-small (1536 dimensions)
-└── Performance: ~0.72ms average query latency
+├── Search Engine: FTS5 full-text search (built-in)
+├── Privacy: 100% local, no external API calls
+└── Performance: < 1ms average query latency
 ```
 
 ---
@@ -78,20 +78,7 @@ npm install -g @defai.sg/automatosx
 automatosx init
 ```
 
-### Configure OpenAI API Key
-
-For vector search, you need an OpenAI API key:
-
-```bash
-# Set environment variable
-export OPENAI_API_KEY="sk-..."
-
-# Or add to your shell profile
-echo 'export OPENAI_API_KEY="sk-..."' >> ~/.zshrc
-source ~/.zshrc
-```
-
-**Note**: Vector search requires OpenAI embeddings. Text-based operations (tags, type) work without it.
+**That's it!** No external API keys needed. All memory operations work locally.
 
 ---
 
@@ -160,9 +147,12 @@ automatosx memory add "Migrated authentication from sessions to JWT (2025-10-01)
 
 ## Step 3: Searching Memories
 
-### Text Search (Tag-based)
+### Text Search (FTS5)
 
 ```bash
+# Search by text query
+automatosx memory search "error handling best practices"
+
 # Search by tag
 automatosx memory list --tags typescript
 
@@ -176,18 +166,13 @@ automatosx memory list --type knowledge
 automatosx memory list --type code --tags error-handling
 ```
 
-### Vector Search (Semantic)
+### How FTS5 Search Works
 
-```bash
-# Semantic search (requires OpenAI API key)
-automatosx memory search "What are the benefits of static typing?"
-```
+**Fast local text search**:
 
-**How it works**:
-
-1. Your query is converted to a 1536-dimension vector
-2. Similarity search finds related memories
-3. Results ranked by relevance (cosine similarity)
+1. Your query is tokenized and matched against stored content
+2. FTS5 ranks results by relevance (term frequency, proximity)
+3. Results returned in < 1ms with similarity scores
 
 **Example**:
 
@@ -198,7 +183,7 @@ automatosx memory search "error handling best practices"
 Output:
 
 ```
-Found 3 memories (similarity > 0.75):
+Found 3 memories:
 
 1. [0.89] API error handling: try-catch with custom AppError class
    Type: code | Tags: error-handling, api
@@ -257,8 +242,7 @@ Output:
     "accessedAt": "2025-10-05T14:20:00Z",
     "accessCount": 5
   },
-  "embedding": [0.123, -0.456, ...],  // 1536 dimensions
-  "similarity": 0.95  // if from search
+  "similarity": 0.95  // if from search (FTS5 relevance score)
 }
 ```
 
@@ -350,8 +334,8 @@ memory:
 
 When you run an agent with memory:
 
-1. **Query Generation**: Agent task is converted to embedding
-2. **Memory Search**: Top N relevant memories are retrieved
+1. **Query Generation**: Agent task is analyzed for key terms
+2. **Memory Search**: Top N relevant memories are retrieved via FTS5
 3. **Context Injection**: Memories are added to agent's context
 4. **Execution**: Agent uses past knowledge to inform response
 
@@ -654,11 +638,14 @@ automatosx memory delete --type conversation --older-than 30d
 --tags backend/api,patterns/error-handling,tech/typescript
 ```
 
-**4. Don't Forget to Set OpenAI Key**:
+**4. Don't Store Large Binary Data**:
 
 ```bash
-# Vector search requires embeddings
-export OPENAI_API_KEY="sk-..."
+# Bad - Memory is for text, not binary data
+automatosx memory add "$(cat image.png)" --type code
+
+# Good - Store references
+automatosx memory add "Profile image stored at /uploads/user-123.png" --type knowledge
 ```
 
 ---
@@ -728,19 +715,17 @@ automatosx run code-reviewer "Review this auth code" --memory
 
 ## Troubleshooting
 
-### Vector Search Not Working
+### Search Not Returning Results
 
 ```bash
-# Check OpenAI API key
-echo $OPENAI_API_KEY
+# Try broader search terms
+automatosx memory search "auth"  # instead of "authentication strategy"
 
-# Test with text search instead
-automatosx memory list --tags typescript
+# Check what's stored
+automatosx memory list
 
-# Or use mock provider for testing
-export AUTOMATOSX_MOCK_PROVIDERS=true
-automatosx memory search "test query"
-```
+# Search by tags instead
+automatosx memory list --tags auth
 
 ### Memory Not Being Used by Agent
 
@@ -777,14 +762,14 @@ automatosx memory rebuild-index
 You've learned to:
 
 - ✅ Add memories with metadata (type, tags)
-- ✅ Search with text (tags) and vectors (semantic)
+- ✅ Search with FTS5 full-text search (< 1ms, all local)
 - ✅ Import/export memories for backup
 - ✅ Enable memory in agent profiles
 - ✅ Use advanced memory patterns
 - ✅ Maintain and optimize memory storage
 - ✅ Apply best practices
 
-**Your agents now have long-term memory!**
+**Your agents now have long-term memory with complete privacy!**
 
 ---
 

@@ -84,7 +84,7 @@ This creates:
 - `automatosx.config.json` - Project configuration
 - `.automatosx/agents/` - Agent profiles (5 examples included)
 - `.automatosx/abilities/` - Agent abilities (15 examples included)
-- `.automatosx/memory/` - Vector memory database
+- `.automatosx/memory/` - FTS5 memory database (full-text search)
 - `.automatosx/logs/` - Execution logs
 
 ---
@@ -287,12 +287,9 @@ npm install -g @google/generative-ai
 export GEMINI_API_KEY="your-api-key"
 ```
 
-**OpenAI** (for embeddings):
+**No Additional Setup Required**:
 
-```bash
-# Set API key for vector search
-export OPENAI_API_KEY="your-api-key"
-```
+AutomatosX memory uses local SQLite FTS5 search - no external API keys needed!
 
 ---
 
@@ -317,7 +314,7 @@ export OPENAI_API_KEY="your-api-key"
 
 ### Advanced
 
-- [Vector Search Deep Dive](../tutorials/advanced-usage.md#vector-search)
+- [Memory Management Guide](../tutorials/memory-management.md)
 - [Multi-Provider Configuration](../tutorials/advanced-usage.md#multi-provider)
 - [Performance Optimization](../tutorials/advanced-usage.md#performance)
 
@@ -365,11 +362,11 @@ claude --version  # for Claude
 gemini --version  # for Gemini
 ```
 
-**Memory search not working**
+**Memory search not returning results**
 
 ```bash
-# Set OpenAI API key for embeddings
-export OPENAI_API_KEY="your-key"
+# Try broader search terms
+automatosx memory search "auth"  # instead of specific phrases
 
 # Or use mock provider for testing
 export AUTOMATOSX_MOCK_PROVIDERS=true
