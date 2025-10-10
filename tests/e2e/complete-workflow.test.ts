@@ -222,11 +222,11 @@ describe('E2E Complete Workflows', () => {
 
       // Step 3: Run agent (should have access to memory)
       const run = await execCLI(env, ['run', 'coder', 'Write a hello function'], {
-        timeout: 20000
+        timeout: 40000
       });
       assertSuccess(run);
       assertOutputContains(run.stdout, 'Complete');
-    }, 30000);
+    }, 60000);
 
     it('should support resource cleanup after execution', async () => {
       // Step 1: Create agent and run

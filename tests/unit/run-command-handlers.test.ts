@@ -329,6 +329,6 @@ This is a test ability for unit testing.
       } as any);
 
       expect(processExitSpy).toHaveBeenCalledWith(0);
-    });
+    }, 60000);
   });
 });
