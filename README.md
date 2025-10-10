@@ -66,26 +66,6 @@ Day 3: /ax run security "security audit" → Security has full context from Day 
 
 ---
 
-## 🚀 What's New
-
-**v5.0.12** (October 2025): 🎯 Agent Rework - Eliminate Delegation Cycles
-- **MAJOR**: Complete agent governance refactoring (all 11 agents updated)
-- **NEW**: Smart ability loading with `abilitySelection` (30-50% reduction in prompt tokens)
-- **NEW**: Clear role ownership - Quality owns code-review/debugging, Security owns security-audit
-- **NEW**: Delegation depth controls - Implementers (depth 1), Quality (depth 1), Coordinators (depth 1)
-- **NEW**: 8 role-specific workflow stages (backend, frontend, quality, security, devops, data, design, strategic)
-- **NEW**: 3 specialized backend abilities (api-design, db-modeling, caching-strategy)
-- **FIXED**: Multi-hop delegation cycles eliminated (depth limits prevent infinite chains)
-- **IMPROVED**: Faster task completion (agents evaluate capabilities first before delegating)
-- **IMPROVED**: Better prompt focus (task-based ability loading)
-- **Result**: 99.7% test pass rate (1098/1101), zero breaking changes
-
-**v5.0.10**: Smart Cleanup & UX Improvements
-**v5.0.8**: Critical Fixes - Timeout & Memory
-**v5.0.6**: File Operation Tools Enabled
-**v5.0.5**: Provider Parameters & Version Management
-**v5.0.0**: Agent template system for quick agent creation
-
 [📋 Full Changelog](CHANGELOG.md) | [🎉 Release Notes](https://github.com/defai-digital/automatosx/releases)
 
 ---
