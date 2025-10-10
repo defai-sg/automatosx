@@ -9,7 +9,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
 [![Tests](https://img.shields.io/badge/tests-1,149%20passing-brightgreen.svg)](#)
 
-**Status**: ✅ Production Ready · v5.0.5 · October 2025
+**Status**: ✅ Production Ready · v5.0.6 · October 2025
 
 ---
 
@@ -66,11 +66,13 @@ Day 3: /ax run steve "security audit" → Steve has full context from Day 1-2
 
 ## 🚀 What's New
 
-**v5.0.5** (October 2025): Provider Parameters & Version Management
-- Simplified provider parameters - let CLIs use optimal defaults
-- Unified version management - single source of truth
-- Claude: 200K tokens, Gemini: 2M tokens available
+**v5.0.6** (October 2025): File Operation Tools Enabled
+- Claude Provider: Enable file operations (Read, Write, Edit, Bash, Glob, Grep)
+- Gemini Provider: Enable automated file edits (--approval-mode auto_edit)
+- Fixed issue where agents couldn't perform file operations through CLIs
+- Updated provider CLI args tests for comprehensive coverage
 
+**v5.0.5**: Provider Parameters & Version Management
 **v5.0.4**: Memory saving now works automatically
 **v5.0.3**: Special character support in memory search
 **v5.0.0**: Agent template system for quick agent creation
