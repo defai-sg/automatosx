@@ -11,6 +11,13 @@ import { load as loadYaml } from 'js-yaml';
 import chalk from 'chalk';
 import * as readline from 'readline';
 import { TemplateEngine, type TemplateVariables } from '../../../agents/template-engine.js';
+import {
+  listAvailableTemplates,
+  listAvailableTeams,
+  isValidAgentName,
+  checkDisplayNameConflict,
+  suggestValidAgentName
+} from './helpers.js';
 
 interface CreateOptions {
   agent: string;
@@ -22,16 +29,6 @@ interface CreateOptions {
   interactive?: boolean;
 }
 
-const AVAILABLE_TEMPLATES = [
-  'basic-agent',
-  'developer',
-  'analyst',
-  'designer',
-  'qa-specialist'
-];
-
-const TEAM_CHOICES = ['core', 'engineering', 'business', 'design'];
-
 export const createCommand: CommandModule<{}, CreateOptions> = {
   command: 'create <agent>',
   describe: 'Create a new agent from template',
@@ -39,18 +36,17 @@ export const createCommand: CommandModule<{}, CreateOptions> = {
   builder: (yargs) => {
     return yargs
       .positional('agent', {
-        describe: 'Agent name',
+        describe: 'Agent name (lowercase letters, numbers, and hyphens)',
         type: 'string',
         demandOption: true
       })
       .option('template', {
-        describe: 'Template to use',
+        describe: 'Template to use (run "ax agent templates" to see available)',
         type: 'string',
-        alias: 't',
-        choices: AVAILABLE_TEMPLATES
+        alias: 't'
       })
       .option('display-name', {
-        describe: 'Agent display name',
+        describe: 'Agent display name (friendly name)',
         type: 'string',
         alias: 'd'
       })
@@ -65,11 +61,10 @@ export const createCommand: CommandModule<{}, CreateOptions> = {
       })
       .option('team', {
         describe: 'Team name',
-        type: 'string',
-        choices: TEAM_CHOICES
+        type: 'string'
       })
       .option('interactive', {
-        describe: 'Interactive mode (prompt for all values)',
+        describe: 'Interactive mode (prompt for missing values)',
         type: 'boolean',
         alias: 'i',
         default: false
@@ -82,7 +77,24 @@ export const createCommand: CommandModule<{}, CreateOptions> = {
       const agentsDir = join(projectDir, '.automatosx', 'agents');
       const agentFile = join(agentsDir, `${argv.agent}.yaml`);
 
-      // Check if agent already exists
+      // 1. Validate agent name format
+      const nameValidation = isValidAgentName(argv.agent);
+      if (!nameValidation.valid) {
+        console.log(chalk.red.bold(`\n✗ Invalid agent name: ${argv.agent}\n`));
+        console.log(chalk.red(nameValidation.error));
+        const suggestion = suggestValidAgentName(argv.agent);
+        if (suggestion !== argv.agent) {
+          console.log(chalk.yellow(`\n💡 Suggested name: ${suggestion}`));
+        }
+        console.log(chalk.gray('\nAgent names must:'));
+        console.log(chalk.gray('  • Start with a lowercase letter'));
+        console.log(chalk.gray('  • Contain only lowercase letters, numbers, and hyphens'));
+        console.log(chalk.gray('  • Be 2-50 characters long'));
+        console.log(chalk.gray('  • Not contain consecutive hyphens\n'));
+        process.exit(1);
+      }
+
+      // 2. Check if agent already exists
       if (existsSync(agentFile)) {
         console.log(chalk.red.bold(`\n✗ Agent already exists: ${argv.agent}\n`));
         console.log(chalk.gray('Use a different name or remove the existing agent first.\n'));
@@ -92,18 +104,25 @@ export const createCommand: CommandModule<{}, CreateOptions> = {
       // Ensure agents directory exists
       await mkdir(agentsDir, { recursive: true });
 
-      // Get template name
+      // 3. Get template name
       let templateName = argv.template;
       if (!templateName) {
-        templateName = await askTemplate();
+        if (argv.interactive) {
+          // Interactive mode: ask user to select
+          templateName = await askTemplate();
+        } else {
+          // Non-interactive mode: use default
+          templateName = 'basic-agent';
+          console.log(chalk.gray(`Using default template: ${templateName}`));
+        }
       }
 
-      // Load template
+      // 4. Load template
       const templatePath = await findTemplate(templateName);
       const templateContent = await readFile(templatePath, 'utf-8');
       const templateYaml = loadYaml(templateContent) as any;
 
-      // Collect variables
+      // 5. Collect variables
       const variables: TemplateVariables = {
         AGENT_NAME: argv.agent,
         DISPLAY_NAME: argv.displayName || '',
@@ -112,33 +131,61 @@ export const createCommand: CommandModule<{}, CreateOptions> = {
         TEAM: argv.team || ''
       };
 
-      // Interactive mode - ask for missing values
-      if (argv.interactive || !variables.DISPLAY_NAME) {
-        variables.DISPLAY_NAME = await ask('Display Name', variables.DISPLAY_NAME || argv.agent);
+      // 6. Interactive mode - ask for missing values
+      if (argv.interactive) {
+        // Only ask in interactive mode
+        if (!variables.DISPLAY_NAME) {
+          variables.DISPLAY_NAME = await ask('Display Name', argv.agent);
+        }
+
+        if (!variables.ROLE && templateYaml.role?.includes('{{')) {
+          variables.ROLE = await ask('Role', extractDefault(templateYaml.role) || 'AI Assistant');
+        }
+
+        if (!variables.DESCRIPTION && templateYaml.description?.includes('{{')) {
+          variables.DESCRIPTION = await ask(
+            'Description',
+            extractDefault(templateYaml.description) || 'A helpful AI assistant'
+          );
+        }
+
+        if (!variables.TEAM && templateYaml.team?.includes('{{')) {
+          variables.TEAM = await askTeam(extractDefault(templateYaml.team) || 'core');
+        }
+      } else {
+        // Non-interactive mode: use defaults for missing values
+        if (!variables.DISPLAY_NAME) {
+          variables.DISPLAY_NAME = argv.agent;
+        }
+        if (!variables.ROLE && templateYaml.role?.includes('{{')) {
+          variables.ROLE = extractDefault(templateYaml.role) || 'AI Assistant';
+        }
+        if (!variables.DESCRIPTION && templateYaml.description?.includes('{{')) {
+          variables.DESCRIPTION = extractDefault(templateYaml.description) || 'A helpful AI assistant';
+        }
+        if (!variables.TEAM && templateYaml.team?.includes('{{')) {
+          variables.TEAM = extractDefault(templateYaml.team) || 'core';
+        }
       }
 
-      if (argv.interactive || (!variables.ROLE && templateYaml.role?.includes('{{'))) {
-        variables.ROLE = await ask('Role', variables.ROLE || extractDefault(templateYaml.role) || 'AI Assistant');
+      // 7. Check displayName conflicts
+      if (variables.DISPLAY_NAME) {
+        const conflict = await checkDisplayNameConflict(variables.DISPLAY_NAME);
+        if (conflict) {
+          console.log(chalk.red.bold(`\n✗ DisplayName conflict: "${variables.DISPLAY_NAME}" is already used by agent "${conflict}"\n`));
+          console.log(chalk.gray('Please choose a different displayName.\n'));
+          process.exit(1);
+        }
       }
 
-      if (argv.interactive || (!variables.DESCRIPTION && templateYaml.description?.includes('{{'))) {
-        variables.DESCRIPTION = await ask(
-          'Description',
-          variables.DESCRIPTION || extractDefault(templateYaml.description) || 'A helpful AI assistant'
-        );
-      }
-
-      if (argv.interactive || (!variables.TEAM && templateYaml.team?.includes('{{'))) {
-        variables.TEAM = await askTeam(variables.TEAM || extractDefault(templateYaml.team) || 'core');
-      }
-
-      // Render template
+      // 8. Render template
       const engine = new TemplateEngine();
       const rendered = engine.render(templateContent, variables);
 
-      // Write agent file
+      // 9. Write agent file
       await writeFile(agentFile, rendered, 'utf-8');
 
+      // 10. Success message
       console.log(chalk.green.bold(`\n✓ Agent '${argv.agent}' created successfully\n`));
       console.log(chalk.white(`Display Name: ${chalk.cyan(variables.DISPLAY_NAME)}`));
       console.log(chalk.white(`Team:         ${chalk.cyan(variables.TEAM || 'core')}`));
@@ -146,9 +193,9 @@ export const createCommand: CommandModule<{}, CreateOptions> = {
       console.log(chalk.white(`File:         ${chalk.gray(agentFile)}`));
       console.log();
       console.log(chalk.gray('Next steps:'));
-      console.log(chalk.gray('  • Edit the agent: ax agent edit ' + argv.agent));
-      console.log(chalk.gray('  • View details:   ax agent show ' + argv.agent));
-      console.log(chalk.gray('  • Run the agent:  ax run ' + argv.agent + ' "your task"'));
+      console.log(chalk.gray('  • View details: ax agent show ' + argv.agent));
+      console.log(chalk.gray('  • Run agent:    ax run ' + argv.agent + ' "your task"'));
+      console.log(chalk.gray('  • Edit file:    Open ' + agentFile + ' in your editor'));
       console.log();
 
     } catch (error) {
@@ -185,51 +232,55 @@ async function findTemplate(name: string): Promise<string> {
  * Ask for template selection
  */
 async function askTemplate(): Promise<string> {
-  console.log(chalk.blue.bold('\n📋 Available Templates:\n'));
-  console.log(chalk.white('  1. basic-agent    - Basic agent (core team)'));
-  console.log(chalk.white('  2. developer      - Software developer (engineering)'));
-  console.log(chalk.white('  3. analyst        - Business analyst (business)'));
-  console.log(chalk.white('  4. designer       - UI/UX designer (design)'));
-  console.log(chalk.white('  5. qa-specialist  - QA specialist (core)'));
-  console.log();
+  const templates = await listAvailableTemplates();
 
-  const answer = await ask('Select template (1-5)', '1');
-  const index = parseInt(answer) - 1;
-
-  if (index >= 0 && index < AVAILABLE_TEMPLATES.length) {
-    return AVAILABLE_TEMPLATES[index] ?? 'basic-agent';
+  if (templates.length === 0) {
+    throw new Error('No templates available. Please run "ax init" first.');
   }
 
-  return 'basic-agent';
+  console.log(chalk.blue.bold('\n📋 Available Templates:\n'));
+  templates.forEach((template, index) => {
+    const desc = template.description || 'Custom template';
+    console.log(chalk.white(`  ${index + 1}. ${template.name.padEnd(20)} - ${desc}`));
+  });
+  console.log();
+
+  const answer = await ask(`Select template (1-${templates.length})`, '1');
+  const index = parseInt(answer) - 1;
+
+  if (index >= 0 && index < templates.length) {
+    return templates[index]?.name ?? templates[0]!.name;
+  }
+
+  return templates[0]!.name;
 }
 
 /**
  * Ask for team selection
  */
 async function askTeam(defaultValue: string): Promise<string> {
-  console.log(chalk.blue.bold('\n👥 Available Teams:\n'));
-  console.log(chalk.white('  1. core        - Quality assurance, core functions'));
-  console.log(chalk.white('  2. engineering - Software development'));
-  console.log(chalk.white('  3. business    - Business analysis, product'));
-  console.log(chalk.white('  4. design      - UI/UX design'));
-  console.log();
+  const teams = await listAvailableTeams();
 
-  const answer = await ask('Select team (1-4)', getTeamIndex(defaultValue).toString());
-  const index = parseInt(answer) - 1;
-
-  if (index >= 0 && index < TEAM_CHOICES.length) {
-    return TEAM_CHOICES[index] ?? defaultValue ?? 'core';
+  if (teams.length === 0) {
+    throw new Error('No teams available. Please run "ax init" first.');
   }
 
-  return defaultValue || 'core';
-}
+  console.log(chalk.blue.bold('\n👥 Available Teams:\n'));
+  teams.forEach((team, index) => {
+    const desc = team.description || team.displayName;
+    console.log(chalk.white(`  ${index + 1}. ${team.name.padEnd(12)} - ${desc}`));
+  });
+  console.log();
 
-/**
- * Get team index (1-based)
- */
-function getTeamIndex(team: string): number {
-  const index = TEAM_CHOICES.indexOf(team);
-  return index >= 0 ? index + 1 : 1;
+  const defaultIndex = teams.findIndex(t => t.name === defaultValue) + 1;
+  const answer = await ask(`Select team (1-${teams.length})`, defaultIndex > 0 ? defaultIndex.toString() : '1');
+  const index = parseInt(answer) - 1;
+
+  if (index >= 0 && index < teams.length) {
+    return teams[index]?.name ?? defaultValue ?? 'core';
+  }
+
+  return defaultValue || teams[0]?.name || 'core';
 }
 
 /**

@@ -181,8 +181,9 @@ describe('Router', () => {
       mockProvider1.execute = vi.fn().mockRejectedValue(new Error('Provider1 failed'));
       mockProvider2.execute = vi.fn().mockRejectedValue(new Error('Provider2 failed'));
 
-      await expect(router.execute(mockRequest)).rejects.toThrow(ProviderError);
-      await expect(router.execute(mockRequest)).rejects.toThrow('All providers failed');
+      const promise = router.execute(mockRequest);
+      await expect(promise).rejects.toThrow(ProviderError);
+      await expect(promise).rejects.toThrow('All providers failed');
     });
 
     it('should include last error in ProviderError when all fail', async () => {
@@ -312,6 +313,218 @@ describe('Router', () => {
       await new Promise(resolve => setTimeout(resolve, 150));
 
       expect((mockProvider1.getHealth as any).mock.calls.length).toBe(callCount);
+    });
+
+    it('should handle errors in health checks gracefully', async () => {
+      // Mock getHealth to throw error
+      mockProvider1.getHealth = vi.fn().mockRejectedValue(new Error('Health check failed'));
+
+      const routerWithHealthCheck = new Router({
+        providers: [mockProvider1],
+        fallbackEnabled: true,
+        healthCheckInterval: 100
+      });
+
+      // Wait for health check to run
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      // Should not throw unhandled rejection
+      expect(mockProvider1.getHealth).toHaveBeenCalled();
+
+      routerWithHealthCheck.destroy();
+    });
+
+    it('should clear interval handle when destroyed', () => {
+      const routerWithHealthCheck = new Router({
+        providers: [mockProvider1],
+        fallbackEnabled: true,
+        healthCheckInterval: 100
+      });
+
+      routerWithHealthCheck.destroy();
+
+      // Should be safe to call destroy again
+      expect(() => routerWithHealthCheck.destroy()).not.toThrow();
+    });
+  });
+
+  describe('parallel availability checks', () => {
+    it('should check provider availability in parallel', async () => {
+      const startTime = Date.now();
+
+      // Mock slow availability checks (100ms each)
+      mockProvider1.isAvailable = vi.fn().mockImplementation(async () => {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        return true;
+      });
+      mockProvider2.isAvailable = vi.fn().mockImplementation(async () => {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        return true;
+      });
+
+      const providers = await router.getAvailableProviders();
+      const duration = Date.now() - startTime;
+
+      // Should complete in ~100ms (parallel), not ~200ms (serial)
+      expect(duration).toBeLessThan(150);
+      expect(providers).toHaveLength(2);
+      expect(mockProvider1.isAvailable).toHaveBeenCalled();
+      expect(mockProvider2.isAvailable).toHaveBeenCalled();
+    });
+
+    it('should handle individual availability check failures', async () => {
+      // Provider 1 throws error
+      mockProvider1.isAvailable = vi.fn().mockRejectedValue(new Error('Check failed'));
+      mockProvider2.isAvailable = vi.fn().mockResolvedValue(true);
+
+      const providers = await router.getAvailableProviders();
+
+      // Should still return provider 2
+      expect(providers).toHaveLength(1);
+      expect(providers[0]?.name).toBe('provider2');
+    });
+  });
+
+  describe('dynamic provider penalty (cooldown)', () => {
+    it('should penalize failed providers temporarily', async () => {
+      // Provider 1 fails once
+      mockProvider1.execute = vi.fn().mockRejectedValueOnce(new Error('Provider failed'));
+      mockProvider2.execute = vi.fn().mockResolvedValue({
+        content: 'Response from provider2',
+        tokensUsed: { prompt: 10, completion: 20, total: 30 },
+        latencyMs: 150,
+        model: 'model2',
+        finishReason: 'stop'
+      } as ExecutionResponse);
+
+      // First execution: provider1 fails, fallback to provider2
+      const response1 = await router.execute(mockRequest);
+      expect(response1.model).toBe('model2');
+      expect(mockProvider1.execute).toHaveBeenCalledTimes(1);
+      expect(mockProvider2.execute).toHaveBeenCalledTimes(1);
+
+      // Reset mocks for second execution
+      vi.clearAllMocks();
+      mockProvider1.execute = vi.fn().mockResolvedValue({
+        content: 'Response from provider1',
+        tokensUsed: { prompt: 10, completion: 20, total: 30 },
+        latencyMs: 100,
+        model: 'model1',
+        finishReason: 'stop'
+      } as ExecutionResponse);
+
+      // Second execution: provider1 should be skipped (penalized)
+      const response2 = await router.execute(mockRequest);
+      expect(response2.model).toBe('model2');
+      expect(mockProvider1.execute).not.toHaveBeenCalled(); // Skipped!
+      expect(mockProvider2.execute).toHaveBeenCalledTimes(1);
+    });
+
+    it('should remove penalty after cooldown period', async () => {
+      const shortCooldownRouter = new Router({
+        providers: [mockProvider1, mockProvider2],
+        fallbackEnabled: true,
+        providerCooldownMs: 100 // 100ms cooldown
+      });
+
+      // Provider 1 fails
+      mockProvider1.execute = vi.fn().mockRejectedValueOnce(new Error('Provider failed'));
+      mockProvider2.execute = vi.fn().mockResolvedValue({
+        content: 'Response from provider2',
+        tokensUsed: { prompt: 10, completion: 20, total: 30 },
+        latencyMs: 150,
+        model: 'model2',
+        finishReason: 'stop'
+      } as ExecutionResponse);
+
+      // First execution: provider1 fails
+      await shortCooldownRouter.execute(mockRequest);
+
+      // Wait for cooldown to expire
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      // Reset mocks
+      vi.clearAllMocks();
+      mockProvider1.execute = vi.fn().mockResolvedValue({
+        content: 'Response from provider1',
+        tokensUsed: { prompt: 10, completion: 20, total: 30 },
+        latencyMs: 100,
+        model: 'model1',
+        finishReason: 'stop'
+      } as ExecutionResponse);
+
+      // Second execution: provider1 should be available again
+      const response = await shortCooldownRouter.execute(mockRequest);
+      expect(response.model).toBe('model1');
+      expect(mockProvider1.execute).toHaveBeenCalled();
+
+      shortCooldownRouter.destroy();
+    });
+
+    it('should remove penalty on successful execution', async () => {
+      const shortCooldownRouter = new Router({
+        providers: [mockProvider1, mockProvider2],
+        fallbackEnabled: true,
+        providerCooldownMs: 100 // 100ms cooldown for faster test
+      });
+
+      // Provider 1 fails first, then succeeds
+      mockProvider1.execute = vi.fn()
+        .mockRejectedValueOnce(new Error('Provider failed'))
+        .mockResolvedValue({
+          content: 'Response from provider1',
+          tokensUsed: { prompt: 10, completion: 20, total: 30 },
+          latencyMs: 100,
+          model: 'model1',
+          finishReason: 'stop'
+        } as ExecutionResponse);
+
+      mockProvider2.execute = vi.fn().mockResolvedValue({
+        content: 'Response from provider2',
+        tokensUsed: { prompt: 10, completion: 20, total: 30 },
+        latencyMs: 150,
+        model: 'model2',
+        finishReason: 'stop'
+      } as ExecutionResponse);
+
+      // First execution: provider1 fails, falls back to provider2
+      await shortCooldownRouter.execute(mockRequest);
+
+      // Wait for cooldown to expire
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      // Provider 1 should be available again and succeed
+      const response = await shortCooldownRouter.execute(mockRequest);
+      expect(response.model).toBe('model1');
+
+      // Provider 1 succeeds, so penalty should be removed immediately
+      vi.clearAllMocks();
+      const response2 = await shortCooldownRouter.execute(mockRequest);
+      expect(response2.model).toBe('model1');
+      expect(mockProvider1.execute).toHaveBeenCalled();
+
+      shortCooldownRouter.destroy();
+    });
+
+    it('should clear penalties on destroy', () => {
+      // Provider 1 fails
+      mockProvider1.execute = vi.fn().mockRejectedValue(new Error('Provider failed'));
+      mockProvider2.execute = vi.fn().mockResolvedValue({
+        content: 'Response from provider2',
+        tokensUsed: { prompt: 10, completion: 20, total: 30 },
+        latencyMs: 150,
+        model: 'model2',
+        finishReason: 'stop'
+      } as ExecutionResponse);
+
+      // Execute to create penalty
+      router.execute(mockRequest).catch(() => {});
+
+      // Destroy should clear penalties
+      router.destroy();
+
+      // Should not throw
+      expect(() => router.destroy()).not.toThrow();
     });
   });
 });

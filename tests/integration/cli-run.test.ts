@@ -100,6 +100,72 @@ temperature: 0.7
     });
   });
 
+  describe('displayName support', () => {
+    it('should accept displayName instead of agent filename', async () => {
+      // Create agent profile with displayName
+      const agentDir = join(testDir, '.automatosx', 'agents');
+      await mkdir(agentDir, { recursive: true });
+
+      const agentProfile = `
+name: backend
+displayName: Bob
+role: Backend Developer
+description: A backend developer
+systemPrompt: You are a backend developer
+abilities: []
+provider: claude
+temperature: 0.7
+`;
+      await writeFile(join(agentDir, 'backend.yaml'), agentProfile);
+
+      // Run with displayName "Bob" instead of filename "backend"
+      const result = await execFileAsync('node', [cliPath, 'run', 'Bob', 'test task'], {
+        cwd: testDir,
+        env: {
+          ...process.env,
+          AUTOMATOSX_MOCK_PROVIDERS: 'true'
+        },
+        timeout: 15000,
+        killSignal: 'SIGINT'
+      });
+
+      expect(result.stdout).toContain('AutomatosX');
+      expect(result.stdout).toContain('Complete');
+    });
+
+    it('should work with case-insensitive displayName', async () => {
+      // Create agent profile with displayName
+      const agentDir = join(testDir, '.automatosx', 'agents');
+      await mkdir(agentDir, { recursive: true });
+
+      const agentProfile = `
+name: backend
+displayName: Bob
+role: Backend Developer
+description: A backend developer
+systemPrompt: You are a backend developer
+abilities: []
+provider: claude
+temperature: 0.7
+`;
+      await writeFile(join(agentDir, 'backend.yaml'), agentProfile);
+
+      // Run with lowercase "bob"
+      const result = await execFileAsync('node', [cliPath, 'run', 'bob', 'test task'], {
+        cwd: testDir,
+        env: {
+          ...process.env,
+          AUTOMATOSX_MOCK_PROVIDERS: 'true'
+        },
+        timeout: 15000,
+        killSignal: 'SIGINT'
+      });
+
+      expect(result.stdout).toContain('AutomatosX');
+      expect(result.stdout).toContain('Complete');
+    });
+  });
+
   describe('version command', () => {
     it('should display version', async () => {
       const result = await execFileAsync('node', [cliPath, '--version'], {

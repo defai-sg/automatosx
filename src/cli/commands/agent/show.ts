@@ -36,8 +36,11 @@ export const showCommand: CommandModule<{}, ShowOptions> = {
       const teamManager = new TeamManager(teamsDir);
       const profileLoader = new ProfileLoader(agentsDir, undefined, teamManager);
 
-      // Load profile
-      const profile = await profileLoader.loadProfile(argv.agent);
+      // Resolve agent name (supports displayName)
+      const resolvedName = await profileLoader.resolveAgentName(argv.agent);
+
+      // Load profile using resolved name
+      const profile = await profileLoader.loadProfile(resolvedName);
 
       console.log(chalk.blue.bold(`\n🤖 Agent: ${profile.name}\n`));
 
@@ -111,7 +114,33 @@ export const showCommand: CommandModule<{}, ShowOptions> = {
     } catch (error) {
       console.error(chalk.red.bold(`\n✗ Agent not found: ${argv.agent}\n`));
       console.error(chalk.red((error as Error).message));
-      console.log(chalk.gray('\nRun "ax agent list" to see available agents.\n'));
+
+      // Try to suggest similar agents
+      try {
+        const projectDir = process.cwd();
+        const agentsDir = join(projectDir, '.automatosx', 'agents');
+        const teamsDir = join(projectDir, '.automatosx', 'teams');
+        const teamManager = new TeamManager(teamsDir);
+        const profileLoader = new ProfileLoader(agentsDir, undefined, teamManager);
+
+        const suggestions = await profileLoader.findSimilarAgents(argv.agent, 3);
+        const closeSuggestions = suggestions.filter(s => s.distance <= 3);
+
+        if (closeSuggestions.length > 0) {
+          console.log(chalk.yellow('\n💡 Did you mean:\n'));
+          closeSuggestions.forEach((s, i) => {
+            const displayInfo = s.displayName ? `${s.displayName} (${s.name})` : s.name;
+            const roleInfo = s.role ? ` - ${s.role}` : '';
+            console.log(chalk.cyan(`  ${i + 1}. ${displayInfo}${roleInfo}`));
+          });
+          console.log();
+        } else {
+          console.log(chalk.gray('\nRun "ax agent list" to see available agents.\n'));
+        }
+      } catch {
+        console.log(chalk.gray('\nRun "ax agent list" to see available agents.\n'));
+      }
+
       process.exit(1);
     }
   }

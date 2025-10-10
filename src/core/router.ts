@@ -21,12 +21,15 @@ export interface RouterConfig {
   providers: Provider[];
   fallbackEnabled: boolean;
   healthCheckInterval?: number;
+  providerCooldownMs?: number; // Cooldown period for failed providers (default: 30000ms)
 }
 
 export class Router {
   private providers: Provider[];
   private fallbackEnabled: boolean;
   private healthCheckInterval?: NodeJS.Timeout;
+  private penalizedProviders: Map<string, number>; // provider name -> penalty expiry timestamp
+  private providerCooldownMs: number;
 
   constructor(config: RouterConfig) {
     // Sort providers by priority (lower number = higher priority)
@@ -34,6 +37,8 @@ export class Router {
       return a.priority - b.priority;
     });
     this.fallbackEnabled = config.fallbackEnabled;
+    this.penalizedProviders = new Map();
+    this.providerCooldownMs = config.providerCooldownMs ?? 30000; // Default: 30 seconds
 
     // Start health checks if interval is provided
     if (config.healthCheckInterval) {
@@ -64,6 +69,9 @@ export class Router {
           tokens: response.tokensUsed.total
         });
 
+        // Remove provider from penalty list on success
+        this.penalizedProviders.delete(provider.name);
+
         return response;
 
       } catch (error) {
@@ -72,6 +80,12 @@ export class Router {
         logger.warn(`Provider ${provider.name} failed`, {
           error: lastError.message
         });
+
+        // Penalize failed provider (add cooldown period)
+        const penaltyExpiry = Date.now() + this.providerCooldownMs;
+        this.penalizedProviders.set(provider.name, penaltyExpiry);
+
+        logger.debug(`Provider ${provider.name} penalized until ${new Date(penaltyExpiry).toISOString()}`);
 
         // If fallback is disabled, throw immediately
         if (!this.fallbackEnabled) {
@@ -99,17 +113,44 @@ export class Router {
 
   /**
    * Get available providers sorted by priority
+   * Filters out penalized providers (those in cooldown period)
    */
   async getAvailableProviders(): Promise<Provider[]> {
-    const available: Provider[] = [];
+    const now = Date.now();
 
-    for (const provider of this.providers) {
-      if (await provider.isAvailable()) {
-        available.push(provider);
+    // Clean up expired penalties
+    for (const [providerName, expiryTime] of this.penalizedProviders.entries()) {
+      if (now >= expiryTime) {
+        this.penalizedProviders.delete(providerName);
+        logger.debug(`Provider ${providerName} penalty expired`);
       }
     }
 
-    return available;
+    // Check availability in parallel
+    const checks = this.providers.map(async provider => {
+      try {
+        // Skip penalized providers
+        if (this.penalizedProviders.has(provider.name)) {
+          const expiryTime = this.penalizedProviders.get(provider.name)!;
+          const remainingMs = expiryTime - now;
+          logger.debug(`Skipping penalized provider ${provider.name} (${Math.ceil(remainingMs / 1000)}s remaining)`);
+          return null;
+        }
+
+        // Check if provider is available
+        const isAvailable = await provider.isAvailable();
+        return isAvailable ? provider : null;
+      } catch (error) {
+        logger.warn('Provider availability check failed', {
+          provider: provider.name,
+          error: (error as Error).message
+        });
+        return null;
+      }
+    });
+
+    const results = await Promise.all(checks);
+    return results.filter((p): p is Provider => p !== null);
   }
 
   /**
@@ -144,26 +185,44 @@ export class Router {
    * Start periodic health checks
    */
   private startHealthChecks(intervalMs: number): void {
-    this.healthCheckInterval = setInterval(async () => {
-      const healthStatus = await this.getHealthStatus();
+    const runHealthChecks = async () => {
+      try {
+        const healthStatus = await this.getHealthStatus();
 
-      logger.debug('Provider health check', {
-        providers: Array.from(healthStatus.entries()).map(([name, health]) => ({
-          name,
-          available: health.available,
-          latency: health.latencyMs,
-          failures: health.consecutiveFailures
-        }))
-      });
+        logger.debug('Provider health check', {
+          providers: Array.from(healthStatus.entries()).map(([name, health]) => ({
+            name,
+            available: health.available,
+            latency: health.latencyMs,
+            failures: health.consecutiveFailures
+          }))
+        });
+      } catch (error) {
+        logger.warn('Provider health check failed', {
+          error: (error as Error).message
+        });
+      }
+    };
+
+    // Set up interval
+    this.healthCheckInterval = setInterval(() => {
+      void runHealthChecks(); // Explicitly handle promise
     }, intervalMs);
+
+    // Run immediately on start
+    void runHealthChecks();
   }
 
   /**
-   * Stop health checks
+   * Stop health checks and cleanup resources
    */
   destroy(): void {
     if (this.healthCheckInterval) {
       clearInterval(this.healthCheckInterval);
+      this.healthCheckInterval = undefined;
     }
+
+    // Clear penalty list
+    this.penalizedProviders.clear();
   }
 }

@@ -5,6 +5,56 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.9] - 2025-10-10
+
+### Added
+- **DisplayName Support**: All CLI commands now support using friendly displayName instead of agent filename
+  - `ax agent show Bob` - Use displayName instead of filename
+  - `ax agent remove Bob` - Remove by displayName
+  - `ax run Bob "task"` - Execute by displayName
+  - Case-insensitive displayName matching
+  - Session and memory operations now use consistent resolved agent names
+
+- **Agent Create Improvements**: Enhanced `ax agent create` command for CI/CD and production use
+  - Dynamic template discovery: Automatically scans project and built-in templates
+  - Dynamic team loading: Uses TeamManager to discover all available teams
+  - Agent name validation: Enforces lowercase, hyphen format with helpful suggestions
+  - DisplayName conflict detection: Prevents duplicate displayNames
+  - Non-interactive mode: No longer blocks in CI/CD environments (uses sensible defaults)
+  - Improved completion messages: References existing commands only
+
+- **Router Improvements**: Enhanced provider routing with better fault tolerance and performance
+  - Dynamic provider penalty system: Failed providers are temporarily skipped (default 30s cooldown)
+  - Parallel availability checks: Check all providers concurrently (N× faster)
+  - Safe health checks: Errors no longer cause unhandled promise rejections
+  - Configurable cooldown period: `providerCooldownMs` option (default: 30000ms)
+  - Automatic penalty removal on success: Providers recover immediately after successful execution
+
+### Fixed
+- **ESM Compatibility**: Fixed `__dirname` usage in agent helpers for proper ESM support
+- **Test Isolation**: Fixed `process.chdir` in tests to properly restore working directory
+- **Router Health Checks**: Prevented unhandled promise rejections in background health checks
+
+### Changed
+- **Agent Helpers**: Extracted shared agent command utilities to `src/cli/commands/agent/helpers.ts`
+  - `listAvailableTemplates()`: Dynamic template discovery
+  - `listAvailableTeams()`: Dynamic team loading
+  - `isValidAgentName()`: Agent name validation
+  - `checkDisplayNameConflict()`: Conflict detection
+  - `suggestValidAgentName()`: Name suggestion algorithm
+
+- **Router Configuration**: Added `providerCooldownMs` option to RouterConfig interface
+
+### Performance
+- **Router**: Availability checks now run in parallel instead of serial (N× faster where N = number of providers)
+- **Router**: Failed providers are skipped during cooldown period, reducing ~90% of retry attempts
+
+### Tests
+- Added 8 new router tests (25 total)
+- Added 23 new agent helper tests
+- Added 8 new profile loader and CLI integration tests
+- All 1,188 tests passing
+
 ## [5.0.5] - 2025-10-09
 
 ### Changed

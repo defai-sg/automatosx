@@ -269,6 +269,111 @@ systemPrompt: You are a test agent
     });
   });
 
+  describe('resolveAgentName', () => {
+    it('should return name directly if profile exists', async () => {
+      const profileYaml = `
+name: backend
+role: Backend Developer
+description: A backend developer
+systemPrompt: You are a backend developer
+      `;
+
+      await writeFile(join(testDir, 'backend.yaml'), profileYaml);
+
+      const resolvedName = await loader.resolveAgentName('backend');
+      expect(resolvedName).toBe('backend');
+    });
+
+    it('should resolve displayName to actual name', async () => {
+      const profileYaml = `
+name: backend
+displayName: Bob
+role: Backend Developer
+description: A backend developer
+systemPrompt: You are a backend developer
+      `;
+
+      await writeFile(join(testDir, 'backend.yaml'), profileYaml);
+
+      const resolvedName = await loader.resolveAgentName('Bob');
+      expect(resolvedName).toBe('backend');
+    });
+
+    it('should be case-insensitive for displayName', async () => {
+      const profileYaml = `
+name: backend
+displayName: Bob
+role: Backend Developer
+description: A backend developer
+systemPrompt: You are a backend developer
+      `;
+
+      await writeFile(join(testDir, 'backend.yaml'), profileYaml);
+
+      const resolvedName = await loader.resolveAgentName('bob');
+      expect(resolvedName).toBe('backend');
+
+      const resolvedName2 = await loader.resolveAgentName('BOB');
+      expect(resolvedName2).toBe('backend');
+    });
+
+    it('should throw AgentNotFoundError if neither name nor displayName found', async () => {
+      await expect(loader.resolveAgentName('nonexistent')).rejects.toThrow(AgentNotFoundError);
+    });
+
+    it('should prefer exact name match over displayName', async () => {
+      // Create two profiles: one named "Tony", another with displayName "Tony"
+      const profile1 = `
+name: tony
+role: Product Manager
+description: A product manager
+systemPrompt: You are a product manager
+      `;
+
+      const profile2 = `
+name: cto
+displayName: Tony
+role: CTO
+description: A CTO
+systemPrompt: You are a CTO
+      `;
+
+      await writeFile(join(testDir, 'tony.yaml'), profile1);
+      await writeFile(join(testDir, 'cto.yaml'), profile2);
+
+      // Should resolve to profile named "tony" (exact match takes precedence)
+      const resolvedName = await loader.resolveAgentName('tony');
+      expect(resolvedName).toBe('tony');
+    });
+
+    it('should handle multiple agents with different displayNames', async () => {
+      const profile1 = `
+name: backend
+displayName: Bob
+role: Backend Developer
+description: Backend developer
+systemPrompt: You are a backend developer
+      `;
+
+      const profile2 = `
+name: frontend
+displayName: Alice
+role: Frontend Developer
+description: Frontend developer
+systemPrompt: You are a frontend developer
+      `;
+
+      await writeFile(join(testDir, 'backend.yaml'), profile1);
+      await writeFile(join(testDir, 'frontend.yaml'), profile2);
+
+      const resolved1 = await loader.resolveAgentName('Bob');
+      expect(resolved1).toBe('backend');
+
+      const resolved2 = await loader.resolveAgentName('Alice');
+      expect(resolved2).toBe('frontend');
+    });
+  });
+
   describe('Security Tests', () => {
     describe('Path Traversal Prevention', () => {
       it('should reject path traversal with ../', async () => {

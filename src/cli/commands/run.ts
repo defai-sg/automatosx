@@ -122,6 +122,7 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
     let router: Router | undefined;
     let contextManager: ContextManager | undefined;
     let context: any;
+    let resolvedAgentName: string = argv.agent as string; // Default to input, will be resolved later
 
     try {
       // 1. Load configuration
@@ -147,6 +148,16 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         undefined, // fallbackProfilesDir (uses default)
         teamManager
       );
+
+      // Resolve agent name early (supports displayName → actual name)
+      // This ensures consistency across session, memory, and all operations
+      resolvedAgentName = await profileLoader.resolveAgentName(argv.agent as string);
+
+      if (argv.verbose) {
+        if (resolvedAgentName !== argv.agent) {
+          console.log(chalk.gray(`Resolved agent: ${argv.agent} → ${resolvedAgentName}`));
+        }
+      }
 
       const abilitiesManager = new AbilitiesManager(
         join(projectDir, '.automatosx', 'abilities')
@@ -243,8 +254,8 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
           process.exit(1);
         }
 
-        // Add this agent to the session
-        await sessionManager.addAgent(argv.session, argv.agent as string);
+        // Add this agent to the session (use resolved name for consistency)
+        await sessionManager.addAgent(argv.session, resolvedAgentName);
 
         if (argv.verbose) {
           console.log(chalk.cyan(`\n🔗 Joined session: ${argv.session}`));
@@ -272,7 +283,7 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
 
       try {
         context = await contextManager.createContext(
-          argv.agent as string,
+          resolvedAgentName,
           argv.task as string,
           {
             provider: argv.provider,
@@ -284,7 +295,7 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
       } catch (error) {
         // Handle agent not found error with suggestions
         if (error instanceof AgentNotFoundError) {
-          const agentName = argv.agent as string;
+          const agentName = resolvedAgentName;
           console.log(chalk.red.bold(`\n❌ Agent not found: ${agentName}\n`));
 
           // Find similar agents (loads profiles silently from cache or disk)
@@ -420,7 +431,7 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
             let outputData: string;
             if (argv.format === 'json') {
               outputData = JSON.stringify({
-                agent: argv.agent,
+                agent: resolvedAgentName,
                 task: argv.task,
                 stages: multiStageResult.stages.map(s => ({
                   name: s.stageName,
@@ -455,8 +466,8 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
             const metadata = {
               type: 'conversation' as const,
               source: 'agent-execution',
-              agentId: argv.agent,
-              tags: ['agent-execution', argv.agent, 'multi-stage'],
+              agentId: resolvedAgentName,
+              tags: ['agent-execution', resolvedAgentName, 'multi-stage'],
               provider: context.provider.name,
               timestamp: new Date().toISOString()
             };
@@ -465,7 +476,7 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
             const embedding = null;
 
             // Build content from multi-stage result
-            const content = `Agent: ${argv.agent}\nTask: ${argv.task}\n\nResult: ${multiStageResult.finalOutput}`;
+            const content = `Agent: ${resolvedAgentName}\nTask: ${argv.task}\n\nResult: ${multiStageResult.finalOutput}`;
 
             // Save to memory
             await memoryManager.add(content, embedding, metadata);
@@ -533,7 +544,7 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
             await mkdir(saveDir, { recursive: true });
 
             const outputData = formatForSave(result, argv.format || 'text', {
-              agent: argv.agent,
+              agent: resolvedAgentName,
               task: argv.task
             });
 
@@ -550,8 +561,8 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
             const metadata = {
               type: 'conversation' as const,
               source: 'agent-execution',
-              agentId: argv.agent,
-              tags: ['agent-execution', argv.agent],
+              agentId: resolvedAgentName,
+              tags: ['agent-execution', resolvedAgentName],
               provider: context.provider.name,
               timestamp: new Date().toISOString()
             };
@@ -560,7 +571,7 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
             const embedding = null;
 
             // Build content from execution result
-            const content = `Agent: ${argv.agent}\nTask: ${argv.task}\n\nResponse: ${result.response.content}`;
+            const content = `Agent: ${resolvedAgentName}\nTask: ${argv.task}\n\nResponse: ${result.response.content}`;
 
             // Save to memory
             await memoryManager.add(content, embedding, metadata);
@@ -604,12 +615,12 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
       const executor = new AgentExecutor();
 
       // Display error with helpful suggestions
-      executor.displayError(err, argv.agent as string, { verbose: argv.verbose });
+      executor.displayError(err, resolvedAgentName, { verbose: argv.verbose });
 
       // Log error
       logger.error('Agent execution failed', {
         error: err.message,
-        agent: argv.agent,
+        agent: resolvedAgentName,
         task: argv.task,
         provider: argv.provider,
         stack: err.stack

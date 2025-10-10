@@ -9,6 +9,8 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 import chalk from 'chalk';
 import * as readline from 'readline';
+import { ProfileLoader } from '../../../agents/profile-loader.js';
+import { TeamManager } from '../../../core/team-manager.js';
 
 interface RemoveOptions {
   agent: string;
@@ -38,19 +40,59 @@ export const removeCommand: CommandModule<{}, RemoveOptions> = {
     try {
       const projectDir = process.cwd();
       const agentsDir = join(projectDir, '.automatosx', 'agents');
-      const agentFile = join(agentsDir, `${argv.agent}.yaml`);
+      const teamsDir = join(projectDir, '.automatosx', 'teams');
 
-      // Check if agent exists
-      if (!existsSync(agentFile)) {
+      // Initialize managers
+      const teamManager = new TeamManager(teamsDir);
+      const profileLoader = new ProfileLoader(agentsDir, undefined, teamManager);
+
+      // Resolve agent name (supports displayName)
+      let resolvedName: string;
+      try {
+        resolvedName = await profileLoader.resolveAgentName(argv.agent);
+      } catch (error) {
         console.log(chalk.red.bold(`\n✗ Agent not found: ${argv.agent}\n`));
+
+        // Try to suggest similar agents
+        try {
+          const suggestions = await profileLoader.findSimilarAgents(argv.agent, 3);
+          const closeSuggestions = suggestions.filter(s => s.distance <= 3);
+
+          if (closeSuggestions.length > 0) {
+            console.log(chalk.yellow('💡 Did you mean:\n'));
+            closeSuggestions.forEach((s, i) => {
+              const displayInfo = s.displayName ? `${s.displayName} (${s.name})` : s.name;
+              const roleInfo = s.role ? ` - ${s.role}` : '';
+              console.log(chalk.cyan(`  ${i + 1}. ${displayInfo}${roleInfo}`));
+            });
+            console.log();
+          } else {
+            console.log(chalk.gray('Run "ax agent list" to see available agents.\n'));
+          }
+        } catch {
+          console.log(chalk.gray('Run "ax agent list" to see available agents.\n'));
+        }
+
+        process.exit(1);
+      }
+
+      const agentFile = join(agentsDir, `${resolvedName}.yaml`);
+
+      // Check if agent file exists
+      if (!existsSync(agentFile)) {
+        console.log(chalk.red.bold(`\n✗ Agent file not found: ${resolvedName}\n`));
         console.log(chalk.gray('Run "ax agent list" to see available agents.\n'));
         process.exit(1);
       }
 
+      // Load profile to get display name for confirmation message
+      const profile = await profileLoader.loadProfile(resolvedName);
+      const displayInfo = profile.displayName ? `${profile.displayName} (${resolvedName})` : resolvedName;
+
       // Confirm deletion
       if (!argv.confirm) {
         const confirmed = await askConfirmation(
-          `Are you sure you want to remove agent '${chalk.cyan(argv.agent)}'?`
+          `Are you sure you want to remove agent '${chalk.cyan(displayInfo)}'?`
         );
 
         if (!confirmed) {
@@ -62,7 +104,7 @@ export const removeCommand: CommandModule<{}, RemoveOptions> = {
       // Remove file
       await unlink(agentFile);
 
-      console.log(chalk.green.bold(`\n✓ Agent '${argv.agent}' removed successfully\n`));
+      console.log(chalk.green.bold(`\n✓ Agent '${displayInfo}' removed successfully\n`));
       console.log(chalk.gray(`Deleted: ${agentFile}\n`));
 
     } catch (error) {
