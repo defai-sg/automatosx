@@ -2,6 +2,24 @@
 
 Note: This FAQ applies to AutomatosX v5.0.13 (last updated 2025-10-10). For detailed release notes, see CHANGELOG.md.
 
+## Contents
+- [General Questions](#general-questions)
+  - [What AI providers are supported?](#what-ai-providers-are-supported)
+  - [What happens if OpenAI or Gemini is not installed?](#what-happens-if-openai-or-gemini-is-not-installed)
+  - [Does AutomatosX require Claude Code? Can Gemini or OpenAI Codex be the primary?](#does-automatosx-require-claude-code-can-gemini-or-openai-codex-be-the-primary)
+  - [Do I need to run AutomatosX inside the Claude/Gemini/Codex CLI?](#do-i-need-to-run-automatosx-inside-the-claudegeminicodex-cli)
+  - [Can I run AutomatosX with a fully offline model?](#can-i-run-automatosx-with-a-fully-offline-model)
+- [Installation & Setup](#installation--setup)
+- [Configuration](#configuration)
+- [Agents & Abilities](#agents--abilities)
+- [Memory System](#memory-system)
+  - [Do I need any API for memory search?](#do-i-need-any-api-for-memory-search)
+  - [Why don’t you use a vector database or Graphiti in the open-source edition?](#why-dont-you-use-a-vector-database-or-graphiti-in-the-open-source-edition)
+- [Performance](#performance)
+- [Development & Contributing](#development--contributing)
+- [Security & Privacy](#security--privacy)
+- [Licensing & Usage](#licensing--usage)
+
 ## General Questions
 
 ### What is AutomatosX?
@@ -526,6 +544,28 @@ rm -rf .automatosx/memory/
 - Blazing fast (< 1ms average)
 
 External embedding APIs are not required.
+
+### Why don’t you use a vector database or Graphiti in the open-source edition?
+
+Short answer: cost-effectiveness, simplicity, and zero‑config. We previously used Milvus Lite; while semantic search is powerful, it introduces embedding costs, extra services, and operational complexity. For most AutomatosX Community use cases, SQLite FTS5 delivers excellent local performance at zero cost and with no background services.
+
+- Cost & complexity: Vector search requires embeddings (paid) and heavier infra. Open-source users often value “install and go” with no fees.
+- Offline/local-first: FTS5 works fully offline with minimal footprint and great speed.
+- Scope fit: Most tasks benefit from fast keyword/context recall rather than full semantic retrieval.
+
+When is Graphiti (graph DB) more suitable for OSS users?
+- You need first-class relationship queries (e.g., delegation chains, cross‑artifact lineage, decision→rationale→outputs).
+- You want path/graph analytics (impact analysis, neighborhoods, cycle checks beyond our built-in safeguards).
+- You curate a knowledge graph (entities/relations) that must power reasoning or advanced navigation.
+
+Pro vs. Community
+- AutomatosX Pro: We justify vector DB + graph DB for advanced recall and reasoning at scale.
+- Community (open source): Default remains SQLite FTS5 to keep zero‑config, zero‑cost, and portability.
+
+Roadmap
+- Before v6: Stay on SQLite FTS5 (Community default).
+- v6+: Release offline LLM support with optional vector DB + graph DB backends.
+- v7+: Release advanced knowledge management tooling (graph/semantic curation, richer retrieval/reranking).
 
 ## Performance
 

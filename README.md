@@ -21,9 +21,9 @@ Looking for answers? See the [FAQ](FAQ.md).
 
 ```bash
 # In Claude Code, simply use /ax
-/ax run product "Design authentication system with JWT"
-/ax run backend "Implement the auth design"  # Backend auto-receives Product's design from memory
-/ax memory search "authentication"           # Instant search of all past decisions
+/ax run Paris "Design authentication system with JWT"
+/ax run Bob "Implement the auth design"  # Bob auto-receives Paris's design from memory
+/ax memory search "authentication"       # Instant search of all past decisions
 ```
 
 **The result**: Claude Code becomes a **learning, coordinated team** instead of a stateless assistant.
@@ -212,18 +212,18 @@ npm install -g @defai.digital/automatosx
 # Initialize (first time only)
 /ax init
 
-# Run agents
-/ax run product "Design REST API for users"
-/ax run backend "Implement the API"         # Auto-receives Product's design
-/ax run quality "Write tests for the API"   # Auto-receives design + implementation
+# Run agents (using friendly names)
+/ax run Paris "Design REST API for users"
+/ax run Bob "Implement the API"           # Auto-receives Paris's design
+/ax run Queenie "Write tests for the API" # Auto-receives design + implementation
 
 # Search memory
 /ax memory search "API design"
-/ax memory list --agent product
+/ax memory list --agent Paris
 
 # Manage agents
 /ax agent list
-/ax agent show backend
+/ax agent show Bob
 /ax agent create myagent --template developer
 ```
 
@@ -276,28 +276,30 @@ npm install -g @defai.digital/automatosx
 
 ### 🏗️ Feature Development
 ```bash
-/ax run product "Design user authentication feature"
-# Product creates spec → Saved to memory
+# Using friendly agent names
+/ax run Paris "Design user authentication feature"
+# Paris creates spec → Saved to memory
 
-/ax run backend "Implement auth based on spec"
-# Backend auto-receives spec → Implements code
+/ax run Bob "Implement auth based on spec"
+# Bob auto-receives spec → Implements code
 
-/ax run security "Security audit the auth implementation"
-# Security auto-receives spec + code → Performs audit
+/ax run Steve "Security audit the auth implementation"
+# Steve auto-receives spec + code → Performs audit
 
-/ax run writer "Document the auth system"
-# Writer auto-receives everything → Creates docs
+/ax run Wendy "Document the auth system"
+# Wendy auto-receives everything → Creates docs
 ```
 
 **Result**: 4-step workflow, zero context re-explanation, complete audit trail
 
 ### 🐛 Bug Investigation
 ```bash
-/ax run quality "Debug the payment timeout issue"
-# Quality analyzes, saves findings to memory
+# Mix of names and roles (both work!)
+/ax run Queenie "Debug the payment timeout issue"
+# Queenie analyzes, saves findings to memory
 
-/ax run backend "Fix the issue Quality found"
-# Backend reads Quality's analysis → Implements fix
+/ax run backend "Fix the issue Queenie found"
+# Backend reads Queenie's analysis → Implements fix
 
 /ax run quality "Test the payment fix"
 # Quality knows the bug + fix → Comprehensive testing
@@ -307,14 +309,15 @@ npm install -g @defai.digital/automatosx
 
 ### 📊 Research & Analysis
 ```bash
-/ax run data "Analyze user behavior patterns"
-# Data analyzes patterns → Findings in memory
+# Using agent names for clarity
+/ax run Daisy "Analyze user behavior patterns"
+# Daisy analyzes patterns → Findings in memory
 
-/ax run product "Design features based on Data's analysis"
-# Product reads analysis → Creates product spec
+/ax run Paris "Design features based on Daisy's analysis"
+# Paris reads analysis → Creates product spec
 
-/ax run ceo "Business case for Product's proposal"
-# CEO has analysis + spec → Strategic evaluation
+/ax run Eric "Business case for Paris's proposal"
+# Eric has analysis + spec → Strategic evaluation
 ```
 
 **Result**: Data-driven decision making with complete context
