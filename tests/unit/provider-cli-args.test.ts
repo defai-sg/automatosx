@@ -178,14 +178,18 @@ describe('Provider CLI Arguments (Phase 2)', () => {
     });
 
     describe('buildCLIArgs', () => {
-      it('should return --print flag only', () => {
+      it('should return --print flag with tools and directory access', () => {
         const request: ExecutionRequest = {
           prompt: 'test prompt'
         };
 
         const args = (provider as any).buildCLIArgs(request);
 
-        expect(args).toEqual(['--print']);
+        expect(args).toContain('--print');
+        expect(args).toContain('--allowedTools');
+        expect(args).toContain('Read Write Edit Bash Glob Grep');
+        expect(args).toContain('--add-dir');
+        expect(args).toContain(process.cwd());
       });
 
       it('should ignore maxTokens parameter', () => {
@@ -196,7 +200,9 @@ describe('Provider CLI Arguments (Phase 2)', () => {
 
         const args = (provider as any).buildCLIArgs(request);
 
-        expect(args).toEqual(['--print']);
+        expect(args).toContain('--print');
+        expect(args).toContain('--allowedTools');
+        expect(args).toContain('Read Write Edit Bash Glob Grep');
       });
 
       it('should ignore temperature parameter', () => {
@@ -207,7 +213,9 @@ describe('Provider CLI Arguments (Phase 2)', () => {
 
         const args = (provider as any).buildCLIArgs(request);
 
-        expect(args).toEqual(['--print']);
+        expect(args).toContain('--print');
+        expect(args).toContain('--allowedTools');
+        expect(args).toContain('Read Write Edit Bash Glob Grep');
       });
 
       it('should ignore all parameters', () => {
@@ -219,7 +227,9 @@ describe('Provider CLI Arguments (Phase 2)', () => {
 
         const args = (provider as any).buildCLIArgs(request);
 
-        expect(args).toEqual(['--print']);
+        expect(args).toContain('--print');
+        expect(args).toContain('--allowedTools');
+        expect(args).toContain('Read Write Edit Bash Glob Grep');
       });
     });
 

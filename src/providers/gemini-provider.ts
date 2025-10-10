@@ -142,6 +142,10 @@ export class GeminiProvider extends BaseProvider {
       // Do NOT pass --model - let CLI use its own default
       const args: string[] = [];
 
+      // Enable file operation tools (v5.0.6 fix)
+      // This allows agents to create, modify, and delete files
+      args.push('--approval-mode', 'auto_edit');
+
       // Add prompt as positional argument (not as flag)
       args.push(prompt);
 

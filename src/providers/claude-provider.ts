@@ -299,6 +299,13 @@ export class ClaudeProvider extends BaseProvider {
     // Claude Code CLI uses --print for non-interactive output
     const args: string[] = ['--print'];
 
+    // Enable file operation tools (v5.0.6 fix)
+    // Allow Read, Write, Edit, and Bash tools for agent operations
+    args.push('--allowedTools', 'Read Write Edit Bash Glob Grep');
+
+    // Allow access to current working directory and tmp folder
+    args.push('--add-dir', process.cwd());
+
     // Claude Code CLI does not support parameter configuration via CLI flags
     // It uses provider-optimized defaults for best results
     //
