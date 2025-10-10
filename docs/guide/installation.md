@@ -181,26 +181,33 @@ This command creates:
 
 **AutomatosX uses CLI tools—no API keys needed!** Install your preferred CLI and AutomatosX will automatically detect it.
 
-### Claude CLI
+### Claude Code CLI
 
 ```bash
-# macOS/Linux
-brew install claude
+# Recommended: npm (do NOT use sudo)
+npm install -g @anthropic-ai/claude-code
 
-# Or follow: https://claude.ai/download
+# Alternative 1: Native installer (Beta)
+curl -fsSL https://claude.ai/install.sh | bash
+
+# Alternative 2: Homebrew
+brew install --cask claude-code
+
+# Docs: https://docs.claude.com/en/docs/claude-code/setup
 ```
 
 Verify installation:
 
 ```bash
 claude --version
+# Or run setup check:
+claude doctor
 ```
 
 ### Gemini CLI
 
 ```bash
-# Follow Google's CLI setup guide
-# https://ai.google.dev/gemini-api/docs/cli
+npm install -g @google/gemini-cli
 ```
 
 Verify installation:
@@ -212,9 +219,13 @@ gemini --version
 ### Codex CLI
 
 ```bash
-# Install Codex CLI
-# https://github.com/anthropics/codex-cli
+# Install via npm (recommended)
+npm install -g @openai/codex
+
+# Or via Homebrew
 brew install codex
+
+# Docs: https://github.com/openai/codex
 ```
 
 Verify installation:

@@ -519,20 +519,25 @@ orchestration:
     saveDebounce: 500
 ```
 
-### Provider-Specific Settings
+### Provider-Specific Settings (v5.0.5+)
+
+**Note**: As of v5.0.5, provider model parameters (maxTokens, temperature) are optional and should only be set for specific requirements. See [Provider Parameters Guide](./provider-parameters.md) for details.
 
 ```yaml
 provider:
   primary: codex
   fallbackChain: [codex, gemini, claude]
-  settings:
-    codex:
-      temperature: 0.2            # Lower for code generation
-      maxTokens: 8192
-    gemini:
-      temperature: 0.7
-      maxTokens: 4096
+
+  # Optional: Only set if you have specific requirements
+  # defaults:
+  #   maxTokens: 8192     # Cost control or output limit
+  #   temperature: 0.3    # Deterministic behavior
 ```
+
+**When to set parameters**:
+- ✅ Cost control (limit token usage)
+- ✅ Deterministic output (QA/testing)
+- ❌ Default usage (let provider optimize)
 
 ---
 

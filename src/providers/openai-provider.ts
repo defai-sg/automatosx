@@ -144,24 +144,8 @@ export class OpenAIProvider extends BaseProvider {
       let stderr = '';
       let hasTimedOut = false;
 
-      // Build CLI arguments
-      // Codex CLI uses: codex exec [OPTIONS] [PROMPT]
-      const args = ['exec'];
-
-      // Add model if specified
-      if (request.model) {
-        args.push('-m', request.model);
-      }
-
-      // Add temperature via config override if specified
-      if (request.temperature !== undefined) {
-        args.push('-c', `temperature=${request.temperature}`);
-      }
-
-      // Add max tokens via config override if specified
-      if (request.maxTokens) {
-        args.push('-c', `max_tokens=${request.maxTokens}`);
-      }
+      // Build CLI arguments using the new buildCLIArgs method
+      const args = this.buildCLIArgs(request);
 
       // Add prompt as last argument
       args.push(prompt);
@@ -236,5 +220,41 @@ export class OpenAIProvider extends BaseProvider {
 
     const message = error.message.toLowerCase();
     return openaiRetryableErrors.some(err => message.includes(err)) || super.shouldRetry(error);
+  }
+
+  /**
+   * Build CLI arguments for OpenAI Codex CLI
+   * Supports: maxTokens, temperature
+   */
+  protected buildCLIArgs(request: ExecutionRequest): string[] {
+    const args: string[] = ['exec'];
+
+    // Add model if specified
+    if (request.model) {
+      args.push('-m', request.model);
+    }
+
+    // Add temperature via config override if specified
+    if (request.temperature !== undefined) {
+      args.push('-c', `temperature=${request.temperature}`);
+    }
+
+    // Add max tokens via config override if specified
+    if (request.maxTokens !== undefined) {
+      args.push('-c', `max_tokens=${request.maxTokens}`);
+    }
+
+    return args;
+  }
+
+  /**
+   * Check if OpenAI provider supports a specific parameter
+   * OpenAI Codex CLI supports maxTokens and temperature via -c flags
+   */
+  protected supportsParameter(
+    param: 'maxTokens' | 'temperature' | 'topP'
+  ): boolean {
+    // OpenAI Codex CLI supports maxTokens and temperature
+    return param === 'maxTokens' || param === 'temperature';
   }
 }

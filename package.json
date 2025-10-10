@@ -1,6 +1,6 @@
 {
   "name": "@defai.digital/automatosx",
-  "version": "5.0.4",
+  "version": "5.0.5",
   "description": "AI Agent Orchestration Platform",
   "type": "module",
   "bin": {
@@ -23,10 +23,12 @@
     "prepublishOnly": "npm run typecheck && npm run test:all && npm run build",
     "prepack": "npm run build",
     "postpack": "echo '✅ Package created successfully'",
+    "version": "node scripts/sync-version.js && git add version.json",
     "version:patch": "npm version patch -m 'chore: bump version to %s'",
     "version:minor": "npm version minor -m 'chore: bump version to %s'",
     "version:major": "npm version major -m 'chore: bump version to %s'",
     "version:beta": "npm version prerelease --preid=beta -m 'chore: bump version to %s'",
+    "sync:version": "node scripts/sync-version.js",
     "release:check": "node scripts/check-release.js",
     "prototype:path": "tsx tmp/phase0-prototypes/03-path-resolution-poc.ts",
     "prototype:sqlite": "tsx tmp/phase0-prototypes/01-sqlite-vec-poc.ts",
@@ -56,6 +58,13 @@
     "sqlite-vec": "^0.1.7-alpha.2",
     "yargs": "^17.7.2"
   },
+  "files": [
+    "dist",
+    "version.json",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "keywords": [
     "ai",
     "agent",

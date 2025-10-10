@@ -80,22 +80,27 @@ export interface AgentProfile {
   abilitySelection?: AbilitySelection; // Smart ability loading
 
   /**
-   * @deprecated v4.10.0+ Provider configuration moved to team level.
-   * Use the `team` field instead. These fields are kept for backward compatibility only.
+   * Provider configuration (v4.10.0+)
    *
-   * New approach:
+   * Recommended approach:
    * 1. Assign agent to a team via `team: "engineering"`
    * 2. Configure provider at team level in .automatosx/teams/<team>.yaml
-   * 3. Configure provider behavior via CLI config files (not per-agent):
-   *    - Claude: Claude Code settings
-   *    - Gemini: ~/.config/gemini/settings.json
-   *    - Codex: ~/.codex/config.toml
+   *
+   * Alternative (per-agent override):
+   * Configure directly in agent YAML for specific needs:
+   * - provider: Override team's provider choice
+   * - model: Specific model for this agent
+   * - temperature: Control randomness (0 = deterministic, 2 = creative)
+   * - maxTokens: Limit output length (cost control or specific use case)
+   *
+   * Note: Only OpenAI Codex CLI currently supports temperature/maxTokens parameters.
+   * Gemini and Claude use their CLI's default settings.
    */
-  provider?: string;         // @deprecated Use team.provider
-  fallbackProvider?: string; // @deprecated Use team.provider.fallback
-  model?: string;            // @deprecated Configure in provider CLI config
-  temperature?: number;      // @deprecated Configure in provider CLI config
-  maxTokens?: number;        // @deprecated Configure in provider CLI config
+  provider?: string;         // Provider override (e.g., "openai", "gemini-cli", "claude-code")
+  fallbackProvider?: string; // Fallback if primary provider unavailable
+  model?: string;            // Model override (e.g., "gpt-4o", "gemini-2.0-flash-exp")
+  temperature?: number;      // Randomness control: 0-2 (OpenAI only)
+  maxTokens?: number;        // Max output tokens (OpenAI only)
 
   // Optional
   tags?: string[];

@@ -30,6 +30,13 @@ Every team uses intelligent fallback strategies to ensure maximum reliability ac
 
 ## 📣 What's New
 
+**v5.0.5 (October 2025)**: Provider Parameters Simplified & Version Management
+- 🎯 **Simplified provider parameters** - Removed artificial limits to let provider CLIs use their optimal defaults
+- 📦 **Unified version management** - Single source of truth (version.json) prevents version inconsistencies
+- 🔧 **Enhanced parameter validation** - Smart parameter filtering based on provider capabilities
+- ✅ **Critical bug fixes** - Fixed 3 bugs in version sync and error handling
+- 📊 **Better defaults** - No maxTokens limits (Claude: 200K, Gemini: 2M tokens available)
+
 **v5.0.4 (October 2025)**: Memory Saving Fix
 - 🐛 **Memory saving now works** - Agent conversations automatically saved to memory (--save-memory flag)
 - 🔧 **Fixed initialization logic** - Memory manager properly initialized for all flag combinations
@@ -221,14 +228,18 @@ npx @defai.digital/automatosx --help
 AutomatosX uses your installed CLI tools—**no API keys needed**:
 
 ```bash
-# Install Claude CLI (if you use Claude)
-brew install claude
+# Install Claude Code CLI (if you use Claude)
+npm install -g @anthropic-ai/claude-code
+# Or via native installer: curl -fsSL https://claude.ai/install.sh | bash
+# Or via Homebrew: brew install --cask claude-code
 
 # Or install Gemini CLI (if you use Gemini)
-# Follow: https://ai.google.dev/gemini-api/docs/cli
+npm install -g @google/gemini-cli
 
-# Or install Codex CLI (if you use Codex)
-# Install from: https://github.com/anthropics/codex-cli
+# Or install Codex CLI (if you use OpenAI)
+npm install -g @openai/codex
+# Or via Homebrew: brew install codex
+# Docs: https://github.com/openai/codex
 ```
 
 AutomatosX will automatically detect and use your installed CLIs.

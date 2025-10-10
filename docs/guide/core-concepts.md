@@ -48,9 +48,9 @@ An **agent** is an AI entity configured to perform specific tasks. Each agent ha
 
 **Provider-Backed**: Agents use AI providers for intelligence
 
-- Claude (Anthropic) - Best for reasoning and code
-- Gemini (Google) - Fast and versatile
-- OpenAI - For embeddings and specialized tasks
+- Claude (Anthropic) - Best for reasoning and code (200K context)
+- Gemini (Google) - Fast and versatile (2M context)
+- OpenAI Codex - Code generation and specialized tasks
 
 ---
 

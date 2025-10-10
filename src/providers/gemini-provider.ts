@@ -203,4 +203,42 @@ export class GeminiProvider extends BaseProvider {
     const message = error.message.toLowerCase();
     return geminiRetryableErrors.some(err => message.includes(err)) || super.shouldRetry(error);
   }
+
+  /**
+   * Build CLI arguments for Gemini CLI
+   * Currently does not support parameter passing via CLI
+   * TODO: Implement when Gemini CLI adds support (Issue #5280)
+   */
+  protected buildCLIArgs(request: ExecutionRequest): string[] {
+    const args: string[] = [];
+
+    // Gemini CLI currently does not support parameter passing
+    // Parameters would need to be configured in ~/.gemini/settings.json
+    //
+    // Future implementation (when Gemini CLI adds support):
+    // if (request.temperature !== undefined) {
+    //   args.push('--temperature', String(request.temperature));
+    // }
+    // if (request.maxTokens !== undefined) {
+    //   args.push('--max-tokens', String(request.maxTokens));
+    // }
+    // if (request.topP !== undefined) {
+    //   args.push('--top-p', String(request.topP));
+    // }
+
+    return args;
+  }
+
+  /**
+   * Check if Gemini provider supports a specific parameter
+   * Currently all parameters are unsupported
+   * See: https://github.com/google-gemini/gemini-cli/issues/5280
+   */
+  protected supportsParameter(
+    param: 'maxTokens' | 'temperature' | 'topP'
+  ): boolean {
+    // Gemini CLI does not support any parameters yet
+    // This will return true once Issue #5280 is resolved
+    return false;
+  }
 }

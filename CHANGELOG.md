@@ -5,6 +5,42 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.5] - 2025-10-09
+
+### Changed
+- **Provider Model Parameters**: Removed default model parameters (maxTokens, temperature, topP) from DEFAULT_CONFIG
+  - Let provider CLIs use their optimal default settings
+  - Eliminates artificial limitations (e.g., 4096 token limit)
+  - Users can still set `provider.defaults` in config for specific needs (cost control, deterministic output)
+  - Only OpenAI (codex) currently supports parameters via CLI flags
+  - Gemini CLI and Claude Code do not support parameter configuration
+  - See [Provider Parameters Guide](./docs/guide/provider-parameters.md) for details
+
+### Fixed
+- **Provider CLI Installation Instructions**: Corrected installation commands for all three providers
+  - Claude: `npm install -g @anthropic-ai/claude-code` (was incorrectly: `brew install claude`)
+  - Gemini: `npm install -g @google/gemini-cli` (was incorrectly: wrong documentation link)
+  - Codex: `npm install -g @openai/codex` (was incorrectly: `https://github.com/anthropics/codex-cli`)
+
+### Added
+- **Documentation**: New comprehensive [Provider Parameters Guide](./docs/guide/provider-parameters.md)
+  - Explains provider CLI support matrix
+  - Provides configuration examples (cost control, QA scenarios)
+  - Documents best practices
+  - Includes migration guide from v5.0.4
+- **Tests**: Added 22 unit tests for provider parameters configuration
+  - Validates DEFAULT_CONFIG has no provider defaults
+  - Tests optional parameter configuration
+  - Ensures backward compatibility
+  - Covers all use case scenarios
+
+### Documentation
+- Updated `README.md` with correct provider CLI installation commands
+- Updated `docs/guide/installation.md` with all three installation methods per provider
+- Updated `docs/guide/quick-start.md` with correct CLI setup instructions
+- Updated `FAQ.md` with proper installation commands
+- Updated `docs/guide/team-configuration.md` to reference new parameter guide
+
 ## [5.0.3] - 2025-10-09
 
 ### 🐛 Critical Bug Fix

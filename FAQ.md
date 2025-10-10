@@ -115,15 +115,18 @@ Actual costs depend on your usage patterns and chosen models.
 npm install -g @defai.digital/automatosx
 
 # Step 2: Install at least one provider CLI
-# Option A: Claude CLI
-brew install claude
-# or follow: https://github.com/anthropics/claude-cli
+# Option A: Claude Code CLI
+npm install -g @anthropic-ai/claude-code
+# Or: curl -fsSL https://claude.ai/install.sh | bash
+# Or: brew install --cask claude-code
 
 # Option B: Gemini CLI
-# Follow: https://ai.google.dev/gemini-api/docs/cli
+npm install -g @google/gemini-cli
 
-# Option C: Codex CLI
-# Follow: https://github.com/anthropics/codex-cli
+# Option C: Codex CLI (OpenAI)
+npm install -g @openai/codex
+# Or: brew install codex
+# Docs: https://github.com/openai/codex
 
 # Step 3: Verify installation
 ax --version

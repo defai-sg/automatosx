@@ -15,15 +15,27 @@ import { createRequire } from 'module';
 import { logger, setLogLevel } from '../utils/logger.js';
 import { globalTracker } from '../utils/performance.js';
 
-// Read version from package.json using require (works in both dev and installed)
+// Read version from version.json (single source of truth)
 const require = createRequire(import.meta.url);
-let VERSION = '5.0.2'; // Fallback version
+let VERSION = 'unknown';
 try {
-  const packageJson = require('../../package.json');
-  VERSION = packageJson.version;
+  // Try to load from same directory first (when built to dist/)
+  const versionData = require('../version.json');
+  VERSION = versionData.version || 'unknown';
 } catch (err) {
-  // If package.json not found (installed globally), use fallback
-  logger.debug('Using fallback version');
+  // Fallback: try parent directory (development mode)
+  try {
+    const versionData = require('../../version.json');
+    VERSION = versionData.version || 'unknown';
+  } catch (err2) {
+    // Final fallback: package.json
+    try {
+      const packageJson = require('../../package.json');
+      VERSION = packageJson.version || 'unknown';
+    } catch (err3) {
+      logger.debug('Version file not found, using fallback');
+    }
+  }
 }
 
 // Import all commands directly (lazy loading broke command options)

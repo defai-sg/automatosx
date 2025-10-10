@@ -20,8 +20,8 @@ AutomatosX is a **CLI-based AI agent orchestration platform** that allows you to
 ## Prerequisites
 
 - **Node.js** 20+ installed
-- **Claude Code** environment (AutomatosX is designed to run inside Claude Code)
-- npm or pnpm package manager
+- **npm** or **pnpm** package manager
+- **Optional**: Claude Code, VS Code, or any terminal environment
 
 ---
 
@@ -306,29 +306,34 @@ Edit `automatosx.config.json`:
 
 AutomatosX calls provider CLI tools directly - **no API keys stored in AutomatosX**.
 
-**Claude CLI**:
+**Claude Code CLI**:
 ```bash
-# Install Claude CLI
-brew install claude
-# or follow: https://github.com/anthropics/claude-cli
+# Install (do NOT use sudo)
+npm install -g @anthropic-ai/claude-code
+# Or: curl -fsSL https://claude.ai/install.sh | bash
+# Or: brew install --cask claude-code
+# Docs: https://docs.claude.com/en/docs/claude-code/setup
 
 # Authenticate (handled by CLI)
-claude auth login
+claude login
 ```
 
 **Gemini CLI**:
 ```bash
-# Follow setup instructions at:
-# https://ai.google.dev/gemini-api/docs/cli
+# Install
+npm install -g @google/gemini-cli
+# Docs: https://github.com/google-gemini/gemini-cli
 
 # Authenticate (handled by CLI)
 gemini auth login
 ```
 
-**Codex CLI**:
+**Codex CLI (OpenAI)**:
 ```bash
-# Follow setup instructions at:
-# https://github.com/anthropics/codex-cli
+# Install
+npm install -g @openai/codex
+# Or: brew install codex
+# Docs: https://github.com/openai/codex
 
 # Authenticate (handled by CLI)
 codex auth login

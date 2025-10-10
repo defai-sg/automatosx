@@ -134,10 +134,11 @@ export class ClaudeProvider extends BaseProvider {
       let stderr = '';
       let hasTimedOut = false;
 
-      // Build CLI arguments
-      // Use --print for non-interactive mode
-      // Do NOT pass --model - let CLI use its own default
-      const args = ['--print', prompt];
+      // Build CLI arguments using the new buildCLIArgs method
+      const args = this.buildCLIArgs(request);
+
+      // Add prompt as last argument
+      args.push(prompt);
 
       let child: ReturnType<typeof spawn>;
 
@@ -287,5 +288,40 @@ export class ClaudeProvider extends BaseProvider {
     }
 
     return isRetryable;
+  }
+
+  /**
+   * Build CLI arguments for Claude Code CLI
+   * Currently does not support parameter passing via CLI
+   * Claude Code uses its own optimal defaults
+   */
+  protected buildCLIArgs(request: ExecutionRequest): string[] {
+    // Claude Code CLI uses --print for non-interactive output
+    const args: string[] = ['--print'];
+
+    // Claude Code CLI does not support parameter configuration via CLI flags
+    // It uses provider-optimized defaults for best results
+    //
+    // Future implementation (if Claude adds support):
+    // if (request.temperature !== undefined) {
+    //   args.push('--temperature', String(request.temperature));
+    // }
+    // if (request.maxTokens !== undefined) {
+    //   args.push('--max-tokens', String(request.maxTokens));
+    // }
+
+    return args;
+  }
+
+  /**
+   * Check if Claude provider supports a specific parameter
+   * Currently all parameters are unsupported via CLI
+   */
+  protected supportsParameter(
+    param: 'maxTokens' | 'temperature' | 'topP'
+  ): boolean {
+    // Claude Code CLI does not support parameter configuration
+    // Uses provider-optimized defaults instead
+    return false;
   }
 }

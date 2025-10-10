@@ -25,15 +25,33 @@ import { createRequire } from 'module';
 import os from 'os';
 import { printError } from '../../utils/error-formatter.js';
 
-// Read version from package.json using require (works in both dev and installed)
+// Read version from version.json (single source of truth)
 const require = createRequire(import.meta.url);
-let VERSION = '5.0.1'; // Fallback version
+let VERSION = 'unknown';
 try {
-  const packageJson = require('../../../package.json');
-  VERSION = packageJson.version;
+  // Try to load from same directory first (when built to dist/)
+  const versionData = require('../version.json');
+  VERSION = versionData.version || 'unknown';
 } catch (err) {
-  // If package.json not found (installed globally), use fallback
-  logger.debug('Using fallback version');
+  // Fallback: try parent directory
+  try {
+    const versionData = require('../../version.json');
+    VERSION = versionData.version || 'unknown';
+  } catch (err2) {
+    // Fallback: try grandparent directory (development mode from src/cli/commands/)
+    try {
+      const versionData = require('../../../version.json');
+      VERSION = versionData.version || 'unknown';
+    } catch (err3) {
+      // Final fallback: package.json
+      try {
+        const packageJson = require('../../../package.json');
+        VERSION = packageJson.version || 'unknown';
+      } catch (err4) {
+        logger.debug('Version file not found, using fallback');
+      }
+    }
+  }
 }
 
 interface StatusOptions {

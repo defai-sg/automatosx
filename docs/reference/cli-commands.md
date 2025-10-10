@@ -91,7 +91,7 @@ project/
     ├── memory/                 # Memory database
     │   └── memory.db
     ├── workspaces/             # Agent workspaces
-    ├── logs/                   # Execution logs
+    ├── teams/                  # Team configurations (v4.10.0+)
     └── .gitignore              # Git ignore patterns
 ```
 

@@ -300,12 +300,9 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
         enabled: true,
         interval: 300000,  // 5 minutes (v5.0: reduced frequency from 1 min)
         timeout: 5000      // 5 seconds
-      },
-      defaults: {
-        maxTokens: 4096,      // v5.0: Default max tokens for Claude
-        temperature: 0.7,
-        topP: 1.0
       }
+      // v5.0.5: Removed defaults - let provider CLI use optimal defaults
+      // Users can still set provider.defaults in config for specific needs
     },
     'gemini-cli': {
       enabled: true,
@@ -316,12 +313,8 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
         enabled: true,
         interval: 300000,  // 5 minutes (v5.0: reduced frequency)
         timeout: 5000
-      },
-      defaults: {
-        maxTokens: 8192,      // v5.0: Gemini 1.5 has larger default
-        temperature: 0.7,
-        topP: 1.0
       }
+      // v5.0.5: Removed defaults - let provider CLI use optimal defaults
     },
     'openai': {
       enabled: true,
@@ -332,12 +325,8 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
         enabled: true,
         interval: 300000,  // 5 minutes (v5.0: reduced frequency)
         timeout: 5000
-      },
-      defaults: {
-        maxTokens: 4096,      // v5.0: Default max tokens for OpenAI
-        temperature: 0.7,
-        topP: 1.0
       }
+      // v5.0.5: Removed defaults - let provider CLI use optimal defaults
     }
   },
 

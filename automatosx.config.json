@@ -9,11 +9,6 @@
         "enabled": true,
         "interval": 300000,
         "timeout": 5000
-      },
-      "defaults": {
-        "maxTokens": 4096,
-        "temperature": 0.7,
-        "topP": 1
       }
     },
     "gemini-cli": {
@@ -25,11 +20,6 @@
         "enabled": true,
         "interval": 300000,
         "timeout": 5000
-      },
-      "defaults": {
-        "maxTokens": 8192,
-        "temperature": 0.7,
-        "topP": 1
       }
     },
     "openai": {
@@ -41,11 +31,6 @@
         "enabled": true,
         "interval": 300000,
         "timeout": 5000
-      },
-      "defaults": {
-        "maxTokens": 4096,
-        "temperature": 0.7,
-        "topP": 1
       }
     }
   },

@@ -81,6 +81,22 @@ export abstract class BaseProvider implements Provider {
   protected abstract executeRequest(request: ExecutionRequest): Promise<ExecutionResponse>;
   protected abstract generateEmbeddingInternal(text: string, options?: EmbeddingOptions): Promise<number[]>;
 
+  /**
+   * Build CLI arguments for execution
+   * @param request Execution request containing parameters
+   * @returns Array of CLI arguments
+   */
+  protected abstract buildCLIArgs(request: ExecutionRequest): string[];
+
+  /**
+   * Check if provider supports a specific parameter
+   * @param param Parameter name to check
+   * @returns true if parameter is supported
+   */
+  protected abstract supportsParameter(
+    param: 'maxTokens' | 'temperature' | 'topP'
+  ): boolean;
+
   // Health & Availability
   async isAvailable(): Promise<boolean> {
     if (!this.config.enabled || !this.health.available) {
