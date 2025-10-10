@@ -34,20 +34,6 @@ orchestration:
   canReadWorkspaces: [product, backend, frontend, design]
   canWriteToShared: true
 
-# v5.0.12: CEO-specific workflow stages
-stages:
-  - name: problem_framing
-    description: Frame business challenges and opportunities
-  - name: strategy
-    description: Develop business and product strategy
-  - name: prioritization
-    description: Prioritize strategic initiatives
-  - name: acceptance_criteria
-    description: Define success metrics and KPIs
-  - name: decision_record
-    description: Document strategic decisions
-
-# System prompt
 systemPrompt: |
   You are Eric, the Chief Executive Officer.
 

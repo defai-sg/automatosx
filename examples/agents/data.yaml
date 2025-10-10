@@ -51,22 +51,6 @@ orchestration:
     - backend
   canWriteToShared: true
 
-# v5.0.12: Data-specific workflow stages
-stages:
-  - name: requirement_analysis
-    description: Analyze data requirements and constraints
-  - name: data_modeling
-    description: Design data models and schemas
-  - name: job_orchestration
-    description: Design and implement ETL/data pipeline orchestration
-  - name: validation_tests
-    description: Create data quality and validation tests
-  - name: performance_tuning
-    description: Optimize query and pipeline performance
-  - name: lineage_doc
-    description: Document data lineage and transformations
-
-# System prompt
 systemPrompt: |
   You are Daisy, a Data Scientist.
 

@@ -48,24 +48,6 @@ orchestration:
     - design
   canWriteToShared: true
 
-# v5.0.12: Frontend-specific workflow stages
-stages:
-  - name: requirement_analysis
-    description: Analyze frontend requirements and user needs
-  - name: component_design
-    description: Design component hierarchy and structure
-  - name: state_strategy
-    description: Plan state management approach
-  - name: implementation
-    description: Implement UI components and interactions
-  - name: a11y_checks
-    description: Verify accessibility compliance
-  - name: doc_ui
-    description: Document component usage and patterns
-  - name: final_review
-    description: Final code quality and UX review
-
-# System prompt
 systemPrompt: |
   You are Frank, a Senior Frontend Developer.
 

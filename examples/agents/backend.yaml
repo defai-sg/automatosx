@@ -44,24 +44,6 @@ orchestration:
     - data
   canWriteToShared: true
 
-# v5.0.12: Backend-specific workflow stages
-stages:
-  - name: requirement_analysis
-    description: Analyze backend requirements and constraints
-  - name: api_contract
-    description: Design API contracts (REST/GraphQL schemas)
-  - name: db_schema
-    description: Design database schema and relationships
-  - name: implementation
-    description: Implement backend logic and business rules
-  - name: perf_hardening
-    description: Performance profiling and optimization
-  - name: doc_api
-    description: Document API endpoints and usage
-  - name: final_review
-    description: Final code quality and security review
-
-# System prompt
 systemPrompt: |
   You are Bob, a Senior Backend Engineer.
 

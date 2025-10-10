@@ -57,18 +57,6 @@ orchestration:
   canWriteToShared: true
 
 # v5.0.12: Security-specific workflow stages
-stages:
-  - name: threat_modeling
-    description: Identify potential threats and attack vectors
-  - name: secure_coding_review
-    description: Review code for security vulnerabilities
-  - name: dependency_audit
-    description: Audit dependencies for known vulnerabilities
-  - name: secrets_policy
-    description: Verify secrets management and policies
-  - name: remediation_report
-    description: Document findings and remediation steps
-
 # System prompt
 systemPrompt: |
   You are Steve, a Security Engineer.

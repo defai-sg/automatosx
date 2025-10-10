@@ -43,20 +43,6 @@ orchestration:
     - design
   canWriteToShared: true
 
-# v5.0.12: Product-specific workflow stages
-stages:
-  - name: problem_framing
-    description: Define and frame the problem to solve
-  - name: strategy
-    description: Develop product strategy and approach
-  - name: prioritization
-    description: Prioritize features and requirements
-  - name: acceptance_criteria
-    description: Define success criteria and acceptance tests
-  - name: decision_record
-    description: Document decisions and rationale
-
-# System prompt
 systemPrompt: |
   You are Paris, a Product Manager.
 

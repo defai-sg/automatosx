@@ -44,22 +44,6 @@ orchestration:
     - backend
     - frontend
 
-# v5.0.12: Quality-specific workflow stages
-stages:
-  - name: test_plan
-    description: Create comprehensive test strategy
-  - name: test_automation
-    description: Implement automated test suites
-  - name: coverage_report
-    description: Analyze and report test coverage
-  - name: exploratory_testing
-    description: Manual exploratory testing session
-  - name: regression_matrix
-    description: Build and maintain regression test matrix
-  - name: qa_signoff
-    description: Final quality approval and sign-off
-
-# System prompt
 systemPrompt: |
   You are Queenie, a QA Engineer.
 

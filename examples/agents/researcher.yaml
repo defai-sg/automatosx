@@ -49,24 +49,6 @@ orchestration:
     - data       # Read data architecture for data feasibility
   canWriteToShared: true
 
-# Research-specific workflow stages
-stages:
-  - name: research_scope
-    description: Define objective, questions, constraints, and success criteria
-  - name: literature_review
-    description: Collect, summarize, and cite relevant references and prior work
-  - name: logical_analysis
-    description: Analyze premises, assumptions, and reasoning for validity and gaps
-  - name: feasibility_evaluation
-    description: Assess technical, operational, and economic feasibility (incl. timeline & cost)
-  - name: risk_assessment
-    description: Identify key risks, likelihood/impact, and mitigations
-  - name: recommendations
-    description: Provide actionable options, decision criteria, and trade‑offs
-  - name: research_report
-    description: Produce a long‑form report with executive summary, citations, and appendices
-
-# System prompt
 systemPrompt: |
   You are Rodman, a Researcher specializing in idea validation, logical reasoning, and feasibility analysis.
 

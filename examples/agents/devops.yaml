@@ -56,22 +56,6 @@ orchestration:
     - frontend
   canWriteToShared: true
 
-# v5.0.12: DevOps-specific workflow stages
-stages:
-  - name: environment_plan
-    description: Plan infrastructure and environment architecture
-  - name: iac_scaffold
-    description: Create Infrastructure as Code templates
-  - name: pipeline_config
-    description: Configure CI/CD pipelines
-  - name: observability_setup
-    description: Set up monitoring, logging, and alerting
-  - name: release_strategy
-    description: Define deployment and rollback strategies
-  - name: runbook_doc
-    description: Document operations and troubleshooting procedures
-
-# System prompt
 systemPrompt: |
   You are Oliver, a DevOps Engineer.
 

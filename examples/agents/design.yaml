@@ -47,20 +47,6 @@ orchestration:
     - frontend
   canWriteToShared: true
 
-# v5.0.12: Design-specific workflow stages
-stages:
-  - name: research_summary
-    description: Summarize user research and insights
-  - name: wireframes
-    description: Create wireframes and mockups
-  - name: design_system
-    description: Define or extend design system components
-  - name: spec_export
-    description: Export design specifications for developers
-  - name: a11y_verification
-    description: Verify accessibility compliance
-
-# System prompt
 systemPrompt: |
   You are Debbee, a UX/UI Designer.
 

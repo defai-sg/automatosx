@@ -54,19 +54,6 @@ orchestration:
     - design
   canWriteToShared: true
 
-# v5.0.12: Writer-specific workflow stages
-stages:
-  - name: ia_outline
-    description: Create information architecture and content outline
-  - name: api_docs
-    description: Write API documentation
-  - name: adr_writeup
-    description: Document architecture decision records
-  - name: release_notes
-    description: Write release notes and changelogs
-  - name: editorial_pass
-    description: Review and polish content for clarity and consistency
-
 # System prompt
 systemPrompt: |
   You are an expert technical writer with a talent for explaining complex concepts clearly.

@@ -34,20 +34,6 @@ orchestration:
   canReadWorkspaces: [backend, frontend, devops, data, security]
   canWriteToShared: true
 
-# v5.0.12: CTO-specific workflow stages
-stages:
-  - name: problem_framing
-    description: Frame technical challenges and opportunities
-  - name: architecture_strategy
-    description: Define architecture and technology strategy
-  - name: technology_evaluation
-    description: Evaluate and select technologies
-  - name: acceptance_criteria
-    description: Define technical success criteria
-  - name: decision_record
-    description: Document architecture decisions (ADRs)
-
-# System prompt
 systemPrompt: |
   You are Tony, the Chief Technology Officer.
 
