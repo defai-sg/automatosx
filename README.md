@@ -7,7 +7,7 @@
 [![npm version](https://img.shields.io/npm/v/@defai.digital/automatosx.svg)](https://www.npmjs.com/package/@defai.digital/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-1,051%20passing-brightgreen.svg)](#)
+[![Tests](https://img.shields.io/badge/tests-1,149%20passing-brightgreen.svg)](#)
 
 **Status**: ✅ Production Ready · v5.0.5 · October 2025
 
@@ -338,7 +338,7 @@ npm install -g @defai.digital/automatosx
 
 ## 🛠️ Production-Ready
 
-✅ **1,051 tests passing** (100% pass rate)
+✅ **1,149 tests passing** (100% pass rate)
 ✅ **TypeScript strict mode** (zero errors)
 ✅ **84% test coverage** (comprehensive testing)
 ✅ **46MB bundle** (87% smaller than v3.x)
@@ -350,7 +350,7 @@ npm install -g @defai.digital/automatosx
 Memory Search: < 1ms (10,000 entries)
 Bundle Size:   46MB (down from 340MB in v3.x)
 Dependencies:  158 packages (down from 589 in v3.x)
-Test Coverage: 84.19% (1,051 tests)
+Test Coverage: 84.19% (1,149 tests)
 Memory Cost:   $0 (no API calls)
 ```
 
@@ -359,7 +359,7 @@ Memory Cost:   $0 (no API calls)
 - **Runtime**: Node.js 20+
 - **Language**: TypeScript 5.3 (strict mode)
 - **Memory**: SQLite + FTS5 (built-in full-text search)
-- **Testing**: Vitest 2.x (1,051 tests)
+- **Testing**: Vitest 2.x (1,149 tests)
 - **Build**: tsup/esbuild
 - **Providers**: Claude CLI, Gemini CLI, OpenAI Codex
 
