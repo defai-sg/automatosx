@@ -448,7 +448,7 @@ export class AdvancedStageExecutor extends StageExecutor {
     index: number,
     context: ExecutionContext,
     previousOutputs: string[],
-    options: { verbose?: boolean; showProgress?: boolean }
+    options: { verbose?: boolean; showProgress?: boolean; signal?: AbortSignal }
   ): Promise<StageExecutionResult> {
     // Call parent's private method via public interface
     // Note: This is a workaround - in production we'd refactor StageExecutor
@@ -464,7 +464,8 @@ export class AdvancedStageExecutor extends StageExecutor {
       systemPrompt: context.agent.systemPrompt,
       model: stage.model || context.agent.model,
       temperature: stage.temperature ?? context.agent.temperature,
-      maxTokens: context.agent.maxTokens
+      maxTokens: context.agent.maxTokens,
+      signal: options.signal  // v5.0.8: Pass abort signal for timeout cancellation
     });
 
     const duration = Date.now() - startTime;

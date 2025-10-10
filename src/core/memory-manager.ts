@@ -165,6 +165,39 @@ export class MemoryManager implements IMemoryManager {
     // v4.11.0: Embedding validation removed (FTS5 only, no vector search)
     // Note: embedding parameter deprecated but kept for backward compatibility
 
+    // v5.0.8: Enforce maxEntries limit
+    const currentCount = this.getCount();
+    if (currentCount >= this.config.maxEntries) {
+      // Auto-cleanup oldest entries to make room
+      const entriesToRemove = Math.min(100, Math.floor(this.config.maxEntries * 0.1)); // Remove 10% or 100, whichever is smaller
+      await this.cleanupOldest(entriesToRemove);
+
+      logger.warn('Memory limit approaching, auto-cleanup triggered', {
+        currentCount,
+        maxEntries: this.config.maxEntries,
+        removed: entriesToRemove
+      });
+
+      // Check again after cleanup
+      const newCount = this.getCount();
+      if (newCount >= this.config.maxEntries) {
+        throw new MemoryError(
+          `Memory limit reached (${this.config.maxEntries} entries). Run 'ax memory clear' or increase maxEntries in config.`,
+          'MEMORY_LIMIT'
+        );
+      }
+    }
+
+    // v5.0.8: Trigger auto cleanup if enabled (10% chance)
+    if (this.config.autoCleanup && Math.random() < 0.1) {
+      // Run cleanup in background (don't wait for it)
+      this.cleanup().catch(error => {
+        logger.debug('Background cleanup failed', {
+          error: (error as Error).message
+        });
+      });
+    }
+
     try {
       const now = Date.now();
 
@@ -578,6 +611,52 @@ export class MemoryManager implements IMemoryManager {
   /**
    * Cleanup old entries
    */
+  /**
+   * Get total count of memory entries
+   * v5.0.8: Added for maxEntries enforcement
+   */
+  private getCount(): number {
+    if (!this.initialized) {
+      return 0;
+    }
+
+    try {
+      const result = this.db.prepare('SELECT COUNT(*) as count FROM memory_entries').get() as { count: number } | undefined;
+      return result?.count ?? 0;
+    } catch (error) {
+      logger.error('Failed to get entry count', { error: (error as Error).message });
+      return 0;
+    }
+  }
+
+  /**
+   * Remove oldest entries
+   * v5.0.8: Added for automatic cleanup when approaching maxEntries
+   */
+  private async cleanupOldest(count: number): Promise<void> {
+    if (!this.initialized || count <= 0) {
+      return;
+    }
+
+    try {
+      this.db.prepare(`
+        DELETE FROM memory_entries
+        WHERE id IN (
+          SELECT id FROM memory_entries
+          ORDER BY created_at ASC
+          LIMIT ?
+        )
+      `).run(count);
+
+      logger.info('Cleaned up oldest entries', { count });
+    } catch (error) {
+      logger.error('Failed to cleanup oldest entries', {
+        count,
+        error: (error as Error).message
+      });
+    }
+  }
+
   async cleanup(olderThanDays?: number): Promise<number> {
     if (!this.initialized) {
       throw new MemoryError('Memory manager not initialized', 'DATABASE_ERROR');

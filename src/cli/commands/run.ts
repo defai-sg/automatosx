@@ -349,38 +349,65 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
 
         let multiStageResult: MultiStageExecutionResult;
 
-        if (hasAdvancedFeatures) {
-          // Use AdvancedStageExecutor for Phase 3 features
-          const advancedExecutor = new AdvancedStageExecutor();
+        // v5.0.8: Create AbortController for timeout support
+        let controller: AbortController | undefined;
+        let timeoutId: NodeJS.Timeout | undefined;
 
-          // Show dependency graph if verbose
-          if (argv.verbose) {
-            console.log(advancedExecutor.visualizeDependencyGraph(stages));
+        if (argv.timeout) {
+          const timeoutMs = argv.timeout * 1000;
+          controller = new AbortController();
+          timeoutId = setTimeout(() => {
+            controller!.abort();
+          }, timeoutMs);
+        }
+
+        try {
+          if (hasAdvancedFeatures) {
+            // Use AdvancedStageExecutor for Phase 3 features
+            const advancedExecutor = new AdvancedStageExecutor();
+
+            // Show dependency graph if verbose
+            if (argv.verbose) {
+              console.log(advancedExecutor.visualizeDependencyGraph(stages));
+            }
+
+            multiStageResult = await advancedExecutor.executeAdvanced(context, {
+              verbose: argv.verbose,
+              showProgress: !argv.verbose,
+              continueOnFailure: false,
+              saveToMemory: argv.saveMemory,
+              memoryManager: memoryManager || null,
+              timeout: argv.timeout ? argv.timeout * 1000 : undefined,  // v5.0.8: Pass timeout
+              signal: controller?.signal  // v5.0.8: Pass abort signal
+            });
+
+            // Display multi-stage result
+            advancedExecutor.displayResult(multiStageResult, argv.verbose || false);
+          } else {
+            // Use regular StageExecutor for simple multi-stage
+            const stageExecutor = new StageExecutor();
+            multiStageResult = await stageExecutor.executeStages(context, {
+              verbose: argv.verbose,
+              showProgress: !argv.verbose,
+              continueOnFailure: false,
+              saveToMemory: argv.saveMemory,
+              memoryManager: memoryManager || null,
+              timeout: argv.timeout ? argv.timeout * 1000 : undefined,  // v5.0.8: Pass timeout
+              signal: controller?.signal  // v5.0.8: Pass abort signal
+            });
+
+            // Display multi-stage result
+            stageExecutor.displayResult(multiStageResult, argv.verbose || false);
           }
+        } finally {
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+          }
+        }
 
-          multiStageResult = await advancedExecutor.executeAdvanced(context, {
-            verbose: argv.verbose,
-            showProgress: !argv.verbose,
-            continueOnFailure: false,
-            saveToMemory: argv.saveMemory,
-            memoryManager: memoryManager || null
-          });
-
-          // Display multi-stage result
-          advancedExecutor.displayResult(multiStageResult, argv.verbose || false);
-        } else {
-          // Use regular StageExecutor for simple multi-stage
-          const stageExecutor = new StageExecutor();
-          multiStageResult = await stageExecutor.executeStages(context, {
-            verbose: argv.verbose,
-            showProgress: !argv.verbose,
-            continueOnFailure: false,
-            saveToMemory: argv.saveMemory,
-            memoryManager: memoryManager || null
-          });
-
-          // Display multi-stage result
-          stageExecutor.displayResult(multiStageResult, argv.verbose || false);
+        // Check if execution was aborted (v5.0.8)
+        if (controller?.signal.aborted) {
+          throw new Error(`Multi-stage execution timeout after ${argv.timeout} seconds`);
         }
 
         // Save multi-stage result to file if requested

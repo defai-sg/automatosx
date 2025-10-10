@@ -384,4 +384,5 @@ export type MemoryErrorCode =
   | 'QUERY_ERROR'
   | 'CAPACITY_EXCEEDED'
   | 'PROVIDER_MISSING'
-  | 'EMBEDDING_GENERATION_FAILED';
+  | 'EMBEDDING_GENERATION_FAILED'
+  | 'MEMORY_LIMIT';  // v5.0.8: Memory limit reached

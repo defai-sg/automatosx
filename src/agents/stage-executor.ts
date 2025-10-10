@@ -55,6 +55,9 @@ export interface StageExecutionOptions {
   continueOnFailure?: boolean;
   saveToMemory?: boolean;
   memoryManager?: IMemoryManager | null;
+  timeout?: number;        // v5.0.8: Execution timeout in milliseconds
+  signal?: AbortSignal;    // v5.0.8: Abort signal for cancellation
+  retry?: boolean;         // v5.0.8: Enable retry on failure
 }
 
 /**
@@ -122,7 +125,7 @@ export class StageExecutor {
           i,
           context,
           previousOutputs,
-          { verbose, showProgress }
+          { verbose, showProgress, signal: options.signal }
         );
 
         stageResults.push(result);
@@ -213,7 +216,7 @@ export class StageExecutor {
     index: number,
     context: ExecutionContext,
     previousOutputs: string[],
-    options: { verbose?: boolean; showProgress?: boolean }
+    options: { verbose?: boolean; showProgress?: boolean; signal?: AbortSignal }
   ): Promise<StageExecutionResult> {
     const { verbose = false, showProgress = true } = options;
 
@@ -242,7 +245,8 @@ export class StageExecutor {
         systemPrompt: context.agent.systemPrompt,
         model: stage.model || context.agent.model,
         temperature: stage.temperature ?? context.agent.temperature,
-        maxTokens: context.agent.maxTokens
+        maxTokens: context.agent.maxTokens,
+        signal: options.signal  // v5.0.8: Pass abort signal for timeout cancellation
       });
 
       const duration = Date.now() - startTime;

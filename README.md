@@ -9,7 +9,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
 [![Tests](https://img.shields.io/badge/tests-1,149%20passing-brightgreen.svg)](#)
 
-**Status**: ✅ Production Ready · v5.0.7 · October 2025
+**Status**: ✅ Production Ready · v5.0.8 · October 2025
 
 ---
 
@@ -66,12 +66,12 @@ Day 3: /ax run steve "security audit" → Steve has full context from Day 1-2
 
 ## 🚀 What's New
 
-**v5.0.7** (October 2025): Critical Bug Fixes
-- **CRITICAL FIX**: Team-level provider selection now works correctly
-- **Provider aliases**: Resolve `claude` → `claude-code`, `gemini` → `gemini-cli`
-- **Timeout abortion**: `--timeout` flag now properly terminates processes
-- **Resource management**: Prevents zombie processes and API waste
-- **100% backward compatible**: No configuration changes needed
+**v5.0.8** (October 2025): Critical Fixes - Timeout & Memory
+- **CRITICAL FIX**: Multi-stage agents now respect `--timeout` flag
+- **CRITICAL FIX**: Memory system enforces `maxEntries` and `autoCleanup` limits
+- **Timeout support**: AbortSignal properly passed to all stage executors
+- **Memory limits**: Automatic cleanup prevents database growth issues
+- **100% backward compatible**: Drop-in replacement for v5.0.7
 
 **v5.0.6**: File Operation Tools Enabled
 **v5.0.5**: Provider Parameters & Version Management
