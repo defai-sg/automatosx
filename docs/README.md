@@ -26,49 +26,63 @@ Start here if you're new to AutomatosX:
    - Environment setup
    - Troubleshooting installation issues
 
+### Guides
+
+In-depth explanations of core features:
+
+- **[Multi-Agent Orchestration](./guide/multi-agent-orchestration.md)** 🤝
+  - Natural language delegation (7 syntaxes)
+  - Session management
+  - Capability-first strategy
+  - Workspace isolation
+
+- **[Agent Communication & Memory](./guide/agent-communication.md)** 🧠 **NEW**
+  - How agents communicate (prompt passing vs memory)
+  - SQLite FTS5 memory system
+  - Long-term knowledge base
+  - Memory vs delegation explained
+
+- **[Team Configuration](./guide/team-configuration.md)** 👥
+  - Team-based agent organization
+  - Shared configuration
+  - Provider management
+  - 4 built-in teams
+
+- **[Provider Parameters](./guide/provider-parameters.md)** ⚙️
+  - Model parameter configuration
+  - Temperature and maxTokens
+  - Provider-specific settings
+
+- **[Agent Templates](./guide/agent-templates.md)** 📝
+  - Quick agent creation
+  - 5 built-in templates
+  - Template engine usage
+
 ### Reference
 
 Complete command and API documentation:
 
 - **[CLI Commands Reference](./reference/cli-commands.md)** 📖
-  - All 6 commands documented
+  - All commands documented
   - Options and parameters
   - Usage examples
   - Exit codes and environment variables
 
-- **Configuration Schema** (coming soon)
-  - `automatosx.config.json` reference
-  - All available options
-  - Validation rules
-
-- **API Documentation** (coming soon)
-  - TypeScript API reference
-  - Module documentation
-  - Usage examples
-
 ### Tutorials
 
-Step-by-step guides for common tasks:
+Step-by-step hands-on guides:
 
-- **Creating Your First Agent** (coming soon)
+- **[Creating Your First Agent](./tutorials/first-agent.md)** ⭐
   - Write an agent profile
   - Add abilities
   - Test your agent
 
-- **Memory Management** (coming soon)
-  - Using vector search
-  - Managing memory lifecycle
+- **[Memory Management](./tutorials/memory-management.md)** 🧠 **UPDATED**
+  - Automatic memory system
+  - Search and explore memories
+  - Export/import for backup
+  - Multi-day workflows
   - Best practices
-
-- **Custom Abilities** (coming soon)
-  - Create reusable abilities
-  - Ability structure
-  - Testing abilities
-
-- **Advanced Usage** (coming soon)
-  - Multi-provider setup
-  - Performance optimization
-  - Production deployment
 
 ### Troubleshooting
 
@@ -181,10 +195,14 @@ See [CLI Commands Reference](./reference/cli-commands.md) for complete documenta
 | Core Concepts | ✅ Complete | P0 |
 | CLI Commands Reference | ✅ Complete | P0 |
 | Installation Guide | ✅ Complete | P0 |
-| Claude Code Integration | 📝 Planned | P1 |
-| Configuration Guide | 📝 Planned | P1 |
-| Tutorial: First Agent | 📝 Planned | P1 |
-| Tutorial: Memory | 📝 Planned | P1 |
+| **Agent Communication & Memory** | ✅ **Complete** | **P0** |
+| Multi-Agent Orchestration | ✅ Complete | P0 |
+| **Tutorial: Memory Management** | ✅ **Complete** | **P0** |
+| Tutorial: First Agent | ✅ Complete | P1 |
+| Team Configuration | ✅ Complete | P1 |
+| Agent Templates | ✅ Complete | P1 |
+| Provider Parameters | ✅ Complete | P1 |
+| Configuration Guide | 📝 Planned | P2 |
 | Tutorial: Custom Abilities | 📝 Planned | P2 |
 | API Reference | 📝 Planned | P2 |
 | Troubleshooting | 📝 Planned | P2 |
