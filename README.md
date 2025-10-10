@@ -375,15 +375,6 @@ Memory Cost:   $0 (no API calls)
 - Provider parameter support
 - Comprehensive documentation
 
-### 🚧 Coming Soon
-- Enhanced Claude Code integration
-- Visual workflow builder
-- Advanced memory analytics
-- Cross-project knowledge sharing
-- Plugin system for custom providers
-
-[📋 Full Roadmap](https://github.com/defai-digital/automatosx/projects)
-
 ---
 
 ## 🤝 Contributing
