@@ -397,7 +397,6 @@ We welcome contributions! AutomatosX is built in the open.
 **Join the community**:
 - 🐛 [Report Issues](https://github.com/defai-digital/automatosx/issues)
 - 💡 [Feature Requests](https://github.com/defai-digital/automatosx/issues/new)
-- 💬 [Discussions](https://github.com/defai-digital/automatosx/discussions)
 
 ---
 
