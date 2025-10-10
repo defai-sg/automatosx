@@ -73,9 +73,9 @@ automatosx/
 │
 ├── examples/                 # Example configurations
 │   ├── agents/               # Example agent profiles (YAML)
-│   │   ├── coder.yaml        # Sofia - Software Engineer
-│   │   ├── reviewer.yaml     # Code reviewer
-│   │   ├── assistant.yaml    # General assistant
+│   │   ├── backend.yaml        # Bob - Backend Engineer
+│   │   ├── quality.yaml     # Code reviewer
+│   │   ├── backend.yaml    # General assistant
 │   │   ├── backend.yaml      # Backend specialist
 │   │   ├── frontend.yaml     # Frontend specialist
 │   │   └── ...
@@ -110,15 +110,15 @@ automatosx/
 ├── .automatosx/              # User project directory (created by init)
 │   ├── config.json           # User configuration
 │   ├── agents/               # User's custom agents
-│   │   ├── coder.yaml
+│   │   ├── backend.yaml
 │   │   └── ...
 │   ├── abilities/            # User's custom abilities
 │   │   └── ...
 │   ├── memory/               # Memory storage
 │   │   └── memory.db         # SQLite + vec database
 │   └── workspaces/           # Agent workspaces (isolated)
-│       ├── coder/            # Sofia's workspace
-│       ├── reviewer/
+│       ├── backend/            # Bob's workspace
+│       ├── quality/
 │       └── ...
 │
 ├── tmp/                      # Temporary files (gitignored)
@@ -230,8 +230,8 @@ Layer 6 (CLI):
 **YAML for agents:**
 
 ```
-examples/agents/coder.yaml
-examples/agents/reviewer.yaml
+examples/agents/backend.yaml
+examples/agents/quality.yaml
 .automatosx/agents/my-custom-agent.yaml
 ```
 
@@ -370,11 +370,11 @@ dist/
 
 ```
 .automatosx/workspaces/
-├── coder/              # Sofia's workspace
+├── backend/              # Bob's workspace
 │   ├── output.ts
 │   ├── test.ts
 │   └── ...
-├── reviewer/
+├── quality/
 └── ...
 ```
 

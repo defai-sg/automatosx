@@ -23,10 +23,10 @@ Copy an example agent to your project:
 cp -r examples/agents/* .automatosx/agents/
 
 # Or copy a specific agent
-cp examples/agents/assistant.yaml .automatosx/agents/
+cp examples/agents/backend.yaml .automatosx/agents/
 
 # Test the agent
-automatosx run assistant "Hello, introduce yourself"
+automatosx run backend "Hello, introduce yourself"
 ```
 
 ### 2. Using Example Abilities
@@ -48,7 +48,7 @@ Edit agent profiles to customize behavior:
 
 ```bash
 # Edit agent profile
-vim .automatosx/agents/assistant.yaml
+vim .automatosx/agents/backend.yaml
 
 # Customize:
 # - name: Unique identifier
@@ -75,43 +75,43 @@ See [AGENTS_INFO.md](./AGENTS_INFO.md) for the complete directory.
 
 ## Available Agents
 
-### assistant.yaml - Alex
+### backend.yaml - Bob
 
-**Purpose**: General-purpose assistant for everyday tasks
+**Purpose**: Backend development specialist for API and server-side tasks
 
 **Best for**:
 
-- Quick questions and answers
-- Information lookup
-- General help
+- API design and implementation
+- Database modeling
+- Server-side logic
 
 **Example**:
 
 ```bash
 # Using role name
-automatosx run assistant "What are the benefits of TypeScript?"
+automatosx run backend "Create a REST API endpoint for user management"
 
 # Using display name (easier to remember!)
-automatosx run Alex "What are the benefits of TypeScript?"
+automatosx run Bob "Create a REST API endpoint for user management"
 ```
 
-### coder.yaml
+### quality.yaml - Queenie
 
-**Purpose**: Code generation and development assistance
+**Purpose**: Quality assurance and code review
 
 **Best for**:
 
-- Writing new code
-- Implementing features
-- Creating boilerplate
+- Code review and analysis
+- Debugging and testing
+- Quality assurance
 
 **Example**:
 
 ```bash
-automatosx run coder "Create a React component for user authentication"
+automatosx run backend "Create a React component for user authentication"
 ```
 
-### reviewer.yaml
+### quality.yaml
 
 **Purpose**: Code review and quality analysis
 
@@ -124,7 +124,7 @@ automatosx run coder "Create a React component for user authentication"
 **Example**:
 
 ```bash
-automatosx run reviewer "Review the code in src/components/Auth.tsx"
+automatosx run quality "Review the code in src/components/Auth.tsx"
 ```
 
 ### debugger.yaml
@@ -194,14 +194,14 @@ automatosx run writer "Write API documentation for the User authentication modul
 
 ```bash
 # Start with planning
-automatosx chat assistant
+automatosx chat backend
 > "I need to build a REST API for user management"
 
 # Generate code
-automatosx run coder "Create Express.js routes for user CRUD operations"
+automatosx run backend "Create Express.js routes for user CRUD operations"
 
 # Review code
-automatosx run reviewer "Review the user routes I just created"
+automatosx run quality "Review the user routes I just created"
 
 # Debug issues
 automatosx run debugger "The POST /users endpoint returns 500 error"
@@ -211,13 +211,13 @@ automatosx run debugger "The POST /users endpoint returns 500 error"
 
 ```bash
 # Review specific file
-automatosx run reviewer "Review src/api/users.ts"
+automatosx run quality "Review src/api/users.ts"
 
 # Review entire directory
-automatosx run reviewer "Review all files in src/api/"
+automatosx run quality "Review all files in src/api/"
 
 # Security audit
-automatosx run reviewer "Check src/api/auth.ts for security issues" \
+automatosx run quality "Check src/api/auth.ts for security issues" \
   --abilities security-audit
 ```
 
@@ -231,21 +231,21 @@ automatosx run writer "Create a README.md for this project"
 automatosx run writer "Document all API endpoints in src/routes/"
 
 # Code comments
-automatosx run coder "Add JSDoc comments to src/utils/helpers.ts"
+automatosx run backend "Add JSDoc comments to src/utils/helpers.ts"
 ```
 
 ### Pattern 4: Learning and Exploration
 
 ```bash
 # Understand codebase
-automatosx chat assistant
+automatosx chat backend
 > "Explain the architecture of this project"
 
 # Learn specific concepts
-automatosx run assistant "How does the authentication flow work?"
+automatosx run backend "How does the authentication flow work?"
 
 # Get examples
-automatosx run coder "Show me examples of using the memory system"
+automatosx run backend "Show me examples of using the memory system"
 ```
 
 ## Creating Custom Agents

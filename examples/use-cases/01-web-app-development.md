@@ -24,7 +24,7 @@ automatosx config --set providers.claude.apiKey --value "sk-ant-..."
 ## Step 1: Project Planning
 
 ```bash
-automatosx chat assistant
+automatosx chat backend
 
 > "I want to build a task management web app with:
   - User authentication (JWT)
@@ -48,7 +48,7 @@ automatosx chat assistant
 ### Generate Express.js Server
 
 ```bash
-automatosx run coder "Create an Express.js server with:
+automatosx run backend "Create an Express.js server with:
 - TypeScript configuration
 - Basic middleware (cors, helmet, morgan)
 - Error handling
@@ -64,7 +64,7 @@ automatosx run coder "Create an Express.js server with:
 ### Database Schema
 
 ```bash
-automatosx run coder "Create Prisma schema for:
+automatosx run backend "Create Prisma schema for:
 - User model (id, email, password, name, createdAt)
 - Task model (id, title, description, status, userId, createdAt, updatedAt)
 - Relationships between User and Tasks"
@@ -77,7 +77,7 @@ automatosx run coder "Create Prisma schema for:
 ### Authentication System
 
 ```bash
-automatosx run coder "Implement JWT authentication with:
+automatosx run backend "Implement JWT authentication with:
 - User registration endpoint
 - Login endpoint
 - Password hashing with bcrypt
@@ -96,7 +96,7 @@ automatosx run coder "Implement JWT authentication with:
 ### Task CRUD Operations
 
 ```bash
-automatosx run coder "Create RESTful API for tasks:
+automatosx run backend "Create RESTful API for tasks:
 - GET /api/tasks - List user's tasks
 - GET /api/tasks/:id - Get single task
 - POST /api/tasks - Create task
@@ -118,13 +118,13 @@ Include:
 
 ```bash
 # Review authentication logic
-automatosx run reviewer "Review src/controllers/auth.controller.ts for:
+automatosx run quality "Review src/controllers/auth.controller.ts for:
 - Security vulnerabilities
 - Error handling
 - Best practices"
 
 # Review API endpoints
-automatosx run reviewer "Review src/routes/ directory for:
+automatosx run quality "Review src/routes/ directory for:
 - RESTful design
 - Validation
 - Error responses"
@@ -135,7 +135,7 @@ automatosx run reviewer "Review src/routes/ directory for:
 ### Unit Tests
 
 ```bash
-automatosx run coder "Create unit tests for authentication controller using Jest:
+automatosx run backend "Create unit tests for authentication controller using Jest:
 - Test user registration with valid data
 - Test registration with existing email
 - Test login with valid credentials
@@ -149,7 +149,7 @@ automatosx run coder "Create unit tests for authentication controller using Jest
 ### Integration Tests
 
 ```bash
-automatosx run coder "Create integration tests for task API:
+automatosx run backend "Create integration tests for task API:
 - Test creating task (authenticated)
 - Test listing tasks (authenticated)
 - Test updating task (owner only)
@@ -165,7 +165,7 @@ automatosx run coder "Create integration tests for task API:
 ### React Components
 
 ```bash
-automatosx run coder "Create React components for task management:
+automatosx run backend "Create React components for task management:
 - TaskList component with pagination
 - TaskItem component with edit/delete actions
 - TaskForm component for create/edit
@@ -182,7 +182,7 @@ automatosx run coder "Create React components for task management:
 ### Authentication UI
 
 ```bash
-automatosx run coder "Create authentication components:
+automatosx run backend "Create authentication components:
 - LoginForm with email/password validation
 - RegisterForm with password confirmation
 - Protected route wrapper
@@ -198,7 +198,7 @@ automatosx run coder "Create authentication components:
 ## Step 7: WebSocket Integration
 
 ```bash
-automatosx run coder "Add WebSocket support for real-time task updates:
+automatosx run backend "Add WebSocket support for real-time task updates:
 - Socket.io server setup
 - Emit events on task create/update/delete
 - Client-side socket connection
@@ -257,7 +257,7 @@ at createTask (src/controllers/tasks.controller.ts:45)"
 
 ```bash
 # Environment Configuration
-automatosx run coder "Create production-ready configuration:
+automatosx run backend "Create production-ready configuration:
 - Separate dev/prod configs
 - Docker Compose setup
 - Environment variables validation
@@ -328,10 +328,10 @@ task-manager/
 
 ```bash
 # Instead of:
-automatosx run coder "Create user model"
+automatosx run backend "Create user model"
 
 # Do this:
-automatosx run coder "Create Prisma User model with:
+automatosx run backend "Create Prisma User model with:
 - UUID primary key
 - Email (unique, validated)
 - Password (hashed with bcrypt, min 8 chars)

@@ -10,12 +10,12 @@ Execute an AutomatosX agent with a specific task.
 **Parsing Rules**:
 
 ```
-Input: /ax:agent assistant, explain quantum computing
+Input: /ax:agent backend, explain quantum computing
 ↓
-Agent: "assistant"
+Agent: "backend"
 Task: "explain quantum computing"
 ↓
-Execute: automatosx run assistant "explain quantum computing"
+Execute: automatosx run backend "explain quantum computing"
 ```
 
 **Examples**:
@@ -23,15 +23,15 @@ Execute: automatosx run assistant "explain quantum computing"
 User input: `/ax:agent bob, i want you help me write a validation function`
 → Execute: `automatosx run bob "i want you help me write a validation function"`
 
-User input: `/ax:agent assistant, explain quantum computing to me`
-→ Execute: `automatosx run assistant "explain quantum computing to me"`
+User input: `/ax:agent backend, explain quantum computing to me`
+→ Execute: `automatosx run backend "explain quantum computing to me"`
 
-User input: `/ax:agent coder, create a REST API for user management`
-→ Execute: `automatosx run coder "create a REST API for user management"`
+User input: `/ax:agent backend, create a REST API for user management`
+→ Execute: `automatosx run backend "create a REST API for user management"`
 
-User input: `/ax:agent reviewer, review the changes in src/auth.ts and suggest improvements`
-→ Execute: `automatosx run reviewer "review the changes in src/auth.ts and suggest improvements"`
+User input: `/ax:agent quality, review the changes in src/auth.ts and suggest improvements`
+→ Execute: `automatosx run quality "review the changes in src/auth.ts and suggest improvements"`
 
-**Available built-in agents**: assistant, coder, reviewer, debugger, writer, backend, frontend, data, security, quality
+**Available built-in agents**: backend, frontend, devops, data, security, quality, design, writer, product, ceo, cto, researcher
 
 **Note**: Users can also use custom agent names if they've created them in `.automatosx/agents/`

@@ -165,7 +165,7 @@ export class PM { }      // Unclear
 /**
  * Load agent profile from YAML file
  *
- * @param name - Agent name (e.g., "coder", "reviewer")
+ * @param name - Agent name (e.g., "backend", "quality")
  * @returns Validated AgentProfile
  * @throws AgentNotFoundError if profile doesn't exist
  * @throws AgentValidationError if profile is invalid
