@@ -42,6 +42,7 @@ try {
 import { configCommand } from './commands/config.js';
 import { initCommand } from './commands/init.js';
 import { listCommand } from './commands/list.js';
+import { mcpCommand } from './commands/mcp.js';
 import { memoryCommand } from './commands/memory.js';
 import { runCommand } from './commands/run.js';
 import { sessionCommand } from './commands/session.js';
@@ -69,6 +70,7 @@ const argv = await yargs(hideBin(process.argv))
   .example('$0 list agents', 'List available agents')
   .example('$0 memory search "topic"', 'Search memory')
   .example('$0 config --list', 'View configuration')
+  .example('$0 mcp', 'Start MCP server for Claude Code')
   .example('$0 update', 'Update to latest version')
 
   // Global options
@@ -101,6 +103,7 @@ const argv = await yargs(hideBin(process.argv))
   .command(configCommand)
   .command(statusCommand)
   .command(memoryCommand)
+  .command(mcpCommand)
   .command(updateCommand)
 
   // Configuration
