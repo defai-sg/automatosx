@@ -208,7 +208,7 @@ No, you need at least one provider CLI installed and authenticated:
 ```bash
 # Test without real providers
 export AUTOMATOSX_MOCK_PROVIDERS=true
-ax run assistant "Hello"
+ax run backend "Hello"
 ```
 
 ## Configuration
@@ -243,7 +243,7 @@ provider:
 
 ```bash
 # Specify provider for single command
-ax run assistant "hello" --provider gemini
+ax run backend "hello" --provider gemini
 
 # Provider selection priority:
 # 1. CLI option (--provider)
@@ -716,7 +716,7 @@ Verify memories exist:
 ax memory list
 
 # If empty, try storing a memory first
-ax run assistant "Remember: Project Alpha launches Q1 2025"
+ax run backend "Remember: Project Alpha launches Q1 2025"
 
 # Then search
 ax memory search "when does Alpha launch"

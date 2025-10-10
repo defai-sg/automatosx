@@ -58,10 +58,10 @@ When one agent delegates to another, the communication happens **in-memory** thr
 // Flow: Paris → Sofia
 Paris Response:
   "Here's my calculator specification...
-   DELEGATE TO @sofia: Implement this in TypeScript"
+   DELEGATE TO @backend: Implement this in TypeScript"
          ↓
   DelegationParser extracts: {
-    toAgent: "sofia",
+    toAgent: "backend",
     task: "Implement this in TypeScript"
   }
          ↓
@@ -92,18 +92,18 @@ const parisResponse = `
   - add(a, b): Returns sum
   - subtract(a, b): Returns difference
 
-  DELEGATE TO @sofia: Implement based on spec above
+  DELEGATE TO @backend: Implement based on spec above
 `;
 
 // 2. DelegationParser extracts delegation
 const delegation = {
-  toAgent: "sofia",
+  toAgent: "backend",
   task: "Implement based on spec above"
 };
 
 // 3. ContextManager builds Sofia's context
 const context = {
-  agent: sofia,
+  agent: backend,
   task: "Implement based on spec above",
   memory: [/* relevant past work */],
   abilities: [/* Sofia's skills */],
@@ -111,13 +111,13 @@ const context = {
 };
 
 // 4. AgentExecutor runs Sofia
-const sofiaResult = await executor.execute(context);
+const backendResult = await executor.execute(context);
 
 // 5. Results appended to Paris's response
 parisResponse += `
   ## Delegation Results
   ### Sofia's Implementation
-  ${sofiaResult.content}
+  ${backendResult.content}
 `;
 ```
 

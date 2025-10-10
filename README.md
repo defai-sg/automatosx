@@ -21,9 +21,9 @@ Looking for answers? See the [FAQ](FAQ.md).
 
 ```bash
 # In Claude Code, simply use /ax
-/ax run paris "Design authentication system with JWT"
-/ax run sofia "Implement the auth design"  # Sofia auto-receives Paris's design from memory
-/ax memory search "authentication"          # Instant search of all past decisions
+/ax run product "Design authentication system with JWT"
+/ax run backend "Implement the auth design"  # Backend auto-receives Product's design from memory
+/ax memory search "authentication"           # Instant search of all past decisions
 ```
 
 **The result**: Claude Code becomes a **learning, coordinated team** instead of a stateless assistant.
@@ -57,9 +57,9 @@ Day 3: Different task → You re-explain everything again
 
 **With AutomatosX**:
 ```
-Day 1: Paris designs architecture → Saved to memory
-Day 2: /ax run sofia "implement auth" → Sofia finds Paris's design automatically
-Day 3: /ax run steve "security audit" → Steve has full context from Day 1-2
+Day 1: Product designs architecture → Saved to memory
+Day 2: /ax run backend "implement auth" → Backend finds Product's design automatically
+Day 3: /ax run security "security audit" → Security has full context from Day 1-2
 ```
 
 **Time saved**: Hours per week. **Quality**: Consistent. **Cost**: $0.
@@ -98,14 +98,14 @@ Day 3: /ax run steve "security audit" → Steve has full context from Day 1-2
 
 ```typescript
 // Automatic memory saving
-/ax run paris "Design calculator with add/subtract"
+/ax run product "Design calculator with add/subtract"
 → Task + Response saved to SQLite FTS5
 
 // Automatic memory retrieval
-/ax run sofia "Implement the calculator"
+/ax run backend "Implement the calculator"
 → Memory searches "calculator" automatically
-→ Sofia receives: "# Relevant Context from Memory: Paris's design..."
-→ Sofia implements WITHOUT you repeating the spec
+→ Backend receives: "# Relevant Context from Memory: Product's design..."
+→ Backend implements WITHOUT you repeating the spec
 ```
 
 ### The Technology
@@ -135,18 +135,18 @@ Day 3: /ax run steve "security audit" → Steve has full context from Day 1-2
 
 ```typescript
 // Product Manager analyzes and delegates
-/ax run paris "Build authentication feature"
+/ax run product "Build authentication feature"
 
-Paris response:
+Product response:
   "I'll design the auth system with JWT + OAuth2.
 
-   @sofia Please implement the JWT authentication API based on this design.
-   @steve Please audit the implementation for security issues."
+   @backend Please implement the JWT authentication API based on this design.
+   @security Please audit the implementation for security issues."
 
 // AutomatosX automatically:
-// 1. Sofia receives full spec, implements code
-// 2. Steve receives spec + code, performs audit
-// 3. Results aggregated back to Paris
+// 1. Backend receives full spec, implements code
+// 2. Security receives spec + code, performs audit
+// 3. Results aggregated back to Product
 ```
 
 ### The Technology
@@ -227,18 +227,18 @@ npm install -g @defai.digital/automatosx
 /ax init
 
 # Run agents
-/ax run paris "Design REST API for users"
-/ax run sofia "Implement the API"           # Auto-receives Paris's design
-/ax run queenie "Write tests for the API"    # Auto-receives design + implementation
+/ax run product "Design REST API for users"
+/ax run backend "Implement the API"         # Auto-receives Product's design
+/ax run quality "Write tests for the API"   # Auto-receives design + implementation
 
 # Search memory
 /ax memory search "API design"
-/ax memory list --agent paris
+/ax memory list --agent product
 
 # Manage agents
 /ax agent list
-/ax agent show sofia
-/ax agent create backend --template developer
+/ax agent show backend
+/ax agent create myagent --template developer
 ```
 
 **That's it!** Agents now remember everything and coordinate automatically.
@@ -290,45 +290,45 @@ npm install -g @defai.digital/automatosx
 
 ### 🏗️ Feature Development
 ```bash
-/ax run paris "Design user authentication feature"
-# Paris creates spec → Saved to memory
+/ax run product "Design user authentication feature"
+# Product creates spec → Saved to memory
 
-/ax run sofia "Implement auth based on spec"
-# Sofia auto-receives spec → Implements code
+/ax run backend "Implement auth based on spec"
+# Backend auto-receives spec → Implements code
 
-/ax run steve "Security audit the auth implementation"
-# Steve auto-receives spec + code → Performs audit
+/ax run security "Security audit the auth implementation"
+# Security auto-receives spec + code → Performs audit
 
-/ax run wendy "Document the auth system"
-# Wendy auto-receives everything → Creates docs
+/ax run writer "Document the auth system"
+# Writer auto-receives everything → Creates docs
 ```
 
 **Result**: 4-step workflow, zero context re-explanation, complete audit trail
 
 ### 🐛 Bug Investigation
 ```bash
-/ax run danny "Debug the payment timeout issue"
-# Danny analyzes, saves findings to memory
+/ax run quality "Debug the payment timeout issue"
+# Quality analyzes, saves findings to memory
 
-/ax run sofia "Fix the issue Danny found"
-# Sofia reads Danny's analysis → Implements fix
+/ax run backend "Fix the issue Quality found"
+# Backend reads Quality's analysis → Implements fix
 
-/ax run queenie "Test the payment fix"
-# Queenie knows the bug + fix → Comprehensive testing
+/ax run quality "Test the payment fix"
+# Quality knows the bug + fix → Comprehensive testing
 ```
 
 **Result**: Coordinated debugging with full context preservation
 
 ### 📊 Research & Analysis
 ```bash
-/ax run daisy "Analyze user behavior patterns"
-# Daisy analyzes data → Findings in memory
+/ax run data "Analyze user behavior patterns"
+# Data analyzes patterns → Findings in memory
 
-/ax run paris "Design features based on Daisy's analysis"
-# Paris reads analysis → Creates product spec
+/ax run product "Design features based on Data's analysis"
+# Product reads analysis → Creates product spec
 
-/ax run eric "Business case for Paris's proposal"
-# Eric has analysis + spec → Strategic evaluation
+/ax run ceo "Business case for Product's proposal"
+# CEO has analysis + spec → Strategic evaluation
 ```
 
 **Result**: Data-driven decision making with complete context

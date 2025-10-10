@@ -26,7 +26,7 @@ AutomatosX includes 4 pre-configured teams, each optimized with the best AI prov
 ### 1. **👥 Core Team**
 - **Primary Provider**: OpenAI (`openai`)
 - **Purpose**: General assistance, code generation, planning, and documentation
-- **Agents**: Alex (assistant), Sofia (coder), Ryan (reviewer), Danny (debugger), Wendy (writer)
+- **Agents**: Paris (product), Bob (backend), Queenie (quality), Wendy (writer)
 - **Shared Abilities**: general-knowledge, code-review-checklist, testing, documentation
 
 ### 2. **💻 Engineering Team**

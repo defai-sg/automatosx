@@ -21,7 +21,7 @@ Built from the ground up with TypeScript for type safety, better tooling, and ex
 import { AutomatosX } from 'automatosx';
 
 const agent = new AutomatosX({
-  profile: 'assistant',
+  profile: 'backend',
   memory: true
 });
 
@@ -58,10 +58,10 @@ Features:
 Define agents with simple YAML profiles:
 
 ```yaml
-# .automatosx/agents/assistant.yaml
-name: assistant
+# .automatosx/agents/backend.yaml
+name: backend
 version: 1.0.0
-description: A helpful AI assistant
+description: Backend development specialist
 
 model:
   provider: claude
@@ -69,7 +69,7 @@ model:
   temperature: 0.7
 
 system: |
-  You are a helpful AI assistant. Be concise and accurate.
+  You are a backend development specialist. Focus on API design, database modeling, and server-side implementation.
 
 abilities:
   - web-search
@@ -142,7 +142,7 @@ search("Latest AI news")
 
 ### 1. Personal Assistant
 
-Build a personal AI assistant that remembers conversations and helps with tasks:
+Build a personal development assistant that remembers conversations and helps with tasks:
 
 ```bash
 npx @defai.digital/automatosx chat assistant

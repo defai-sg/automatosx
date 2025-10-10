@@ -63,10 +63,10 @@ A **profile** is a YAML file that defines an agent's configuration.
 ### Profile Structure
 
 ```yaml
-# .automatosx/agents/assistant.yaml
-name: assistant
+# .automatosx/agents/backend.yaml
+name: backend
 version: 1.0.0
-description: General purpose AI assistant
+description: Backend development specialist
 
 # Model configuration
 model:
@@ -197,7 +197,7 @@ results.forEach(r => {
 
 **Reusability**: Define once, use in multiple agents
 ```yaml
-# assistant.yaml
+# backend.yaml
 abilities:
   - web-search
   - code-analysis
@@ -369,14 +369,14 @@ A **provider** is an AI service backend that powers agents.
 
 ```bash
 # Uses highest priority enabled provider
-automatosx run assistant "Hello"
+automatosx run backend "Hello"
 ```
 
 **Manual Override**: Specify provider
 
 ```bash
 # Force use of Gemini
-automatosx run assistant "Hello" --provider gemini
+automatosx run backend "Hello" --provider gemini
 ```
 
 **Fallback**: If provider fails

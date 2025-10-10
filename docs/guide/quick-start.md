@@ -111,7 +111,7 @@ ax init --force   # Overwrites with latest templates and config
 Run an agent with a simple command:
 
 ```bash
-automatosx run assistant "What is TypeScript?"
+automatosx run backend "What is TypeScript?"
 ```
 
 ### Option 2: Create from Template (v5.0.0+)
@@ -135,7 +135,7 @@ ax run my-agent "Help me design an API"
 
 **What happens**:
 
-1. AutomatosX loads the `assistant` agent profile
+1. AutomatosX loads the `backend` agent profile
 2. Sends your prompt to the configured AI provider (Claude, Gemini, etc.)
 3. Returns the response
 4. Optionally saves the interaction to memory
@@ -145,7 +145,7 @@ ax run my-agent "Help me design an API"
 ```
 🤖 AutomatosX v4.0
 
-Agent: assistant
+Agent: backend
 Task: What is TypeScript?
 
 ─────────────────────────────────────
@@ -176,7 +176,7 @@ Available Agents (5):
 ┌─────────────┬──────────────────────────┬──────────┐
 │ Name        │ Description              │ Provider │
 ├─────────────┼──────────────────────────┼──────────┤
-│ assistant   │ General purpose helper   │ claude   │
+│ backend     │ Backend development      │ claude   │
 │ coder       │ Code generation expert   │ claude   │
 │ reviewer    │ Code review specialist   │ claude   │
 │ debugger    │ Debug assistance         │ gemini   │
@@ -246,7 +246,7 @@ AutomatosX is designed to work seamlessly inside Claude Code:
 2. **Claude Code executes**:
 
    ```bash
-   automatosx run assistant "Explain TypeScript generics with examples"
+   automatosx run backend "Explain TypeScript generics with examples"
    ```
 
 3. **AutomatosX**:

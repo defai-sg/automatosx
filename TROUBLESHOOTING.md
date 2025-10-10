@@ -243,7 +243,7 @@ codex --version
 automatosx config
 
 # Use --config flag to specify exact file
-automatosx run assistant "hello" --config /path/to/config.json
+automatosx run backend "hello" --config /path/to/config.json
 ```
 
 ---
@@ -370,7 +370,7 @@ automatosx config --list | grep -A 20 "Providers"
 automatosx config --set providers.preferred --value claude
 
 # Or specify provider in command
-automatosx run assistant "hello" --provider claude
+automatosx run backend "hello" --provider claude
 ```
 
 ### OpenAI Codex requires git initialization
@@ -393,7 +393,7 @@ git config user.name "Your Name"
 git config user.email "your.email@example.com"
 
 # Verify codex now works
-ax run assistant "Hello" --provider codex
+ax run backend "Hello" --provider codex
 
 # Or test with codex directly
 codex --version
@@ -410,8 +410,8 @@ codex --version
 
 ```bash
 # Use a different provider that doesn't require git
-ax run assistant "Hello" --provider claude
-ax run assistant "Hello" --provider gemini
+ax run backend "Hello" --provider claude
+ax run backend "Hello" --provider gemini
 
 # Or change your team's default provider
 # Edit .automatosx/teams/<team-name>.yaml
@@ -442,7 +442,7 @@ ls -la .automatosx/agents/
 ls -la ~/.automatosx/agents/
 
 # Agent profile should be: <name>.yaml
-cat .automatosx/agents/assistant.yaml
+cat .automatosx/agents/backend.yaml
 ```
 
 ### Ability files not loaded
@@ -509,7 +509,7 @@ automatosx config set providers.openai.timeout 2700000
 
 ```bash
 # Run a complex task to test
-automatosx run assistant "Perform comprehensive code review"
+automatosx run backend "Perform comprehensive code review"
 # Should no longer timeout prematurely
 ```
 
@@ -527,10 +527,10 @@ automatosx run assistant "Perform comprehensive code review"
 automatosx status
 
 # Use absolute paths within project
-automatosx run assistant "analyze /full/path/to/project/src/file.ts"
+automatosx run backend "analyze /full/path/to/project/src/file.ts"
 
 # Not allowed:
-automatosx run assistant "analyze ../../etc/passwd"  # ❌ Path traversal
+automatosx run backend "analyze ../../etc/passwd"  # ❌ Path traversal
 ```
 
 ---
@@ -752,7 +752,7 @@ ax init --force
 ax --version  # Should show 5.0.12 or higher
 
 # 4. Test with a simple command
-ax run assistant "Hello"
+ax run backend "Hello"
 ```
 
 ---
@@ -771,7 +771,7 @@ If your issue is not covered here:
 3. **Enable Debug Logging**:
 
    ```bash
-   automatosx run assistant "hello" --debug
+   automatosx run backend "hello" --debug
    ```
 
 4. **Get System Info**:

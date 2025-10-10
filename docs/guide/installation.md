@@ -131,7 +131,7 @@ This command creates:
 .automatosx/
 ├── config.json          # Project configuration
 ├── agents/              # Agent profile definitions
-│   ├── assistant.yaml   # Example assistant agent
+│   ├── backend.yaml   # Example assistant agent
 │   └── ...
 ├── abilities/           # Custom ability definitions
 │   ├── web-search.md    # Example ability
@@ -283,7 +283,7 @@ Status: Ready ✓
 Run a simple test:
 
 ```bash
-npx @defai.digital/automatosx run assistant "Say hello"
+npx @defai.digital/automatosx run backend "Say hello"
 ```
 
 Expected output:
