@@ -60,21 +60,21 @@ Deep reasoning AI (Claude) for complex technical challenges, architecture design
 
 ### 📊 Business Team
 
-Strategic thinking AI (Gemini) for executive leadership, product management, and data-driven decision making.
+Strategic thinking AI (Gemini) for executive leadership and data-driven decision making.
 
 | Name | Agent | Expertise | Best For | Primary | Fallback |
 |------|-------|-----------|----------|---------|----------|
 | **Eric** | ceo | Business strategy, vision | Strategy, business decisions | 🔵 gemini-cli | 🟣 claude-code |
 | **Tony** | cto | Technology strategy, leadership | Tech strategy, architecture decisions | 🔵 gemini-cli | 🟣 claude-code |
-| **Paris** | product | Product strategy, user research | Product planning, feature prioritization | 🔵 gemini-cli | 🟣 claude-code |
 | **Daisy** | data | Data analysis, machine learning | Analytics, ML models, insights | 🔵 gemini-cli | 🟣 claude-code |
 
 ### 🎨 Design Team
 
-Creative AI (Gemini) for UX/UI design, visual thinking, and user-centered design work.
+Creative AI (Gemini) for UX/UI design, product strategy, and user-centered design work.
 
 | Name | Agent | Expertise | Best For | Primary | Fallback |
 |------|-------|-----------|----------|---------|----------|
+| **Paris** | product | Product strategy, user research | Product planning, feature prioritization | 🔵 gemini-cli | 🟣 claude-code |
 | **Debbee** | design | User experience, visual design | UX design, prototyping, design systems | 🔵 gemini-cli | 🟢 openai |
 
 ## Provider Configuration
@@ -99,7 +99,7 @@ AutomatosX uses a **3-layer fallback system** for maximum reliability:
 |-------------|-------------|--------|
 | 🟢 **OpenAI** (openai) | 5 | Core Team (Alex, Sofia, Ryan, Danny, Wendy) |
 | 🟣 **Claude** (claude-code) | 5 | Engineering Team (Bob, Frank, Oliver, Steve, Queenie) |
-| 🔵 **Gemini** (gemini-cli) | 5 | Business Team + Design Team (Eric, Tony, Paris, Daisy, Debbee) |
+| 🔵 **Gemini** (gemini-cli) | 5 | Business Team (Eric, Tony, Daisy) + Design Team (Paris, Debbee) |
 
 ### Provider Selection Logic
 
