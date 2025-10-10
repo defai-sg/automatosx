@@ -17,10 +17,7 @@ abilities:
   - debugging
   - best-practices
 
-# Configuration
-temperature: 0.3
-maxTokens: 4000
-
+# v5.0.11: Removed temperature/maxTokens - let provider CLIs use optimized defaults
 # v4.9.0+ Multi-Agent Orchestration
 # All agents can delegate by default - no canDelegate field needed
 orchestration:

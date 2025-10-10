@@ -17,10 +17,7 @@ abilities:
   - debugging
   - best-practices
 
-# Configuration
-config:
-  temperature: 0.4
-  maxTokens: 4000
+# v5.0.11: Removed temperature/maxTokens - let provider CLIs use optimized defaults
 
 # System prompt
 systemPrompt: |

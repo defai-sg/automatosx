@@ -18,9 +18,9 @@ abilities:
   - best-practices
 
 # Configuration
+# v5.0.11: Removed temperature/maxTokens - let provider CLIs use optimized defaults
+# topP is preserved as it may be useful for OpenAI provider
 config:
-  temperature: 0.6
-  maxTokens: 8000
   topP: 0.9
 
 # System prompt

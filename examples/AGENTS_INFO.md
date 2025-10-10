@@ -36,15 +36,13 @@ Research shows humans remember names better than roles. Instead of remembering "
 
 ### 👥 Core Team
 
-Fast and efficient AI (OpenAI) for general-purpose tasks, code generation, and everyday assistance.
+Fast and efficient AI (OpenAI) for general-purpose tasks and documentation.
 
 | Name | Agent | Expertise | Best For | Primary | Fallback |
 |------|-------|-----------|----------|---------|----------|
-| **Alex** | assistant | General purpose tasks, planning, questions | Quick questions, brainstorming, planning | 🟢 openai | 🟣 claude-code |
-| **Sofia** | coder | Code generation, implementation | Writing new code, implementing features | 🟢 openai | 🟣 claude-code |
-| **Ryan** | reviewer | Code review, quality assurance | PR reviews, code quality checks | 🟢 openai | 🟣 claude-code |
-| **Danny** | debugger | Debugging, troubleshooting | Fixing bugs, error analysis | 🟢 openai | 🟣 claude-code |
 | **Wendy** | writer | Documentation, content creation | Writing docs, README files | 🟢 openai | 🟣 claude-code |
+
+**Note**: General-purpose agents (assistant, coder, debugger, reviewer) have been moved to templates (`examples/templates/`) to prevent delegation cycles. Use `ax agent create` to add them when specifically needed for your project.
 
 ### 💻 Engineering Team
 
@@ -78,6 +76,43 @@ Creative AI (Gemini) for UX/UI design, product strategy, and user-centered desig
 | **Debbee** | design | User experience, visual design | UX design, prototyping, design systems | 🔵 gemini-cli | 🟢 openai |
 
 ## Provider Configuration
+
+### ✅ Best Practice: Model Parameters
+
+**v5.0.11+ Recommendation**: Let provider CLIs use their optimized defaults
+
+**What Changed**:
+- All `temperature` and `maxTokens` parameters have been **removed from default agents**
+- Provider CLIs (Claude, Gemini, OpenAI) use their own optimized settings
+- This gives agents **full access to provider capabilities** (Claude: 200K tokens, Gemini: 2M tokens)
+
+**Why This Is Better**:
+1. **No Artificial Limits**: Agents can generate complete, comprehensive answers
+2. **Provider Optimization**: Each CLI is tuned for its model's strengths
+3. **Simpler Configuration**: Less to maintain and understand
+4. **Fewer Mistakes**: Can't accidentally limit powerful models to 4K tokens
+
+**When to Add Parameters** (optional):
+- **Cost Control**: Set `maxTokens` to limit API usage for specific agents
+- **Determinism**: Set `temperature: 0` for QA/testing agents that need consistent output
+- **OpenAI Only**: Currently only OpenAI provider supports these parameters
+
+**How to Add Parameters** (if needed):
+```yaml
+# Example: Cost-controlled agent
+config:
+  maxTokens: 2000  # Limit output length
+
+# Example: Deterministic QA agent
+config:
+  temperature: 0   # Consistent output
+```
+
+**References**:
+- See `CLAUDE.md` § Provider Model Parameters for technical details
+- Track Gemini CLI support: [Issue #5280](https://github.com/google-gemini/gemini-cli/issues/5280)
+
+---
 
 AutomatosX uses a **3-layer fallback system** for maximum reliability:
 
@@ -291,6 +326,66 @@ Think of AutomatosX like assembling your dream team:
 - Copy agents to `.automatosx/agents/` to use them
 - Customize agent personalities and abilities
 - Create your own agents with memorable names!
+
+---
+
+## 🎯 Agent Maintenance Principles (v5.0.11+)
+
+To prevent delegation cycles and maintain a clean agent ecosystem, AutomatosX follows these principles:
+
+### Core Principles
+
+1. **Unique Responsibility**: Each default agent must have a clearly defined, non-overlapping responsibility area.
+2. **Prevent Duplication**: No two agents should cover the same type of task.
+3. **Prefer Specialization**: Default agents should be specialists, not generalists.
+4. **Templates for Flexibility**: General-purpose agents should be templates, not defaults.
+
+### Delegation Strategy
+
+**Broad-scope agents** (CEO, CTO, Product) are configured with:
+- `maxDelegationDepth: 1` - Limits multi-layer delegation
+- **Delegation evaluation guidance** in systemPrompt:
+  ```
+  Before delegating, evaluate:
+  1. Can I handle this with my expertise? If yes, do it yourself.
+  2. Does this require specialized skills? If yes, delegate to specialists.
+  3. Delegation should be intentional, not automatic.
+  ```
+
+### Adding New Agents
+
+When creating or modifying agents:
+
+1. **Check for overlaps**: Ensure the new agent doesn't duplicate existing agents
+2. **Update team configuration**: Assign to appropriate team (core/engineering/business/design)
+3. **Set delegation limits**: For coordinators, set `maxDelegationDepth: 1`
+4. **Add delegation guidance**: Include evaluation criteria in systemPrompt
+5. **Document responsibilities**: Update this file with the agent's clear scope
+
+### Templates vs. Default Agents
+
+**Default Agents** (`automatosx/agents/`):
+- Specialized roles with clear boundaries
+- Always available by default
+- Current: backend, frontend, devops, security, quality, data, product, design, writer, ceo, cto
+
+**Templates** (`examples/templates/`):
+- General-purpose or situational roles
+- Created on-demand with `ax agent create`
+- Current: assistant, fullstack-developer, code-reviewer, debugger, developer, analyst, designer, qa-specialist
+
+### Preventing Delegation Cycles
+
+Common causes of infinite delegation:
+- ❌ Two generalists with overlapping skills
+- ❌ Agents with identical abilities but different names
+- ❌ No clear "stop condition" in delegation logic
+
+Solutions:
+- ✅ Move generalists to templates
+- ✅ Limit maxDelegationDepth for broad-scope agents
+- ✅ Add explicit delegation evaluation in systemPrompt
+- ✅ Prefer specialized agents with clear boundaries
 
 ---
 
