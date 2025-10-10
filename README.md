@@ -365,15 +365,13 @@ Memory Cost:   $0 (no API calls)
 
 ---
 
-## 🗺️ Roadmap
+## 🚧 Coming Soon
 
-### ✅ Completed (v5.0.5)
-- Persistent memory with FTS5 (< 1ms search)
-- Multi-agent orchestration (7 delegation syntaxes)
-- Team-based configuration (4 teams)
-- Agent template system (5 templates)
-- Provider parameter support
-- Comprehensive documentation
+- Enhanced Claude Code integration
+- Visual workflow builder
+- Advanced memory analytics
+- Cross-project knowledge sharing
+- Plugin system for custom providers
 
 ---
 
