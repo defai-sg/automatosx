@@ -147,10 +147,42 @@ export interface MemoryManagerConfig {
   /** Maximum number of entries (default: 10000) */
   maxEntries?: number;
 
-  /** Auto-cleanup old entries */
+  /**
+   * Smart cleanup configuration (v5.0.10 Phase 2)
+   */
+  cleanup?: {
+    /** Enable automatic cleanup (default: true) */
+    enabled?: boolean;
+
+    /** Cleanup strategy (default: 'oldest') */
+    strategy?: 'oldest' | 'least_accessed' | 'hybrid';
+
+    /** Trigger cleanup when usage reaches this threshold (default: 0.9 = 90%) */
+    triggerThreshold?: number;
+
+    /** Clean until usage reaches this target (default: 0.7 = 70%) */
+    targetThreshold?: number;
+
+    /** Minimum number of entries to remove per cleanup (default: 10) */
+    minCleanupCount?: number;
+
+    /** Maximum number of entries to remove per cleanup (default: 1000) */
+    maxCleanupCount?: number;
+
+    /** Days to keep entries for time-based cleanup (default: 30) */
+    retentionDays?: number;
+  };
+
+  /**
+   * @deprecated Use cleanup.enabled instead (backward compatibility)
+   * Auto-cleanup old entries
+   */
   autoCleanup?: boolean;
 
-  /** Days to keep entries (default: 30) */
+  /**
+   * @deprecated Use cleanup.retentionDays instead (backward compatibility)
+   * Days to keep entries (default: 30)
+   */
   cleanupDays?: number;
 
   /** Enable access tracking */
@@ -385,4 +417,5 @@ export type MemoryErrorCode =
   | 'CAPACITY_EXCEEDED'
   | 'PROVIDER_MISSING'
   | 'EMBEDDING_GENERATION_FAILED'
-  | 'MEMORY_LIMIT';  // v5.0.8: Memory limit reached
+  | 'MEMORY_LIMIT'   // v5.0.8: Memory limit reached
+  | 'CONFIG_ERROR';  // v5.0.10 Phase 2: Invalid configuration

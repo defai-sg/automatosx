@@ -37,12 +37,34 @@ import { logger } from '../utils/logger.js';
  */
 export class MemoryManager implements IMemoryManager {
   private db: Database.Database;
-  private config: Required<Omit<MemoryManagerConfig, 'embeddingProvider' | 'hnsw'>> & {
+  private config: Required<Omit<MemoryManagerConfig, 'embeddingProvider' | 'hnsw' | 'cleanup'>> & {
     embeddingProvider?: unknown;
   };
   private embeddingProvider?: any;
   private initialized: boolean = false;
   private useFTS: boolean = true; // Use FTS5 by default
+
+  // Phase 1: Performance optimization
+  private entryCount: number = 0; // Internal counter to avoid repeated COUNT(*)
+  private statements: {
+    countAll?: Database.Statement;
+    insert?: Database.Statement;
+    deleteById?: Database.Statement;
+    deleteOldest?: Database.Statement;
+    deleteBeforeCutoff?: Database.Statement;
+    updateAccessCount?: Database.Statement;
+  } = {}
+
+  // Phase 2: Smart cleanup configuration
+  private cleanupConfig: {
+    enabled: boolean;
+    strategy: 'oldest' | 'least_accessed' | 'hybrid';
+    triggerThreshold: number;
+    targetThreshold: number;
+    minCleanupCount: number;
+    maxCleanupCount: number;
+    retentionDays: number;
+  }
 
   private constructor(config: MemoryManagerConfig) {
     // Set default config
@@ -56,6 +78,28 @@ export class MemoryManager implements IMemoryManager {
     };
 
     this.embeddingProvider = config.embeddingProvider;
+
+    // Phase 2: Initialize smart cleanup configuration with defaults
+    const cleanupCfg = config.cleanup || {};
+
+    // Handle backward compatibility: autoCleanup → cleanup.enabled
+    const enabled = cleanupCfg.enabled ?? config.autoCleanup ?? true;
+
+    // Handle backward compatibility: cleanupDays → cleanup.retentionDays
+    const retentionDays = cleanupCfg.retentionDays ?? config.cleanupDays ?? 30;
+
+    this.cleanupConfig = {
+      enabled,
+      strategy: cleanupCfg.strategy ?? 'oldest',
+      triggerThreshold: cleanupCfg.triggerThreshold ?? 0.9,
+      targetThreshold: cleanupCfg.targetThreshold ?? 0.7,
+      minCleanupCount: cleanupCfg.minCleanupCount ?? 10,
+      maxCleanupCount: cleanupCfg.maxCleanupCount ?? 1000,
+      retentionDays
+    };
+
+    // Validate cleanup configuration
+    this.validateCleanupConfig();
 
     // Ensure directory exists
     const dir = dirname(this.config.dbPath);
@@ -137,11 +181,41 @@ export class MemoryManager implements IMemoryManager {
         END;
       `);
 
+      // Phase 1: Prepare frequently-used statements for better performance
+      this.statements.countAll = this.db.prepare('SELECT COUNT(*) as count FROM memory_entries');
+      this.statements.insert = this.db.prepare(`
+        INSERT INTO memory_entries (content, metadata, created_at, last_accessed_at, access_count)
+        VALUES (?, ?, ?, ?, 0)
+      `);
+      this.statements.deleteById = this.db.prepare('DELETE FROM memory_entries WHERE id = ?');
+      this.statements.deleteOldest = this.db.prepare(`
+        DELETE FROM memory_entries
+        WHERE id IN (
+          SELECT id FROM memory_entries
+          ORDER BY created_at ASC
+          LIMIT ?
+        )
+      `);
+      this.statements.deleteBeforeCutoff = this.db.prepare(`
+        DELETE FROM memory_entries
+        WHERE created_at < ?
+      `);
+      this.statements.updateAccessCount = this.db.prepare(`
+        UPDATE memory_entries
+        SET access_count = access_count + 1, last_accessed_at = ?
+        WHERE id = ?
+      `);
+
+      // Initialize internal entry counter
+      const countResult = this.statements.countAll.get() as { count: number };
+      this.entryCount = countResult.count;
+
       this.initialized = true;
       logger.info('MemoryManager initialized successfully', {
         dbPath: this.config.dbPath,
         searchMethod: 'FTS5',
-        hasEmbeddingProvider: !!this.embeddingProvider
+        hasEmbeddingProvider: !!this.embeddingProvider,
+        entryCount: this.entryCount
       });
     } catch (error) {
       logger.error('Failed to initialize MemoryManager', { error: (error as Error).message });
@@ -156,6 +230,7 @@ export class MemoryManager implements IMemoryManager {
    * Add a new memory entry
    *
    * v4.11.0: Embedding is now optional (only needed for Plus version)
+   * v5.0.9: Phase 1 - Transaction atomicity with prepared statements
    */
   async add(content: string, embedding: number[] | null, metadata: MemoryMetadata): Promise<MemoryEntry> {
     if (!this.initialized) {
@@ -165,57 +240,73 @@ export class MemoryManager implements IMemoryManager {
     // v4.11.0: Embedding validation removed (FTS5 only, no vector search)
     // Note: embedding parameter deprecated but kept for backward compatibility
 
-    // v5.0.8: Enforce maxEntries limit
-    const currentCount = this.getCount();
-    if (currentCount >= this.config.maxEntries) {
-      // Auto-cleanup oldest entries to make room
-      const entriesToRemove = Math.min(100, Math.floor(this.config.maxEntries * 0.1)); // Remove 10% or 100, whichever is smaller
-      await this.cleanupOldest(entriesToRemove);
-
-      logger.warn('Memory limit approaching, auto-cleanup triggered', {
-        currentCount,
-        maxEntries: this.config.maxEntries,
-        removed: entriesToRemove
-      });
-
-      // Check again after cleanup
-      const newCount = this.getCount();
-      if (newCount >= this.config.maxEntries) {
-        throw new MemoryError(
-          `Memory limit reached (${this.config.maxEntries} entries). Run 'ax memory clear' or increase maxEntries in config.`,
-          'MEMORY_LIMIT'
-        );
-      }
-    }
-
-    // v5.0.8: Trigger auto cleanup if enabled (10% chance)
-    if (this.config.autoCleanup && Math.random() < 0.1) {
-      // Run cleanup in background (don't wait for it)
-      this.cleanup().catch(error => {
-        logger.debug('Background cleanup failed', {
+    // Phase 2: Smart cleanup - check threshold before add
+    if (this.shouldTriggerCleanup()) {
+      try {
+        const removed = await this.executeSmartCleanup();
+        logger.info('Smart cleanup triggered', {
+          removed,
+          currentCount: this.entryCount,
+          usage: (this.entryCount / this.config.maxEntries * 100).toFixed(1) + '%',
+          threshold: (this.cleanupConfig.triggerThreshold * 100).toFixed(0) + '%',
+          strategy: this.cleanupConfig.strategy
+        });
+      } catch (error) {
+        logger.warn('Smart cleanup failed', {
           error: (error as Error).message
         });
-      });
+      }
     }
 
     try {
       const now = Date.now();
+      const metadataStr = JSON.stringify(metadata);
 
-      // Insert entry (FTS5 index is automatically updated via trigger)
-      const result = this.db.prepare(`
-        INSERT INTO memory_entries (content, metadata, created_at, access_count)
-        VALUES (?, ?, ?, 0)
-      `).run(content, JSON.stringify(metadata), now);
+      // Phase 1.1: Transaction with proper counter synchronization
+      // Return deletion count and ID, update counter AFTER transaction succeeds
+      const insertTxn = this.db.transaction(() => {
+        let deletedCount = 0;
 
-      const id = Number(result.lastInsertRowid);
+        // v5.0.8: Enforce maxEntries limit inside transaction
+        if (this.entryCount >= this.config.maxEntries) {
+          // Auto-cleanup oldest entries to make room
+          const entriesToRemove = Math.min(100, Math.floor(this.config.maxEntries * 0.1));
+          const deleteInfo = this.statements.deleteOldest!.run(entriesToRemove);
+          deletedCount = deleteInfo.changes;
+
+          logger.warn('Memory limit approaching, auto-cleanup triggered', {
+            currentCount: this.entryCount,
+            maxEntries: this.config.maxEntries,
+            removed: deletedCount
+          });
+
+          // Check if cleanup freed enough space
+          if (this.entryCount - deletedCount >= this.config.maxEntries) {
+            throw new MemoryError(
+              `Memory limit reached (${this.config.maxEntries} entries). Run 'ax memory clear' or increase maxEntries in config.`,
+              'MEMORY_LIMIT'
+            );
+          }
+        }
+
+        // Insert entry using prepared statement (FTS5 index is automatically updated via trigger)
+        const insertResult = this.statements.insert!.run(content, metadataStr, now, now);
+
+        logger.debug('Memory entry added', {
+          id: insertResult.lastInsertRowid,
+          contentLength: content.length,
+          searchMethod: 'FTS5',
+          deletedCount
+        });
+
+        return { id: Number(insertResult.lastInsertRowid), deletedCount };
+      });
+
+      // Execute transaction and update counter ONLY on success
+      const { id, deletedCount } = insertTxn();
+      this.entryCount = this.entryCount - deletedCount + 1;
 
       // v4.11.0: No vector storage (FTS5 only)
-
-      logger.debug('Memory entry added', {
-        id,
-        contentLength: content.length,
-        searchMethod: 'FTS5'
-      });
 
       return {
         id,
@@ -346,15 +437,19 @@ export class MemoryManager implements IMemoryManager {
 
       const results = this.db.prepare(sql).all(...finalParams) as any[];
 
-      // Update access tracking if enabled
+      // Phase 1.1: Update access tracking with batch UPDATE for atomicity and performance
+      // Note: Cannot use prepared statement here due to dynamic IN (?) clause
       if (this.config.trackAccess && results.length > 0) {
+        const now = Date.now();
         const ids = results.map(r => r.id);
         const placeholders = ids.map(() => '?').join(',');
+
+        // Batch update: all succeed or all fail (atomic), much faster than N individual updates
         this.db.prepare(`
           UPDATE memory_entries
           SET last_accessed_at = ?, access_count = access_count + 1
           WHERE id IN (${placeholders})
-        `).run(Date.now(), ...ids);
+        `).run(now, ...ids);
       }
 
       return results.map(row => {
@@ -470,8 +565,13 @@ export class MemoryManager implements IMemoryManager {
         throw new MemoryError(`Memory entry not found: ${id}`, 'ENTRY_NOT_FOUND');
       }
 
-      this.db.prepare('DELETE FROM memory_entries WHERE id = ?').run(id);
-      logger.debug('Memory entry deleted', { id });
+      // Phase 1: Use prepared statement and maintain entryCount
+      const deleteInfo = this.statements.deleteById!.run(id);
+      if (deleteInfo.changes > 0) {
+        this.entryCount -= deleteInfo.changes;
+      }
+
+      logger.debug('Memory entry deleted', { id, newCount: this.entryCount });
     } catch (error) {
       if (error instanceof MemoryError) throw error;
       throw new MemoryError(
@@ -572,6 +672,9 @@ export class MemoryManager implements IMemoryManager {
 
     try {
       this.db.prepare('DELETE FROM memory_entries').run();
+      // Phase 1: Reset internal counter
+      this.entryCount = 0;
+
       this.db.prepare('VACUUM').run();
       logger.info('All memory entries cleared');
     } catch (error) {
@@ -615,45 +718,268 @@ export class MemoryManager implements IMemoryManager {
    * Get total count of memory entries
    * v5.0.8: Added for maxEntries enforcement
    */
+  /**
+   * Get current entry count
+   * Phase 1: Use internal counter instead of COUNT(*) for better performance
+   */
   private getCount(): number {
     if (!this.initialized) {
       return 0;
     }
 
-    try {
-      const result = this.db.prepare('SELECT COUNT(*) as count FROM memory_entries').get() as { count: number } | undefined;
-      return result?.count ?? 0;
-    } catch (error) {
-      logger.error('Failed to get entry count', { error: (error as Error).message });
+    // Return internal counter (maintained by transactions)
+    return this.entryCount;
+  }
+
+  /**
+   * Phase 2: Validate cleanup configuration
+   * v5.0.10 Phase 2.1: Added validation for maxCleanupCount and retentionDays
+   * @throws {MemoryError} if configuration is invalid
+   */
+  private validateCleanupConfig(): void {
+    const cfg = this.cleanupConfig;
+
+    if (cfg.triggerThreshold < 0.5 || cfg.triggerThreshold > 1.0) {
+      throw new MemoryError(
+        'cleanup.triggerThreshold must be between 0.5 and 1.0',
+        'CONFIG_ERROR'
+      );
+    }
+
+    if (cfg.targetThreshold < 0.1 || cfg.targetThreshold > 0.9) {
+      throw new MemoryError(
+        'cleanup.targetThreshold must be between 0.1 and 0.9',
+        'CONFIG_ERROR'
+      );
+    }
+
+    if (cfg.targetThreshold >= cfg.triggerThreshold) {
+      throw new MemoryError(
+        'cleanup.targetThreshold must be less than triggerThreshold',
+        'CONFIG_ERROR'
+      );
+    }
+
+    if (cfg.minCleanupCount < 1) {
+      throw new MemoryError(
+        'cleanup.minCleanupCount must be at least 1',
+        'CONFIG_ERROR'
+      );
+    }
+
+    // Phase 2.1: Validate maxCleanupCount is positive
+    if (cfg.maxCleanupCount < 1) {
+      throw new MemoryError(
+        'cleanup.maxCleanupCount must be at least 1',
+        'CONFIG_ERROR'
+      );
+    }
+
+    if (cfg.maxCleanupCount < cfg.minCleanupCount) {
+      throw new MemoryError(
+        'cleanup.maxCleanupCount must be >= minCleanupCount',
+        'CONFIG_ERROR'
+      );
+    }
+
+    // Phase 2.1: Validate retentionDays is positive
+    if (cfg.retentionDays < 1) {
+      throw new MemoryError(
+        'cleanup.retentionDays must be at least 1',
+        'CONFIG_ERROR'
+      );
+    }
+  }
+
+  /**
+   * Phase 2: Check if cleanup should be triggered based on usage threshold
+   */
+  private shouldTriggerCleanup(): boolean {
+    if (!this.cleanupConfig.enabled) {
+      return false;
+    }
+
+    const currentUsage = this.entryCount / this.config.maxEntries;
+    return currentUsage >= this.cleanupConfig.triggerThreshold;
+  }
+
+  /**
+   * Phase 2: Calculate how many entries to remove to reach target threshold
+   */
+  private calculateCleanupCount(): number {
+    const targetCount = Math.floor(
+      this.config.maxEntries * this.cleanupConfig.targetThreshold
+    );
+    const toRemove = this.entryCount - targetCount;
+
+    // Phase 2.1: If already below target, don't cleanup
+    if (toRemove <= 0) {
       return 0;
+    }
+
+    // Enforce min/max bounds
+    return Math.max(
+      this.cleanupConfig.minCleanupCount,
+      Math.min(this.cleanupConfig.maxCleanupCount, toRemove)
+    );
+  }
+
+  /**
+   * Phase 2: Execute cleanup with configured strategy
+   * @returns Number of entries removed
+   */
+  private async executeSmartCleanup(): Promise<number> {
+    const count = this.calculateCleanupCount();
+
+    logger.debug('Executing smart cleanup', {
+      strategy: this.cleanupConfig.strategy,
+      count,
+      currentCount: this.entryCount,
+      threshold: this.cleanupConfig.triggerThreshold
+    });
+
+    // Phase 2.1: All cleanup methods now return actual deleted count
+    switch (this.cleanupConfig.strategy) {
+      case 'oldest':
+        return await this.cleanupOldest(count);
+
+      case 'least_accessed':
+        return await this.cleanupLeastAccessed(count);
+
+      case 'hybrid':
+        return await this.cleanupHybrid(count);
+
+      default:
+        throw new MemoryError(
+          `Unknown cleanup strategy: ${this.cleanupConfig.strategy}`,
+          'CONFIG_ERROR'
+        );
     }
   }
 
   /**
    * Remove oldest entries
    * v5.0.8: Added for automatic cleanup when approaching maxEntries
+   * v5.0.10 Phase 2: Enhanced logging with strategy info
+   * v5.0.10 Phase 2.1: Now returns actual deleted count
    */
-  private async cleanupOldest(count: number): Promise<void> {
+  private async cleanupOldest(count: number): Promise<number> {
     if (!this.initialized || count <= 0) {
-      return;
+      return 0;
     }
 
     try {
-      this.db.prepare(`
-        DELETE FROM memory_entries
-        WHERE id IN (
-          SELECT id FROM memory_entries
-          ORDER BY created_at ASC
-          LIMIT ?
-        )
-      `).run(count);
+      // Phase 1: Use prepared statement and maintain entryCount
+      const deleteInfo = this.statements.deleteOldest!.run(count);
+      if (deleteInfo.changes > 0) {
+        this.entryCount -= deleteInfo.changes;
+      }
 
-      logger.info('Cleaned up oldest entries', { count });
+      logger.info('Cleaned up oldest entries', {
+        requested: count,
+        deleted: deleteInfo.changes,
+        newCount: this.entryCount,
+        strategy: 'oldest'  // Phase 2: Add strategy info
+      });
+
+      return deleteInfo.changes;
     } catch (error) {
       logger.error('Failed to cleanup oldest entries', {
         count,
         error: (error as Error).message
       });
+      return 0;
+    }
+  }
+
+  /**
+   * Phase 2: Remove least accessed entries
+   * v5.0.10 Phase 2.1: Now async to support fallback to cleanupOldest
+   * @param count Number of entries to remove
+   * @returns Number of entries actually removed
+   */
+  private async cleanupLeastAccessed(count: number): Promise<number> {
+    if (!this.initialized || count <= 0) {
+      return 0;
+    }
+
+    if (!this.config.trackAccess) {
+      logger.warn('least_accessed strategy requires trackAccess=true, falling back to oldest');
+      return await this.cleanupOldest(count);  // Phase 2.1: Properly await fallback
+    }
+
+    try {
+      const deleteInfo = this.db.prepare(`
+        DELETE FROM memory_entries
+        WHERE id IN (
+          SELECT id FROM memory_entries
+          ORDER BY access_count ASC, last_accessed_at ASC
+          LIMIT ?
+        )
+      `).run(count);
+
+      if (deleteInfo.changes > 0) {
+        this.entryCount -= deleteInfo.changes;
+      }
+
+      logger.info('Cleaned up least accessed entries', {
+        requested: count,
+        deleted: deleteInfo.changes,
+        newCount: this.entryCount,
+        strategy: 'least_accessed'
+      });
+
+      return deleteInfo.changes;
+    } catch (error) {
+      logger.error('Failed to cleanup least accessed entries', {
+        count,
+        error: (error as Error).message
+      });
+      return 0;
+    }
+  }
+
+  /**
+   * Phase 2: Remove entries using hybrid strategy (access count + age)
+   * v5.0.10 Phase 2.1: Now async for consistency with other cleanup methods
+   * @param count Number of entries to remove
+   * @returns Number of entries actually removed
+   */
+  private async cleanupHybrid(count: number): Promise<number> {
+    if (!this.initialized || count <= 0) {
+      return 0;
+    }
+
+    try {
+      const deleteInfo = this.db.prepare(`
+        DELETE FROM memory_entries
+        WHERE id IN (
+          SELECT id FROM memory_entries
+          ORDER BY
+            access_count ASC,
+            created_at ASC
+          LIMIT ?
+        )
+      `).run(count);
+
+      if (deleteInfo.changes > 0) {
+        this.entryCount -= deleteInfo.changes;
+      }
+
+      logger.info('Cleaned up entries using hybrid strategy', {
+        requested: count,
+        deleted: deleteInfo.changes,
+        newCount: this.entryCount,
+        strategy: 'hybrid'
+      });
+
+      return deleteInfo.changes;
+    } catch (error) {
+      logger.error('Failed to cleanup with hybrid strategy', {
+        count,
+        error: (error as Error).message
+      });
+      return 0;
     }
   }
 
@@ -666,15 +992,18 @@ export class MemoryManager implements IMemoryManager {
     const cutoffTime = Date.now() - (days * 24 * 60 * 60 * 1000);
 
     try {
-      const result = this.db.prepare(`
-        DELETE FROM memory_entries
-        WHERE created_at < ?
-      `).run(cutoffTime);
+      // Phase 1: Use prepared statement and maintain entryCount
+      const deleteInfo = this.statements.deleteBeforeCutoff!.run(cutoffTime);
+      const deleted = deleteInfo.changes;
 
-      const deleted = result.changes;
       if (deleted > 0) {
+        this.entryCount -= deleted;
         this.db.prepare('VACUUM').run();
-        logger.info('Cleanup completed', { deleted, olderThanDays: days });
+        logger.info('Cleanup completed', {
+          deleted,
+          olderThanDays: days,
+          newCount: this.entryCount
+        });
       }
 
       return deleted;
@@ -747,8 +1076,12 @@ export class MemoryManager implements IMemoryManager {
         );
       }
 
-      // Close current database
+      // Close current database and reset state
+      // Phase 2.1 Fix: Must reset all state before reinitializing
       this.db.close();
+      this.initialized = false;
+      this.entryCount = 0;
+      this.statements = {};
 
       // Copy backup to current location using better-sqlite3's backup method
       const srcDb = new Database(srcPath, { readonly: true });
@@ -761,10 +1094,10 @@ export class MemoryManager implements IMemoryManager {
       this.db = new Database(this.config.dbPath);
       this.db.pragma('journal_mode = WAL');
 
-      // Reload sqlite-vec extension
-      sqliteVec.load(this.db);
+      // Phase 2.1 Fix: Reinitialize completely (rebuild statements, recount entries)
+      // This ensures prepared statements are bound to the new connection
+      await this.initialize();
 
-      this.initialized = true;
       logger.info('Database restored successfully', { srcPath });
     } catch (error) {
       throw new MemoryError(

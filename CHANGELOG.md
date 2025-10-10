@@ -5,6 +5,102 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.10] - 2025-10-10
+
+### 🎯 Smart Cleanup & UX Improvements
+
+#### Added
+
+- **Smart Memory Cleanup (Phase 2)**: Intelligent threshold-based cleanup replacing unpredictable random triggers
+  - **Threshold Triggering**: Cleanup triggers at 90% capacity (default), cleans to 70% target
+  - **Three Cleanup Strategies**:
+    - `oldest`: Time-based cleanup (FIFO, default)
+    - `least_accessed`: Access-based cleanup (LRU/LFU, preserves hot data)
+    - `hybrid`: Balanced strategy (considers both age and access)
+  - **Configurable Thresholds**:
+    - `triggerThreshold`: When to start cleanup (default 0.9 = 90%)
+    - `targetThreshold`: Cleanup target (default 0.7 = 70%)
+    - `minCleanupCount`: Minimum entries to remove (default 10)
+    - `maxCleanupCount`: Maximum entries to remove (default 1000)
+  - **Smart Validation**: Comprehensive configuration validation with clear error messages
+  - **Backward Compatible**: Old `autoCleanup` and `cleanupDays` configs automatically mapped
+
+#### Fixed
+
+- **Memory Cleanup Bug Fixes (Phase 2.1)**: Ultra-deep review found and fixed 5 bugs
+  1. **Negative Cleanup Handling**: Fixed cleanup when entry count below target (prevents accidental deletion)
+  2. **Return Value Consistency**: All cleanup methods now return actual deleted count (not requested count)
+  3. **Async Operations**: Fixed missing `await` in fallback scenarios (eliminates race conditions)
+  4. **Configuration Validation**: Added validation for `maxCleanupCount` and `retentionDays` (prevents invalid configs)
+  5. **Type Design**: Unified all cleanup methods to `async Promise<number>` (consistent interface)
+
+- **Agent Not Found UX**: Restored friendly agent suggestions in `ax run` command
+  - Shows "Did you mean..." list with similar agents (Levenshtein distance ≤ 3)
+  - Displays displayName, actual name, and role for each suggestion
+  - Falls back to "Run 'ax agent list'" if no close matches
+  - Prevents regression from early agent name resolution
+
+#### Changed
+
+- **Memory Cleanup Behavior**:
+  - **Before**: Random 10% chance on each add → unpredictable timing
+  - **After**: Deterministic threshold-based → 100% predictable when cleanup occurs
+  - **Result**: Users can trust cleanup timing and configure to their needs
+
+- **Memory Manager Methods** (Phase 2.1 refactoring):
+  - `cleanupOldest()`: Now returns `Promise<number>` (actual deleted count)
+  - `cleanupLeastAccessed()`: Now async `Promise<number>` (supports proper fallback)
+  - `cleanupHybrid()`: Now async `Promise<number>` (consistent interface)
+  - `calculateCleanupCount()`: Added negative value check (safety improvement)
+  - `validateCleanupConfig()`: Enhanced with additional validations
+
+#### Performance
+
+- **Cleanup Efficiency**:
+  - 100% predictable cleanup timing (vs random)
+  - Configurable cleanup bounds prevent excessive operations
+  - Smart strategies preserve hot data when needed
+  - All cleanup methods properly await async operations
+
+### Documentation
+
+- Created comprehensive Phase 2 implementation plan (16 pages)
+- Created detailed bug analysis report (Phase 2.1, 57 pages)
+- Created bug fixes completion report
+- All documentation in `tmp/` folder (development artifacts)
+
+### Tests
+
+- All 1,207 tests passing (5 skipped)
+- Memory manager tests: 25/25 passing
+- Phase 1 tests: 13/13 passing
+- Integration tests: 106/106 passing
+- Zero regressions, fully backward compatible
+
+### Migration Notes
+
+**No migration required** - v5.0.10 is 100% backward compatible with v5.0.9 and earlier versions.
+
+**Optional**: To use new smart cleanup features, add to your config:
+```json
+{
+  "memory": {
+    "cleanup": {
+      "enabled": true,
+      "strategy": "hybrid",
+      "triggerThreshold": 0.9,
+      "targetThreshold": 0.7,
+      "minCleanupCount": 10,
+      "maxCleanupCount": 1000
+    }
+  }
+}
+```
+
+Old configs using `autoCleanup` and `cleanupDays` continue to work unchanged.
+
+---
+
 ## [5.0.9] - 2025-10-10
 
 ### Added

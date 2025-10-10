@@ -151,12 +151,39 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
 
       // Resolve agent name early (supports displayName → actual name)
       // This ensures consistency across session, memory, and all operations
-      resolvedAgentName = await profileLoader.resolveAgentName(argv.agent as string);
+      try {
+        resolvedAgentName = await profileLoader.resolveAgentName(argv.agent as string);
 
-      if (argv.verbose) {
-        if (resolvedAgentName !== argv.agent) {
-          console.log(chalk.gray(`Resolved agent: ${argv.agent} → ${resolvedAgentName}`));
+        if (argv.verbose) {
+          if (resolvedAgentName !== argv.agent) {
+            console.log(chalk.gray(`Resolved agent: ${argv.agent} → ${resolvedAgentName}`));
+          }
         }
+      } catch (error) {
+        // Agent not found - show helpful suggestions
+        console.error(chalk.red.bold(`\n❌ Agent not found: ${argv.agent}\n`));
+
+        // Try to suggest similar agents
+        try {
+          const suggestions = await profileLoader.findSimilarAgents(argv.agent as string, 3);
+          const closeSuggestions = suggestions.filter(s => s.distance <= 3);
+
+          if (closeSuggestions.length > 0) {
+            console.log(chalk.yellow('💡 Did you mean:\n'));
+            closeSuggestions.forEach((s, i) => {
+              const displayInfo = s.displayName ? `${s.displayName} (${s.name})` : s.name;
+              const roleInfo = s.role ? ` - ${s.role}` : '';
+              console.log(chalk.cyan(`  ${i + 1}. ${displayInfo}${roleInfo}`));
+            });
+            console.log();
+          } else {
+            console.log(chalk.gray('Run "ax agent list" to see available agents.\n'));
+          }
+        } catch {
+          console.log(chalk.gray('Run "ax agent list" to see available agents.\n'));
+        }
+
+        process.exit(1);
       }
 
       const abilitiesManager = new AbilitiesManager(

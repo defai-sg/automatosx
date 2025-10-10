@@ -1,6 +1,6 @@
 {
-  "version": "5.0.9",
+  "version": "5.0.10",
   "releaseDate": "2025-10-10",
-  "codename": "Critical Fixes - Timeout & Memory",
-  "phase": "Phase 2 Complete"
+  "codename": "Smart Cleanup & UX Improvements",
+  "phase": "Phase 2.1 Complete"
 }

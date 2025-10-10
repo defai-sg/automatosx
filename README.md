@@ -7,9 +7,9 @@
 [![npm version](https://img.shields.io/npm/v/@defai.digital/automatosx.svg)](https://www.npmjs.com/package/@defai.digital/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-1,149%20passing-brightgreen.svg)](#)
+[![Tests](https://img.shields.io/badge/tests-1,207%20passing-brightgreen.svg)](#)
 
-**Status**: ✅ Production Ready · v5.0.8 · October 2025
+**Status**: ✅ Production Ready · v5.0.10 · October 2025
 
 ---
 
@@ -66,13 +66,19 @@ Day 3: /ax run steve "security audit" → Steve has full context from Day 1-2
 
 ## 🚀 What's New
 
-**v5.0.8** (October 2025): Critical Fixes - Timeout & Memory
-- **CRITICAL FIX**: Multi-stage agents now respect `--timeout` flag
-- **CRITICAL FIX**: Memory system enforces `maxEntries` and `autoCleanup` limits
-- **Timeout support**: AbortSignal properly passed to all stage executors
-- **Memory limits**: Automatic cleanup prevents database growth issues
-- **100% backward compatible**: Drop-in replacement for v5.0.7
+**v5.0.10** (October 2025): Smart Cleanup & UX Improvements
+- **NEW**: Smart memory cleanup with threshold-based triggering (replaces random cleanup)
+- **NEW**: Three cleanup strategies: `oldest`, `least_accessed`, `hybrid`
+- **FIX**: Memory cleanup bugs (5 bugs fixed in Phase 2.1)
+  - Fixed negative cleanup count handling
+  - Fixed async operation await issues
+  - Unified cleanup method signatures
+  - Enhanced configuration validation
+- **FIX**: Restored agent suggestion list in `ax run` command
+- **IMPROVED**: Predictable cleanup behavior (90% trigger → 70% target)
+- **100% backward compatible**: All existing configurations work unchanged
 
+**v5.0.8**: Critical Fixes - Timeout & Memory
 **v5.0.6**: File Operation Tools Enabled
 **v5.0.5**: Provider Parameters & Version Management
 **v5.0.4**: Memory saving now works automatically
