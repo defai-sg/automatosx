@@ -148,7 +148,7 @@ Product response:
 
 ---
 
-## 🎭 11 Specialized Agents with Clear Governance
+## 🎭 12 Specialized Agents with Clear Governance
 
 **v5.0.12 introduces strict role ownership and delegation controls to eliminate cycles**:
 
@@ -186,7 +186,13 @@ Product response:
 - **Tony** (cto) - Technology strategy, technical leadership
   - Can delegate to: backend, frontend, devops, security, quality
 
-**New in v5.0.12**: Each agent has role-specific workflow stages, smart ability loading (abilitySelection), and explicit delegation scopes. All agents have `maxDelegationDepth: 1` to allow cross-domain collaboration while preventing delegation cycles.
+### 🔬 Research Team (Specialist)
+**maxDelegationDepth: 0** - Execute research work directly, no delegation
+- **Rodman** (researcher) - Idea validation, feasibility analysis, research reports
+  - Specializes in: logical reasoning, risk assessment, literature review
+  - Produces: executive summaries, feasibility studies, long-form research reports
+
+**New in v5.0.12**: Each agent has role-specific workflow stages, smart ability loading (abilitySelection), and explicit delegation scopes. Most agents have `maxDelegationDepth: 1` to allow cross-domain collaboration while preventing delegation cycles.
 
 [📖 Complete Agent Directory](examples/AGENTS_INFO.md)
 
@@ -257,7 +263,7 @@ npm install -g @defai.digital/automatosx
 |---------|---------------------|-------------|--------------------------|
 | **Memory** | No | No | ✅ SQLite FTS5 (< 1ms) |
 | **Cost** | $20/month | Included | ✅ $0 (100% local) |
-| **Multi-Agent** | No | No | ✅ 15 specialized agents |
+| **Multi-Agent** | No | No | ✅ 12 specialized agents |
 | **Coordination** | Manual | Manual | ✅ Automatic delegation |
 | **Context Retention** | Copy-paste | Session only | ✅ Persistent (days/weeks) |
 | **Knowledge Sharing** | No | No | ✅ Cross-agent memory |
