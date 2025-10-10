@@ -374,6 +374,71 @@ When creating or modifying agents:
 - Created on-demand with `ax agent create`
 - Current: assistant, fullstack-developer, code-reviewer, debugger, developer, analyst, designer, qa-specialist
 
+### How to Re-enable Template Agents
+
+If your project genuinely needs a general-purpose agent (e.g., assistant, fullstack-developer), follow these steps:
+
+#### Evaluation Checklist
+
+**Before creating a template agent, ask:**
+1. ✅ Can specialized agents (backend, frontend, quality) handle this task?
+2. ✅ Will this agent overlap with existing default agents?
+3. ✅ Is this for a specific project phase or temporary need?
+4. ✅ Have I read the template's "TEMPLATE ROLE NOTICE"?
+
+**If all answers are satisfactory, proceed:**
+
+#### Step 1: Create from Template
+
+```bash
+# Interactive creation (recommended)
+ax agent create my-assistant --template assistant --interactive
+
+# Or non-interactive
+ax agent create my-fullstack --template fullstack-developer \
+  --display-name "Sofia" \
+  --role "Full-stack Developer" \
+  --team engineering
+```
+
+#### Step 2: Review Configuration
+
+After creation, review the agent YAML in `.automatosx/agents/`:
+- ✅ Check `maxDelegationDepth` (set to 1 for general-purpose agents)
+- ✅ Review delegation guidance in systemPrompt
+- ✅ Ensure abilities don't completely overlap with existing agents
+
+#### Step 3: Test for Delegation Cycles
+
+Run a test task and monitor delegation behavior:
+```bash
+# Test the agent
+ax run my-assistant "Create a simple REST API"
+
+# Watch for delegation patterns
+# ❌ Bad: Agent immediately delegates to backend/frontend
+# ✅ Good: Agent attempts task first, delegates only when necessary
+```
+
+#### Step 4: Adjust if Needed
+
+If delegation cycles occur:
+- Lower `maxDelegationDepth` to 1
+- Add stronger "do it yourself first" guidance in systemPrompt
+- Consider removing the agent and using specialized agents instead
+
+#### Step 5: Document Your Decision
+
+Add a comment to your project's `CLAUDE.md`:
+```markdown
+## Custom Agents
+
+### my-assistant (General Assistant)
+- **Why needed**: Handles cross-domain tasks during prototyping phase
+- **Overlap mitigation**: maxDelegationDepth=1, explicit self-evaluation
+- **Review date**: 2025-11-01
+```
+
 ### Preventing Delegation Cycles
 
 Common causes of infinite delegation:

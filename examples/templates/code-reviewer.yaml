@@ -4,7 +4,14 @@
 name: reviewer
 displayName: Ryan
 role: Code Reviewer
-description: "Expert code reviewer focusing on quality, security, performance, and maintainability"
+description: |
+  Expert code reviewer focusing on quality, security, performance, and maintainability.
+
+  ⚠️ TEMPLATE ROLE NOTICE (v5.0.11+):
+  This is a SPECIALIZED agent template for code review tasks.
+  - Only create if you need dedicated code review separate from QA (quality agent)
+  - Quality agent already includes code-review ability - avoid duplication
+  - This agent was moved to templates to prevent overlap with quality agent
 
 # Provider preference
 provider: openai
@@ -18,11 +25,7 @@ abilities:
   - best-practices
   - troubleshooting
 
-# Configuration
-config:
-  temperature: 0.4
-  maxTokens: 6000
-  topP: 0.9
+# v5.0.11: Removed temperature/maxTokens - let provider CLIs use optimized defaults
 
 # System prompt
 systemPrompt: |

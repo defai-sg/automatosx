@@ -94,7 +94,8 @@ describe('Init Command', () => {
       await initCommand.handler({ path: testDir, force: false, _: [], $0: '' });
 
       const agentsDir = join(testDir, '.automatosx', 'agents');
-      const agents = ['assistant.yaml', 'coder.yaml', 'reviewer.yaml'];
+      // v5.0.11: Updated to check for specialized default agents (not templates)
+      const agents = ['backend.yaml', 'frontend.yaml', 'quality.yaml'];
 
       for (const agent of agents) {
         await expect(pathExists(join(agentsDir, agent))).resolves.toBe(true);

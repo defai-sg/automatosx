@@ -140,8 +140,9 @@ systemPrompt: You are a test agent
       const emptyLoader = new ProfileLoader('/nonexistent/path');
       const profiles = await emptyLoader.listProfiles();
       // Should fall back to built-in agents
+      // v5.0.11: Updated to check for specialized default agents (not templates)
       expect(profiles.length).toBeGreaterThan(0);
-      expect(profiles).toContain('assistant'); // Built-in agent
+      expect(profiles).toContain('backend'); // Built-in agent
     });
 
     it('should ignore non-YAML files', async () => {

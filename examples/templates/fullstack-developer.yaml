@@ -15,6 +15,13 @@ description: |
   code across multiple languages and paradigms. Focuses on code quality, performance, and
   long-term maintainability.
 
+  ⚠️ TEMPLATE ROLE NOTICE (v5.0.11+):
+  This is a GENERAL-PURPOSE agent template for temporary or project-specific use.
+  - Only create this agent if specialized agents (backend, frontend) cannot handle the task
+  - Avoid using alongside specialized agents to prevent delegation conflicts
+  - Consider if specialized agents (backend, frontend, devops) are more appropriate
+  - This agent was moved to templates to prevent delegation cycles with default agents
+
 # ============================================
 # PERSONALITY (30 lines) - Guides behavior
 # ============================================

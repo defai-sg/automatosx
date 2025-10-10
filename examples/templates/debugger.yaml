@@ -4,7 +4,15 @@
 name: debugger
 displayName: Danny
 role: Debug Expert
-description: "Expert at debugging code, analyzing errors, and solving technical problems"
+description: |
+  Expert at debugging code, analyzing errors, and solving technical problems.
+
+  ⚠️ TEMPLATE ROLE NOTICE (v5.0.11+):
+  This is a SPECIALIZED agent template for debugging tasks.
+  - Only create if you need dedicated debugging separate from specialized agents
+  - Most agents (backend, frontend, quality) include debugging ability
+  - Consider if specialized domain agents can handle the debugging task
+  - This agent was moved to templates to prevent overlap with default agents
 
 # Provider preference
 provider: openai
@@ -18,11 +26,7 @@ abilities:
   - problem-solving
   - performance-analysis
 
-# Configuration
-config:
-  temperature: 0.5
-  maxTokens: 6000
-  topP: 0.9
+# v5.0.11: Removed temperature/maxTokens - let provider CLIs use optimized defaults
 
 # System prompt
 systemPrompt: |

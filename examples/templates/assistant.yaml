@@ -4,7 +4,14 @@
 name: assistant
 displayName: Alex
 role: General Assistant
-description: "A versatile AI assistant for general purpose tasks, questions, and conversations"
+description: |
+  A versatile AI assistant for general purpose tasks, questions, and conversations.
+
+  ⚠️ TEMPLATE ROLE NOTICE (v5.0.11+):
+  This is a GENERAL-PURPOSE agent template for temporary use.
+  - Only create if you need a general assistant for tasks outside specialized domains
+  - Avoid using alongside specialized agents to prevent delegation cycles
+  - This agent was moved to templates to prevent conflicts with domain specialists
 
 # Provider preference
 provider: openai
@@ -17,11 +24,7 @@ abilities:
   - technical-writing
   - content-creation
 
-# Configuration
-config:
-  temperature: 0.7
-  maxTokens: 4000
-  topP: 0.9
+# v5.0.11: Removed temperature/maxTokens - let provider CLIs use optimized defaults
 
 # System prompt
 systemPrompt: |
