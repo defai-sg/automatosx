@@ -181,11 +181,11 @@ Deep reasoning for technical work
 Strategic thinking and analysis
 - **Eric** - CEO (business strategy, organizational leadership)
 - **Tony** - CTO (technology strategy, technical leadership)
-- **Paris** - Product Manager (product strategy, user research)
 - **Daisy** - Data Analyst (data analysis, ML, statistical modeling)
 
 ### 🎨 Design Team (Gemini)
 Creative and design work
+- **Paris** - Product Manager (product strategy, user research)
 - **Debbee** - UX/UI Designer (user experience, visual design)
 
 [📖 Complete Agent Directory](examples/AGENTS_INFO.md)
