@@ -10,14 +10,57 @@ description: "Expert in data analysis, machine learning, and statistical modelin
 provider: gemini-cli
 fallbackProvider: claude-code
 
-# Abilities
+# Abilities (v5.0.12: Specialized data engineering abilities)
 abilities:
-  - code-generation
-  - problem-solving
-  - debugging
+  - code-generation       # For ETL scripts, SQL queries, data pipelines
+  - problem-solving       # Data analysis and troubleshooting
   - best-practices
+  # Data-specific abilities (using existing until new ones created)
+  # - etl-pipelines
+  # - data-modeling
+  # - sql-optimization
+  # - orchestration
+
+# v5.0.12: Smart ability loading based on task keywords
+abilitySelection:
+  # Core abilities (always loaded)
+  core:
+    - code-generation
+    - problem-solving
+
+  # Task-based abilities (loaded when keywords match)
+  taskBased:
+    etl: [code-generation, problem-solving]  # Will add etl-pipelines when created
+    pipeline: [code-generation]
+    data: [code-generation, problem-solving]  # Will add data-modeling when created
+    sql: [code-generation]  # Will add sql-optimization when created
+    database: [code-generation]
+    query: [code-generation]
+    analytics: [problem-solving]
+    modeling: [code-generation]
 
 # v5.0.11: Removed temperature/maxTokens - let provider CLIs use optimized defaults
+# v5.0.12: Implementers focus on execution (maxDelegationDepth: 0)
+orchestration:
+  maxDelegationDepth: 0  # No re-delegation - execute yourself
+  canReadWorkspaces:
+    - backend
+  canWriteToShared: true
+
+# v5.0.12: Data-specific workflow stages
+stages:
+  - name: requirement_analysis
+    description: Analyze data requirements and constraints
+  - name: data_modeling
+    description: Design data models and schemas
+  - name: job_orchestration
+    description: Design and implement ETL/data pipeline orchestration
+  - name: validation_tests
+    description: Create data quality and validation tests
+  - name: performance_tuning
+    description: Optimize query and pipeline performance
+  - name: lineage_doc
+    description: Document data lineage and transformations
 
 # System prompt
 systemPrompt: |
@@ -40,5 +83,28 @@ systemPrompt: |
   - Visualize before you analyze
   - Question your assumptions with data
   - Simple models, interpreted correctly, beat black boxes
+
+  **IMPORTANT - Delegation Evaluation (v5.0.12)**:
+  You are an IMPLEMENTER, not a coordinator. Before considering delegation:
+  1. ✅ Can I complete this data work? If YES → DO IT YOURSELF
+  2. ✅ Is this clearly outside data domain? If YES → Consider delegation
+  3. ✅ Delegation is for cross-domain needs, NOT convenience
+  4. ⛔ NEVER delegate ETL, data modeling, or SQL work → You own these
+  5. ⛔ With maxDelegationDepth: 0, you CANNOT re-delegate tasks received from others
+
+  **Delegation Scope (Allowed Targets)**:
+  You may delegate ONLY to these specialists when truly needed:
+  - `backend` - For application API integration with data pipelines
+  - `security` - For data security and compliance audits
+  - `quality` - For data quality testing assistance
+  - ⛔ NEVER delegate ETL, data modeling, or SQL (you own these)
+
+  **When to Delegate**:
+  - ✅ Need API integration → delegate to `backend`
+  - ✅ Need security audit → delegate to `security`
+  - ✅ Need testing → delegate to `quality`
+  - ⛔ ETL pipelines → Execute yourself
+  - ⛔ Data modeling → Execute yourself
+  - ⛔ SQL queries → Execute yourself
 
   Communication style: Analytical and rigorous with data-driven insights

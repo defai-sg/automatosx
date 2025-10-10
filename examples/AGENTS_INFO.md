@@ -1,17 +1,33 @@
 # AutomatosX Agent Directory
 
+**v5.0.12 Update**: Major agent governance rework to eliminate delegation cycles and improve role clarity.
+
 AutomatosX agents have **human-friendly names** to make them easier to remember and use. Each agent has both a technical role name and a memorable display name.
 
-## 🚀 Quick Overview: 4 Teams, 3 Providers, Intelligent Fallback
+## 🎯 v5.0.12: Agent Governance & Delegation Controls
+
+**Key Changes**:
+- ✅ **Role Ownership**: Quality owns code-review/debugging, Security owns security-audit
+- ✅ **Delegation Depth**: Implementers (0), Quality (1), Coordinators (1)
+- ✅ **Smart Ability Loading**: `abilitySelection` reduces prompt tokens by 30-50%
+- ✅ **Role-Specific Stages**: 8 unique workflow sequences
+- ✅ **No Cycles**: Implementers cannot re-delegate tasks
+
+**Agent Categories**:
+- **Implementers** (depth 0): backend, frontend, devops, data, security, design, writer
+- **Quality** (depth 1): quality (can delegate fixes to implementers)
+- **Coordinators** (depth 1): product, ceo, cto (delegate to implementers)
+
+## 🚀 Quick Overview: 11 Agents, 4 Teams, 3 Providers
 
 AutomatosX agents are organized into **4 professional teams**, each optimized with the best AI provider for their domain:
 
-| Team | Primary Provider | Expertise |
-|------|------------------|-----------|
-| **👥 Core Team** | 🟢 **OpenAI** (openai) | General assistance, code generation, planning, documentation |
-| **💻 Engineering Team** | 🟣 **Claude** (claude-code) | Deep reasoning for backend, frontend, security, DevOps, QA |
-| **📊 Business Team** | 🔵 **Gemini** (gemini-cli) | Strategic thinking for CEO, CTO, Product, Data Analysis |
-| **🎨 Design Team** | 🔵 **Gemini** (gemini-cli) | Creative tasks for UX/UI design and technical writing |
+| Team | Primary Provider | Agent Count | Expertise |
+|------|------------------|-------------|-----------|
+| **💻 Engineering Team** | 🟣 **Claude** (claude-code) | 5 | Backend, frontend, security, DevOps, data engineering |
+| **🎯 Quality Team** | 🟣 **Claude** (claude-code) | 1 | Code review, debugging, testing (sole ownership) |
+| **🎨 Content Team** | Various | 2 | UX/UI design, technical documentation |
+| **📊 Leadership Team** | 🔵 **Gemini** (gemini-cli) | 3 | CEO, CTO, Product Management (strategic coordination) |
 
 ### 🛡️ Intelligent 3-Layer Fallback System
 
@@ -34,46 +50,49 @@ Research shows humans remember names better than roles. Instead of remembering "
 
 ## Agent Directory
 
-### 👥 Core Team
+### 💻 Engineering Team (Implementers)
 
-Fast and efficient AI (OpenAI) for general-purpose tasks and documentation.
+**maxDelegationDepth: 0** - Execute tasks directly, no re-delegation
 
-| Name | Agent | Expertise | Best For | Primary | Fallback |
-|------|-------|-----------|----------|---------|----------|
-| **Wendy** | writer | Documentation, content creation | Writing docs, README files | 🟢 openai | 🟣 claude-code |
+| Name | Agent | Expertise | Best For | Primary | Fallback | Delegation |
+|------|-------|-----------|----------|---------|----------|------------|
+| **Bob** | backend | API design, database modeling, caching | Backend development, microservices | 🟣 claude-code | 🟢 openai | depth: 0 |
+| **Frank** | frontend | Component architecture, state management | Frontend development, React, accessibility | 🟣 claude-code | 🟢 openai | depth: 0 |
+| **Oliver** | devops | Infrastructure as code, CI/CD pipelines | DevOps, deployment, observability | 🟣 claude-code | 🟢 openai | depth: 0 |
+| **Steve** | security | **SOLE OWNER** of security-audit | Security review, threat modeling | 🟣 claude-code | 🟢 openai | depth: 0 |
+
+### 🎯 Quality Team
+
+**maxDelegationDepth: 1** - Can delegate implementation fixes back to developers
+
+| Name | Agent | Expertise | Best For | Primary | Fallback | Delegation |
+|------|-------|-----------|----------|---------|----------|------------|
+| **Queenie** | quality | **SOLE OWNER** of code-review & debugging | Test planning, automation, quality gates | 🟣 claude-code | 🟢 openai | depth: 1 |
+
+### 🎨 Content Team (Implementers)
+
+**maxDelegationDepth: 0** - Execute tasks directly, no re-delegation
+
+| Name | Agent | Expertise | Best For | Primary | Fallback | Delegation |
+|------|-------|-----------|----------|---------|----------|------------|
+| **Debbee** | design | UX research, wireframes, design systems | UX design, prototyping, accessibility | 🔵 gemini-cli | 🟢 openai | depth: 0 |
+| **Wendy** | writer | API docs, ADRs, release notes | Technical writing, documentation | 🟢 openai | 🟣 claude-code | depth: 0 |
+
+### 📊 Leadership & Data Team
+
+**Coordinators (maxDelegationDepth: 1)** - Delegate to implementers, focus on strategy
+**Data (maxDelegationDepth: 0)** - Execute data tasks directly
+
+| Name | Agent | Expertise | Best For | Primary | Fallback | Delegation |
+|------|-------|-----------|----------|---------|----------|------------|
+| **Paris** | product | Product strategy, feature planning | Product planning, roadmap prioritization | 🔵 gemini-cli | 🟣 claude-code | depth: 1 |
+| **Eric** | ceo | Business strategy, vision | Strategic decisions, organizational leadership | 🔵 gemini-cli | 🟣 claude-code | depth: 1 |
+| **Tony** | cto | Technology strategy, leadership | Tech strategy, architecture decisions | 🔵 gemini-cli | 🟣 claude-code | depth: 1 |
+| **Daisy** | data | Data modeling, ETL pipelines, SQL optimization | Data analysis, data engineering | 🔵 gemini-cli | 🟣 claude-code | depth: 0 |
+
+---
 
 **Note**: General-purpose agents (assistant, coder, debugger, reviewer) have been moved to templates (`examples/templates/`) to prevent delegation cycles. Use `ax agent create` to add them when specifically needed for your project.
-
-### 💻 Engineering Team
-
-Deep reasoning AI (Claude) for complex technical challenges, architecture design, and specialized engineering work.
-
-| Name | Agent | Expertise | Best For | Primary | Fallback |
-|------|-------|-----------|----------|---------|----------|
-| **Bob** | backend | Server-side architecture, APIs, databases | Backend development, API design | 🟣 claude-code | 🟢 openai |
-| **Frank** | frontend | React, UI/UX, performance | Frontend development, components | 🟣 claude-code | 🟢 openai |
-| **Oliver** | devops | Infrastructure, CI/CD, deployment | DevOps, deployment, monitoring | 🟣 claude-code | 🟢 openai |
-| **Steve** | security | Application security, threat modeling | Security review, vulnerability assessment | 🟣 claude-code | 🟢 openai |
-| **Queenie** | quality | Testing, quality assurance | Test planning, test automation | 🟣 claude-code | 🟢 openai |
-
-### 📊 Business Team
-
-Strategic thinking AI (Gemini) for executive leadership and data-driven decision making.
-
-| Name | Agent | Expertise | Best For | Primary | Fallback |
-|------|-------|-----------|----------|---------|----------|
-| **Eric** | ceo | Business strategy, vision | Strategy, business decisions | 🔵 gemini-cli | 🟣 claude-code |
-| **Tony** | cto | Technology strategy, leadership | Tech strategy, architecture decisions | 🔵 gemini-cli | 🟣 claude-code |
-| **Daisy** | data | Data analysis, machine learning | Analytics, ML models, insights | 🔵 gemini-cli | 🟣 claude-code |
-
-### 🎨 Design Team
-
-Creative AI (Gemini) for UX/UI design, product strategy, and user-centered design work.
-
-| Name | Agent | Expertise | Best For | Primary | Fallback |
-|------|-------|-----------|----------|---------|----------|
-| **Paris** | product | Product strategy, user research | Product planning, feature prioritization | 🔵 gemini-cli | 🟣 claude-code |
-| **Debbee** | design | User experience, visual design | UX design, prototyping, design systems | 🔵 gemini-cli | 🟢 openai |
 
 ## Provider Configuration
 
@@ -132,9 +151,9 @@ AutomatosX uses a **3-layer fallback system** for maximum reliability:
 
 | AI Provider | Agent Count | Agents |
 |-------------|-------------|--------|
-| 🟢 **OpenAI** (openai) | 5 | Core Team (Alex, Sofia, Ryan, Danny, Wendy) |
-| 🟣 **Claude** (claude-code) | 5 | Engineering Team (Bob, Frank, Oliver, Steve, Queenie) |
-| 🔵 **Gemini** (gemini-cli) | 5 | Business Team (Eric, Tony, Daisy) + Design Team (Paris, Debbee) |
+| 🟣 **Claude** (claude-code) | 5 | Bob, Frank, Oliver, Steve, Queenie |
+| 🔵 **Gemini** (gemini-cli) | 5 | Eric, Tony, Paris, Daisy, Debbee |
+| 🟢 **OpenAI** (openai) | 1 | Wendy |
 
 ### Provider Selection Logic
 

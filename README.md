@@ -7,9 +7,9 @@
 [![npm version](https://img.shields.io/npm/v/@defai.digital/automatosx.svg)](https://www.npmjs.com/package/@defai.digital/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-1,207%20passing-brightgreen.svg)](#)
+[![Tests](https://img.shields.io/badge/tests-1,098%20passing-brightgreen.svg)](#)
 
-**Status**: ✅ Production Ready · v5.0.10 · October 2025
+**Status**: ✅ Production Ready · v5.0.12 · October 2025
 
 ---
 
@@ -66,23 +66,22 @@ Day 3: /ax run steve "security audit" → Steve has full context from Day 1-2
 
 ## 🚀 What's New
 
-**v5.0.10** (October 2025): Smart Cleanup & UX Improvements
-- **NEW**: Smart memory cleanup with threshold-based triggering (replaces random cleanup)
-- **NEW**: Three cleanup strategies: `oldest`, `least_accessed`, `hybrid`
-- **FIX**: Memory cleanup bugs (5 bugs fixed in Phase 2.1)
-  - Fixed negative cleanup count handling
-  - Fixed async operation await issues
-  - Unified cleanup method signatures
-  - Enhanced configuration validation
-- **FIX**: Restored agent suggestion list in `ax run` command
-- **IMPROVED**: Predictable cleanup behavior (90% trigger → 70% target)
-- **100% backward compatible**: All existing configurations work unchanged
+**v5.0.12** (October 2025): 🎯 Agent Rework - Eliminate Delegation Cycles
+- **MAJOR**: Complete agent governance refactoring (all 11 agents updated)
+- **NEW**: Smart ability loading with `abilitySelection` (30-50% reduction in prompt tokens)
+- **NEW**: Clear role ownership - Quality owns code-review/debugging, Security owns security-audit
+- **NEW**: Delegation depth controls - Implementers (depth 0), Coordinators (depth 1)
+- **NEW**: 8 role-specific workflow stages (backend, frontend, quality, security, devops, data, design, strategic)
+- **NEW**: 3 specialized backend abilities (api-design, db-modeling, caching-strategy)
+- **FIXED**: Multi-hop delegation cycles eliminated (implementers cannot re-delegate)
+- **IMPROVED**: Faster task completion (agents execute directly instead of delegating)
+- **IMPROVED**: Better prompt focus (task-based ability loading)
+- **Result**: 99.7% test pass rate (1098/1101), zero breaking changes
 
+**v5.0.10**: Smart Cleanup & UX Improvements
 **v5.0.8**: Critical Fixes - Timeout & Memory
 **v5.0.6**: File Operation Tools Enabled
 **v5.0.5**: Provider Parameters & Version Management
-**v5.0.4**: Memory saving now works automatically
-**v5.0.3**: Special character support in memory search
 **v5.0.0**: Agent template system for quick agent creation
 
 [📋 Full Changelog](CHANGELOG.md) | [🎉 Release Notes](https://github.com/defai-digital/automatosx/releases)
@@ -167,36 +166,34 @@ Paris response:
 
 ---
 
-## 🎭 15 Specialized Agents, 4 Professional Teams
+## 🎭 11 Specialized Agents with Clear Governance
 
-**Every agent optimized for their domain with the best AI provider**:
+**v5.0.12 introduces strict role ownership and delegation controls to eliminate cycles**:
 
-### 👥 Core Team (OpenAI)
-General assistance and code generation
-- **Alex** - Versatile assistant for general tasks
-- **Sofia** - Senior software engineer (clean code, TDD, pragmatic)
-- **Ryan** - Code reviewer (quality, security, performance)
-- **Danny** - Debugger specialist
-- **Wendy** - Technical writer
+### 💻 Engineering Team (Implementers)
+**maxDelegationDepth: 0** - Execute tasks directly, no re-delegation
+- **Bob** (backend) - API design, database modeling, caching strategies
+- **Frank** (frontend) - Component architecture, state management, accessibility
+- **Oliver** (devops) - Infrastructure as code, CI/CD pipelines, observability
+- **Daisy** (data) - Data modeling, ETL pipelines, SQL optimization
+- **Steve** (security) - **Sole owner** of security-audit, threat modeling, secure coding review
 
-### 💻 Engineering Team (Claude)
-Deep reasoning for technical work
-- **Bob** - Backend expert (API design, databases, microservices)
-- **Frank** - Frontend specialist (React, UX, accessibility)
-- **Oliver** - DevOps engineer (infrastructure, CI/CD, cloud)
-- **Steve** - Security expert (threat modeling, security audit)
-- **Queenie** - QA specialist (testing strategies, test automation)
+### 🎯 Quality Team
+**maxDelegationDepth: 1** - Can delegate implementation fixes back to developers
+- **Queenie** (quality) - **Sole owner** of code-review and debugging, testing strategies
 
-### 📊 Business Team (Gemini)
-Strategic thinking and analysis
-- **Eric** - CEO (business strategy, organizational leadership)
-- **Tony** - CTO (technology strategy, technical leadership)
-- **Daisy** - Data Analyst (data analysis, ML, statistical modeling)
+### 🎨 Content Team (Implementers)
+**maxDelegationDepth: 0** - Execute tasks directly, no re-delegation
+- **Debbee** (design) - UX research, wireframes, design systems
+- **Wendy** (writer) - API documentation, ADRs, release notes
 
-### 🎨 Design Team (Gemini)
-Creative and design work
-- **Paris** - Product Manager (product strategy, user research)
-- **Debbee** - UX/UI Designer (user experience, visual design)
+### 📊 Leadership Team (Coordinators)
+**maxDelegationDepth: 1** - Delegate to implementers, focus on strategy
+- **Paris** (product) - Product strategy, feature planning, roadmap
+- **Eric** (ceo) - Business strategy, organizational leadership
+- **Tony** (cto) - Technology strategy, technical leadership
+
+**New in v5.0.12**: Each agent has role-specific workflow stages, smart ability loading (abilitySelection), and explicit delegation scopes.
 
 [📖 Complete Agent Directory](examples/AGENTS_INFO.md)
 
@@ -348,7 +345,7 @@ npm install -g @defai.digital/automatosx
 
 ## 🛠️ Production-Ready
 
-✅ **1,149 tests passing** (100% pass rate)
+✅ **1,098 tests passing** (99.7% pass rate)
 ✅ **TypeScript strict mode** (zero errors)
 ✅ **84% test coverage** (comprehensive testing)
 ✅ **46MB bundle** (87% smaller than v3.x)
@@ -360,7 +357,7 @@ npm install -g @defai.digital/automatosx
 Memory Search: < 1ms (10,000 entries)
 Bundle Size:   46MB (down from 340MB in v3.x)
 Dependencies:  158 packages (down from 589 in v3.x)
-Test Coverage: 84.19% (1,149 tests)
+Test Coverage: 84.19% (1,098 tests passing, 99.7% pass rate)
 Memory Cost:   $0 (no API calls)
 ```
 

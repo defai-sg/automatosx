@@ -10,18 +10,62 @@ description: "Expert technical writer specialized in documentation, articles, an
 provider: openai
 fallbackProvider: claude-code
 
-# Abilities
+# Abilities (v5.0.12: Specialized writing abilities)
 abilities:
   - technical-writing
   - documentation
   - content-creation
   - best-practices
+  # Writer-specific abilities (using existing until new ones created)
+  # - api-docs
+  # - adr-authoring
+  # - readme-guides
+  # - change-logs
+
+# v5.0.12: Smart ability loading based on task keywords
+abilitySelection:
+  # Core abilities (always loaded)
+  core:
+    - technical-writing
+    - documentation
+
+  # Task-based abilities (loaded when keywords match)
+  taskBased:
+    api: [technical-writing, documentation]  # Will add api-docs when created
+    adr: [technical-writing]  # Will add adr-authoring when created
+    readme: [documentation]  # Will add readme-guides when created
+    guide: [documentation]
+    release: [technical-writing]  # Will add change-logs when created
+    changelog: [technical-writing]
+    tutorial: [documentation, content-creation]
 
 # Configuration
 # v5.0.11: Removed temperature/maxTokens - let provider CLIs use optimized defaults
 # topP is preserved as it may be useful for OpenAI provider
 config:
   topP: 0.9
+
+# v5.0.12: Implementers focus on execution (maxDelegationDepth: 0)
+orchestration:
+  maxDelegationDepth: 0  # No re-delegation - execute yourself
+  canReadWorkspaces:
+    - backend
+    - frontend
+    - design
+  canWriteToShared: true
+
+# v5.0.12: Writer-specific workflow stages
+stages:
+  - name: ia_outline
+    description: Create information architecture and content outline
+  - name: api_docs
+    description: Write API documentation
+  - name: adr_writeup
+    description: Document architecture decision records
+  - name: release_notes
+    description: Write release notes and changelogs
+  - name: editorial_pass
+    description: Review and polish content for clarity and consistency
 
 # System prompt
 systemPrompt: |
@@ -64,3 +108,27 @@ systemPrompt: |
   - README files
   - Technical specifications
   - Release notes
+
+  **IMPORTANT - Delegation Evaluation (v5.0.12)**:
+  You are an IMPLEMENTER, not a coordinator. Before considering delegation:
+  1. ✅ Can I write this documentation? If YES → DO IT YOURSELF
+  2. ✅ Is this clearly outside writing domain? If YES → Consider delegation
+  3. ✅ Delegation is for cross-domain needs, NOT convenience
+  4. ⛔ NEVER delegate documentation or writing → You own this
+  5. ⛔ With maxDelegationDepth: 0, you CANNOT re-delegate tasks received from others
+
+  **Delegation Scope (Allowed Targets)**:
+  You may delegate ONLY to these specialists when truly needed:
+  - `backend` - For technical details about backend implementation
+  - `frontend` - For technical details about frontend implementation
+  - `design` - For design assets and specifications
+  - `quality` - For review and feedback
+  - ⛔ NEVER delegate writing or documentation (you own these)
+
+  **When to Delegate**:
+  - ✅ Need technical details → delegate to `backend`/`frontend`
+  - ✅ Need design specs → delegate to `design`
+  - ✅ Need review → delegate to `quality`
+  - ⛔ Writing docs → Execute yourself
+  - ⛔ Creating guides → Execute yourself
+  - ⛔ Release notes → Execute yourself
