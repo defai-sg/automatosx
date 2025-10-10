@@ -34,11 +34,27 @@ import { AbilitiesManager } from '../agents/abilities-manager.js';
 import { TeamManager } from '../core/team-manager.js';
 import { PathResolver } from '../core/path-resolver.js';
 
-// Import tool handlers
+// Import tool handlers - Phase 1
 import { createRunAgentHandler } from './tools/run-agent.js';
 import { createListAgentsHandler } from './tools/list-agents.js';
 import { createSearchMemoryHandler } from './tools/search-memory.js';
 import { createGetStatusHandler } from './tools/get-status.js';
+
+// Import tool handlers - Phase 2: Sessions
+import { createSessionCreateHandler } from './tools/session-create.js';
+import { createSessionListHandler } from './tools/session-list.js';
+import { createSessionStatusHandler } from './tools/session-status.js';
+import { createSessionCompleteHandler } from './tools/session-complete.js';
+import { createSessionFailHandler } from './tools/session-fail.js';
+
+// Import tool handlers - Phase 2: Memory
+import { createMemoryAddHandler } from './tools/memory-add.js';
+import { createMemoryListHandler } from './tools/memory-list.js';
+import { createMemoryDeleteHandler } from './tools/memory-delete.js';
+import { createMemoryExportHandler } from './tools/memory-export.js';
+import { createMemoryImportHandler } from './tools/memory-import.js';
+import { createMemoryStatsHandler } from './tools/memory-stats.js';
+import { createMemoryClearHandler } from './tools/memory-clear.js';
 
 export interface McpServerOptions {
   debug?: boolean;
@@ -295,6 +311,292 @@ export class McpServer {
     this.toolSchemas.push({
       name: 'get_status',
       description: 'Get AutomatosX system status and configuration',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      }
+    });
+
+    // ============================================
+    // Phase 2: Session Management Tools
+    // ============================================
+
+    // Tool 5: session_create
+    this.tools.set(
+      'session_create',
+      createSessionCreateHandler({
+        sessionManager: this.sessionManager
+      }) as ToolHandler<unknown, unknown>
+    );
+
+    this.toolSchemas.push({
+      name: 'session_create',
+      description: 'Create a new multi-agent session',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            description: 'Session name/task description'
+          },
+          agent: {
+            type: 'string',
+            description: 'Initiating agent name'
+          }
+        },
+        required: ['name', 'agent']
+      }
+    });
+
+    // Tool 6: session_list
+    this.tools.set(
+      'session_list',
+      createSessionListHandler({
+        sessionManager: this.sessionManager
+      }) as ToolHandler<unknown, unknown>
+    );
+
+    this.toolSchemas.push({
+      name: 'session_list',
+      description: 'List all active sessions',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      }
+    });
+
+    // Tool 7: session_status
+    this.tools.set(
+      'session_status',
+      createSessionStatusHandler({
+        sessionManager: this.sessionManager
+      }) as ToolHandler<unknown, unknown>
+    );
+
+    this.toolSchemas.push({
+      name: 'session_status',
+      description: 'Get detailed status of a specific session',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            description: 'Session ID'
+          }
+        },
+        required: ['id']
+      }
+    });
+
+    // Tool 8: session_complete
+    this.tools.set(
+      'session_complete',
+      createSessionCompleteHandler({
+        sessionManager: this.sessionManager
+      }) as ToolHandler<unknown, unknown>
+    );
+
+    this.toolSchemas.push({
+      name: 'session_complete',
+      description: 'Mark a session as completed',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            description: 'Session ID'
+          }
+        },
+        required: ['id']
+      }
+    });
+
+    // Tool 9: session_fail
+    this.tools.set(
+      'session_fail',
+      createSessionFailHandler({
+        sessionManager: this.sessionManager
+      }) as ToolHandler<unknown, unknown>
+    );
+
+    this.toolSchemas.push({
+      name: 'session_fail',
+      description: 'Mark a session as failed with an error reason',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            description: 'Session ID'
+          },
+          reason: {
+            type: 'string',
+            description: 'Failure reason'
+          }
+        },
+        required: ['id', 'reason']
+      }
+    });
+
+    // ============================================
+    // Phase 2: Memory Management Tools
+    // ============================================
+
+    // Tool 10: memory_add
+    this.tools.set(
+      'memory_add',
+      createMemoryAddHandler({
+        memoryManager: this.memoryManager
+      }) as ToolHandler<unknown, unknown>
+    );
+
+    this.toolSchemas.push({
+      name: 'memory_add',
+      description: 'Add a new memory entry to the system',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          content: {
+            type: 'string',
+            description: 'Memory content'
+          },
+          metadata: {
+            type: 'object',
+            description: 'Optional metadata (agent, timestamp, etc.)',
+            properties: {
+              agent: { type: 'string' },
+              timestamp: { type: 'string' }
+            }
+          }
+        },
+        required: ['content']
+      }
+    });
+
+    // Tool 11: memory_list
+    this.tools.set(
+      'memory_list',
+      createMemoryListHandler({
+        memoryManager: this.memoryManager
+      }) as ToolHandler<unknown, unknown>
+    );
+
+    this.toolSchemas.push({
+      name: 'memory_list',
+      description: 'List memory entries with optional filtering',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          agent: {
+            type: 'string',
+            description: 'Filter by agent name'
+          },
+          limit: {
+            type: 'number',
+            description: 'Maximum number of entries',
+            default: 50
+          }
+        }
+      }
+    });
+
+    // Tool 12: memory_delete
+    this.tools.set(
+      'memory_delete',
+      createMemoryDeleteHandler({
+        memoryManager: this.memoryManager
+      }) as ToolHandler<unknown, unknown>
+    );
+
+    this.toolSchemas.push({
+      name: 'memory_delete',
+      description: 'Delete a specific memory entry by ID',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'number',
+            description: 'Memory entry ID'
+          }
+        },
+        required: ['id']
+      }
+    });
+
+    // Tool 13: memory_export
+    this.tools.set(
+      'memory_export',
+      createMemoryExportHandler({
+        memoryManager: this.memoryManager
+      }) as ToolHandler<unknown, unknown>
+    );
+
+    this.toolSchemas.push({
+      name: 'memory_export',
+      description: 'Export all memory entries to a JSON file',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: 'Export file path'
+          }
+        },
+        required: ['path']
+      }
+    });
+
+    // Tool 14: memory_import
+    this.tools.set(
+      'memory_import',
+      createMemoryImportHandler({
+        memoryManager: this.memoryManager
+      }) as ToolHandler<unknown, unknown>
+    );
+
+    this.toolSchemas.push({
+      name: 'memory_import',
+      description: 'Import memory entries from a JSON file',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: 'Import file path'
+          }
+        },
+        required: ['path']
+      }
+    });
+
+    // Tool 15: memory_stats
+    this.tools.set(
+      'memory_stats',
+      createMemoryStatsHandler({
+        memoryManager: this.memoryManager
+      }) as ToolHandler<unknown, unknown>
+    );
+
+    this.toolSchemas.push({
+      name: 'memory_stats',
+      description: 'Get detailed memory statistics',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      }
+    });
+
+    // Tool 16: memory_clear
+    this.tools.set(
+      'memory_clear',
+      createMemoryClearHandler({
+        memoryManager: this.memoryManager
+      }) as ToolHandler<unknown, unknown>
+    );
+
+    this.toolSchemas.push({
+      name: 'memory_clear',
+      description: 'Clear all memory entries from the database',
       inputSchema: {
         type: 'object',
         properties: {}

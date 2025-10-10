@@ -151,6 +151,159 @@ export interface GetStatusOutput {
   };
 }
 
+// ============================================
+// Phase 2: Session Management Tools
+// ============================================
+
+// session_create
+export interface SessionCreateInput {
+  name: string;
+  agent: string;
+}
+
+export interface SessionCreateOutput {
+  sessionId: string;
+  name: string;
+  agent: string;
+  status: string;
+  createdAt: string;
+}
+
+// session_list
+export interface SessionListOutput {
+  sessions: Array<{
+    id: string;
+    task: string;
+    initiator: string;
+    status: string;
+    agents: string[];
+    createdAt: string;
+    updatedAt: string;
+  }>;
+}
+
+// session_status
+export interface SessionStatusInput {
+  id: string;
+}
+
+export interface SessionStatusOutput {
+  id: string;
+  task: string;
+  initiator: string;
+  status: string;
+  agents: string[];
+  createdAt: string;
+  updatedAt: string;
+  metadata?: Record<string, unknown>;
+}
+
+// session_complete
+export interface SessionCompleteInput {
+  id: string;
+}
+
+export interface SessionCompleteOutput {
+  success: boolean;
+  sessionId: string;
+  status: string;
+}
+
+// session_fail
+export interface SessionFailInput {
+  id: string;
+  reason: string;
+}
+
+export interface SessionFailOutput {
+  success: boolean;
+  sessionId: string;
+  status: string;
+  error: string;
+}
+
+// ============================================
+// Phase 2: Memory Management Tools
+// ============================================
+
+// memory_add
+export interface MemoryAddInput {
+  content: string;
+  metadata?: {
+    agent?: string;
+    timestamp?: string;
+    [key: string]: unknown;
+  };
+}
+
+export interface MemoryAddOutput {
+  id: number;
+  content: string;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+}
+
+// memory_list
+export interface MemoryListInput {
+  agent?: string;
+  limit?: number;
+}
+
+export interface MemoryListOutput {
+  entries: Array<{
+    id: number;
+    content: string;
+    metadata: Record<string, unknown>;
+    createdAt: string;
+  }>;
+  total: number;
+}
+
+// memory_delete
+export interface MemoryDeleteInput {
+  id: number;
+}
+
+export interface MemoryDeleteOutput {
+  success: boolean;
+  id: number;
+}
+
+// memory_export
+export interface MemoryExportInput {
+  path: string;
+}
+
+export interface MemoryExportOutput {
+  success: boolean;
+  path: string;
+  entries: number;
+}
+
+// memory_import
+export interface MemoryImportInput {
+  path: string;
+}
+
+export interface MemoryImportOutput {
+  success: boolean;
+  imported: number;
+  skipped: number;
+}
+
+// memory_stats
+export interface MemoryStatsOutput {
+  totalEntries: number;
+  dbSize: string;
+  byAgent: Record<string, number>;
+}
+
+// memory_clear
+export interface MemoryClearOutput {
+  success: boolean;
+  deleted: number;
+}
+
 // Tool Handler Type
 export type ToolHandler<TInput = unknown, TOutput = unknown> = (
   input: TInput
