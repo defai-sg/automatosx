@@ -12,34 +12,40 @@ fallbackProvider: openai
 
 # Abilities (v5.0.12: Specialized DevOps abilities only)
 abilities:
-  - code-generation        # For IaC (Terraform, CloudFormation, K8s manifests)
-  - troubleshooting       # Infrastructure troubleshooting
+  - code-generation
+  - infra-as-code
+  - ci-cd
+  - observability
+  - release-strategy
+  - troubleshooting
   - best-practices
-  # DevOps-specific abilities (using existing until new ones created)
-  # - infra-as-code
-  # - ci-cd
-  # - observability
-  # - release-strategy
 
 # v5.0.12: Smart ability loading based on task keywords
 abilitySelection:
   # Core abilities (always loaded)
   core:
+    - infra-as-code
     - code-generation
-    - best-practices
 
   # Task-based abilities (loaded when keywords match)
   taskBased:
-    infrastructure: [code-generation, troubleshooting]  # IaC + debugging
-    terraform: [code-generation]
-    kubernetes: [code-generation]
-    docker: [code-generation]
-    pipeline: [code-generation]  # Will add ci-cd when created
-    ci: [code-generation]
-    cd: [code-generation]
-    deploy: [code-generation]
-    monitoring: [troubleshooting]  # Will add observability when created
-    observability: [troubleshooting]
+    infra: [infra-as-code]
+    infrastructure: [infra-as-code]
+    terraform: [infra-as-code]
+    kubernetes: [infra-as-code]
+    k8s: [infra-as-code]
+    docker: [infra-as-code]
+    ci: [ci-cd, release-strategy]
+    cd: [ci-cd, release-strategy]
+    pipeline: [ci-cd, release-strategy]
+    deploy: [ci-cd, release-strategy]
+    release: [release-strategy]
+    monitor: [observability]
+    monitoring: [observability]
+    observe: [observability]
+    observability: [observability]
+    logging: [observability]
+    metrics: [observability]
 
 # v5.0.11: Removed temperature/maxTokens - let provider CLIs use optimized defaults
 # v5.0.12: Implementers focus on execution (maxDelegationDepth: 0)

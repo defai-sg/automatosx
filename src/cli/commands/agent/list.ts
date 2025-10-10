@@ -22,7 +22,7 @@ export const listCommand: CommandModule<{}, ListOptions> = {
       .option('by-team', {
         describe: 'Filter agents by team',
         type: 'string',
-        choices: ['core', 'engineering', 'business', 'design']
+        choices: ['core', 'engineering', 'business', 'design', 'research']
       });
   },
 
@@ -64,6 +64,7 @@ export const listCommand: CommandModule<{}, ListOptions> = {
         engineering: [],
         business: [],
         design: [],
+        research: [],
         other: []
       };
 
@@ -80,13 +81,14 @@ export const listCommand: CommandModule<{}, ListOptions> = {
       // Filter by team if specified
       const teamsToShow = argv.byTeam
         ? [argv.byTeam]
-        : ['core', 'engineering', 'business', 'design', 'other'];
+        : ['core', 'engineering', 'business', 'design', 'research', 'other'];
 
       const teamNames: Record<string, string> = {
         core: 'Core Team',
         engineering: 'Engineering Team',
         business: 'Business Team',
         design: 'Design Team',
+        research: 'Research Team',
         other: 'Other'
       };
 

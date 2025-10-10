@@ -5,6 +5,57 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.13] - 2025-10-10
+
+### 🔧 Refinements: Delegation Strategy & System Stability
+
+**Minor improvements to delegation governance and memory system based on code review feedback.**
+
+#### Changed
+
+- **Delegation Strategy Alignment**:
+  - All 7 implementers (backend, frontend, devops, data, security, writer, design): `maxDelegationDepth: 0` → `1`
+  - **Rationale**: Allow implementers to delegate once for cross-domain collaboration
+  - **Behavior**: Can delegate to specialists (e.g., backend → frontend for UI), but tasks delegated TO you cannot be re-delegated
+  - **Impact**: Enables necessary cross-team collaboration while preventing infinite delegation chains
+  - Updated system prompts to clarify: "With maxDelegationDepth: 1, you can delegate ONCE, but tasks delegated TO you cannot be re-delegated"
+
+- **DisplayName Resolution Priority** (ProfileLoader):
+  - Refactored `buildDisplayNameMap()` to prioritize local `.automatosx/agents` over `examples/agents`
+  - **Rationale**: Prevents fallback agents from overriding local configuration when displayNames collide
+  - Added `listProfilesFromDir()` helper for explicit directory ordering
+  - Added source tracking (`'local'` | `'fallback'`) in debug logs
+
+- **Memory System Stability** (MemoryManager):
+  - Added SQLite `busy_timeout = 5000` (wait up to 5 seconds for locks)
+  - **Impact**: Reduces "database is locked" errors in high-concurrency scenarios
+  - Upgraded FTS5 ranking: `fts.rank` → `bm25(fts)` (more accurate relevance scoring)
+  - **Impact**: Better search result ordering with BM25 algorithm (considers document length normalization)
+
+#### Fixed
+
+- **Documentation Consistency**:
+  - Updated README.md agent governance section to reflect `maxDelegationDepth: 1` for all agents
+  - Updated README.md v5.0.12 changelog to correctly state delegation depth controls
+  - Updated FAQ.md description: "vector search" → "SQLite FTS5 full-text search"
+  - Added explicit delegation scope documentation for each agent in README.md
+
+#### Technical Details
+
+- **Files Changed**:
+  - 7 agent YAML files (backend, frontend, devops, data, security, writer, design)
+  - `src/agents/profile-loader.ts` (buildDisplayNameMap refactor)
+  - `src/core/memory-manager.ts` (busy_timeout + BM25)
+  - README.md, FAQ.md (documentation fixes)
+
+- **Backward Compatibility**: ✅ 100% - All changes are non-breaking
+- **Test Status**: ✅ All existing tests pass (1149 tests)
+- **Migration Required**: ❌ No migration needed
+
+### Notes
+
+This release addresses code review feedback and refines the v5.0.12 agent governance implementation. All changes are safe, backward-compatible improvements to system behavior.
+
 ## [5.0.12] - 2025-10-10
 
 ### 🎯 Agent Rework: Eliminate Delegation Cycles

@@ -13,26 +13,30 @@ fallbackProvider: openai
 # Abilities (v5.0.12: Specialized frontend abilities only)
 abilities:
   - code-generation
+  - component-architecture
+  - state-management
+  - design-system-implementation
+  - accessibility
+  - performance
   - best-practices
-  # Frontend-specific abilities (to be created)
-  # - component-architecture
-  # - state-management
-  # - design-system-implementation
 
 # v5.0.12: Smart ability loading based on task keywords
 abilitySelection:
   # Core abilities (always loaded)
   core:
+    - component-architecture
     - code-generation
-    - best-practices
 
   # Task-based abilities (loaded when keywords match)
   taskBased:
-    component: [code-generation]
-    ui: [code-generation]
-    state: [code-generation]
-    design: [best-practices]
-    accessibility: [best-practices]
+    component: [component-architecture, code-generation]
+    ui: [component-architecture, design-system-implementation]
+    state: [state-management, code-generation]
+    a11y: [accessibility]
+    accessibility: [accessibility]
+    perf: [performance]
+    performance: [performance]
+    design: [design-system-implementation]
 
 # v5.0.11: Removed temperature/maxTokens - let provider CLIs use optimized defaults
 # v5.0.12: Implementers focus on execution (maxDelegationDepth: 0)

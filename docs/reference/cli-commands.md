@@ -172,7 +172,7 @@ automatosx run <agent> <task> [options]
 --verbose             Show detailed execution info
 --format <type>       Output format: text, json, markdown
 --save <path>         Save output to file
---timeout <ms>        Execution timeout in milliseconds (default: 900000)
+--timeout <ms>        Execution timeout in milliseconds (default: 1500000)
 ```
 
 ### Examples

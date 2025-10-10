@@ -14,11 +14,11 @@ AutomatosX agents have **human-friendly names** to make them easier to remember 
 - ✅ **No Cycles**: Implementers cannot re-delegate tasks
 
 **Agent Categories**:
-- **Implementers** (depth 0): backend, frontend, devops, data, security, design, writer
+- **Implementers** (depth 0): backend, frontend, devops, data, security, design, writer, researcher
 - **Quality** (depth 1): quality (can delegate fixes to implementers)
 - **Coordinators** (depth 1): product, ceo, cto (delegate to implementers)
 
-## 🚀 Quick Overview: 11 Agents, 4 Teams, 3 Providers
+## 🚀 Quick Overview: 12 Agents, 4 Teams, 3 Providers
 
 AutomatosX agents are organized into **4 professional teams**, each optimized with the best AI provider for their domain:
 
@@ -27,7 +27,7 @@ AutomatosX agents are organized into **4 professional teams**, each optimized wi
 | **💻 Engineering Team** | 🟣 **Claude** (claude-code) | 5 | Backend, frontend, security, DevOps, data engineering |
 | **🎯 Quality Team** | 🟣 **Claude** (claude-code) | 1 | Code review, debugging, testing (sole ownership) |
 | **🎨 Content Team** | Various | 2 | UX/UI design, technical documentation |
-| **📊 Leadership Team** | 🔵 **Gemini** (gemini-cli) | 3 | CEO, CTO, Product Management (strategic coordination) |
+| **📊 Leadership Team** | Various | 4 | CEO, CTO, Product Management, research & feasibility analysis |
 
 ### 🛡️ Intelligent 3-Layer Fallback System
 
@@ -59,7 +59,7 @@ Research shows humans remember names better than roles. Instead of remembering "
 | **Bob** | backend | API design, database modeling, caching | Backend development, microservices | 🟣 claude-code | 🟢 openai | depth: 0 |
 | **Frank** | frontend | Component architecture, state management | Frontend development, React, accessibility | 🟣 claude-code | 🟢 openai | depth: 0 |
 | **Oliver** | devops | Infrastructure as code, CI/CD pipelines | DevOps, deployment, observability | 🟣 claude-code | 🟢 openai | depth: 0 |
-| **Steve** | security | **SOLE OWNER** of security-audit | Security review, threat modeling | 🟣 claude-code | 🟢 openai | depth: 0 |
+| **Steve** | security | **SOLE OWNER** of security-audit | Security review, threat modeling | 🟢 openai | 🔵 gemini-cli | depth: 0 |
 
 ### 🎯 Quality Team
 
@@ -67,7 +67,7 @@ Research shows humans remember names better than roles. Instead of remembering "
 
 | Name | Agent | Expertise | Best For | Primary | Fallback | Delegation |
 |------|-------|-----------|----------|---------|----------|------------|
-| **Queenie** | quality | **SOLE OWNER** of code-review & debugging | Test planning, automation, quality gates | 🟣 claude-code | 🟢 openai | depth: 1 |
+| **Queenie** | quality | **SOLE OWNER** of code-review & debugging | Test planning, automation, quality gates | 🟢 openai | 🔵 gemini-cli | depth: 1 |
 
 ### 🎨 Content Team (Implementers)
 
@@ -81,14 +81,15 @@ Research shows humans remember names better than roles. Instead of remembering "
 ### 📊 Leadership & Data Team
 
 **Coordinators (maxDelegationDepth: 1)** - Delegate to implementers, focus on strategy
-**Data (maxDelegationDepth: 0)** - Execute data tasks directly
+**Data & Research (maxDelegationDepth: 0)** - Execute data/research tasks directly
 
 | Name | Agent | Expertise | Best For | Primary | Fallback | Delegation |
 |------|-------|-----------|----------|---------|----------|------------|
 | **Paris** | product | Product strategy, feature planning | Product planning, roadmap prioritization | 🔵 gemini-cli | 🟣 claude-code | depth: 1 |
 | **Eric** | ceo | Business strategy, vision | Strategic decisions, organizational leadership | 🔵 gemini-cli | 🟣 claude-code | depth: 1 |
 | **Tony** | cto | Technology strategy, leadership | Tech strategy, architecture decisions | 🔵 gemini-cli | 🟣 claude-code | depth: 1 |
-| **Daisy** | data | Data modeling, ETL pipelines, SQL optimization | Data analysis, data engineering | 🔵 gemini-cli | 🟣 claude-code | depth: 0 |
+| **Daisy** | data | Data modeling, ETL pipelines, SQL optimization | Data engineering, analytics | 🔵 gemini-cli | 🟣 claude-code | depth: 0 |
+| **Rodman** | researcher | Idea validation, feasibility analysis, risk assessment | Research reports, literature review | 🟢 openai | 🔵 gemini-cli | depth: 0 |
 
 ---
 
@@ -151,9 +152,9 @@ AutomatosX uses a **3-layer fallback system** for maximum reliability:
 
 | AI Provider | Agent Count | Agents |
 |-------------|-------------|--------|
-| 🟣 **Claude** (claude-code) | 5 | Bob, Frank, Oliver, Steve, Queenie |
 | 🔵 **Gemini** (gemini-cli) | 5 | Eric, Tony, Paris, Daisy, Debbee |
-| 🟢 **OpenAI** (openai) | 1 | Wendy |
+| 🟢 **OpenAI** (openai) | 4 | Wendy, Queenie, Steve, Rodman |
+| 🟣 **Claude** (claude-code) | 3 | Bob, Frank, Oliver |
 
 ### Provider Selection Logic
 

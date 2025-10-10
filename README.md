@@ -9,7 +9,9 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
 [![Tests](https://img.shields.io/badge/tests-1,098%20passing-brightgreen.svg)](#)
 
-**Status**: ✅ Production Ready · v5.0.12 · October 2025
+**Status**: ✅ Production Ready · v5.0.13 · October 2025
+
+Looking for answers? See the [FAQ](FAQ.md).
 
 ---
 
@@ -70,11 +72,11 @@ Day 3: /ax run steve "security audit" → Steve has full context from Day 1-2
 - **MAJOR**: Complete agent governance refactoring (all 11 agents updated)
 - **NEW**: Smart ability loading with `abilitySelection` (30-50% reduction in prompt tokens)
 - **NEW**: Clear role ownership - Quality owns code-review/debugging, Security owns security-audit
-- **NEW**: Delegation depth controls - Implementers (depth 0), Coordinators (depth 1)
+- **NEW**: Delegation depth controls - Implementers (depth 1), Quality (depth 1), Coordinators (depth 1)
 - **NEW**: 8 role-specific workflow stages (backend, frontend, quality, security, devops, data, design, strategic)
 - **NEW**: 3 specialized backend abilities (api-design, db-modeling, caching-strategy)
-- **FIXED**: Multi-hop delegation cycles eliminated (implementers cannot re-delegate)
-- **IMPROVED**: Faster task completion (agents execute directly instead of delegating)
+- **FIXED**: Multi-hop delegation cycles eliminated (depth limits prevent infinite chains)
+- **IMPROVED**: Faster task completion (agents evaluate capabilities first before delegating)
 - **IMPROVED**: Better prompt focus (task-based ability loading)
 - **Result**: 99.7% test pass rate (1098/1101), zero breaking changes
 
@@ -171,29 +173,40 @@ Paris response:
 **v5.0.12 introduces strict role ownership and delegation controls to eliminate cycles**:
 
 ### 💻 Engineering Team (Implementers)
-**maxDelegationDepth: 0** - Execute tasks directly, no re-delegation
+**maxDelegationDepth: 1** - Can delegate once for cross-domain needs, no re-delegation
 - **Bob** (backend) - API design, database modeling, caching strategies
+  - Can delegate to: frontend, data, security, quality, devops
 - **Frank** (frontend) - Component architecture, state management, accessibility
+  - Can delegate to: backend, design, security, quality, devops
 - **Oliver** (devops) - Infrastructure as code, CI/CD pipelines, observability
+  - Can delegate to: backend, frontend, security, quality
 - **Daisy** (data) - Data modeling, ETL pipelines, SQL optimization
+  - Can delegate to: backend, security, quality
 - **Steve** (security) - **Sole owner** of security-audit, threat modeling, secure coding review
+  - Can delegate to: backend, frontend, devops, quality
 
-### 🎯 Quality Team
-**maxDelegationDepth: 1** - Can delegate implementation fixes back to developers
+### 🎯 Quality Team (Coordinator Role)
+**maxDelegationDepth: 1** - Can delegate fixes back to implementers, no re-delegation
 - **Queenie** (quality) - **Sole owner** of code-review and debugging, testing strategies
+  - Can delegate to: backend, frontend, security, devops, data
 
 ### 🎨 Content Team (Implementers)
-**maxDelegationDepth: 0** - Execute tasks directly, no re-delegation
+**maxDelegationDepth: 1** - Can delegate once for cross-domain needs, no re-delegation
 - **Debbee** (design) - UX research, wireframes, design systems
+  - Can delegate to: frontend, writer, quality
 - **Wendy** (writer) - API documentation, ADRs, release notes
+  - Can delegate to: backend, frontend, design, quality
 
 ### 📊 Leadership Team (Coordinators)
-**maxDelegationDepth: 1** - Delegate to implementers, focus on strategy
+**maxDelegationDepth: 1** - Delegate to implementers, focus on strategy, no re-delegation
 - **Paris** (product) - Product strategy, feature planning, roadmap
+  - Can delegate to: backend, frontend, design, writer, quality
 - **Eric** (ceo) - Business strategy, organizational leadership
+  - Can delegate to: paris, tony, all agents
 - **Tony** (cto) - Technology strategy, technical leadership
+  - Can delegate to: backend, frontend, devops, security, quality
 
-**New in v5.0.12**: Each agent has role-specific workflow stages, smart ability loading (abilitySelection), and explicit delegation scopes.
+**New in v5.0.12**: Each agent has role-specific workflow stages, smart ability loading (abilitySelection), and explicit delegation scopes. All agents have `maxDelegationDepth: 1` to allow cross-domain collaboration while preventing delegation cycles.
 
 [📖 Complete Agent Directory](examples/AGENTS_INFO.md)
 
@@ -240,6 +253,7 @@ npm install -g @defai.digital/automatosx
 - **[Quick Start Guide](docs/guide/quick-start.md)** - Get up and running in 5 minutes
 - **[Core Concepts](docs/guide/core-concepts.md)** - Understand agents, memory, providers
 - **[Installation Guide](docs/guide/installation.md)** - Detailed setup instructions
+- **[FAQ](FAQ.md)** - Common questions and troubleshooting
 
 ### Core Features
 - **[Agent Communication & Memory](docs/guide/agent-communication.md)** - How agents communicate and remember
@@ -407,6 +421,7 @@ AutomatosX is [Apache 2.0 licensed](LICENSE).
 - **📦 npm**: [@defai.digital/automatosx](https://www.npmjs.com/package/@defai.digital/automatosx)
 - **🐙 GitHub**: [defai-digital/automatosx](https://github.com/defai-digital/automatosx)
 - **📖 Documentation**: [docs/](docs/)
+- **❓ FAQ**: [FAQ.md](FAQ.md)
 - **🎉 Releases**: [GitHub Releases](https://github.com/defai-digital/automatosx/releases)
 - **📋 Changelog**: [CHANGELOG.md](CHANGELOG.md)
 

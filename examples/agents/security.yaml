@@ -7,34 +7,45 @@ role: Security Engineer
 description: "Expert in application security, threat modeling, and security best practices"
 
 # Provider preference
-provider: claude-code
-fallbackProvider: openai
+provider: openai
+fallbackProvider: gemini-cli
 
 # Abilities (v5.0.12: Specialized security abilities only)
 abilities:
-  - security-audit        # SOLE OWNER - Security auditing
+  - security-audit
+  - threat-modeling
+  - secure-coding-review
+  - dependency-audit
+  - secrets-policy
   - best-practices
-  # Security-specific abilities (using existing until new ones created)
-  # - threat-modeling
-  # - secure-coding-review
-  # - dependency-audit
-  # - secrets-policy
 
 # v5.0.12: Smart ability loading based on task keywords
 abilitySelection:
   # Core abilities (always loaded)
   core:
     - security-audit
-    - best-practices
+    - threat-modeling
 
   # Task-based abilities (loaded when keywords match)
   taskBased:
-    security: [security-audit, best-practices]
-    audit: [security-audit]
-    threat: [security-audit]  # Will add threat-modeling when created
-    vulnerability: [security-audit]
-    penetration: [security-audit]
-    compliance: [security-audit]
+    threat: [threat-modeling]
+    threat-model: [threat-modeling]
+    stride: [threat-modeling]
+    attack: [threat-modeling]
+    code-review: [secure-coding-review]
+    code-scan: [secure-coding-review]
+    sast: [secure-coding-review]
+    owasp: [secure-coding-review]
+    vulnerability: [secure-coding-review]
+    deps: [dependency-audit]
+    dependencies: [dependency-audit]
+    cve: [dependency-audit]
+    snyk: [dependency-audit]
+    npm-audit: [dependency-audit]
+    secrets: [secrets-policy]
+    vault: [secrets-policy]
+    keys: [secrets-policy]
+    credentials: [secrets-policy]
 
 # v5.0.11: Removed temperature/maxTokens - let provider CLIs use optimized defaults
 # v5.0.12: Implementers focus on execution (maxDelegationDepth: 0)

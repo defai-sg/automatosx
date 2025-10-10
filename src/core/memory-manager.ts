@@ -110,6 +110,7 @@ export class MemoryManager implements IMemoryManager {
     // Initialize database
     this.db = new Database(this.config.dbPath);
     this.db.pragma('journal_mode = WAL');
+    this.db.pragma('busy_timeout = 5000');  // Wait up to 5 seconds for locks
   }
 
   /**
@@ -410,11 +411,11 @@ export class MemoryManager implements IMemoryManager {
           e.created_at,
           e.last_accessed_at,
           e.access_count,
-          fts.rank as relevance
-        FROM memory_fts fts
-        JOIN memory_entries e ON fts.rowid = e.id
+          bm25(memory_fts) as relevance
+        FROM memory_fts
+        JOIN memory_entries e ON memory_fts.rowid = e.id
         WHERE memory_fts MATCH ?${metadataWhere}
-        ORDER BY fts.rank
+        ORDER BY bm25(memory_fts)
         LIMIT ?
       `;
 
@@ -1093,6 +1094,7 @@ export class MemoryManager implements IMemoryManager {
       // Reopen database
       this.db = new Database(this.config.dbPath);
       this.db.pragma('journal_mode = WAL');
+      this.db.pragma('busy_timeout = 5000');  // Wait up to 5 seconds for locks
 
       // Phase 2.1 Fix: Reinitialize completely (rebuild statements, recount entries)
       // This ensures prepared statements are bound to the new connection

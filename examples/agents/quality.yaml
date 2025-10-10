@@ -7,8 +7,8 @@ role: QA Engineer
 description: "Expert in testing strategies, quality assurance, and test automation"
 
 # Provider preference
-provider: claude-code
-fallbackProvider: openai
+provider: openai
+fallbackProvider: gemini-cli
 
 # Abilities (v5.0.12: Sole owner of code-review and debugging)
 abilities:

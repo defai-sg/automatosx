@@ -1,74 +1,18 @@
 # Frequently Asked Questions (FAQ)
 
+Note: This FAQ applies to AutomatosX v5.0.13 (last updated 2025-10-10). For detailed release notes, see CHANGELOG.md.
+
 ## General Questions
 
 ### What is AutomatosX?
 
-AutomatosX is an AI agent orchestration platform that allows you to create, configure, and run AI agents with different capabilities and behaviors. It supports multiple AI providers (Claude, Gemini, Codex) with intelligent fallback, and features a powerful memory system with vector search.
+AutomatosX is an AI agent orchestration platform that allows you to create, configure, and run AI agents with different capabilities and behaviors. It supports multiple AI providers (Claude, Gemini, Codex) with intelligent fallback, and features a powerful memory system with SQLite FTS5 full-text search.
 
-### What's new in v5.0.1?
+<!-- Version-specific release notes removed to keep FAQ focused. See CHANGELOG.md for details. -->
 
-v5.0.1 (October 2025) includes critical bug fixes:
+### Can I migrate from older major versions?
 
-- **Provider timeout fixed**: All provider timeouts increased from 5 min → 15 min to match agent timeout
-- **Delegation parser improved**: Zero false positives from documentation examples
-- **FTS5 search stabilized**: Enhanced special character handling (15+ characters)
-- **1050 tests passing**: 100% pass rate with comprehensive test coverage
-
-**Update recommended if you experience:**
-- Agent timeout errors on complex tasks
-- Unwanted delegation cycles
-- FTS5 "syntax error" warnings
-
-### What's new in v5.0.0?
-
-v5.0.0 (October 2025) introduces agent template system:
-
-- **Quick agent creation**: Create agents from templates with `ax agent create`
-- **5 pre-built templates**: Developer, analyst, designer, qa-specialist, basic-agent
-- **Complete CLI toolset**: `ax agent` command suite (templates, create, list, show, remove)
-- **No hardcoded values**: All execution parameters now configurable
-
-### What's new in v4.11.0?
-
-v4.11.0 (October 2025) removes vector search for pure FTS5:
-
-- **No embedding costs**: Removed OpenAI embedding dependency
-- **< 1ms search**: Pure SQLite FTS5 for blazing fast text search
-- **Better privacy**: All data stays local (no cloud API calls)
-- **Simpler**: No vector dependencies, just SQLite
-
-### What's new in v4.10.0?
-
-v4.10.0 (October 2025) introduces team-based configuration:
-
-- **No duplication**: Agents inherit settings from their team
-- **4 built-in teams**: Core, Engineering, Business, Design
-- **Shared abilities**: Team-wide abilities automatically included
-- **Centralized management**: Change provider for entire team at once
-
-### What's new in v4.0?
-
-v4.0 is a complete TypeScript rewrite with major improvements:
-
-- **87% smaller**: Bundle reduced from 340MB to <50MB
-- **CLI-based**: No API keys stored, uses provider CLI tools
-- **TypeScript**: 100% type-safe codebase
-- **Better security**: Enhanced path resolution and workspace isolation
-- **Faster**: 60% faster startup, 62x faster search
-
-See [CHANGELOG.md](./CHANGELOG.md) for detailed changes.
-
-### Can I migrate from v3.x to v4.0?
-
-No, v4.0 requires a clean installation due to major breaking changes:
-
-- Database format changed (Milvus → SQLite)
-- Configuration format changed (YAML → JSON)
-- Directory structure changed (`.defai/` → `.automatosx/`)
-- API completely rewritten in TypeScript
-
-**Recommendation**: Install v4.0 in a new project and configure from scratch.
+Major version upgrades may include breaking changes (database schema, configuration format, directory structure). The recommended approach is to set up a fresh project and reconfigure agents/teams. For specifics, refer to the Migration notes in CHANGELOG.md.
 
 ### What AI providers are supported?
 
@@ -82,11 +26,99 @@ AutomatosX supports multiple AI providers through their official CLI tools:
 
 You can use multiple providers simultaneously with automatic fallback.
 
+### Can I run AutomatosX with a fully offline model?
+
+Short answer: Not yet in the open-source edition. AutomatosX Community relies on provider CLIs (Claude, Gemini, OpenAI) which require internet access.
+
+- Today (Community): The memory system is fully local, but model inference is done via cloud provider CLIs. Mock mode (`AUTOMATOSX_MOCK_PROVIDERS=true`) is available for testing, but it does not run a real model.
+- AutomatosX Pro: DEFAI offers offline model support (local inference) in the Pro edition.
+- Roadmap: We plan to release offline provider support to open source in v6.0.
+
+Considerations for offline inference:
+- Hardware: Adequate CPU/GPU and RAM/VRAM for chosen models.
+- Storage: Model checkpoints can be large (multi‑GB).
+- Licensing: Ensure local models’ licenses permit your use case.
+
+### What happens if OpenAI or Gemini is not installed?
+
+As long as at least one provider CLI is installed and enabled (e.g., Claude/`claude`), AutomatosX will still run. The system automatically falls back to any available provider based on this priority:
+
+- CLI override (`--provider`) → Team provider (with `fallbackChain`) → Agent provider (deprecated) → Global Router priority
+
+If all configured providers are missing or disabled, execution fails with an error indicating that no providers are available.
+
+Check availability and health:
+
+```bash
+ax status           # Shows available providers and priorities
+ax run <agent> "task" --provider claude-code   # Force a specific provider
+```
+
+Notes:
+- Mock mode (`AUTOMATOSX_MOCK_PROVIDERS=true`) returns mock responses but does not bypass provider availability checks. If no CLI is installed, providers remain unavailable.
+- Team-level `fallbackChain` (e.g., `openai → gemini-cli → claude`) ensures robust failover when the primary CLI is missing or unhealthy.
+
+### How do I enable/disable providers?
+
+Edit `automatosx.config.json` and toggle the `enabled` flag under `providers`:
+
+```json
+{
+  "providers": {
+    "openai": { "enabled": true },
+    "gemini-cli": { "enabled": false },
+    "claude-code": { "enabled": true }
+  }
+}
+```
+
+Troubleshooting checklist:
+- Ensure the CLI is installed and in `PATH` (`claude --version`, `gemini --version`, `codex --version`).
+- Verify the provider is `enabled` in `automatosx.config.json`.
+- Use `--provider` to override selection temporarily.
+
+### Does AutomatosX require Claude Code? Can Gemini or OpenAI Codex be the primary?
+
+No. AutomatosX is provider-agnostic. Any supported provider can be primary. Set it at the team level (recommended) or override per command:
+
+```yaml
+# .automatosx/teams/engineering.yaml (Gemini as primary)
+provider:
+  primary: gemini-cli
+  fallbackChain: [gemini-cli, openai, claude]
+
+# .automatosx/teams/core.yaml (OpenAI as primary)
+provider:
+  primary: openai
+  fallbackChain: [openai, gemini-cli, claude]
+```
+
+Per-command override:
+```bash
+ax run backend "implement API" --provider gemini-cli
+ax run writer  "draft ADR"   --provider openai
+```
+
+Note: In the open-source edition, Claude Code is currently the most mature option and often recommended as default. We plan deeper first-class integration for Gemini and Codex in v6+.
+
+### Do I need to run AutomatosX inside the Claude/Gemini/Codex CLI?
+
+No. AutomatosX is a standalone CLI (`ax`) that orchestrates agents and invokes provider CLIs under the hood. You typically run:
+
+```bash
+ax run <agent> "your task"            # AutomatosX orchestrates
+ax run <agent> "task" --provider openai
+```
+
+You can run provider CLIs by themselves (e.g., `gemini "prompt"`, `codex exec "prompt"`, `claude -p "prompt" --print`), but doing so bypasses AutomatosX features such as stages, abilities injection, memory, delegation, and sessions.
+
+Roadmap: VS Code extension targeted for v5.5; deeper Gemini/Codex integration in v6+.
+
 ### How much does it cost to use?
 
 AutomatosX itself is **free and open-source** (Apache-2.0 license).
 
-**Pricing model (v4.0+)**:
+**Pricing model**:
 - You pay only for what you use via your existing CLI subscriptions
 - No API keys stored in AutomatosX
 - No additional subscription fees
@@ -139,7 +171,7 @@ npx @defai.digital/automatosx --help
 
 ### How do I set up authentication?
 
-**v4.0+ (Current)**: AutomatosX uses CLI tools, which handle authentication separately:
+AutomatosX uses CLI tools, which handle authentication separately:
 
 ```bash
 # Each CLI has its own auth setup:
@@ -152,14 +184,16 @@ claude auth login
 gemini auth login
 # Follow the prompts to authenticate
 
-# Codex CLI
+# Codex CLI (requires git repository)
 codex auth login
 # Follow the prompts to authenticate
+# ⚠️ Important: Codex requires your project to have git initialized
+# Run 'git init' if not already a git repository
 ```
 
 **No API keys needed in AutomatosX** - the CLI tools handle all authentication!
 
-**For older versions (v3.x)**: Used API keys directly (see migration guide)
+If you used API keys directly before, follow each provider’s CLI authentication guide instead.
 
 ### Can I use AutomatosX without any provider CLIs?
 
@@ -168,6 +202,8 @@ No, you need at least one provider CLI installed and authenticated:
 - **Recommended**: Install `claude` CLI (most capable)
 - **Free option**: Gemini CLI offers generous free tier
 - **For testing**: Use mock providers (`AUTOMATOSX_MOCK_PROVIDERS=true`)
+
+**Important**: OpenAI Codex CLI requires your project to be a git repository (`git init`). Other providers don't have this requirement.
 
 ```bash
 # Test without real providers
@@ -193,7 +229,7 @@ automatosx init
 
 ### How do I change the default provider?
 
-**v4.10.0+ (Team-based)**: Configure at team level:
+Configure at team level:
 
 ```bash
 # Edit team configuration
@@ -236,7 +272,7 @@ automatosx config --reset
 
 ## Agents & Abilities
 
-### What are agent templates? (v5.0.0+)
+### What are agent templates?
 
 **Agent templates** are pre-configured agent blueprints that let you create new agents in seconds instead of writing YAML from scratch.
 
@@ -267,7 +303,7 @@ ax agent create backend --template developer \
 
 See [Agent Templates Guide](docs/guide/agent-templates.md) for details.
 
-### What is team-based configuration? (v4.10.0+)
+### What is team-based configuration?
 
 **Team-based configuration** organizes agents into teams with shared settings, eliminating configuration duplication.
 
@@ -312,7 +348,7 @@ abilities:
   - code_analysis # Ability
 ```
 
-### How do I update my agents to use teams? (v4.10.0+)
+### How do I update my agents to use teams?
 
 **Migration Steps**:
 
@@ -321,7 +357,7 @@ abilities:
 3. **Update agent profile**:
 
 ```yaml
-# Before v4.10.0
+# Before
 name: backend
 provider: codex
 temperature: 0.7
@@ -329,7 +365,7 @@ abilities:
   - code-generation
   - backend-development
 
-# After v4.10.0
+# After
 name: backend
 team: engineering       # Add this line
 abilities:
@@ -346,7 +382,7 @@ Team abilities (like `code-generation`) are automatically inherited.
 
 ### How do I create a custom agent?
 
-**v5.0.0+ (Recommended)**: Use agent templates:
+**Recommended**: Use agent templates:
 
 ```bash
 # Interactive mode - guided creation
@@ -368,7 +404,7 @@ ax agent templates
 **Manual creation (advanced)**:
 
 ```bash
-# 1. Create agent profile (v4.10.0+ team-based config)
+# 1. Create agent profile (team-based config)
 cat > .automatosx/agents/my-agent.yaml << EOF
 name: my-agent
 team: engineering              # Inherits provider from team
@@ -423,7 +459,7 @@ This ensures agents can read your code but only write to isolated workspaces.
 
 ### How does the memory system work?
 
-**v4.11.0+ (Current)**: AutomatosX uses pure SQLite FTS5 full-text search:
+AutomatosX uses pure SQLite FTS5 full-text search:
 
 - **Storage**: `.automatosx/memory/memories.db`
 - **Search**: FTS5 full-text search (< 1ms average)
@@ -431,14 +467,12 @@ This ensures agents can read your code but only write to isolated workspaces.
 - **Cost**: Zero - all local, no API calls
 - **Privacy**: All data stays on your machine
 
-**v5.0.1**: Enhanced special character handling (15+ characters supported)
-
 Memories persist across sessions and can be searched instantly.
 
 ### How do I search memories?
 
 ```bash
-# Full-text search (v4.11.0+)
+# Full-text search
 ax memory search "how to implement authentication"
 
 # List all memories
@@ -447,7 +481,7 @@ ax memory list
 # Limit results
 ax memory search "query" --limit 10
 
-# v5.0.1+: Special characters are automatically handled
+# Special characters are automatically handled
 ax memory search "config.json settings"  # Works!
 ax memory search "coverage: 95%"         # Works!
 ax memory search "timeout (300ms)"       # Works!
@@ -483,7 +517,7 @@ rm -rf .automatosx/memory/
 
 ### Do I need any API for memory search?
 
-**No!** (as of v4.11.0)
+**No!**
 
 - Memory search uses **pure SQLite FTS5** (local, no API calls)
 - No embedding costs
@@ -491,7 +525,7 @@ rm -rf .automatosx/memory/
 - All data stays on your machine
 - Blazing fast (< 1ms average)
 
-**Older versions (v3.x - v4.10.x)**: Required OpenAI API for vector embeddings (deprecated)
+External embedding APIs are not required.
 
 ## Performance
 
@@ -567,22 +601,22 @@ Ensure you're editing the right file based on priority order.
 
 ### Agent tasks timeout with "Request timeout after 300000ms"
 
-**Problem**: Complex agent tasks fail with timeout errors even though the default agent timeout is 15 minutes.
+**Problem**: Complex agent tasks fail with timeout errors even though the default agent timeout is longer.
 
-**Cause**: Provider timeout (5 minutes) is shorter than agent timeout (15 minutes), causing the provider to timeout first.
+**Cause**: Provider timeout is shorter than agent timeout, causing the provider to timeout first.
 
-**Solution (v5.0.1+)**: Update to v5.0.1 which fixes this issue automatically, or manually update your config:
+**Solution**: Update to the latest version, or manually update your config:
 
 ```bash
 # Check your current version
 automatosx --version
 
-# If < v5.0.1, update your configuration manually:
-automatosx config set providers.claude-code.timeout 900000
-automatosx config set providers.gemini-cli.timeout 900000
-automatosx config set providers.openai.timeout 900000
+# Manually ensure provider timeouts are aligned with agent timeout:
+automatosx config set providers.claude-code.timeout 1500000
+automatosx config set providers.gemini-cli.timeout 1500000
+automatosx config set providers.openai.timeout 1500000
 
-# Or update to v5.0.1:
+# Or update to the latest version:
 npm install -g @defai.digital/automatosx@latest
 ```
 
@@ -590,7 +624,7 @@ npm install -g @defai.digital/automatosx@latest
 ```bash
 # Check provider timeout settings
 automatosx config show | grep -A2 "timeout"
-# Should show 900000 (15 minutes) for all providers
+# Should show 1500000 (25 minutes) for all providers
 ```
 
 ### Agents delegate to wrong agents or delegation cycles occur
@@ -605,10 +639,10 @@ automatosx config show | grep -A2 "timeout"
 
 **Cause**: Delegation parser was too aggressive and parsed quoted examples or numbered lists as real delegations.
 
-**Solution**: Update to v5.0.1 which includes improved delegation parsing:
+**Solution**: Update to the latest version which includes improved delegation parsing and agent governance:
 
 ```bash
-npm install -g @defai.digital/automatosx@5.0.1
+npm install -g @defai.digital/automatosx@latest
 ```
 
 **Verification**:
@@ -622,12 +656,12 @@ ax run coordinator "Explain delegation syntax with examples"
 
 **Problem**: Memory search fails with errors like `fts5: syntax error near "."` when query contains special characters.
 
-**Cause**: FTS5 search was not sanitizing special characters properly (v5.0.0 and earlier).
+**Cause**: FTS5 search used to not sanitize special characters properly in older builds.
 
-**Solution**: Update to v5.0.1 which includes enhanced FTS5 sanitization:
+**Solution**: Update to the latest version which includes enhanced FTS5 sanitization:
 
 ```bash
-npm install -g @defai.digital/automatosx@5.0.1
+npm install -g @defai.digital/automatosx@latest
 ```
 
 **Workaround (if can't update)**:
@@ -637,13 +671,13 @@ npm install -g @defai.digital/automatosx@5.0.1
 # Use: "config json settings"
 ```
 
-### AutomatosX not working after upgrading from older version
+### AutomatosX not working after upgrading from an older version
 
 If you're experiencing errors or unexpected behavior after upgrading, it may be due to:
 
 - **Old agent profiles** (YAML format or schema changes)
 - **Outdated configuration** (incompatible settings from previous versions)
-- **Old database format** (v3.x Milvus → v4.x SQLite migration)
+- **Old database format** (migration required)
 
 **Solution**: Reinitialize your AutomatosX setup with the force flag:
 
@@ -655,7 +689,7 @@ ax init -f
 # - Create fresh .automatosx/ directory structure
 # - Generate updated agent profiles
 # - Create new SQLite database
-# - Reset configuration to v4.x defaults
+# - Reset configuration to defaults
 ```
 
 **⚠️ Warning**: This will overwrite existing configuration. If you have custom agents or abilities, back them up first:
@@ -688,7 +722,7 @@ ax run assistant "Remember: Project Alpha launches Q1 2025"
 ax memory search "when does Alpha launch"
 ```
 
-**v4.11.0+**: Vector search removed, now uses FTS5 text search (no embedding API needed)
+Note: AutomatosX uses FTS5 text search (no embedding API needed).
 
 ## Development & Contributing
 
@@ -777,7 +811,7 @@ The `.automatosx/` directory contains:
 - Agent workspaces
 - Session data
 
-**v4.0+**: No API keys stored (CLIs handle auth separately)
+Note: API keys are not stored by AutomatosX (provider CLIs handle auth separately)
 
 **Do commit**: Example agent profiles and abilities in `examples/` directory if you want to share them.
 

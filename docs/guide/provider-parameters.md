@@ -28,7 +28,7 @@ By default, **no model parameters are set** in the configuration. Each provider 
     "claude-code": {
       "enabled": true,
       "priority": 3,
-      "timeout": 900000,
+      "timeout": 1500000,
       "command": "claude"
       // No "defaults" - uses provider's optimal settings
     }
@@ -103,7 +103,7 @@ Let providers use optimal defaults:
     "openai": {
       "enabled": true,
       "command": "codex",
-      "timeout": 900000
+      "timeout": 1500000
       // No defaults = maximum capability
     }
   }
@@ -120,7 +120,7 @@ Limit token usage for budget control:
     "openai": {
       "enabled": true,
       "command": "codex",
-      "timeout": 900000,
+      "timeout": 1500000,
       "defaults": {
         "maxTokens": 2048  // Limit for cost control
       }

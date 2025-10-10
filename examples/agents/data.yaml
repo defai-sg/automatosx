@@ -12,32 +12,36 @@ fallbackProvider: claude-code
 
 # Abilities (v5.0.12: Specialized data engineering abilities)
 abilities:
-  - code-generation       # For ETL scripts, SQL queries, data pipelines
-  - problem-solving       # Data analysis and troubleshooting
+  - code-generation
+  - data-modeling
+  - sql-optimization
+  - etl-pipelines
+  - job-orchestration
+  - data-validation
+  - problem-solving
   - best-practices
-  # Data-specific abilities (using existing until new ones created)
-  # - etl-pipelines
-  # - data-modeling
-  # - sql-optimization
-  # - orchestration
 
 # v5.0.12: Smart ability loading based on task keywords
 abilitySelection:
   # Core abilities (always loaded)
   core:
+    - data-modeling
     - code-generation
-    - problem-solving
 
   # Task-based abilities (loaded when keywords match)
   taskBased:
-    etl: [code-generation, problem-solving]  # Will add etl-pipelines when created
-    pipeline: [code-generation]
-    data: [code-generation, problem-solving]  # Will add data-modeling when created
-    sql: [code-generation]  # Will add sql-optimization when created
-    database: [code-generation]
-    query: [code-generation]
-    analytics: [problem-solving]
-    modeling: [code-generation]
+    etl: [etl-pipelines, job-orchestration]
+    pipeline: [etl-pipelines, job-orchestration]
+    sql: [sql-optimization, data-modeling]
+    query: [sql-optimization]
+    model: [data-modeling]
+    schema: [data-modeling]
+    validate: [data-validation]
+    qc: [data-validation]
+    quality: [data-validation]
+    orchestration: [job-orchestration]
+    airflow: [job-orchestration]
+    prefect: [job-orchestration]
 
 # v5.0.11: Removed temperature/maxTokens - let provider CLIs use optimized defaults
 # v5.0.12: Implementers focus on execution (maxDelegationDepth: 0)

@@ -373,6 +373,53 @@ automatosx config --set providers.preferred --value claude
 automatosx run assistant "hello" --provider claude
 ```
 
+### OpenAI Codex requires git initialization
+
+**Symptom**: Codex provider fails with error or doesn't work as expected
+
+**Cause**: OpenAI Codex CLI requires the project to be a git repository to function properly.
+
+**Solution**:
+
+```bash
+# Check if current directory is a git repository
+git status
+
+# If not initialized, initialize git:
+git init
+
+# Configure git user (if not already configured)
+git config user.name "Your Name"
+git config user.email "your.email@example.com"
+
+# Verify codex now works
+ax run assistant "Hello" --provider codex
+
+# Or test with codex directly
+codex --version
+```
+
+**Important Notes**:
+
+- This is a requirement from the OpenAI Codex CLI, not AutomatosX
+- The project must have `.git/` directory for codex to work
+- You don't need to commit any files, just `git init` is sufficient
+- Other providers (Claude, Gemini) do not have this requirement
+
+**Alternative Solution** (if you can't use git):
+
+```bash
+# Use a different provider that doesn't require git
+ax run assistant "Hello" --provider claude
+ax run assistant "Hello" --provider gemini
+
+# Or change your team's default provider
+# Edit .automatosx/teams/<team-name>.yaml
+provider:
+  primary: claude  # Change from codex to claude
+  fallbackChain: [claude, gemini, codex]
+```
+
 ---
 
 ## Agent Execution Problems
@@ -419,43 +466,43 @@ ls -la .automatosx/abilities/
 
 **Symptom**: `Error: Request timeout after 300000ms` or `Provider codex execution failed`
 
-**Root Cause (v5.0.0 and earlier)**: Provider timeout (5 minutes) was shorter than agent timeout (15 minutes), causing premature failures.
+**Root Cause (v5.0.0 and earlier)**: Provider timeout was shorter than agent timeout, causing premature failures.
 
 **Solution**:
 
-#### ✅ Recommended: Update to v5.0.1+
+#### ✅ Recommended: Update to v5.0.12+
 
-v5.0.1 fixes this issue by setting all provider timeouts to 15 minutes:
+v5.0.12 has all provider timeouts properly aligned at 25 minutes for complex tasks:
 
 ```bash
 # Update to latest version
 npm install -g @defai.digital/automatosx@latest
 
 # Verify the version
-automatosx --version  # Should be 5.0.1 or higher
+automatosx --version  # Should be 5.0.12 or higher
 ```
 
 #### ⚙️ Manual Fix (if you can't update)
 
 ```bash
-# Set all provider timeouts to 15 minutes (900000ms)
-automatosx config set providers.claude-code.timeout 900000
-automatosx config set providers.gemini-cli.timeout 900000
-automatosx config set providers.openai.timeout 900000
+# Set all provider timeouts to 25 minutes (1500000ms)
+automatosx config set providers.claude-code.timeout 1500000
+automatosx config set providers.gemini-cli.timeout 1500000
+automatosx config set providers.openai.timeout 1500000
 
 # Verify the changes
 automatosx config show | grep -A2 "timeout"
-# All provider timeouts should show 900000
+# All provider timeouts should show 1500000
 ```
 
-#### 📝 For very long-running tasks (30+ minutes)
+#### 📝 For very long-running tasks (45+ minutes)
 
 ```bash
 # Increase both agent and provider timeouts
-automatosx config set execution.defaultTimeout 1800000  # 30 minutes
-automatosx config set providers.claude-code.timeout 1800000
-automatosx config set providers.gemini-cli.timeout 1800000
-automatosx config set providers.openai.timeout 1800000
+automatosx config set execution.defaultTimeout 2700000  # 45 minutes
+automatosx config set providers.claude-code.timeout 2700000
+automatosx config set providers.gemini-cli.timeout 2700000
+automatosx config set providers.openai.timeout 2700000
 ```
 
 **Verification**:
@@ -625,20 +672,22 @@ Agent response contains: '1. "@frontend Create login UI"' (example)
 
 **Solution**:
 
-#### ✅ Update to v5.0.1+
+#### ✅ Update to v5.0.12+
 
-v5.0.1 includes improved delegation parsing that skips:
+v5.0.12 includes improved delegation parsing and agent governance that prevents:
+
 - Quoted examples: `"@frontend Create UI"`
 - Documentation markers: "Example:", "Supported syntaxes:"
 - Numbered lists: `1. "...", 2. "..."`
 - Test code: `it('...', async () => ...)`
+- Circular delegation cycles
 
 ```bash
 # Update to latest version
 npm install -g @defai.digital/automatosx@latest
 
 # Verify
-automatosx --version  # Should be 5.0.1 or higher
+automatosx --version  # Should be 5.0.12 or higher
 ```
 
 #### ⚙️ Workaround (if you can't update)
@@ -653,9 +702,9 @@ Avoid including delegation syntax examples in your agent instructions or system 
 
 **Solution**:
 
-#### ✅ Update to v5.0.1+
+#### ✅ Update to v5.0.12+
 
-v5.0.1 includes enhanced FTS5 sanitization for 15+ special characters:
+v5.0.12 includes enhanced FTS5 sanitization for 15+ special characters:
 
 ```bash
 # Update to latest version
@@ -690,7 +739,7 @@ automatosx memory search "timeout 300ms"
 4. **Enable debug mode**: `ax run <agent> "<task>" --debug`
 5. **Verify configuration**: `ax config show`
 
-### Upgrade Checklist (v5.0.0 → v5.0.1+)
+### Upgrade Checklist (v5.0.x → v5.0.12+)
 
 ```bash
 # 1. Update to latest version
@@ -700,7 +749,7 @@ ax update
 ax init --force
 
 # 3. Verify version
-ax --version  # Should show 5.0.1 or higher
+ax --version  # Should show 5.0.12 or higher
 
 # 4. Test with a simple command
 ax run assistant "Hello"

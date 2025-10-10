@@ -62,6 +62,7 @@ export class ProfileLoader {
   /**
    * Build displayName → name mapping table (lightweight)
    * Only reads displayName field from YAML, doesn't load full profile
+   * Priority: Local .automatosx/agents override examples/agents
    */
   private async buildDisplayNameMap(): Promise<void> {
     if (this.mapInitialized) {
@@ -72,49 +73,90 @@ export class ProfileLoader {
     this.displayNameMap.clear();
 
     try {
-      const profiles = await this.listProfiles();
+      // Priority 1: Process local profiles first (.automatosx/agents)
+      const localProfiles = await this.listProfilesFromDir(this.profilesDir);
+      for (const name of localProfiles) {
+        await this.addToDisplayNameMap(name, 'local');
+      }
 
-      for (const name of profiles) {
-        try {
-          // Lightweight: Only read displayName field, not full profile
-          const displayName = await this.readDisplayNameOnly(name);
-
-          if (displayName) {
-            const lowerDisplayName = displayName.toLowerCase();
-
-            // Check for duplicate display names
-            const existing = this.displayNameMap.get(lowerDisplayName);
-            if (existing) {
-              logger.warn('Duplicate displayName detected', {
-                displayName,
-                existingAgent: existing,
-                newAgent: name,
-                resolution: `Using first occurrence (${existing})`
-              });
-              // Keep the first occurrence, skip the duplicate
-              continue;
-            }
-
-            // Store case-insensitive mapping
-            this.displayNameMap.set(lowerDisplayName, name);
-            logger.debug('Mapped displayName to agent', {
-              displayName,
-              name
-            });
-          }
-        } catch (error) {
-          // Skip profiles that fail to read
-          logger.warn('Failed to read displayName for mapping', { name, error });
+      // Priority 2: Process fallback profiles (examples/agents)
+      // These will NOT override local profiles with the same displayName
+      const fallbackProfiles = await this.listProfilesFromDir(this.fallbackProfilesDir);
+      for (const name of fallbackProfiles) {
+        // Skip if already exists in local profiles (by name)
+        if (localProfiles.includes(name)) {
+          logger.debug('Skipping fallback profile (local override)', { name });
+          continue;
         }
+        await this.addToDisplayNameMap(name, 'fallback');
       }
 
       this.mapInitialized = true;
       logger.info('DisplayName mapping built', {
-        mappings: this.displayNameMap.size
+        mappings: this.displayNameMap.size,
+        localProfiles: localProfiles.length,
+        fallbackProfiles: fallbackProfiles.length
       });
     } catch (error) {
       logger.error('Failed to build displayName mapping', { error });
       // Don't throw - allow fallback to direct name lookup
+    }
+  }
+
+  /**
+   * Helper: Add profile to displayName map
+   */
+  private async addToDisplayNameMap(name: string, source: 'local' | 'fallback'): Promise<void> {
+    try {
+      // Lightweight: Only read displayName field, not full profile
+      const displayName = await this.readDisplayNameOnly(name);
+
+      if (displayName) {
+        const lowerDisplayName = displayName.toLowerCase();
+
+        // Check for duplicate display names
+        const existing = this.displayNameMap.get(lowerDisplayName);
+        if (existing) {
+          logger.warn('Duplicate displayName detected', {
+            displayName,
+            existingAgent: existing,
+            newAgent: name,
+            source,
+            resolution: `Keeping existing (${existing})`
+          });
+          // Keep existing entry (local profiles have priority)
+          return;
+        }
+
+        // Store case-insensitive mapping
+        this.displayNameMap.set(lowerDisplayName, name);
+        logger.debug('Mapped displayName to agent', {
+          displayName,
+          name,
+          source
+        });
+      }
+    } catch (error) {
+      // Skip profiles that fail to read
+      logger.warn('Failed to read displayName for mapping', { name, source, error });
+    }
+  }
+
+  /**
+   * Helper: List profiles from a specific directory
+   */
+  private async listProfilesFromDir(dir: string): Promise<string[]> {
+    try {
+      const files = await readdir(dir);
+      return files
+        .filter(file => extname(file) === '.yaml' || extname(file) === '.yml')
+        .map(file => basename(file, extname(file)));
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        // Directory doesn't exist
+        return [];
+      }
+      throw error;
     }
   }
 
@@ -561,8 +603,8 @@ export class ProfileLoader {
       }
 
       if (orch.maxDelegationDepth !== undefined) {
-        if (typeof orch.maxDelegationDepth !== 'number' || orch.maxDelegationDepth < 1 || !Number.isInteger(orch.maxDelegationDepth)) {
-          throw new AgentValidationError('orchestration.maxDelegationDepth must be a positive integer');
+        if (typeof orch.maxDelegationDepth !== 'number' || orch.maxDelegationDepth < 0 || !Number.isInteger(orch.maxDelegationDepth)) {
+          throw new AgentValidationError('orchestration.maxDelegationDepth must be a non-negative integer (0 = no delegation allowed)');
         }
       }
 

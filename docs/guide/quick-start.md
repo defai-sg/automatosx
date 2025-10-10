@@ -278,13 +278,13 @@ Edit `automatosx.config.json`:
     "claude-code": {
       "enabled": true,
       "priority": 1,
-      "timeout": 900000,
+      "timeout": 1500000,
       "command": "claude"
     },
     "gemini-cli": {
       "enabled": true,
       "priority": 2,
-      "timeout": 900000,
+      "timeout": 1500000,
       "command": "gemini"
     }
   },
