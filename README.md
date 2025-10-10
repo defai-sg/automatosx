@@ -322,6 +322,37 @@ npm install -g @defai.digital/automatosx
 
 **Result**: Data-driven decision making with complete context
 
+### 🚀 Multi-Agent Delegation
+```bash
+# Single command triggers automatic multi-agent coordination
+/ax run Paris "Build a user dashboard with real-time metrics"
+
+# Paris analyzes and delegates automatically in its response:
+# "I've designed the dashboard architecture:
+#
+# @Bob Please implement the REST API endpoints for user metrics
+# @Frank Please create the React dashboard components
+# @Steve Please review the data access security
+#
+# All specs are in my workspace."
+
+# AutomatosX automatically:
+# ✓ Bob implements backend API → Saves to workspace
+# ✓ Frank builds frontend UI → Reads Bob's API spec
+# ✓ Steve audits security → Reviews both implementations
+# ✓ Results aggregated → Complete dashboard delivered
+```
+
+**Result**: One command orchestrates 4 agents with automatic coordination
+
+**Delegation Syntaxes**:
+```bash
+@Bob Please implement this          # Direct mention
+DELEGATE TO Frank: Create the UI    # Explicit syntax
+Please ask Steve to audit this      # Polite request
+I need Daisy to analyze the data    # Need expression
+```
+
 ---
 
 ## 🎯 Why Teams Choose AutomatosX
