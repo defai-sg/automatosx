@@ -19,10 +19,6 @@ export class GeminiProvider extends BaseProvider {
     super(config);
   }
 
-  get name(): string {
-    return 'gemini';
-  }
-
   get version(): string {
     return '1.0.0';
   }

@@ -19,10 +19,6 @@ export class OpenAIProvider extends BaseProvider {
     super(config);
   }
 
-  get name(): string {
-    return 'codex';
-  }
-
   get version(): string {
     return '1.0.0';
   }

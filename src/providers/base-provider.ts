@@ -66,11 +66,14 @@ export abstract class BaseProvider implements Provider {
   }
 
   // Abstract methods to be implemented by concrete providers
-  abstract get name(): string;
   abstract get version(): string;
   abstract get capabilities(): ProviderCapabilities;
 
-  // Priority from config
+  // Name and priority from config
+  get name(): string {
+    return this.config.name;
+  }
+
   get priority(): number {
     return this.config.priority;
   }

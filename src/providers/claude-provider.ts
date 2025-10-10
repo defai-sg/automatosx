@@ -19,10 +19,6 @@ export class ClaudeProvider extends BaseProvider {
     super(config);
   }
 
-  get name(): string {
-    return 'claude';
-  }
-
   get version(): string {
     return '1.0.0';
   }

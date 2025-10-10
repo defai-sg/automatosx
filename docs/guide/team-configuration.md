@@ -21,31 +21,31 @@ Team-based configuration is a powerful feature that eliminates configuration dup
 
 ## Built-in Teams
 
-AutomatosX includes 4 pre-configured teams:
+AutomatosX includes 4 pre-configured teams, each optimized with the best AI provider for their domain:
 
-### 1. **Core Team**
-- **Primary Provider**: Claude
-- **Purpose**: Quality assurance and core operations
-- **Example Agents**: assistant, qa-specialist
-- **Shared Abilities**: general-knowledge, code-helper
+### 1. **👥 Core Team**
+- **Primary Provider**: OpenAI (`openai`)
+- **Purpose**: General assistance, code generation, planning, and documentation
+- **Agents**: Alex (assistant), Sofia (coder), Ryan (reviewer), Danny (debugger), Wendy (writer)
+- **Shared Abilities**: general-knowledge, code-review-checklist, testing, documentation
 
-### 2. **Engineering Team**
-- **Primary Provider**: Codex
-- **Purpose**: Software development and engineering
-- **Example Agents**: backend, frontend, devops, database
+### 2. **💻 Engineering Team**
+- **Primary Provider**: Claude (`claude-code`)
+- **Purpose**: Deep technical reasoning for specialized engineering work
+- **Agents**: Bob (backend), Frank (frontend), Oliver (devops), Steve (security), Queenie (quality)
 - **Shared Abilities**: our-coding-standards, code-generation, refactoring, testing
 
-### 3. **Business Team**
-- **Primary Provider**: Gemini
-- **Purpose**: Business analysis and product management
-- **Example Agents**: analyst, product-manager, researcher
-- **Shared Abilities**: business-analysis, market-research, documentation
+### 3. **📊 Business Team**
+- **Primary Provider**: Gemini (`gemini-cli`)
+- **Purpose**: Strategic thinking for executive leadership and product management
+- **Agents**: Eric (ceo), Tony (cto), Paris (product), Daisy (data)
+- **Shared Abilities**: business-analysis, product-strategy, stakeholder-management
 
-### 4. **Design Team**
-- **Primary Provider**: Gemini
-- **Purpose**: Design and content creation
-- **Example Agents**: designer, writer, content-creator
-- **Shared Abilities**: design-guidelines, content-strategy, ux-principles
+### 4. **🎨 Design Team**
+- **Primary Provider**: Gemini (`gemini-cli`)
+- **Purpose**: Creative work for UX/UI design and technical writing
+- **Agents**: Debbee (design)
+- **Shared Abilities**: design-principles, documentation, user-research
 
 ---
 

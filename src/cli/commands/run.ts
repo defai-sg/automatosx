@@ -153,8 +153,9 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
       );
 
       // Initialize memory manager (v4.11.0: No embedding provider required)
+      // Initialize if either --memory (inject) or --save-memory (save) is enabled
       try {
-        if (argv.memory) {
+        if (argv.memory || argv.saveMemory) {
           // v4.11.0: Memory uses FTS5, no embedding provider needed
           memoryManager = await MemoryManager.create({
             dbPath: join(projectDir, '.automatosx', 'memory', 'memory.db')
@@ -185,7 +186,7 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
 
       if (config.providers['claude-code']?.enabled) {
         providers.push(new ClaudeProvider({
-          name: 'claude',
+          name: 'claude-code',
           enabled: true,
           priority: config.providers['claude-code'].priority,
           timeout: config.providers['claude-code'].timeout,
@@ -195,7 +196,7 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
 
       if (config.providers['gemini-cli']?.enabled) {
         providers.push(new GeminiProvider({
-          name: 'gemini',
+          name: 'gemini-cli',
           enabled: true,
           priority: config.providers['gemini-cli'].priority,
           timeout: config.providers['gemini-cli'].timeout,
@@ -205,7 +206,7 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
 
       if (config.providers['openai']?.enabled) {
         providers.push(new OpenAIProvider({
-          name: 'codex',
+          name: 'openai',
           enabled: true,
           priority: config.providers['openai'].priority,
           timeout: config.providers['openai'].timeout,
@@ -421,6 +422,38 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
           }
         }
 
+        // Save multi-stage result to memory
+        if (argv.saveMemory && memoryManager) {
+          try {
+            const metadata = {
+              type: 'conversation' as const,
+              source: 'agent-execution',
+              agentId: argv.agent,
+              tags: ['agent-execution', argv.agent, 'multi-stage'],
+              provider: context.provider.name,
+              timestamp: new Date().toISOString()
+            };
+
+            // FTS5 doesn't need real embeddings - use null
+            const embedding = null;
+
+            // Build content from multi-stage result
+            const content = `Agent: ${argv.agent}\nTask: ${argv.task}\n\nResult: ${multiStageResult.finalOutput}`;
+
+            // Save to memory
+            await memoryManager.add(content, embedding, metadata);
+
+            if (argv.verbose) {
+              console.log(chalk.green('✓ Conversation saved to memory'));
+            }
+          } catch (error) {
+            // Don't fail the command if memory save fails
+            if (argv.verbose) {
+              console.log(chalk.yellow(`⚠ Failed to save to memory: ${(error as Error).message}`));
+            }
+          }
+        }
+
       } else {
         // Use regular AgentExecutor for single-stage execution
         // Configure with orchestration support if managers are available
@@ -483,11 +516,38 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
             console.log(chalk.yellow(`⚠ Failed to save result: ${(error as Error).message}\n`));
           }
         }
-      }
 
-      // 11. Save to memory (requires embedding provider - skipped for MVP)
-      if (argv.saveMemory && argv.verbose) {
-        console.log(chalk.gray('⚠ Memory saving skipped (embedding provider not configured)'));
+        // 11. Save result to memory
+        if (argv.saveMemory && memoryManager) {
+          try {
+            const metadata = {
+              type: 'conversation' as const,
+              source: 'agent-execution',
+              agentId: argv.agent,
+              tags: ['agent-execution', argv.agent],
+              provider: context.provider.name,
+              timestamp: new Date().toISOString()
+            };
+
+            // FTS5 doesn't need real embeddings - use null
+            const embedding = null;
+
+            // Build content from execution result
+            const content = `Agent: ${argv.agent}\nTask: ${argv.task}\n\nResponse: ${result.response.content}`;
+
+            // Save to memory
+            await memoryManager.add(content, embedding, metadata);
+
+            if (argv.verbose) {
+              console.log(chalk.green('✓ Conversation saved to memory'));
+            }
+          } catch (error) {
+            // Don't fail the command if memory save fails
+            if (argv.verbose) {
+              console.log(chalk.yellow(`⚠ Failed to save to memory: ${(error as Error).message}`));
+            }
+          }
+        }
       }
 
       // 12. Cleanup resources

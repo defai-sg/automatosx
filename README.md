@@ -15,7 +15,13 @@
 - ⚡ **Shortens idea-to-impact gap** – organized workflows mean faster onboarding, tighter handoffs, confident timelines
 - 💰 **10× more cost-effective** – CLI-based orchestration beats expensive assistants APIs
 
-**🤖 4 Specialized Teams**: AutomatosX agents are [organized into 4 professional teams](https://github.com/defai-digital/automatosx/blob/main/examples/AGENTS_INFO.md) (Core, Engineering, Business, Design), each optimized with the best AI provider for their domain—**Claude** for deep reasoning, **Gemini** for strategic thinking, and **OpenAI** for fast execution. Every team uses intelligent fallback strategies to ensure maximum reliability across all your workflows.
+**🤖 4 Specialized Teams**: AutomatosX agents are [organized into 4 professional teams](https://github.com/defai-digital/automatosx/blob/main/examples/AGENTS_INFO.md), each optimized with the best AI provider for their domain:
+- **👥 Core Team** (OpenAI): General assistance, code generation, planning - Alex, Sofia, Ryan, Danny, Wendy
+- **💻 Engineering Team** (Claude): Deep reasoning for backend, frontend, security, DevOps, QA - Bob, Frank, Oliver, Steve, Queenie
+- **📊 Business Team** (Gemini): Strategic thinking for executive leadership and product - Eric, Tony, Paris, Daisy
+- **🎨 Design Team** (Gemini): Creative work for UX/UI and technical writing - Debbee
+
+Every team uses intelligent fallback strategies to ensure maximum reliability across all your workflows.
 
 **Status**: ✅ Production Release · **Latest**: October 2025
 📖 **[Project History](docs/PROJECT-HISTORY.md)**: From Tokyo AI Expo (Nov 2024) to v5.0.1 - The complete journey
@@ -23,6 +29,13 @@
 ---
 
 ## 📣 What's New
+
+**v5.0.4 (October 2025)**: Memory Saving Fix
+- 🐛 **Memory saving now works** - Agent conversations automatically saved to memory (--save-memory flag)
+- 🔧 **Fixed initialization logic** - Memory manager properly initialized for all flag combinations
+- ✅ **All edge cases tested** - 4/4 scenarios verified (inject-only, save-only, both, neither)
+- 🚀 **FTS5 search working** - Search your agent conversation history instantly
+- 🎯 **Zero regressions** - All existing features continue to work perfectly
 
 **v5.0.3 (October 2025)**: FTS5 Special Character Support
 - 🐛 **Memory search fixed** - File paths, URLs, dates, and emails now work correctly
@@ -71,7 +84,7 @@ ax agent show backend
 
 **v4.10.0 (October 2025)**: Team-Based Configuration
 - 🎯 **No configuration duplication** - Agents inherit settings from team
-- 👥 **4 built-in teams** - Core, Engineering, Business, Design
+- 👥 **4 built-in teams** - Core Team (OpenAI), Engineering Team (Claude), Business Team (Gemini), Design Team (Gemini)
 - ♻️ **Shared abilities** - Team-wide abilities automatically included
 
 For detailed release notes, new features, and upgrade instructions, see:

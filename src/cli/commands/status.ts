@@ -87,7 +87,7 @@ export const statusCommand: CommandModule<Record<string, unknown>, StatusOptions
 
       if (config.providers['claude-code']?.enabled) {
         providers.push(new ClaudeProvider({
-          name: 'claude',
+          name: 'claude-code',
           enabled: true,
           priority: config.providers['claude-code'].priority,
           timeout: config.providers['claude-code'].timeout,
@@ -97,7 +97,7 @@ export const statusCommand: CommandModule<Record<string, unknown>, StatusOptions
 
       if (config.providers['gemini-cli']?.enabled) {
         providers.push(new GeminiProvider({
-          name: 'gemini',
+          name: 'gemini-cli',
           enabled: true,
           priority: config.providers['gemini-cli'].priority,
           timeout: config.providers['gemini-cli'].timeout,
@@ -107,7 +107,7 @@ export const statusCommand: CommandModule<Record<string, unknown>, StatusOptions
 
       if (config.providers['openai']?.enabled) {
         providers.push(new OpenAIProvider({
-          name: 'codex',
+          name: 'openai',
           enabled: true,
           priority: config.providers['openai'].priority,
           timeout: config.providers['openai'].timeout,

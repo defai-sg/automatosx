@@ -8,10 +8,10 @@ AutomatosX agents are organized into **4 professional teams**, each optimized wi
 
 | Team | Primary Provider | Expertise |
 |------|------------------|-----------|
-| **👥 Core** | 🟢 **OpenAI** (Codex) | Fast execution for everyday tasks, code generation, planning |
-| **💻 Engineering** | 🟣 **Claude** (Anthropic) | Deep reasoning for backend, frontend, security, DevOps, QA |
-| **📊 Business** | 🔵 **Gemini** (Google) | Strategic thinking for CEO, CTO, Product, Data Analysis |
-| **🎨 Design** | 🔵 **Gemini** (Google) | Creative tasks for UX/UI design and visual thinking |
+| **👥 Core Team** | 🟢 **OpenAI** (openai) | General assistance, code generation, planning, documentation |
+| **💻 Engineering Team** | 🟣 **Claude** (claude-code) | Deep reasoning for backend, frontend, security, DevOps, QA |
+| **📊 Business Team** | 🔵 **Gemini** (gemini-cli) | Strategic thinking for CEO, CTO, Product, Data Analysis |
+| **🎨 Design Team** | 🔵 **Gemini** (gemini-cli) | Creative tasks for UX/UI design and technical writing |
 
 ### 🛡️ Intelligent 3-Layer Fallback System
 
@@ -19,12 +19,12 @@ Each agent uses a **smart fallback strategy** to ensure maximum reliability:
 
 1. **Primary Provider**: Team-optimized AI (🟢 OpenAI / 🟣 Claude / 🔵 Gemini)
 2. **Fallback Provider**: Agent-specific backup (configured per agent)
-3. **Router Fallback**: Auto-routing through all available providers
+3. **Router Fallback**: Auto-routing through all available providers (priority-based)
 
-**Example**: If an Engineering agent (primary: Claude) encounters an issue:
-- ✅ Try Claude first (primary)
-- ✅ Fall back to OpenAI (configured fallback)
-- ✅ Try Gemini (router fallback)
+**Example**: If an Engineering agent (primary: claude-code) encounters an issue:
+- ✅ Try Claude first (primary: `claude-code`)
+- ✅ Fall back to OpenAI (configured fallback: `openai`)
+- ✅ Try Gemini (router fallback: `gemini-cli`)
 
 This ensures **99.9% uptime** even if one provider has issues!
 
@@ -36,38 +36,46 @@ Research shows humans remember names better than roles. Instead of remembering "
 
 ### 👥 Core Team
 
-| Name | Agent | Expertise | Best For | Primary Provider | Fallback |
-|------|-------|-----------|----------|------------------|----------|
-| **Alex** | assistant | General purpose tasks, planning, questions | Quick questions, brainstorming, planning | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
-| **Sofia** | coder | Code generation, implementation | Writing new code, implementing features | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
-| **Ryan** | reviewer | Code review, quality assurance | PR reviews, code quality checks | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
-| **Danny** | debugger | Debugging, troubleshooting | Fixing bugs, error analysis | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
-| **Wendy** | writer | Documentation, content creation | Writing docs, README files | 🟢 OpenAI | 🟣 Claude → 🔵 Gemini |
+Fast and efficient AI (OpenAI) for general-purpose tasks, code generation, and everyday assistance.
 
-### 💻 Engineering
+| Name | Agent | Expertise | Best For | Primary | Fallback |
+|------|-------|-----------|----------|---------|----------|
+| **Alex** | assistant | General purpose tasks, planning, questions | Quick questions, brainstorming, planning | 🟢 openai | 🟣 claude-code |
+| **Sofia** | coder | Code generation, implementation | Writing new code, implementing features | 🟢 openai | 🟣 claude-code |
+| **Ryan** | reviewer | Code review, quality assurance | PR reviews, code quality checks | 🟢 openai | 🟣 claude-code |
+| **Danny** | debugger | Debugging, troubleshooting | Fixing bugs, error analysis | 🟢 openai | 🟣 claude-code |
+| **Wendy** | writer | Documentation, content creation | Writing docs, README files | 🟢 openai | 🟣 claude-code |
 
-| Name | Agent | Expertise | Best For | Primary Provider | Fallback |
-|------|-------|-----------|----------|------------------|----------|
-| **Bob** | backend | Server-side architecture, APIs, databases | Backend development, API design | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
-| **Frank** | frontend | React, UI/UX, performance | Frontend development, components | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
-| **Oliver** | devops | Infrastructure, CI/CD, deployment | DevOps, deployment, monitoring | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
-| **Steve** | security | Application security, threat modeling | Security review, vulnerability assessment | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
-| **Queenie** | quality | Testing, quality assurance | Test planning, test automation | 🟣 Claude | 🟢 OpenAI → 🔵 Gemini |
+### 💻 Engineering Team
 
-### 📊 Business & Product
+Deep reasoning AI (Claude) for complex technical challenges, architecture design, and specialized engineering work.
 
-| Name | Agent | Expertise | Best For | Primary Provider | Fallback |
-|------|-------|-----------|----------|------------------|----------|
-| **Eric** | ceo | Business strategy, vision | Strategy, business decisions | 🔵 Gemini | 🟣 Claude → 🟢 OpenAI |
-| **Tony** | cto | Technology strategy, leadership | Tech strategy, architecture decisions | 🔵 Gemini | 🟣 Claude → 🟢 OpenAI |
-| **Paris** | product | Product strategy, user research | Product planning, feature prioritization | 🔵 Gemini | 🟣 Claude → 🟢 OpenAI |
-| **Daisy** | data | Data analysis, machine learning | Analytics, ML models, insights | 🔵 Gemini | 🟣 Claude → 🟢 OpenAI |
+| Name | Agent | Expertise | Best For | Primary | Fallback |
+|------|-------|-----------|----------|---------|----------|
+| **Bob** | backend | Server-side architecture, APIs, databases | Backend development, API design | 🟣 claude-code | 🟢 openai |
+| **Frank** | frontend | React, UI/UX, performance | Frontend development, components | 🟣 claude-code | 🟢 openai |
+| **Oliver** | devops | Infrastructure, CI/CD, deployment | DevOps, deployment, monitoring | 🟣 claude-code | 🟢 openai |
+| **Steve** | security | Application security, threat modeling | Security review, vulnerability assessment | 🟣 claude-code | 🟢 openai |
+| **Queenie** | quality | Testing, quality assurance | Test planning, test automation | 🟣 claude-code | 🟢 openai |
 
-### 🎨 Design
+### 📊 Business Team
 
-| Name | Agent | Expertise | Best For | Primary Provider | Fallback |
-|------|-------|-----------|----------|------------------|----------|
-| **Debbee** | design | User experience, visual design | UX design, prototyping, design systems | 🔵 Gemini | 🟢 OpenAI → 🟣 Claude |
+Strategic thinking AI (Gemini) for executive leadership, product management, and data-driven decision making.
+
+| Name | Agent | Expertise | Best For | Primary | Fallback |
+|------|-------|-----------|----------|---------|----------|
+| **Eric** | ceo | Business strategy, vision | Strategy, business decisions | 🔵 gemini-cli | 🟣 claude-code |
+| **Tony** | cto | Technology strategy, leadership | Tech strategy, architecture decisions | 🔵 gemini-cli | 🟣 claude-code |
+| **Paris** | product | Product strategy, user research | Product planning, feature prioritization | 🔵 gemini-cli | 🟣 claude-code |
+| **Daisy** | data | Data analysis, machine learning | Analytics, ML models, insights | 🔵 gemini-cli | 🟣 claude-code |
+
+### 🎨 Design Team
+
+Creative AI (Gemini) for UX/UI design, visual thinking, and user-centered design work.
+
+| Name | Agent | Expertise | Best For | Primary | Fallback |
+|------|-------|-----------|----------|---------|----------|
+| **Debbee** | design | User experience, visual design | UX design, prototyping, design systems | 🔵 gemini-cli | 🟢 openai |
 
 ## Provider Configuration
 
@@ -89,9 +97,9 @@ AutomatosX uses a **3-layer fallback system** for maximum reliability:
 
 | AI Provider | Agent Count | Agents |
 |-------------|-------------|--------|
-| 🟢 **OpenAI** | 5 | Core Team (Alex, Sofia, Ryan, Danny, Wendy) |
-| 🟣 **Claude** | 5 | Engineering Team (Bob, Frank, Oliver, Steve, Queenie) |
-| 🔵 **Gemini** | 5 | Business & Product + Design (Eric, Tony, Paris, Daisy, Debbee) |
+| 🟢 **OpenAI** (openai) | 5 | Core Team (Alex, Sofia, Ryan, Danny, Wendy) |
+| 🟣 **Claude** (claude-code) | 5 | Engineering Team (Bob, Frank, Oliver, Steve, Queenie) |
+| 🔵 **Gemini** (gemini-cli) | 5 | Business Team + Design Team (Eric, Tony, Paris, Daisy, Debbee) |
 
 ### Provider Selection Logic
 
