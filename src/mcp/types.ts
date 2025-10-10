@@ -321,4 +321,5 @@ export enum McpErrorCode {
   ToolNotFound = -32001,
   ToolExecutionFailed = -32002,
   InvalidToolInput = -32003,
+  ServerNotInitialized = -32004,
 }

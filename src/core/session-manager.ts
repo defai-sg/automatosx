@@ -291,6 +291,21 @@ export class SessionManager {
   }
 
   /**
+   * Get total number of sessions (all statuses)
+   *
+   * @returns Total session count
+   *
+   * @example
+   * ```typescript
+   * const total = await sessionManager.getTotalSessionCount();
+   * console.log(`${total} total sessions`);
+   * ```
+   */
+  async getTotalSessionCount(): Promise<number> {
+    return this.activeSessions.size;
+  }
+
+  /**
    * Get active sessions for a specific agent
    *
    * @param agentName - Agent name

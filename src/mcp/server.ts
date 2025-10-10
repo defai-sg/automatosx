@@ -5,7 +5,6 @@
  * Exposes AutomatosX capabilities as MCP tools for Claude Code and other clients.
  */
 
-import { createInterface } from 'readline';
 import { createRequire } from 'module';
 import { join } from 'path';
 import type {
@@ -80,11 +79,11 @@ export class McpServer {
       setLogLevel('debug');
     }
 
-    // Get version
+    // Get version (try ../../version.json first, then package.json)
     const require = createRequire(import.meta.url);
     this.version = 'unknown';
     try {
-      const versionData = require('../version.json');
+      const versionData = require('../../version.json');
       this.version = versionData.version || 'unknown';
     } catch {
       try {
@@ -706,7 +705,7 @@ export class McpServer {
     if (!this.initialized) {
       return this.createErrorResponse(
         id,
-        McpErrorCode.InternalError,
+        McpErrorCode.ServerNotInitialized,
         'Server not initialized. Please send initialize request first.'
       );
     }
@@ -720,6 +719,66 @@ export class McpServer {
       id,
       result: response
     };
+  }
+
+  /**
+   * Validate tool input against schema
+   */
+  private validateToolInput(
+    toolName: string,
+    input: Record<string, unknown>
+  ): { valid: boolean; error?: string } {
+    const schema = this.toolSchemas.find((s) => s.name === toolName);
+    if (!schema) {
+      return { valid: false, error: 'Tool schema not found' };
+    }
+
+    const { properties, required } = schema.inputSchema;
+
+    // Check required fields
+    if (required) {
+      for (const field of required) {
+        if (!(field in input)) {
+          return {
+            valid: false,
+            error: `Missing required parameter: ${field}`
+          };
+        }
+      }
+    }
+
+    // Basic type validation for known fields
+    if (properties) {
+      for (const [key, value] of Object.entries(input)) {
+        const propSchema = properties[key];
+        if (propSchema && typeof propSchema === 'object' && 'type' in propSchema) {
+          const expectedType = propSchema.type;
+          const actualType = typeof value;
+
+          // Type checking
+          if (expectedType === 'string' && actualType !== 'string') {
+            return {
+              valid: false,
+              error: `Parameter '${key}' must be a string`
+            };
+          }
+          if (expectedType === 'number' && actualType !== 'number') {
+            return {
+              valid: false,
+              error: `Parameter '${key}' must be a number`
+            };
+          }
+          if (expectedType === 'boolean' && actualType !== 'boolean') {
+            return {
+              valid: false,
+              error: `Parameter '${key}' must be a boolean`
+            };
+          }
+        }
+      }
+    }
+
+    return { valid: true };
   }
 
   /**
@@ -737,7 +796,7 @@ export class McpServer {
     if (!this.initialized) {
       return this.createErrorResponse(
         id,
-        McpErrorCode.InternalError,
+        McpErrorCode.ServerNotInitialized,
         'Server not initialized. Please send initialize request first.'
       );
     }
@@ -748,6 +807,16 @@ export class McpServer {
         id,
         McpErrorCode.ToolNotFound,
         `Tool not found: ${name}`
+      );
+    }
+
+    // Validate input parameters
+    const validation = this.validateToolInput(name, args || {});
+    if (!validation.valid) {
+      return this.createErrorResponse(
+        id,
+        McpErrorCode.InvalidParams,
+        validation.error || 'Invalid parameters'
       );
     }
 
@@ -810,56 +879,115 @@ export class McpServer {
   }
 
   /**
-   * Start stdio server
+   * Write MCP-compliant response with Content-Length framing
+   */
+  private writeResponse(response: JsonRpcResponse): void {
+    const json = JSON.stringify(response);
+    const contentLength = Buffer.byteLength(json, 'utf-8');
+    const message = `Content-Length: ${contentLength}\r\n\r\n${json}`;
+
+    // Write to stdout (not stderr, to avoid polluting the JSON-RPC stream)
+    process.stdout.write(message);
+
+    logger.debug('[MCP Server] Response sent', {
+      id: response.id,
+      contentLength
+    });
+  }
+
+  /**
+   * Start stdio server with Content-Length framing
    */
   async start(): Promise<void> {
     logger.info('[MCP Server] Starting stdio JSON-RPC server...');
 
-    const rl = createInterface({
-      input: process.stdin,
-      output: process.stdout,
-      terminal: false
-    });
+    let buffer = '';
+    let contentLength: number | null = null;
 
-    rl.on('line', async (line) => {
-      try {
-        const request = JSON.parse(line) as JsonRpcRequest;
-        const response = await this.handleRequest(request);
+    // Process stdin data with Content-Length framing
+    process.stdin.on('data', async (chunk: Buffer) => {
+      buffer += chunk.toString('utf-8');
 
-        // Write response to stdout
-        process.stdout.write(JSON.stringify(response) + '\n');
-      } catch (error) {
-        logger.error('[MCP Server] Failed to parse request', { line, error });
-
-        const errorResponse: JsonRpcResponse = {
-          jsonrpc: '2.0',
-          id: null,
-          error: {
-            code: McpErrorCode.ParseError,
-            message: 'Parse error: Invalid JSON'
+      while (true) {
+        // Parse Content-Length header if we don't have it yet
+        if (contentLength === null) {
+          const headerMatch = buffer.match(/^Content-Length: (\d+)\r\n\r\n/);
+          if (!headerMatch) {
+            // Incomplete header, wait for more data
+            break;
           }
-        };
 
-        process.stdout.write(JSON.stringify(errorResponse) + '\n');
+          contentLength = parseInt(headerMatch[1] ?? '0', 10);
+          buffer = buffer.slice(headerMatch[0].length);
+        }
+
+        // Check if we have the complete message
+        const messageBytes = Buffer.byteLength(buffer, 'utf-8');
+        if (messageBytes < contentLength) {
+          // Incomplete message, wait for more data
+          break;
+        }
+
+        // Extract the JSON message
+        const messageBuffer = Buffer.from(buffer, 'utf-8');
+        const jsonMessage = messageBuffer.slice(0, contentLength).toString('utf-8');
+        buffer = messageBuffer.slice(contentLength).toString('utf-8');
+        contentLength = null;
+
+        // Process the request
+        try {
+          const request = JSON.parse(jsonMessage) as JsonRpcRequest;
+          logger.debug('[MCP Server] Request received', {
+            method: request.method,
+            id: request.id
+          });
+
+          const response = await this.handleRequest(request);
+
+          // Only write response if request had an id (not a notification)
+          if (request.id !== undefined && request.id !== null) {
+            this.writeResponse(response);
+          } else {
+            logger.debug('[MCP Server] Notification received (no response sent)', {
+              method: request.method
+            });
+          }
+        } catch (error) {
+          logger.error('[MCP Server] Failed to parse or handle request', {
+            jsonMessage,
+            error
+          });
+
+          const errorResponse: JsonRpcResponse = {
+            jsonrpc: '2.0',
+            id: null,
+            error: {
+              code: McpErrorCode.ParseError,
+              message: 'Parse error: Invalid JSON'
+            }
+          };
+
+          this.writeResponse(errorResponse);
+        }
       }
     });
 
-    rl.on('close', () => {
-      logger.info('[MCP Server] Server stopped');
+    process.stdin.on('end', () => {
+      logger.info('[MCP Server] Server stopped (stdin closed)');
       process.exit(0);
     });
 
     // Graceful shutdown
     process.on('SIGINT', () => {
       logger.info('[MCP Server] Received SIGINT, shutting down...');
-      rl.close();
+      process.exit(0);
     });
 
     process.on('SIGTERM', () => {
       logger.info('[MCP Server] Received SIGTERM, shutting down...');
-      rl.close();
+      process.exit(0);
     });
 
-    logger.info('[MCP Server] Server started successfully');
+    logger.info('[MCP Server] Server started successfully (Content-Length framing)');
   }
 }

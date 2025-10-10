@@ -36,11 +36,14 @@ export function createRunAgentHandler(
         skipMemory: no_memory
       });
 
-      // Execute agent
+      // Execute agent with progress/verbose disabled to prevent stdout pollution
       const executor = new AgentExecutor(deps.executorConfig);
 
       const startTime = Date.now();
-      const result = await executor.execute(context);
+      const result = await executor.execute(context, {
+        showProgress: false,
+        verbose: false
+      });
       const latencyMs = Date.now() - startTime;
 
       logger.info('[MCP] run_agent completed', {

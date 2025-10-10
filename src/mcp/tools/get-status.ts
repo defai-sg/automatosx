@@ -25,11 +25,11 @@ export function createGetStatusHandler(
     logger.info('[MCP] get_status called');
 
     try {
-      // Get version (same logic as CLI)
+      // Get version (try ../../version.json first, then package.json)
       const require = createRequire(import.meta.url);
       let version = 'unknown';
       try {
-        const versionData = require('../../version.json');
+        const versionData = require('../../../version.json');
         version = versionData.version || 'unknown';
       } catch {
         try {
@@ -45,6 +45,7 @@ export function createGetStatusHandler(
 
       // Get session stats
       const activeSessions = await deps.sessionManager.getActiveSessions();
+      const totalSessions = await deps.sessionManager.getTotalSessionCount();
 
       // Get available providers
       const availableProviders = await deps.router.getAvailableProviders();
@@ -68,7 +69,7 @@ export function createGetStatusHandler(
         },
         sessions: {
           active: activeSessions.length,
-          total: activeSessions.length  // For now, only track active sessions
+          total: totalSessions
         }
       };
 
