@@ -157,8 +157,13 @@ export class TeamManager {
       throw new TeamValidationError('Team provider.primary is required');
     }
 
-    // Validate provider names
-    const validProviders = ['claude', 'gemini', 'codex', 'openai'];
+    // Validate provider names (v5.0.7+: accept both aliases and actual names)
+    const validProviders = [
+      'claude', 'claude-code',      // Claude aliases
+      'gemini', 'gemini-cli',       // Gemini aliases
+      'codex', 'openai'             // OpenAI aliases
+    ];
+
     if (!validProviders.includes(team.provider.primary)) {
       throw new TeamValidationError(
         `Invalid primary provider: ${team.provider.primary}. Must be one of: ${validProviders.join(', ')}`

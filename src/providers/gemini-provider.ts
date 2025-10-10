@@ -136,6 +136,7 @@ export class GeminiProvider extends BaseProvider {
     return new Promise((resolve, reject) => {
       let stdout = '';
       let stderr = '';
+      let hasTimedOut = false;
 
       // Build CLI arguments for Gemini CLI
       // Note: Gemini CLI uses positional prompt, not --prompt flag
@@ -158,6 +159,21 @@ export class GeminiProvider extends BaseProvider {
         env: process.env
       });
 
+      // v5.0.7: Handle abort signal for proper timeout cancellation
+      if (request.signal) {
+        request.signal.addEventListener('abort', () => {
+          hasTimedOut = true;
+          child.kill('SIGTERM');
+          // Force kill after 5 seconds if SIGTERM doesn't work
+          setTimeout(() => {
+            if (!child.killed) {
+              child.kill('SIGKILL');
+            }
+          }, 5000);
+          reject(new Error('Execution aborted by timeout'));
+        });
+      }
+
       // Collect stdout
       child.stdout?.on('data', (data) => {
         stdout += data.toString();
@@ -170,6 +186,9 @@ export class GeminiProvider extends BaseProvider {
 
       // Handle process exit
       child.on('close', (code) => {
+        if (hasTimedOut) {
+          return; // Timeout already handled
+        }
         if (code !== 0) {
           reject(new Error(`Gemini CLI exited with code ${code}: ${stderr}`));
         } else {

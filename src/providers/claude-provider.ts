@@ -160,6 +160,21 @@ export class ClaudeProvider extends BaseProvider {
         return;
       }
 
+      // v5.0.7: Handle abort signal for proper timeout cancellation
+      if (request.signal) {
+        request.signal.addEventListener('abort', () => {
+          hasTimedOut = true;
+          child.kill('SIGTERM');
+          // Force kill after 5 seconds if SIGTERM doesn't work
+          setTimeout(() => {
+            if (!child.killed) {
+              child.kill('SIGKILL');
+            }
+          }, 5000);
+          reject(new Error('Execution aborted by timeout'));
+        });
+      }
+
       // Collect stdout
       child.stdout?.on('data', (data) => {
         stdout += data.toString();

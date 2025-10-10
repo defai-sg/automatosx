@@ -55,6 +55,7 @@ export interface ExecutionRequest {
   maxTokens?: number;
   systemPrompt?: string;
   context?: Record<string, any>;
+  signal?: AbortSignal;  // v5.0.7: Support for execution cancellation
 }
 
 export interface ExecutionResponse {

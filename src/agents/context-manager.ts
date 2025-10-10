@@ -22,6 +22,17 @@ import { PathResolver } from '../core/path-resolver.js';
 import { logger } from '../utils/logger.js';
 import { PathError, ProviderError } from '../utils/errors.js';
 
+/**
+ * Provider name aliases (v5.0.7 fix)
+ * Maps team config names to actual registered provider names
+ */
+const PROVIDER_ALIASES: Record<string, string> = {
+  'claude': 'claude-code',
+  'gemini': 'gemini-cli',
+  'codex': 'openai',
+  'openai': 'openai'
+};
+
 export interface ContextManagerConfig {
   profileLoader: ProfileLoader;
   abilitiesManager: AbilitiesManager;
@@ -376,9 +387,32 @@ export class ContextManager {
   /**
    * Try to get a specific provider if available
    */
+  /**
+   * Try to get provider by name, with alias support (v5.0.7+)
+   */
   private async tryGetProvider(providerName: string): Promise<Provider | undefined> {
     const availableProviders = await this.config.router.getAvailableProviders();
-    return availableProviders.find(p => p.name === providerName);
+
+    // Try exact match first
+    let provider = availableProviders.find(p => p.name === providerName);
+    if (provider) {
+      return provider;
+    }
+
+    // Try alias mapping (e.g., 'claude' → 'claude-code')
+    const aliasedName = PROVIDER_ALIASES[providerName];
+    if (aliasedName) {
+      provider = availableProviders.find(p => p.name === aliasedName);
+      if (provider) {
+        logger.debug('Resolved provider via alias', {
+          requested: providerName,
+          resolved: aliasedName
+        });
+        return provider;
+      }
+    }
+
+    return undefined;
   }
 
   /**

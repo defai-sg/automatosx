@@ -255,7 +255,8 @@ export class AgentExecutor {
         systemPrompt: context.agent.systemPrompt,
         model: context.agent.model,
         temperature: context.agent.temperature,
-        maxTokens: context.agent.maxTokens
+        maxTokens: context.agent.maxTokens,
+        signal: options.signal  // v5.0.7: Pass abort signal for cancellation
       });
       const duration = Date.now() - startTime;
 
