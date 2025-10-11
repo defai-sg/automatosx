@@ -266,20 +266,76 @@ ax session list --active
 
 ## ⚡ Quick Start
 
-### Installation
+### Step 1: Install AutomatosX
+
+**All Platforms** (Windows, macOS, Linux):
 
 ```bash
 npm install -g @defai.digital/automatosx
 ```
 
-### Claude Code Integration
+**Verify Installation**:
 
 ```bash
-# In Claude Code, initialize (first time only)
-# Ask Claude: "Please run ax init"
-# Or use terminal mode: ax init
+ax --version
+# Should show: 5.1.0 (or later)
+```
 
-# Then use the slash command for agents
+> **Windows Users**: If `ax` command not found, see [Windows Troubleshooting](docs/troubleshooting/windows-troubleshooting.md)
+
+---
+
+### Step 2: Initialize Your Project ⚠️ REQUIRED
+
+**Navigate to your project directory**, then run:
+
+```bash
+# Go to your project folder
+cd your-project-folder
+
+# Initialize AutomatosX (MUST do this first!)
+ax init
+```
+
+**What This Does**:
+- Creates `.automatosx/` directory with 12 agents, 15 abilities, 4 teams
+- Sets up memory database (SQLite FTS5)
+- Creates workspace directories
+- Generates `automatosx.config.json`
+
+**Verify Initialization**:
+
+```bash
+ax status
+# Should show: ✅ System is healthy
+# With: 12 agents, 15 abilities, providers configured
+
+ax list agents
+# Should list 12 agents: backend, frontend, devops, security, etc.
+```
+
+> **⚠️ IMPORTANT**: If you see "0 agents" or "System has issues", you forgot to run `ax init`!
+
+---
+
+### Step 3: Run Your First Agent
+
+**Terminal Mode** (any platform):
+
+```bash
+# Test with backend agent
+ax run backend "Explain TypeScript in one sentence"
+
+# Agents automatically share memory
+ax run Paris "Design REST API for users"
+ax run Bob "Implement the API"           # Auto-receives Paris's design
+ax run Queenie "Write tests for the API" # Auto-receives design + implementation
+```
+
+**Claude Code Integration**:
+
+```bash
+# In Claude Code, use the slash command
 /ax:agent Paris, design REST API for users
 /ax:agent Bob, implement the API
 /ax:agent Queenie, write tests for the API
@@ -292,24 +348,28 @@ npm install -g @defai.digital/automatosx
 4. Queenie reads everything → Writes comprehensive tests
 5. Results flow back into your Claude Code conversation
 
-### Terminal Mode
+---
 
+### Common Issues
+
+**"Agent not found" or "0 agents"**:
+→ You forgot `ax init`. Run it in your project directory.
+
+**Windows: Command not found**:
+→ See [Windows Quick Fix](docs/troubleshooting/windows-quick-fix.md)
+
+**No providers available**:
+→ Install a provider CLI (Claude, Gemini, or OpenAI) or use mock providers for testing:
 ```bash
-# Initialize your project
-ax init
+# Test with mock providers (no API needed)
+set AUTOMATOSX_MOCK_PROVIDERS=true   # Windows CMD
+$env:AUTOMATOSX_MOCK_PROVIDERS="true"  # Windows PowerShell
+export AUTOMATOSX_MOCK_PROVIDERS=true  # macOS/Linux
 
-# Run agents from any terminal
-ax run Paris "Design REST API for users"
-ax run Bob "Implement the API"           # Auto-receives Paris's design from memory
-ax run Queenie "Write tests for the API" # Auto-receives design + implementation
-
-# Manage memory and agents
-ax memory search "API design"
-ax agent list --by-team engineering
-ax agent create myagent --template developer
+ax run backend "Hello"
 ```
 
-**That's it!** Agents now remember everything and coordinate automatically across both modes.
+**That's it!** Agents now remember everything and coordinate automatically.
 
 ### MCP Server Mode (Advanced) ✨ NEW in v5.1.0
 

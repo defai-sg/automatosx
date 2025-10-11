@@ -19,27 +19,61 @@ AutomatosX is a **CLI-based AI agent orchestration platform** that allows you to
 
 ## Prerequisites
 
-- **Node.js** 20+ installed
+- **Node.js** 20.0.0 or higher installed
 - **npm** or **pnpm** package manager
 - **Optional**: Claude Code, VS Code, or any terminal environment
+
+**Check Your Node.js Version**:
+
+```bash
+node --version
+# Should show: v20.0.0 or higher
+```
+
+**Windows Users**: Make sure Node.js and npm are in your PATH. If `node --version` doesn't work, reinstall Node.js from [nodejs.org](https://nodejs.org/).
 
 ---
 
 ## Installation
 
-### For End Users
+### Step 1: Install AutomatosX Globally
 
-Install AutomatosX via npm:
+**All Platforms** (Windows, macOS, Linux):
 
 ```bash
 npm install -g @defai.digital/automatosx
 ```
 
-Or use npx without installation:
+**Verify Installation**:
 
 ```bash
-npx @defai.digital/automatosx --version
+ax --version
+# Expected output: 5.1.0 (or later)
 ```
+
+**Windows-Specific Issues**:
+
+If you see `'ax' is not recognized as an internal or external command`:
+
+1. **Check npm global path**:
+   ```bash
+   npm config get prefix
+   # Should show: C:\Users\<username>\AppData\Roaming\npm
+   ```
+
+2. **Ensure npm is in PATH**:
+   - Open System Properties → Environment Variables
+   - Add npm path to your PATH variable
+   - Or simply use `npx @defai.digital/automatosx` instead of `ax`
+
+3. **Alternative**: Use npx without installation:
+   ```bash
+   npx @defai.digital/automatosx --version
+   npx @defai.digital/automatosx init
+   npx @defai.digital/automatosx list agents
+   ```
+
+See [Windows Troubleshooting Guide](../troubleshooting/windows-troubleshooting.md) for more help.
 
 **Update to latest version**:
 
@@ -74,47 +108,217 @@ See [Contributing Guide](../CONTRIBUTING.md) for more details.
 
 ---
 
-## Initialize Your Project
+## Step 2: Initialize Your Project ⚠️ CRITICAL STEP
 
-Create a new AutomatosX project:
+**Before using AutomatosX, you MUST initialize it in your project directory.**
+
+### Why This Step Is Required
+
+AutomatosX is project-specific. Each project needs its own:
+- Agent profiles (12 pre-built agents)
+- Memory database (SQLite FTS5)
+- Configuration file
+- Workspace directories
+
+**Without running `ax init`, you will see**:
+- "0 agents" when running `ax status`
+- "Agent not found" errors
+- "System has issues" warnings
+
+### How to Initialize
+
+**Step 2.1**: Navigate to your project directory
 
 ```bash
-# Initialize in current directory
-automatosx init
+# Windows (Command Prompt)
+cd C:\Users\YourName\Projects\my-project
 
-# Or specify a directory
-automatosx init ./my-project
+# Windows (PowerShell)
+cd C:\Users\YourName\Projects\my-project
+
+# macOS/Linux
+cd ~/projects/my-project
 ```
 
-This creates:
+**Step 2.2**: Run initialization
 
-- `.automatosx/` - Configuration and data directory
-- `automatosx.config.json` - Project configuration
-- `.automatosx/agents/` - Agent profiles (5 examples included)
-- `.automatosx/abilities/` - Agent abilities (15 examples included)
-- `.automatosx/teams/` - Team configurations (4 teams)
-- `.automatosx/memory/` - FTS5 memory database (full-text search)
-- `examples/templates/` - Agent templates (v5.0.0+)
+```bash
+# Using ax (if installed globally)
+ax init
 
-**Force reinitialize** (update existing installation):
+# Or using npx (works without global install)
+npx @defai.digital/automatosx init
+```
+
+**What This Creates**:
+
+```
+your-project/
+├── .automatosx/
+│   ├── agents/           # 12 pre-built agents (backend, frontend, etc.)
+│   ├── abilities/        # 15 shared abilities
+│   ├── teams/            # 4 team configurations
+│   ├── memory/           # SQLite FTS5 database
+│   │   └── exports/      # Memory export directory
+│   ├── sessions/         # Multi-agent session data
+│   └── workspaces/       # Agent workspaces
+└── automatosx.config.json  # Project configuration
+```
+
+### Step 2.3: Verify Initialization
+
+**Check system status**:
+
+```bash
+ax status
+```
+
+**Expected Output**:
+
+```text
+📊 AutomatosX Status
+
+System:
+  Version: 5.1.0
+  Node: v20.12.2
+  Platform: win32 x64
+
+Resources:
+  ✓ agents (12 agents)
+  ✓ abilities (15 abilities)
+  ✓ memory (1 file, 8 KB)
+
+Providers:
+  ✗ claude-code: unavailable (priority: 1)
+  ✗ gemini-cli: unavailable (priority: 2)
+  ✗ openai: unavailable (priority: 3)
+
+✅ System is healthy
+```
+
+> **Note**: Providers showing "unavailable" is normal if you haven't installed provider CLIs yet. See Step 3 for testing without providers.
+
+**List available agents**:
+
+```bash
+ax list agents
+```
+
+**Expected Output**: Should show 12 agents including `backend`, `frontend`, `devops`, `security`, `quality`, etc.
+
+### Troubleshooting Initialization
+
+**Still seeing "0 agents"?**
+
+1. **Verify you're in the correct directory**:
+   ```bash
+   # Check current directory
+   pwd          # macOS/Linux
+   cd           # Windows (shows current directory)
+
+   # List files
+   ls -la       # macOS/Linux
+   dir /a       # Windows
+   ```
+   You should see `.automatosx/` directory and `automatosx.config.json`
+
+2. **Windows: Check directory was created**:
+   ```bash
+   dir .automatosx\agents
+   # Should list 12 YAML files: backend.yaml, frontend.yaml, etc.
+   ```
+
+3. **Re-initialize if needed**:
+   ```bash
+   ax init --force
+   # This overwrites existing config with latest defaults
+   ```
+
+### Force Reinitialize (Update Existing Installation)
+
+If you want to update agents/abilities to latest templates:
 
 ```bash
 ax init --force   # Overwrites with latest templates and config
 ```
 
+⚠️ **Warning**: `--force` will overwrite custom changes to agents/abilities.
+
 ---
 
-## Your First Agent
+## Step 3: Run Your First Agent
 
-### Option 1: Use Example Agent
+### Testing Without Provider CLIs (Recommended for First-Time Users)
 
-Run an agent with a simple command:
+If you haven't installed provider CLIs (Claude, Gemini, OpenAI) yet, you can test with **mock providers**:
 
+**Windows (Command Prompt)**:
 ```bash
-automatosx run backend "What is TypeScript?"
+set AUTOMATOSX_MOCK_PROVIDERS=true
+ax run backend "Explain TypeScript in one sentence"
+ax list agents
 ```
 
-### Option 2: Create from Template (v5.0.0+)
+**Windows (PowerShell)**:
+```powershell
+$env:AUTOMATOSX_MOCK_PROVIDERS="true"
+ax run backend "Explain TypeScript in one sentence"
+ax list agents
+```
+
+**macOS/Linux**:
+```bash
+export AUTOMATOSX_MOCK_PROVIDERS=true
+ax run backend "Explain TypeScript in one sentence"
+ax list agents
+```
+
+**Expected Output**:
+```
+🤖 AutomatosX v5.1.0
+
+Agent: backend (Bob)
+Task: Explain TypeScript in one sentence
+
+─────────────────────────────────────
+
+[Mock Provider Response]
+TypeScript is a strongly typed superset of JavaScript...
+
+─────────────────────────────────────
+
+✓ Complete (0.1s)
+```
+
+### Using Real Provider CLIs
+
+Once you've verified AutomatosX works, install a provider CLI:
+
+**Claude CLI** (Recommended):
+```bash
+npm install -g @anthropic-ai/claude-cli
+claude --version
+```
+
+**Gemini CLI**:
+```bash
+npm install -g @google/gemini-cli
+gemini --version
+```
+
+**OpenAI Codex CLI**:
+```bash
+npm install -g @openai/codex-cli
+codex --version
+```
+
+Then run agents normally:
+
+```bash
+ax run backend "What is TypeScript?"
+```
+
+### Create Custom Agents from Templates (v5.0.0+)
 
 Quickly create a custom agent:
 
