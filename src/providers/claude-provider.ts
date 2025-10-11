@@ -122,8 +122,9 @@ export class ClaudeProvider extends BaseProvider {
   /**
    * Execute real CLI command via spawn
    *
-   * Claude Code CLI syntax: claude -p "prompt"
+   * Claude Code CLI syntax: echo "prompt" | claude --print
    * Uses --print flag for non-interactive output
+   * Prompt is passed via stdin (not as positional argument)
    * Model selection is delegated to CLI's own defaults
    */
   private async executeRealCLI(prompt: string, request: ExecutionRequest): Promise<{ content: string }> {
@@ -137,14 +138,15 @@ export class ClaudeProvider extends BaseProvider {
       // Build CLI arguments using the new buildCLIArgs method
       const args = this.buildCLIArgs(request);
 
-      // Add prompt as last argument
-      args.push(prompt);
+      // NOTE: Do NOT add prompt as positional argument
+      // Claude CLI expects prompt via stdin or --prompt flag
+      // We use stdin to avoid command-line length limits
 
       let child: ReturnType<typeof spawn>;
 
       try {
         child = spawn(this.config.command, args, {
-          stdio: ['ignore', 'pipe', 'pipe'],
+          stdio: ['pipe', 'pipe', 'pipe'],  // Use pipe for stdin
           env: process.env
         });
       } catch (error) {
@@ -157,6 +159,16 @@ export class ClaudeProvider extends BaseProvider {
         } else {
           reject(new Error(`Failed to start Claude CLI: ${err.message}`));
         }
+        return;
+      }
+
+      // Write prompt to stdin and close it
+      // This is how Claude CLI expects to receive the prompt
+      try {
+        child.stdin?.write(prompt);
+        child.stdin?.end();
+      } catch (error) {
+        reject(new Error(`Failed to write prompt to Claude CLI stdin: ${(error as Error).message}`));
         return;
       }
 
