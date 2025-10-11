@@ -150,6 +150,20 @@ ax init
 npx @defai.digital/automatosx init
 ```
 
+**If you see "⚠️ AutomatosX is already initialized"**:
+
+This means `.automatosx` folder already exists. If you're still having issues (0 agents, errors), use `--force` to reinitialize:
+
+```bash
+# Force reinitialize (overwrites existing files)
+ax init --force
+
+# Or with npx
+npx @defai.digital/automatosx init --force
+```
+
+> **⚠️ Warning**: `--force` will overwrite any custom changes you made to agents or abilities.
+
 **What This Creates**:
 
 ```

@@ -122,10 +122,31 @@ Providers:
 
 ## 🔧 If Still Not Working
 
-### Check 1: Did init succeed?
+### Scenario 1: "AutomatosX is already initialized" but still 0 agents
+
+If you see this message but `ax status` shows 0 agents:
 
 ```bash
-# Should list agents directory with 12 files
+# Force reinitialize (overwrites existing files)
+ax init --force
+```
+
+or
+
+```bash
+npx @defai.digital/automatosx init --force
+```
+
+This happens when:
+- Previous init was incomplete or failed
+- Files are corrupted
+- Upgrading from older version
+- `.automatosx` folder exists but is empty/incomplete
+
+### Scenario 2: Check if init succeeded
+
+```bash
+# Should list 12 YAML files in agents directory
 dir .automatosx\agents
 ```
 
@@ -146,14 +167,33 @@ cto.yaml
 researcher.yaml
 ```
 
-### Check 2: Is config valid?
+**If empty or missing files**: Run `ax init --force`
+
+### Scenario 3: Check config file
 
 ```bash
 # Should show JSON config
 type automatosx.config.json
 ```
 
-### Check 3: Test mock provider explicitly
+**If missing or empty**: Run `ax init --force`
+
+### Scenario 4: Complete clean reinstall
+
+If `--force` still doesn't work:
+
+```bash
+# Remove entire .automatosx directory
+rmdir /S /Q .automatosx
+
+# Delete config file
+del automatosx.config.json
+
+# Reinitialize from scratch
+ax init
+```
+
+### Scenario 5: Test with mock providers
 
 ```bash
 set AUTOMATOSX_MOCK_PROVIDERS=true

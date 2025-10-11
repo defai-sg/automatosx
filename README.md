@@ -297,6 +297,19 @@ cd your-project-folder
 ax init
 ```
 
+**If you see "already initialized" but have issues**:
+
+```bash
+# Force reinitialize (overwrites existing setup)
+ax init --force
+```
+
+> **💡 When to use `--force`**:
+> - Seeing "0 agents" despite having `.automatosx` folder
+> - Upgrading from older version
+> - Files are corrupted or incomplete
+> - Want to reset to default configuration
+
 **What This Does**:
 - Creates `.automatosx/` directory with 12 agents, 15 abilities, 4 teams
 - Sets up memory database (SQLite FTS5)
@@ -314,7 +327,7 @@ ax list agents
 # Should list 12 agents: backend, frontend, devops, security, etc.
 ```
 
-> **⚠️ IMPORTANT**: If you see "0 agents" or "System has issues", you forgot to run `ax init`!
+> **⚠️ IMPORTANT**: If you still see "0 agents" or "System has issues" after `ax init`, try `ax init --force`!
 
 ---
 

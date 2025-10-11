@@ -24,9 +24,9 @@ Before diving into detailed troubleshooting, verify these essentials:
 **Symptoms**:
 - `ax status` shows "0 agents, 0 abilities, 0 providers"
 - Commands fail with "agent not found"
-- No `.automatosx` directory exists
+- No `.automatosx` directory exists (or exists but empty)
 
-**Solution**:
+**Solution 1: First-time initialization**:
 ```bash
 # Initialize AutomatosX in your project
 npx @defai.digital/automatosx init
@@ -34,6 +34,30 @@ npx @defai.digital/automatosx init
 # Verify initialization
 npx @defai.digital/automatosx status
 ```
+
+**Solution 2: If you see "AutomatosX is already initialized" but still have 0 agents**:
+
+This means `.automatosx` folder exists, but init won't overwrite it. Use `--force`:
+
+```bash
+# Force reinitialize (overwrites existing setup)
+npx @defai.digital/automatosx init --force
+
+# Or with global install
+ax init --force
+
+# Verify initialization
+ax status
+```
+
+**When to use `--force`**:
+- Seeing "0 agents" despite having `.automatosx` folder
+- Previous initialization failed or was interrupted
+- Upgrading from older version (v4.x → v5.x)
+- Files are corrupted or incomplete
+- Want to reset to default configuration
+
+⚠️ **Warning**: `--force` will overwrite custom changes to agents/abilities/teams.
 
 ---
 
