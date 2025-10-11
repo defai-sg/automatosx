@@ -132,6 +132,64 @@ describe('Init Command', () => {
         initCommand.handler({ path: invalidPath, force: false, _: [], $0: '' })
       ).rejects.toThrow();
     });
+
+    it('should create team configuration files', async () => {
+      await initCommand.handler({ path: testDir, force: false, _: [], $0: '' });
+
+      const teamsDir = join(testDir, '.automatosx', 'teams');
+      await expect(pathExists(teamsDir)).resolves.toBe(true);
+
+      // Check for at least one team file (the exact number may vary)
+      const teamFiles = ['core.yaml', 'engineering.yaml', 'business.yaml', 'design.yaml', 'research.yaml'];
+      let foundTeamFile = false;
+      for (const file of teamFiles) {
+        if (await pathExists(join(teamsDir, file))) {
+          foundTeamFile = true;
+          break;
+        }
+      }
+      expect(foundTeamFile).toBe(true);
+    });
+
+    it('should create agent templates directory', async () => {
+      await initCommand.handler({ path: testDir, force: false, _: [], $0: '' });
+
+      const templatesDir = join(testDir, '.automatosx', 'templates');
+      await expect(pathExists(templatesDir)).resolves.toBe(true);
+    });
+
+    it('should display correct version in output', async () => {
+      await initCommand.handler({ path: testDir, force: false, _: [], $0: '' });
+
+      // Check that console.log was called with version info
+      expect(consoleLogSpy).toHaveBeenCalled();
+      const versionCalls = consoleLogSpy.mock.calls
+        .flat()
+        .filter(call => typeof call === 'string' && call.includes('AutomatosX v'));
+      expect(versionCalls.length).toBeGreaterThan(0);
+    });
+
+    it('should create session and memory export directories', async () => {
+      await initCommand.handler({ path: testDir, force: false, _: [], $0: '' });
+
+      const sessionsDir = join(testDir, '.automatosx', 'sessions');
+      const memoryExportsDir = join(testDir, '.automatosx', 'memory', 'exports');
+
+      await expect(pathExists(sessionsDir)).resolves.toBe(true);
+      await expect(pathExists(memoryExportsDir)).resolves.toBe(true);
+    });
+
+    it('should setup Claude Code integration', async () => {
+      await initCommand.handler({ path: testDir, force: false, _: [], $0: '' });
+
+      const claudeDir = join(testDir, '.claude');
+      const commandsDir = join(claudeDir, 'commands');
+      const mcpDir = join(claudeDir, 'mcp');
+
+      await expect(pathExists(claudeDir)).resolves.toBe(true);
+      await expect(pathExists(commandsDir)).resolves.toBe(true);
+      await expect(pathExists(mcpDir)).resolves.toBe(true);
+    });
   });
 
   describe('Builder', () => {

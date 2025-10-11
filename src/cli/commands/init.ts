@@ -3,10 +3,10 @@
  */
 
 import type { CommandModule } from 'yargs';
-import { mkdir, writeFile, access } from 'fs/promises';
+import { mkdir, writeFile, access, readdir, copyFile, rm, stat } from 'fs/promises';
 import { resolve, join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { constants } from 'fs';
+import { constants, existsSync } from 'fs';
 import chalk from 'chalk';
 import { DEFAULT_CONFIG } from '../../types/config.js';
 import type { AutomatosXConfig } from '../../types/config.js';
@@ -17,16 +17,23 @@ import { printError } from '../../utils/error-formatter.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Get package root - handle both dev (src/) and prod (dist/) scenarios
+/**
+ * Get package root using filesystem checks instead of string matching
+ * This is more reliable and works with any directory structure
+ */
 function getPackageRoot(): string {
-  const currentDir = __dirname;
-  if (currentDir.includes('/dist')) {
-    // Production: dist/index.js -> go up one level to package root
-    return join(currentDir, '..');
-  } else {
-    // Development: src/cli/commands/init.ts -> go up three levels to package root
-    return join(currentDir, '../../..');
+  let current = __dirname;
+  const root = '/';
+
+  while (current !== root) {
+    // Check if package.json exists at this level
+    if (existsSync(join(current, 'package.json'))) {
+      return current;
+    }
+    current = dirname(current);
   }
+
+  throw new Error('Could not find package root (no package.json found)');
 }
 
 interface InitOptions {
@@ -56,10 +63,32 @@ export const initCommand: CommandModule<Record<string, unknown>, InitOptions> = 
   handler: async (argv) => {
     const projectDir = resolve(argv.path || '.');
     const automatosxDir = join(projectDir, '.automatosx');
+    const configPath = join(projectDir, 'automatosx.config.json');
 
-    console.log(chalk.blue.bold('\n🤖 AutomatosX v4.0 - Project Initialization\n'));
+    // Get version from package.json dynamically
+    const packageRoot = getPackageRoot();
+    let version = '5.1.2'; // fallback
+    try {
+      const packageJson = JSON.parse(
+        await import('fs/promises').then(fs => fs.readFile(join(packageRoot, 'package.json'), 'utf-8'))
+      );
+      version = packageJson.version;
+    } catch {
+      // Use fallback version
+    }
+
+    console.log(chalk.blue.bold(`\n🤖 AutomatosX v${version} - Project Initialization\n`));
+
+    // Track created resources for rollback
+    const createdResources: string[] = [];
+    let shouldRollback = false;
 
     try {
+      // Pre-flight validation
+      console.log(chalk.cyan('🔍 Validating environment...'));
+      await validateEnvironment(packageRoot);
+      console.log(chalk.green('   ✓ Environment validation passed'));
+
       // Check if already initialized
       const exists = await checkExists(automatosxDir);
       if (exists && !argv.force) {
@@ -76,32 +105,39 @@ export const initCommand: CommandModule<Record<string, unknown>, InitOptions> = 
       // Create directory structure
       console.log(chalk.cyan('📁 Creating directory structure...'));
       await createDirectoryStructure(automatosxDir);
+      createdResources.push(automatosxDir);
       console.log(chalk.green('   ✓ Directories created'));
+
+      // Copy example teams (NEW - Fix P0-1)
+      console.log(chalk.cyan('👥 Installing team configurations...'));
+      const teamCount = await copyExampleTeams(automatosxDir, packageRoot);
+      console.log(chalk.green(`   ✓ ${teamCount} team configurations installed`));
 
       // Copy example agents
       console.log(chalk.cyan('🤖 Installing example agents...'));
-      await copyExampleAgents(automatosxDir);
-      console.log(chalk.green('   ✓ 5 example agents installed'));
+      const agentCount = await copyExampleAgents(automatosxDir, packageRoot);
+      console.log(chalk.green(`   ✓ ${agentCount} example agents installed`));
 
       // Copy example abilities
       console.log(chalk.cyan('⚡ Installing example abilities...'));
-      await copyExampleAbilities(automatosxDir);
-      console.log(chalk.green('   ✓ 15 example abilities installed'));
+      const abilityCount = await copyExampleAbilities(automatosxDir, packageRoot);
+      console.log(chalk.green(`   ✓ ${abilityCount} example abilities installed`));
 
       // Copy agent templates (v5.0+)
       console.log(chalk.cyan('📋 Installing agent templates...'));
-      await copyExampleTemplates(automatosxDir);
-      console.log(chalk.green('   ✓ 5 agent templates installed'));
+      const templateCount = await copyExampleTemplates(automatosxDir, packageRoot);
+      console.log(chalk.green(`   ✓ ${templateCount} agent templates installed`));
 
       // Create default config
       console.log(chalk.cyan('⚙️  Generating configuration...'));
-      const configPath = join(projectDir, 'automatosx.config.json');
       await createDefaultConfig(configPath, argv.force ?? false);
+      createdResources.push(configPath);
       console.log(chalk.green('   ✓ Configuration created'));
 
       // Setup Claude Code integration
       console.log(chalk.cyan('🔌 Setting up Claude Code integration...'));
-      await setupClaudeIntegration(projectDir);
+      await setupClaudeIntegration(projectDir, packageRoot);
+      createdResources.push(join(projectDir, '.claude'));
       console.log(chalk.green('   ✓ Claude Code integration configured'));
 
       // Create .gitignore entry
@@ -133,16 +169,32 @@ export const initCommand: CommandModule<Record<string, unknown>, InitOptions> = 
       console.log(chalk.gray('  • Example: /ax assistant "Explain this code"'));
       console.log(chalk.gray('  • MCP tools available in .claude/mcp/\n'));
 
-      logger.info('AutomatosX initialized', { projectDir, automatosxDir });
+      logger.info('AutomatosX initialized', {
+        projectDir,
+        automatosxDir,
+        counts: { teams: teamCount, agents: agentCount, abilities: abilityCount, templates: templateCount }
+      });
 
     } catch (error) {
+      shouldRollback = true;
+
+      // Rollback mechanism (Fix P0-2)
+      if (createdResources.length > 0 && !argv.force) {
+        console.log(chalk.yellow('\n⚠️  Initialization failed. Rolling back changes...'));
+        await rollbackCreatedResources(createdResources);
+        console.log(chalk.green('   ✓ Rollback completed'));
+      }
+
       printError(error, {
         verbose: false,
         showCode: true,
         showSuggestions: true,
         colors: true
       });
-      logger.error('Initialization failed', { error: (error as Error).message });
+      logger.error('Initialization failed', {
+        error: (error as Error).message,
+        rolledBack: shouldRollback && createdResources.length > 0
+      });
       process.exit(1);
     }
   }
@@ -183,66 +235,148 @@ async function createDirectoryStructure(baseDir: string): Promise<void> {
 }
 
 /**
- * Copy example agents to user's .automatosx directory
+ * Validate environment before initialization (Fix P2-7)
  */
-async function copyExampleAgents(baseDir: string): Promise<void> {
-  const { readdir, copyFile } = await import('fs/promises');
+async function validateEnvironment(packageRoot: string): Promise<void> {
+  const requiredDirs = [
+    'examples/agents',
+    'examples/abilities',
+    'examples/templates',
+    'examples/teams'
+  ];
 
-  const examplesDir = join(getPackageRoot(), 'examples/agents');
+  const errors: string[] = [];
+
+  for (const dir of requiredDirs) {
+    const fullPath = join(packageRoot, dir);
+    try {
+      await stat(fullPath);
+    } catch {
+      errors.push(`Missing required directory: ${dir}`);
+    }
+  }
+
+  if (errors.length > 0) {
+    throw new Error(
+      `Environment validation failed:\n${errors.map(e => `  • ${e}`).join('\n')}\n\n` +
+      'This usually means the package is corrupted. Try reinstalling:\n' +
+      '  npm uninstall -g @defai.digital/automatosx\n' +
+      '  npm install -g @defai.digital/automatosx'
+    );
+  }
+}
+
+/**
+ * Rollback created resources on failure (Fix P0-2)
+ */
+async function rollbackCreatedResources(resources: string[]): Promise<void> {
+  for (const resource of resources.reverse()) {
+    try {
+      await rm(resource, { recursive: true, force: true });
+      logger.info('Rolled back resource', { resource });
+    } catch (error) {
+      logger.warn('Failed to rollback resource', {
+        resource,
+        error: (error as Error).message
+      });
+    }
+  }
+}
+
+/**
+ * Copy example teams to user's .automatosx directory (Fix P0-1)
+ */
+async function copyExampleTeams(baseDir: string, packageRoot: string): Promise<number> {
+  const examplesDir = join(packageRoot, 'examples/teams');
+  const targetDir = join(baseDir, 'teams');
+
+  const files = await readdir(examplesDir);
+  let count = 0;
+
+  for (const file of files) {
+    if (file.endsWith('.yaml')) {
+      await copyFile(join(examplesDir, file), join(targetDir, file));
+      count++;
+    }
+  }
+
+  if (count === 0) {
+    throw new Error(`No team configuration files found in ${examplesDir}`);
+  }
+
+  return count;
+}
+
+/**
+ * Copy example agents to user's .automatosx directory (Fix P0-3: Fatal errors)
+ */
+async function copyExampleAgents(baseDir: string, packageRoot: string): Promise<number> {
+  const examplesDir = join(packageRoot, 'examples/agents');
   const targetDir = join(baseDir, 'agents');
 
-  try {
-    const files = await readdir(examplesDir);
-    for (const file of files) {
-      if (file.endsWith('.yaml')) {
-        await copyFile(join(examplesDir, file), join(targetDir, file));
-      }
+  const files = await readdir(examplesDir);
+  let count = 0;
+
+  for (const file of files) {
+    if (file.endsWith('.yaml')) {
+      await copyFile(join(examplesDir, file), join(targetDir, file));
+      count++;
     }
-  } catch (error) {
-    logger.warn('Could not copy example agents', { error: (error as Error).message });
   }
+
+  if (count === 0) {
+    throw new Error(`No agent files found in ${examplesDir}`);
+  }
+
+  return count;
 }
 
 /**
- * Copy example abilities to user's .automatosx directory
+ * Copy example abilities to user's .automatosx directory (Fix P0-3: Fatal errors)
  */
-async function copyExampleAbilities(baseDir: string): Promise<void> {
-  const { readdir, copyFile } = await import('fs/promises');
-
-  const examplesDir = join(getPackageRoot(), 'examples/abilities');
+async function copyExampleAbilities(baseDir: string, packageRoot: string): Promise<number> {
+  const examplesDir = join(packageRoot, 'examples/abilities');
   const targetDir = join(baseDir, 'abilities');
 
-  try {
-    const files = await readdir(examplesDir);
-    for (const file of files) {
-      if (file.endsWith('.md')) {
-        await copyFile(join(examplesDir, file), join(targetDir, file));
-      }
+  const files = await readdir(examplesDir);
+  let count = 0;
+
+  for (const file of files) {
+    if (file.endsWith('.md')) {
+      await copyFile(join(examplesDir, file), join(targetDir, file));
+      count++;
     }
-  } catch (error) {
-    logger.warn('Could not copy example abilities', { error: (error as Error).message });
   }
+
+  if (count === 0) {
+    throw new Error(`No ability files found in ${examplesDir}`);
+  }
+
+  return count;
 }
 
 /**
- * Copy agent templates to user's .automatosx directory (v5.0+)
+ * Copy agent templates to user's .automatosx directory (Fix P0-3: Fatal errors)
  */
-async function copyExampleTemplates(baseDir: string): Promise<void> {
-  const { readdir, copyFile } = await import('fs/promises');
-
-  const examplesDir = join(getPackageRoot(), 'examples/templates');
+async function copyExampleTemplates(baseDir: string, packageRoot: string): Promise<number> {
+  const examplesDir = join(packageRoot, 'examples/templates');
   const targetDir = join(baseDir, 'templates');
 
-  try {
-    const files = await readdir(examplesDir);
-    for (const file of files) {
-      if (file.endsWith('.yaml')) {
-        await copyFile(join(examplesDir, file), join(targetDir, file));
-      }
+  const files = await readdir(examplesDir);
+  let count = 0;
+
+  for (const file of files) {
+    if (file.endsWith('.yaml')) {
+      await copyFile(join(examplesDir, file), join(targetDir, file));
+      count++;
     }
-  } catch (error) {
-    logger.warn('Could not copy agent templates', { error: (error as Error).message });
   }
+
+  if (count === 0) {
+    throw new Error(`No template files found in ${examplesDir}`);
+  }
+
+  return count;
 }
 
 /**
@@ -272,10 +406,8 @@ async function createDefaultConfig(
 /**
  * Setup Claude Code integration files
  */
-async function setupClaudeIntegration(projectDir: string): Promise<void> {
-  const { readdir, copyFile } = await import('fs/promises');
-
-  const examplesBaseDir = join(getPackageRoot(), 'examples/claude');
+async function setupClaudeIntegration(projectDir: string, packageRoot: string): Promise<void> {
+  const examplesBaseDir = join(packageRoot, 'examples/claude');
 
   // Create .claude directory structure
   const claudeDir = join(projectDir, '.claude');
@@ -285,26 +417,22 @@ async function setupClaudeIntegration(projectDir: string): Promise<void> {
   await mkdir(commandsDir, { recursive: true });
   await mkdir(mcpDir, { recursive: true });
 
-  try {
-    // Copy slash command
-    const commandsSourceDir = join(examplesBaseDir, 'commands');
-    const commandFiles = await readdir(commandsSourceDir);
-    for (const file of commandFiles) {
-      if (file.endsWith('.md')) {
-        await copyFile(join(commandsSourceDir, file), join(commandsDir, file));
-      }
+  // Copy slash command
+  const commandsSourceDir = join(examplesBaseDir, 'commands');
+  const commandFiles = await readdir(commandsSourceDir);
+  for (const file of commandFiles) {
+    if (file.endsWith('.md')) {
+      await copyFile(join(commandsSourceDir, file), join(commandsDir, file));
     }
+  }
 
-    // Copy MCP configuration
-    const mcpSourceDir = join(examplesBaseDir, 'mcp');
-    const mcpFiles = await readdir(mcpSourceDir);
-    for (const file of mcpFiles) {
-      if (file.endsWith('.json')) {
-        await copyFile(join(mcpSourceDir, file), join(mcpDir, file));
-      }
+  // Copy MCP configuration
+  const mcpSourceDir = join(examplesBaseDir, 'mcp');
+  const mcpFiles = await readdir(mcpSourceDir);
+  for (const file of mcpFiles) {
+    if (file.endsWith('.json')) {
+      await copyFile(join(mcpSourceDir, file), join(mcpDir, file));
     }
-  } catch (error) {
-    logger.warn('Could not copy Claude integration files', { error: (error as Error).message });
   }
 }
 

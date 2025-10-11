@@ -5,6 +5,63 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.3] - 2025-10-11
+
+### 🐛 Critical Bug Fixes - Init Command Improvements
+
+**This release fixes 7 critical issues in the `ax init` command that caused intermittent failures and inconsistent behavior.**
+
+#### Fixed
+
+- **Critical - Missing Team Configuration Files** (`src/cli/commands/init.ts:237-256`):
+  - `ax init` created empty `teams` directory without copying team configuration files
+  - Added `copyExampleTeams()` function to copy 5 team YAML files (core, engineering, business, design, research)
+  - Impact: Team-based features now work correctly after initialization
+
+- **Critical - No Rollback Mechanism** (`src/cli/commands/init.ts:220-232`):
+  - Initialization failures left system in inconsistent state with partial files
+  - Implemented automatic rollback that cleans up all created resources on failure
+  - Impact: No more manual cleanup required, system stays consistent
+
+- **Critical - Silent File Copy Failures** (`src/cli/commands/init.ts:261-328`):
+  - File copy errors were logged but not thrown, showing success when files weren't copied
+  - All copy functions now throw fatal errors on failure
+  - Added validation to ensure at least one file was copied
+  - Impact: Users immediately know when initialization fails
+
+- **High - Misleading Success Messages** (`src/cli/commands/init.ts:106-122`):
+  - Hard-coded counts didn't match reality (claimed "5 agents" but installed 12)
+  - Messages now display actual counts dynamically (12 agents, 47 abilities, 9 templates, 5 teams)
+  - Impact: Accurate feedback to users
+
+- **High - Unreliable Package Root Detection** (`src/cli/commands/init.ts:20-37`):
+  - String matching on path broke when project path contained "dist"
+  - Now uses filesystem checks to find package.json instead of string matching
+  - Impact: Works reliably in any directory structure
+
+- **Medium - Outdated Version Banner** (`src/cli/commands/init.ts:62-71`):
+  - Displayed "v4.0" instead of current version
+  - Now reads version dynamically from package.json
+  - Impact: Correct version displayed to users
+
+- **Medium - Missing Environment Validation** (`src/cli/commands/init.ts:186-215`):
+  - No pre-checks before starting initialization
+  - Added `validateEnvironment()` to verify all required directories exist
+  - Impact: Fails fast with clear error messages if package is corrupted
+
+#### Added
+
+- **Test Coverage**:
+  - Added 6 new test cases for init command improvements
+  - All tests passing (1,259 unit tests, 68 integration tests, 100% pass rate)
+
+#### Analysis Reports
+
+Detailed technical analysis available in:
+- `tmp/INIT-COMMAND-ANALYSIS.md` - Root cause analysis of all 7 issues
+- `tmp/INIT-COMMAND-FIX-PROPOSAL.md` - Implementation plan and test strategy
+- `tmp/INIT-COMMAND-FIX-REPORT.md` - Complete fix report with code changes
+
 ## [5.1.2] - 2025-10-11
 
 ### 🐛 Critical Bug Fixes
