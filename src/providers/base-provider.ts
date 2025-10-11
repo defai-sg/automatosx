@@ -103,6 +103,11 @@ export abstract class BaseProvider implements Provider {
       return false;
     }
 
+    // In mock mode, always return true (for testing)
+    if (process.env.AUTOMATOSX_MOCK_PROVIDERS === 'true') {
+      return true;
+    }
+
     // Check if CLI command actually exists
     return this.checkCLIAvailability();
   }

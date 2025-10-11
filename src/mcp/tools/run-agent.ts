@@ -10,6 +10,7 @@ import { AgentExecutor } from '../../agents/executor.js';
 import { ContextManager } from '../../agents/context-manager.js';
 import { logger } from '../../utils/logger.js';
 import { formatError } from '../../utils/error-formatter.js';
+import { validateAgentName, validateStringParameter } from '../utils/validation.js';
 
 export interface RunAgentDependencies {
   contextManager: ContextManager;
@@ -26,6 +27,14 @@ export function createRunAgentHandler(
 ): ToolHandler<RunAgentInput, RunAgentOutput> {
   return async (input: RunAgentInput): Promise<RunAgentOutput> => {
     const { agent, task, provider, no_memory } = input;
+
+    // Validate inputs to prevent security issues
+    validateAgentName(agent);
+    validateStringParameter(task, 'task', {
+      required: true,
+      minLength: 1,
+      maxLength: 10000
+    });
 
     logger.info('[MCP] run_agent called', { agent, task, provider, no_memory });
 

@@ -16,6 +16,7 @@ import type { IMemoryManager } from '../../types/memory.js';
 import type { PathResolver } from '../../core/path-resolver.js';
 import { logger } from '../../utils/logger.js';
 import { resolve, basename } from 'path';
+import { validatePathParameter } from '../utils/validation.js';
 
 export interface MemoryExportDependencies {
   memoryManager: IMemoryManager;
@@ -27,19 +28,17 @@ export interface MemoryExportDependencies {
  * @throws Error if path contains traversal (..) or escapes boundary
  */
 function resolveExportPath(pathResolver: PathResolver, userPath: string): string {
-  // Reject path traversal attempts
-  if (userPath.includes('..')) {
-    throw new Error('Path traversal (..) is not allowed for security reasons');
-  }
+  // Enhanced validation using comprehensive security checks
+  const exportsDir = pathResolver.resolveProjectPath('.automatosx/memory/exports');
+  validatePathParameter(userPath, 'export path', exportsDir);
 
   // Extract filename only (ignore directory components)
   const filename = basename(userPath);
 
   // Resolve within .automatosx/memory/exports directory
-  const exportsDir = pathResolver.resolveProjectPath('.automatosx/memory/exports');
   const absolutePath = resolve(exportsDir, filename);
 
-  // Validate path is within exports directory
+  // Double-check with PathResolver validation
   if (!pathResolver.validatePath(absolutePath, exportsDir)) {
     throw new Error('Export path must be within .automatosx/memory/exports directory');
   }
