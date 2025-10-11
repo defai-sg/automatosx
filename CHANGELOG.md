@@ -5,6 +5,74 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.2] - 2025-10-11
+
+### 🐛 Critical Bug Fixes
+
+**This release fixes 5 critical bugs including a regression that broke `ax init` command.**
+
+#### Fixed
+
+- **Critical - ax init Regression**:
+  - `ax init` created only empty directories without example files
+  - Root cause: `examples/` directory not included in npm package
+  - Solution: Added `"examples"` to `package.json` files array
+  - Impact: All example agents, abilities, and templates now correctly installed
+  - Package size increase: +200KB (+13%)
+
+- **Critical - Metrics Double-Counting** (`src/utils/metrics.ts:252-255`):
+  - `measureLatency()` called both `recordLatency()` and `recordError()` on failure
+  - Result: Single failed operation produced `totalCount=2, successCount=1, errorCount=1`
+  - Solution: Only call `recordError()` on failure, not `recordLatency()`
+  - Impact: Accurate metrics collection for monitoring and performance analysis
+
+- **Major - Graceful Shutdown Race Condition** (`src/utils/graceful-shutdown.ts:110-141`):
+  - Timeout promise never cancelled after handlers completed
+  - Result: Unhandled promise rejection, potential test/service crashes
+  - Solution: Track timeout handle and `clearTimeout()` on completion/error
+  - Impact: Stable shutdown process without spurious errors
+
+- **Major - Shutdown State Management** (`src/utils/graceful-shutdown.ts:156-160`):
+  - `isShuttingDown` remained `true` after shutdown failure
+  - Result: Subsequent shutdown attempts logged "already in progress" but never executed
+  - Solution: Reset state in `finally` block
+  - Impact: Shutdown retry capability after failures
+
+- **Major - Path Validation False Positives** (`src/mcp/utils/validation.ts:54-67`):
+  - Validation rejected legitimate filenames containing `'..'` (e.g., `schema/v1..alpha.json`)
+  - Root cause: Pattern check too broad (`path.includes('..')`)
+  - Solution: Check for `'../'` and `'..\\'` (actual directory traversal patterns)
+  - Impact: Legitimate files no longer rejected while maintaining security
+
+#### Added
+
+- **Test Coverage Improvements**:
+  - Added 25 MCP validation tests (`tests/unit/mcp/validation.test.ts`)
+  - Added 34 MCP core tool tests (run-agent, list-agents, search-memory, get-status)
+  - Total: 59 new tests for MCP security and functionality
+
+#### Technical Details
+
+- **Test Status**: ✅ 1,254 tests total (1,249 passing, 5 version check failures expected)
+- **TypeScript**: ✅ 0 errors
+- **Bundle Size**: 458KB (no change)
+- **Package Size**: 1.7MB (+200KB for examples)
+- **Backward Compatibility**: ✅ 100%
+
+#### Verification
+
+All fixes verified with comprehensive testing:
+- Metrics: 13/13 tests passing
+- Graceful Shutdown: 13/13 tests passing
+- MCP Validation: 25/25 tests passing
+- ax init: Successfully copies 12 agents, 47 abilities, 9 templates
+
+### Notes
+
+This is a critical patch release that fixes a user-reported regression in v5.1.0 where `ax init` became non-functional for npm-installed packages. Additionally, it resolves 4 bugs discovered through code quality review that affected metrics accuracy, shutdown stability, and path validation.
+
+**Upgrade Priority**: High - Recommended for all v5.1.0/v5.1.1 users
+
 ## [5.1.0] - 2025-10-10
 
 ### 📚 Documentation & Code Quality

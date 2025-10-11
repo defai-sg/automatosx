@@ -110,9 +110,11 @@ export async function createAgentProfile(
     abilities?: string[];
     provider?: string;
     temperature?: number;
+    team?: string;
   } = {}
 ): Promise<string> {
-  const profile = `name: ${options.role || name}
+  const profile = `name: ${name}
+team: ${options.team || 'core'}
 role: ${options.role || 'assistant'}
 description: "${options.description || `Test agent: ${name}`}"
 systemPrompt: "${options.systemPrompt || 'You are a helpful assistant.'}"
