@@ -48,6 +48,15 @@ const configCache = new TTLCache<AutomatosXConfig>({
 });
 
 /**
+ * Clear configuration cache
+ *
+ * Useful for testing to ensure fresh config loading.
+ */
+export function clearConfigCache(): void {
+  configCache.clear();
+}
+
+/**
  * Load configuration from file with caching
  *
  * Checks cache first to avoid repeated file system access and parsing.

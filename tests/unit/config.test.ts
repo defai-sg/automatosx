@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, rm, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { loadConfig, validateConfig } from '../../src/core/config.js';
+import { loadConfig, validateConfig, clearConfigCache } from '../../src/core/config.js';
 import type { AutomatosXConfig } from '../../src/types/config.js';
 
 describe('Config Management', () => {
@@ -16,6 +16,9 @@ describe('Config Management', () => {
     // Create unique test directory
     testDir = join(tmpdir(), `automatosx-config-test-${Date.now()}`);
     await mkdir(testDir, { recursive: true });
+
+    // Clear config cache to ensure fresh loading
+    clearConfigCache();
   });
 
   afterEach(async () => {
@@ -25,6 +28,9 @@ describe('Config Management', () => {
     } catch {
       // Ignore cleanup errors
     }
+
+    // Clear cache after each test
+    clearConfigCache();
   });
 
   describe('loadConfig', () => {
