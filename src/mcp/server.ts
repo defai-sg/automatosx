@@ -73,6 +73,7 @@ export class McpServer {
   private workspaceManager!: WorkspaceManager;
   private contextManager!: ContextManager;
   private profileLoader!: ProfileLoader;
+  private pathResolver!: PathResolver;
 
   constructor(options: McpServerOptions = {}) {
     if (options.debug) {
@@ -131,7 +132,7 @@ export class McpServer {
     });
 
     // Initialize PathResolver
-    const pathResolver = new PathResolver({
+    this.pathResolver = new PathResolver({
       projectDir,
       workingDir: process.cwd(),
       agentWorkspace: join(projectDir, '.automatosx', 'workspaces')
@@ -195,7 +196,7 @@ export class McpServer {
       abilitiesManager,
       memoryManager: this.memoryManager,
       router: this.router,
-      pathResolver,
+      pathResolver: this.pathResolver,
       sessionManager: this.sessionManager,
       workspaceManager: this.workspaceManager
     });
@@ -526,7 +527,8 @@ export class McpServer {
     this.tools.set(
       'memory_export',
       createMemoryExportHandler({
-        memoryManager: this.memoryManager
+        memoryManager: this.memoryManager,
+        pathResolver: this.pathResolver
       }) as ToolHandler<unknown, unknown>
     );
 
@@ -549,7 +551,8 @@ export class McpServer {
     this.tools.set(
       'memory_import',
       createMemoryImportHandler({
-        memoryManager: this.memoryManager
+        memoryManager: this.memoryManager,
+        pathResolver: this.pathResolver
       }) as ToolHandler<unknown, unknown>
     );
 
