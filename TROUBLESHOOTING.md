@@ -44,6 +44,8 @@ This guide helps you resolve common issues when using AutomatosX.
 - [Quick Reference](#quick-reference)
   - [Most Common Solutions](#most-common-solutions)
   - [Upgrade Checklist (v5.0.x → v5.0.12+)](#upgrade-checklist-v50x--v5012)
+- [Platform-Specific Issues](#platform-specific-issues)
+  - [Windows](#windows)
 - [Getting More Help](#getting-more-help)
 
 ---
