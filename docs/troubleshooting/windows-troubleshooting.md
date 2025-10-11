@@ -64,7 +64,7 @@ Run these commands to gather information about your AutomatosX installation:
 npx @defai.digital/automatosx status
 
 # Test 2: Try simple agent execution
-npx @defai.digital/automatosx run assistant "Hello, test message"
+npx @defai.digital/automatosx run backend "Hello, test message"
 
 # Test 3: List available agents
 npx @defai.digital/automatosx list agents
@@ -93,7 +93,7 @@ const pathWithSep = normalized + sep;  // Uses platform-specific separator
 **Workaround if needed**:
 ```bash
 # Use forward slashes even on Windows (Node.js normalizes them)
-npx @defai.digital/automatosx run assistant "Create file at ./test/file.txt"
+npx @defai.digital/automatosx run backend "Create file at ./test/file.txt"
 ```
 
 ### Issue 2: PowerShell Execution Policy
@@ -203,7 +203,7 @@ npm install -g @google-ai/gemini-cli
 
 # Or use mock providers for testing
 set AUTOMATOSX_MOCK_PROVIDERS=true
-npx @defai.digital/automatosx run assistant "test"
+npx @defai.digital/automatosx run backend "test"
 ```
 
 ---
@@ -299,7 +299,7 @@ npx @defai.digital/automatosx init
 ```bash
 # Test without real provider CLIs
 set AUTOMATOSX_MOCK_PROVIDERS=true
-npx @defai.digital/automatosx run assistant "Test message"
+npx @defai.digital/automatosx run backend "Test message"
 
 # If this works, the issue is with provider CLIs
 ```
@@ -401,14 +401,14 @@ npx @defai.digital/automatosx list agents
 ```bash
 # Should complete successfully
 set AUTOMATOSX_MOCK_PROVIDERS=true
-npx @defai.digital/automatosx run assistant "Hello"
+npx @defai.digital/automatosx run backend "Hello"
 ```
 
 ### Step 5: Test Real Provider
 
 ```bash
 # Should work if Claude CLI is installed
-npx @defai.digital/automatosx run assistant "Hello" --provider claude
+npx @defai.digital/automatosx run backend "Hello" --provider claude
 ```
 
 ---

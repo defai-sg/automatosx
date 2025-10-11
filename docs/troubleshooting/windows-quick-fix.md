@@ -37,11 +37,15 @@ echo Step 2: Enabling mock providers...
 set AUTOMATOSX_MOCK_PROVIDERS=true
 echo.
 
-echo Step 3: Testing with mock provider...
-npx @defai.digital/automatosx run assistant "Hello, this is a test message"
+echo Step 3: Listing available agents...
+npx @defai.digital/automatosx list agents
 echo.
 
-echo Step 4: Checking status...
+echo Step 4: Testing with mock provider (backend agent)...
+npx @defai.digital/automatosx run backend "Hello, this is a test message"
+echo.
+
+echo Step 5: Checking status...
 npx @defai.digital/automatosx status
 echo.
 
@@ -68,10 +72,13 @@ npx @defai.digital/automatosx init
 # Step 2: Enable mock providers
 $env:AUTOMATOSX_MOCK_PROVIDERS="true"
 
-# Step 3: Test
-npx @defai.digital/automatosx run assistant "Hello test"
+# Step 3: Show available agents
+npx @defai.digital/automatosx list agents
 
-# Step 4: Check status
+# Step 4: Test an agent (backend)
+npx @defai.digital/automatosx run backend "Hello test"
+
+# Step 5: Check status
 npx @defai.digital/automatosx status
 ```
 
@@ -153,7 +160,7 @@ set AUTOMATOSX_MOCK_PROVIDERS=true
 npx @defai.digital/automatosx list agents
 ```
 
-**Expected**: List of 12 agents with friendly names
+**Expected**: List of 12 agents such as `backend`, `frontend`, `devops`, etc.
 
 ---
 
