@@ -250,8 +250,7 @@ export async function measureLatency<T>(
     globalMetrics.recordLatency(operation, duration);
     return result;
   } catch (error) {
-    const duration = Date.now() - startTime;
-    globalMetrics.recordLatency(operation, duration);
+    // Only record error, don't record latency to avoid double-counting
     globalMetrics.recordError(operation, error as Error);
     throw error;
   }

@@ -105,13 +105,26 @@ export class GracefulShutdownManager {
     });
 
     const startTime = Date.now();
+    let timeoutHandle: NodeJS.Timeout | null = null;
 
     try {
+      // Create cancellable timeout
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+          reject(new Error(`Shutdown timeout exceeded (${options.timeout}ms)`));
+        }, options.timeout);
+      });
+
       // Execute handlers with timeout
       await Promise.race([
         this.executeHandlers(),
-        this.createTimeoutPromise(options.timeout)
+        timeoutPromise
       ]);
+
+      // Clear timeout if handlers completed successfully
+      if (timeoutHandle !== null) {
+        clearTimeout(timeoutHandle);
+      }
 
       const duration = Date.now() - startTime;
       logger.info('Graceful shutdown completed', {
@@ -122,6 +135,11 @@ export class GracefulShutdownManager {
 
       process.exit(0);
     } catch (error) {
+      // Clear timeout on error
+      if (timeoutHandle !== null) {
+        clearTimeout(timeoutHandle);
+      }
+
       const duration = Date.now() - startTime;
       logger.error('Graceful shutdown failed', {
         signal,
@@ -135,6 +153,10 @@ export class GracefulShutdownManager {
       } else {
         throw error;
       }
+    } finally {
+      // Reset state to allow retry if needed
+      this.isShuttingDown = false;
+      this.shutdownPromise = null;
     }
   }
 
@@ -159,17 +181,6 @@ export class GracefulShutdownManager {
         // Continue with other handlers even if one fails
       }
     }
-  }
-
-  /**
-   * Create timeout promise
-   */
-  private createTimeoutPromise(timeoutMs: number): Promise<never> {
-    return new Promise((_, reject) => {
-      setTimeout(() => {
-        reject(new Error(`Shutdown timeout exceeded (${timeoutMs}ms)`));
-      }, timeoutMs);
-    });
   }
 }
 

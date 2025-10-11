@@ -52,7 +52,8 @@ export function validatePathParameter(
 
   // Dangerous patterns that indicate path traversal attempts
   const dangerousPatterns = [
-    '..',           // Parent directory
+    '../',          // Parent directory traversal (Unix)
+    '..\\',         // Parent directory traversal (Windows)
     '~/',           // Home directory (Unix)
     '~\\',          // Home directory (Windows)
     '/etc/',        // System directory (Unix)
