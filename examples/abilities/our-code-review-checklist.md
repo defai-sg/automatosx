@@ -1,4 +1,4 @@
-# Our Code Review Checklist - AutomatosX v4
+# Our Code Review Checklist - AutomatosX v5
 
 > Code review checklist for AutomatosX team
 
@@ -14,9 +14,9 @@
 
 ### Error Handling
 
-- [ ] **Custom errors** - Use AgentValidationError, PathError, etc. from `utils/errors.ts`
+- [ ] **Custom errors** - Use AgentValidationError, PathError, etc.
 - [ ] **Error context** - Include relevant context in error messages
-- [ ] **Try-catch blocks** - Catch and re-throw with context where appropriate
+- [ ] **Try-catch blocks** - Catch and re-throw with context
 - [ ] **No silent failures** - All errors logged or thrown
 
 ### Security
@@ -30,13 +30,13 @@
 ### Testing
 
 - [ ] **Tests added** - New features have tests (unit + integration)
-- [ ] **Coverage maintained** - Overall coverage ≥70%, core modules ≥85%
-- [ ] **Tests pass** - All 841 tests passing
+- [ ] **Coverage maintained** - Overall ≥70%, core modules ≥85%
+- [ ] **Tests pass** - All 1,149 tests passing
 - [ ] **Edge cases** - Test edge cases and error scenarios
 
 ### Performance
 
-- [ ] **No obvious bottlenecks** - Profile if adding expensive operations
+- [ ] **No bottlenecks** - Profile if adding expensive operations
 - [ ] **Lazy loading** - Heavy deps use dynamic import
 - [ ] **Caching** - Use TTLCache for expensive operations
 - [ ] **Bundle size** - Check `dist/index.js` stays <250KB
@@ -51,7 +51,7 @@
 
 - [ ] **Conventional commits** - Format: `type(scope): message`
 - [ ] **Descriptive message** - Clear what and why
-- [ ] **No large files** - No binaries or large files committed
+- [ ] **No large files** - No binaries or large files
 - [ ] **No sensitive data** - No API keys, passwords, etc.
 
 ## Reviewer Checklist
@@ -87,39 +87,27 @@
 - [ ] **Bundle size** - Run `npm run build` and check dist/index.js size
 - [ ] **Startup time** - CLI startup time reasonable
 
-## Common Issues to Watch For
+## Common Patterns
 
 ### Type Safety
 
-❌ **Avoid:**
-
 ```typescript
-const data: any = loadData();  // Any type
-function process(x) { }        // Implicit any
-```
+// ❌ Avoid
+const data: any = loadData();
 
-✅ **Prefer:**
-
-```typescript
+// ✅ Prefer
 const data: ProfileData = loadProfile(name);
-function process(x: string): void { }
 ```
 
 ### Error Handling
 
-❌ **Avoid:**
-
 ```typescript
+// ❌ Avoid: Silent failure
 try {
   await task();
-} catch (e) {
-  // Silent failure
-}
-```
+} catch (e) { }
 
-✅ **Prefer:**
-
-```typescript
+// ✅ Prefer: Log and re-throw
 try {
   await task();
 } catch (error) {
@@ -133,85 +121,29 @@ try {
 
 ### Security
 
-❌ **Avoid:**
-
 ```typescript
-const path = join(root, userInput);  // Path traversal risk
-```
+// ❌ Avoid: Path traversal risk
+const path = join(root, userInput);
 
-✅ **Prefer:**
-
-```typescript
+// ✅ Prefer: Validated path
 const resolver = new PathResolver({ projectRoot: root });
-const path = await resolver.resolve(userInput);  // Validated
+const path = await resolver.resolve(userInput);
 ```
 
 ### Logging
 
-❌ **Avoid:**
-
 ```typescript
-console.log('Profile loaded');  // No structure
-```
+// ❌ Avoid
+console.log('Profile loaded');
 
-✅ **Prefer:**
-
-```typescript
+// ✅ Prefer
 logger.info('Profile loaded', {
   name: profileName,
   path: profilePath
 });
 ```
 
-## Testing Checklist
-
-### Unit Tests
-
-- [ ] Test happy path
-- [ ] Test edge cases
-- [ ] Test error cases
-- [ ] Mock external dependencies
-- [ ] Fast execution (<1s per suite)
-
-### Integration Tests
-
-- [ ] Test CLI command integration
-- [ ] Use temp directory for file operations
-- [ ] Mock providers (AUTOMATOSX_MOCK_PROVIDERS=true)
-- [ ] Clean up after tests
-
-### E2E Tests
-
-- [ ] Test complete user workflows
-- [ ] Use real config, real file system
-- [ ] Mock providers
-- [ ] Verify final state
-
-## Performance Checklist
-
-- [ ] **Lazy load** - Heavy modules use `await import()`
-- [ ] **Cache** - Expensive operations cached with TTL
-- [ ] **Batch** - Batch file operations where possible
-- [ ] **Async** - Use async/await for I/O operations
-- [ ] **Profile** - Profile if performance-critical code
-
-## Security Checklist
-
-- [ ] **Path traversal** - No `../` in paths without validation
-- [ ] **Input validation** - All user inputs validated/sanitized
-- [ ] **File permissions** - Workspaces have restrictive permissions (700)
-- [ ] **Size limits** - File size limits to prevent DoS
-- [ ] **Safe YAML** - Use safe YAML parsing (no unsafe schemas)
-
-## Documentation Checklist
-
-- [ ] **JSDoc** - Public functions have JSDoc
-- [ ] **Comments** - Complex logic explained
-- [ ] **Examples** - Usage examples for complex features
-- [ ] **README** - Updated if adding user-facing features
-- [ ] **CHANGELOG** - Entry added for changes
-
 ---
 
-**Last Updated:** 2025-10-07
-**For:** AutomatosX v4.0+
+**Last Updated:** 2025-10-10
+**For:** AutomatosX v5.0+

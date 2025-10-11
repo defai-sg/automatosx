@@ -30,20 +30,11 @@ Design efficient, scalable, and maintainable database schemas for relational and
 
 ## Relational Database Design
 
-### Table Design
-```sql
-CREATE TABLE users (
-  id BIGSERIAL PRIMARY KEY,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  username VARCHAR(50) UNIQUE NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  deleted_at TIMESTAMPTZ -- Soft delete
-);
-
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_created_at ON users(created_at DESC);
-```
+### Table Design Essentials
+- Primary key (BIGSERIAL, UUID)
+- Timestamps (created_at, updated_at)
+- Soft delete (deleted_at)
+- Proper data types
 
 ### Relationship Patterns
 - One-to-Many: Foreign key in child table
@@ -92,7 +83,7 @@ CREATE INDEX idx_users_created_at ON users(created_at DESC);
 - Query result caching
 - Materialized views for complex aggregations
 
-## Data Types
+## Data Types Best Practices
 
 ### Choosing Types
 - VARCHAR vs. TEXT vs. CHAR
@@ -140,56 +131,16 @@ CREATE INDEX idx_users_created_at ON users(created_at DESC);
 - PII identification and protection
 - Right to be forgotten implementation
 
-## Monitoring & Maintenance
-
-### Key Metrics
-- Query execution time (p95, p99)
-- Connection pool usage
-- Table/index bloat
-- Replication lag (if applicable)
-
-### Regular Maintenance
-- VACUUM ANALYZE (PostgreSQL)
-- Index rebuilding
-- Statistics updates
-- Backup verification
-
-## Schema Documentation
-
-### Must Document
-- Table purpose and ownership
-- Column descriptions
-- Constraint explanations
-- Index rationale
-- Migration history
-
-### Tools
-- dbdocs.io
-- SchemaSpy
-- DBeaver ER diagrams
-- PlantUML database diagrams
-
 ## Common Patterns
 
 ### Soft Delete
-```sql
-deleted_at TIMESTAMPTZ DEFAULT NULL
-CREATE INDEX idx_active ON table(id) WHERE deleted_at IS NULL;
-```
+Use `deleted_at` timestamp with partial index
 
 ### Audit Trails
-```sql
-created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-created_by INTEGER REFERENCES users(id),
-updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-updated_by INTEGER REFERENCES users(id)
-```
+Track created_at, created_by, updated_at, updated_by
 
 ### Status/State Machine
-```sql
-status VARCHAR(20) NOT NULL DEFAULT 'draft'
-  CHECK (status IN ('draft', 'published', 'archived'))
-```
+Use CHECK constraints for valid states
 
 ## Design Checklist
 
