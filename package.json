@@ -60,6 +60,7 @@
   },
   "files": [
     "dist",
+    "examples",
     "version.json",
     "README.md",
     "LICENSE",
