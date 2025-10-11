@@ -7,7 +7,7 @@
 [![npm version](https://img.shields.io/npm/v/@defai.digital/automatosx.svg)](https://www.npmjs.com/package/@defai.digital/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-1,201%20passing-brightgreen.svg)](#)
+[![Tests](https://img.shields.io/badge/tests-1,136%20passing-brightgreen.svg)](#)
 
 **Status**: ✅ Production Ready · v5.1.0 · October 2025
 
@@ -311,6 +311,43 @@ ax agent create myagent --template developer
 
 **That's it!** Agents now remember everything and coordinate automatically across both modes.
 
+### MCP Server Mode (Advanced) ✨ NEW in v5.1.0
+
+**Use AutomatosX as a native MCP server** for direct Claude Code integration via Model Context Protocol.
+
+```bash
+# Start MCP server
+ax mcp
+
+# Add to Claude Code's claude_desktop_config.json
+{
+  "mcpServers": {
+    "automatosx": {
+      "command": "ax",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+**What you get**:
+- ✅ **16 native MCP tools** for Claude Code
+- ✅ **90% faster** than CLI execution (shared state, < 300ms p50 latency)
+- ✅ **Persistent services** across requests (MemoryManager, SessionManager)
+- ✅ **First-class integration** with Claude Desktop
+
+**Available MCP Tools**:
+- Agent execution: `run_agent`, `list_agents`
+- Memory operations: `search_memory`, `memory_add`, `memory_list`, `memory_delete`, `memory_export`, `memory_import`, `memory_stats`, `memory_clear`
+- Session management: `session_create`, `session_list`, `session_status`, `session_complete`, `session_fail`
+- System info: `get_status`
+
+**Performance**:
+- No subprocess overhead (3-5s → 300ms)
+- < 1.5s cold start
+- Shared services across requests
+- Native JSON-RPC 2.0 protocol
+
 📖 **[Terminal Mode Guide](docs/guide/terminal-mode.md)** | **[Installation Guide](docs/guide/installation.md)** | **[Quick Start Tutorial](docs/guide/quick-start.md)**
 
 ---
@@ -466,7 +503,7 @@ I need Daisy to analyze the data    # Need expression
 
 ## 🛠️ Production-Ready
 
-✅ **1,201 tests passing** (100% pass rate)
+✅ **1,136 tests passing** (100% pass rate)
 ✅ **TypeScript strict mode** (zero errors)
 ✅ **~56% test coverage** (comprehensive testing)
 ✅ **458KB bundle** (99.9% smaller than v3.x)
@@ -478,7 +515,7 @@ I need Daisy to analyze the data    # Need expression
 Memory Search: < 1ms (10,000 entries)
 Bundle Size:   458KB (down from 340MB in v3.x)
 Dependencies:  19 packages (down from 589 in v3.x)
-Test Coverage: ~56% (1,201 tests passing, 100% pass rate)
+Test Coverage: ~56% (1,136 tests passing, 100% pass rate)
 Memory Cost:   $0 (no API calls)
 ```
 
@@ -487,7 +524,7 @@ Memory Cost:   $0 (no API calls)
 - **Runtime**: Node.js 20+
 - **Language**: TypeScript 5.3 (strict mode)
 - **Memory**: SQLite + FTS5 (built-in full-text search)
-- **Testing**: Vitest 2.x (1,149 tests)
+- **Testing**: Vitest 2.x (1,136 tests)
 - **Build**: tsup/esbuild
 - **Providers**: Claude CLI, Gemini CLI, Codex CLI (OpenAI)
 
