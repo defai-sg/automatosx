@@ -1,33 +1,45 @@
-# Windows 10 Troubleshooting Guide for AutomatosX
+# Windows Troubleshooting Guide for AutomatosX
 
-**Date**: 2025-10-11
-**User Environment**: Windows 10, Node.js v20.12.2, AutomatosX v5.0.13
-**Status**: 🔍 INVESTIGATING
+This guide provides comprehensive troubleshooting solutions for AutomatosX on Windows 10 and Windows 11.
 
----
-
-## 🔍 Initial Analysis from Screenshots
-
-### Environment Details
-- ✅ **Node.js**: v20.12.2 (meets requirement >=20.0.0)
-- ⚠️ **AutomatosX Version**: 5.0.13 (outdated, latest is 5.1.0)
-- ⚠️ **Warning**: Experimental JSON modules warning (expected, not critical)
-- ✅ **Claude Code**: v2.0.14 installed
-- ✅ **Directory**: `.automatosx`, `.claude`, `automatosx.config.json` present
-
-### Key Issue
-User reports "not working" but specific error is unclear.
+**Last Updated**: 2025-10-11
+**Applies to**: AutomatosX v5.1.0+
+**Platform**: Windows 10/11
 
 ---
 
-## 🚨 Immediate Actions Required
+## 📋 Quick Checklist
 
-### 1. Update to Latest Version (CRITICAL)
+Before diving into detailed troubleshooting, verify these essentials:
 
-The user is on v5.0.13, but latest is v5.1.0 which includes:
-- MCP server fixes
-- Windows path handling improvements
-- 50 new integration tests
+- ✅ **Node.js**: v20.0.0 or higher installed
+- ✅ **AutomatosX**: Latest version (v5.1.0+)
+- ✅ **Initialization**: Run `ax init` in your project directory
+- ✅ **Provider CLIs**: At least one provider CLI installed (Claude, Gemini, or OpenAI)
+
+---
+
+## 🚨 Most Common Issue: Project Not Initialized
+
+**Symptoms**:
+- `ax status` shows "0 agents, 0 abilities, 0 providers"
+- Commands fail with "agent not found"
+- No `.automatosx` directory exists
+
+**Solution**:
+```bash
+# Initialize AutomatosX in your project
+npx @defai.digital/automatosx init
+
+# Verify initialization
+npx @defai.digital/automatosx status
+```
+
+---
+
+## 🔄 Update to Latest Version
+
+Always ensure you're running the latest version for the best Windows compatibility:
 
 **Update Command**:
 ```bash
@@ -43,9 +55,9 @@ npx @defai.digital/automatosx --version
 # Expected: 5.1.0
 ```
 
-### 2. Get Specific Error Information
+## 🔍 Diagnostic Commands
 
-**Please ask user to run these commands and provide FULL output**:
+Run these commands to gather information about your AutomatosX installation:
 
 ```bash
 # Test 1: Check system status
@@ -196,11 +208,9 @@ npx @defai.digital/automatosx run assistant "test"
 
 ---
 
-## 🔧 Diagnostic Commands
+## 🔧 Full Diagnostic Report
 
-### Full Diagnostic Report
-
-Ask user to run and provide output:
+To generate a comprehensive diagnostic report for troubleshooting:
 
 ```bash
 @echo off
@@ -306,33 +316,35 @@ Add-MpPreference -ExclusionPath "C:\path\to\your\project\.automatosx"
 
 ---
 
-## 📝 Information Needed from User
+## 📝 Troubleshooting Checklist
 
-To diagnose the issue, we need:
+When encountering issues, gather this information for effective troubleshooting:
 
-1. **Exact Error Message**
-   - Full error text
-   - Stack trace if available
+1. **Error Details**
+   - Full error message text
+   - Stack trace (if available)
    - Command that triggered the error
 
-2. **Command Being Executed**
-   - What command did user run?
-   - Expected behavior?
-   - Actual behavior?
+2. **Command Context**
+   - Exact command executed
+   - Expected vs actual behavior
+   - Any warning messages
 
-3. **Diagnostic Output**
+3. **System Information**
    - Run diagnostics.bat (above)
-   - Provide full output
+   - Review full diagnostic output
+   - Check system event logs
 
-4. **Provider Status**
-   - Which provider are they trying to use?
-   - Is the provider CLI installed?
-   - `claude --version`, `codex --version`, etc.
+4. **Provider Configuration**
+   - Which provider you're using
+   - Provider CLI installation status
+   - Test: `claude --version`, `codex --version`, `gemini --version`
 
-5. **Recent Changes**
-   - Did it ever work before?
-   - What changed since it last worked?
-   - Recent Windows updates?
+5. **Environment Changes**
+   - Recent AutomatosX updates
+   - New software installations
+   - Windows system updates
+   - Changes to PATH or environment variables
 
 ---
 
@@ -401,44 +413,57 @@ npx @defai.digital/automatosx run assistant "Hello" --provider claude
 
 ---
 
-## 📞 Support Escalation
+## 📞 Getting Help
 
-If issue persists after all fixes:
+If the issue persists after trying all fixes, create a GitHub issue:
 
-### Create GitHub Issue
+**Create Issue**: <https://github.com/defai-digital/automatosx/issues>
 
-**Template**:
+### Required Information
+
+Please include the following in your issue:
+
+**Issue Template**:
 ```markdown
 **Environment**
-- OS: Windows 10
-- Node.js: v20.12.2
-- AutomatosX: v5.1.0 (after update)
-- npm: [version]
+- OS: Windows 10/11
+- Node.js: v[your version] (run: node --version)
+- AutomatosX: v[your version] (run: ax --version)
+- npm: v[your version] (run: npm --version)
 
 **Command Executed**
-[exact command]
+[exact command that failed]
 
 **Expected Behavior**
-[what should happen]
+[what you expected to happen]
 
 **Actual Behavior**
-[what happened instead]
+[what actually happened]
 
 **Error Output**
 [full error message and stack trace]
 
-**Diagnostic Report**
-[output from diagnostics.bat]
+**Screenshots**
+[attach screenshots showing the error - drag and drop images into issue]
 
-**Steps Taken**
-- [x] Updated to v5.1.0
-- [x] Ran diagnostic commands
-- [x] Tried mock providers
-- [ ] Other: [describe]
+**Diagnostic Report**
+[output from diagnostics.bat - paste inside code block]
+
+**Steps Already Tried**
+- [ ] Updated to v5.1.0
+- [ ] Ran diagnostic commands
+- [ ] Tried mock providers
+- [ ] Ran ax init
+- [ ] Other: [describe what you tried]
 ```
 
-### GitHub Issues
-https://github.com/defai-digital/automatosx/issues
+### Tips for Creating Issues
+
+1. **Attach Screenshots**: Drag and drop error screenshots directly into the GitHub issue
+2. **Use Code Blocks**: Wrap command output in triple backticks (\`\`\`)
+3. **Be Specific**: Include exact commands and full error messages
+4. **Describe Environment**: Include Windows version, Node.js version, npm version
+5. **List What You've Tried**: Help us avoid suggesting solutions you've already attempted
 
 ---
 

@@ -1,12 +1,28 @@
 # Windows Quick Fix Guide
 
-**Issue**: "not working" - No agents, no providers, directories missing
+This guide provides quick solutions for common AutomatosX issues on Windows 10/11.
+
+**Last Updated**: 2025-10-11
+**Applies To**: AutomatosX v5.1.0+
+**Platform**: Windows 10/11
 
 ---
 
-## ✅ Quick Fix (Copy-Paste for User)
+## 🚨 Common Symptoms
 
-### Option 1: Quick Test with Mock Providers (Recommended)
+If you're experiencing any of these issues:
+- "Agent not found" errors
+- `ax status` shows "0 agents, 0 abilities, 0 providers"
+- No `.automatosx` directory in your project
+- All providers showing as unavailable
+
+Try the quick fixes below.
+
+---
+
+## ✅ Quick Fix #1: Initialize Project (Most Common)
+
+### Automated Fix (Batch Script)
 
 ```batch
 @echo off
@@ -63,7 +79,9 @@ npx @defai.digital/automatosx status
 
 ## 📊 Expected Results
 
-### Before Fix (What User Sees Now)
+### Before Fix
+
+If your installation is not initialized, `ax status` shows:
 
 ```text
 Resources:
@@ -79,7 +97,7 @@ Providers:
 ⚠️ System has issues
 ```
 
-### After Fix (Expected)
+### After Fix
 
 ```text
 Resources:
@@ -141,35 +159,45 @@ npx @defai.digital/automatosx list agents
 
 ## 💡 Understanding the Issue
 
-**Root Cause**: User ran `status` command before running `init` command.
+**Root Cause**: Project not initialized before use.
 
 **Why this happens**:
 
-1. AutomatosX requires initialization: `npx @defai.digital/automatosx init`
-2. Init creates `.automatosx/` directory with agents, abilities, etc.
-3. Without init, there are no agents = "not working"
+1. AutomatosX requires initialization in each project directory
+2. Command: `npx @defai.digital/automatosx init`
+3. Init creates `.automatosx/` directory with agents, abilities, and configuration
+4. Without initialization, no agents are available
 
-**Prevention**: Always run `init` first in new projects!
+**Prevention**: Always run `ax init` or `npx @defai.digital/automatosx init` first in new projects!
 
 ---
 
-## 📱 Contact Support
+## 📱 Getting Help
 
-If issue persists after running init:
+If the issue persists after trying these fixes, create a GitHub issue with:
 
-1. **Provide**:
-   - Output of `quick-fix.bat`
-   - Output of `dir .automatosx /s`
-   - Any error messages
+**Required Information**:
+1. Output of `quick-fix.bat` (or diagnostic commands)
+2. Output of `dir .automatosx /s`
+3. Screenshots of error messages
+4. Full error logs (if available)
+5. Your environment:
+   - Windows version (10/11)
+   - Node.js version (`node --version`)
+   - AutomatosX version (`ax --version`)
 
-2. **GitHub Issue**: <https://github.com/defai-digital/automatosx/issues>
+**Create Issue**: <https://github.com/defai-digital/automatosx/issues>
 
-3. **Discord**: [Link if available]
+When creating an issue:
+- Use a descriptive title
+- Attach screenshots showing the error
+- Include all diagnostic output
+- Describe what you've already tried
 
 ---
 
 **Last Updated**: 2025-10-11
 
-**Applies To**: AutomatosX v5.0.13+
+**Applies To**: AutomatosX v5.1.0+
 
 **Platform**: Windows 10/11
