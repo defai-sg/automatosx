@@ -294,7 +294,7 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
     'claude-code': {
       enabled: true,
       priority: 3,
-      timeout: 1500000,  // 25 minutes (v5.0.13: increased from 15 min based on user feedback)
+      timeout: 1500000,  // 25 minutes (v5.1.0: increased from 15 min based on user feedback)
       command: 'claude',
       healthCheck: {
         enabled: true,
@@ -307,7 +307,7 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
     'gemini-cli': {
       enabled: true,
       priority: 2,
-      timeout: 1500000,  // 25 minutes (v5.0.13: increased from 15 min based on user feedback)
+      timeout: 1500000,  // 25 minutes (v5.1.0: increased from 15 min based on user feedback)
       command: 'gemini',
       healthCheck: {
         enabled: true,
@@ -319,7 +319,7 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
     'openai': {
       enabled: true,
       priority: 1,
-      timeout: 1500000,  // 25 minutes (v5.0.13: increased from 15 min based on user feedback)
+      timeout: 1500000,  // 25 minutes (v5.1.0: increased from 15 min based on user feedback)
       command: 'codex',
       healthCheck: {
         enabled: true,
@@ -331,7 +331,7 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
   },
 
   execution: {
-    defaultTimeout: 1500000,  // 25 minutes (v5.0.13: increased from 15 min based on user feedback)
+    defaultTimeout: 1500000,  // 25 minutes (v5.1.0: increased from 15 min based on user feedback)
     retry: {
       maxAttempts: 3,
       initialDelay: 1000,    // 1 second
@@ -363,7 +363,7 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
     },
     delegation: {
       maxDepth: 2,
-      timeout: 1500000,  // 25 minutes (v5.0.13: increased from 15 min based on user feedback)
+      timeout: 1500000,  // 25 minutes (v5.1.0: increased from 15 min based on user feedback)
       enableCycleDetection: true
     },
     workspace: {

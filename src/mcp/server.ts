@@ -909,19 +909,50 @@ export class McpServer {
       buffer += chunk.toString('utf-8');
 
       while (true) {
-        // Parse Content-Length header if we don't have it yet
+        // Parse headers if we don't have Content-Length yet
         if (contentLength === null) {
-          const headerMatch = buffer.match(/^Content-Length: (\d+)\r\n\r\n/);
-          if (!headerMatch) {
-            // Incomplete header, wait for more data
+          // Look for the end of headers (blank line: \r\n\r\n)
+          const headerEndIndex = buffer.indexOf('\r\n\r\n');
+          if (headerEndIndex === -1) {
+            // Incomplete headers, wait for more data
             break;
           }
 
-          contentLength = parseInt(headerMatch[1] ?? '0', 10);
-          buffer = buffer.slice(headerMatch[0].length);
+          // Extract the header block (everything before \r\n\r\n)
+          const headerBlock = buffer.slice(0, headerEndIndex);
+
+          // Parse each header line (case-insensitive key lookup)
+          const headerLines = headerBlock.split('\r\n');
+          for (const line of headerLines) {
+            const separatorIndex = line.indexOf(':');
+            if (separatorIndex !== -1) {
+              const key = line.slice(0, separatorIndex).trim().toLowerCase();
+              const value = line.slice(separatorIndex + 1).trim();
+
+              if (key === 'content-length') {
+                contentLength = parseInt(value, 10);
+                if (isNaN(contentLength) || contentLength < 0) {
+                  logger.error('[MCP Server] Invalid Content-Length header', { value });
+                  contentLength = null;
+                  buffer = ''; // Discard invalid data
+                  break;
+                }
+              }
+            }
+          }
+
+          // If we still don't have Content-Length, it's a protocol error
+          if (contentLength === null) {
+            logger.error('[MCP Server] No Content-Length header found in request');
+            buffer = buffer.slice(headerEndIndex + 4); // Skip past headers
+            continue; // Try to recover by looking for next message
+          }
+
+          // Remove the headers (including \r\n\r\n) from buffer
+          buffer = buffer.slice(headerEndIndex + 4);
         }
 
-        // Check if we have the complete message
+        // Check if we have the complete message body
         const messageBytes = Buffer.byteLength(buffer, 'utf-8');
         if (messageBytes < contentLength) {
           // Incomplete message, wait for more data

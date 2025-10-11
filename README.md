@@ -7,9 +7,9 @@
 [![npm version](https://img.shields.io/npm/v/@defai.digital/automatosx.svg)](https://www.npmjs.com/package/@defai.digital/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-1,149%20passing-brightgreen.svg)](#)
+[![Tests](https://img.shields.io/badge/tests-1,201%20passing-brightgreen.svg)](#)
 
-**Status**: ✅ Production Ready · v5.0.13 · October 2025
+**Status**: ✅ Production Ready · v5.1.0 · October 2025
 
 Looking for answers? See the [FAQ](docs/faq.md).
 
@@ -20,10 +20,9 @@ Looking for answers? See the [FAQ](docs/faq.md).
 **AutomatosX extends Claude Code with specialized AI agents that remember context, delegate tasks, and collaborate autonomously.**
 
 ```bash
-# In Claude Code, simply use /ax
-/ax run Paris "Design authentication system with JWT"
-/ax run Bob "Implement the auth design"  # Bob auto-receives Paris's design from memory
-/ax memory search "authentication"       # Instant search of all past decisions
+# In Claude Code, simply use /ax:agent
+/ax:agent Paris, design authentication system with JWT
+/ax:agent Bob, implement the auth design  # Bob auto-receives Paris's design from memory
 ```
 
 **The result**: Claude Code becomes a **learning, coordinated team** instead of a stateless assistant.
@@ -58,8 +57,8 @@ Day 3: Different task → You re-explain everything again
 **With AutomatosX**:
 ```
 Day 1: Product designs architecture → Saved to memory
-Day 2: /ax run backend "implement auth" → Backend finds Product's design automatically
-Day 3: /ax run security "security audit" → Security has full context from Day 1-2
+Day 2: ax run backend "implement auth" → Backend finds Product's design automatically
+Day 3: ax run security "security audit" → Security has full context from Day 1-2
 ```
 
 **Time saved**: Hours per week. **Quality**: Consistent. **Cost**: $0.
@@ -76,13 +75,13 @@ Day 3: /ax run security "security audit" → Security has full context from Day 
 
 ### How It Works
 
-```typescript
-// Automatic memory saving
-/ax run product "Design calculator with add/subtract"
+```bash
+# Automatic memory saving
+ax run product "Design calculator with add/subtract"
 → Task + Response saved to SQLite FTS5
 
-// Automatic memory retrieval
-/ax run backend "Implement the calculator"
+# Automatic memory retrieval
+ax run backend "Implement the calculator"
 → Memory searches "calculator" automatically
 → Backend receives: "# Relevant Context from Memory: Product's design..."
 → Backend implements WITHOUT you repeating the spec
@@ -115,7 +114,7 @@ Day 3: /ax run security "security audit" → Security has full context from Day 
 
 ```typescript
 // Product Manager analyzes and delegates
-/ax run product "Build authentication feature"
+ax run product "Build authentication feature"
 
 Product response:
   "I'll design the auth system with JWT + OAuth2.
@@ -198,6 +197,73 @@ Product response:
 
 ---
 
+## 🚀 Two Ways to Use AutomatosX
+
+AutomatosX offers **two powerful modes** to fit your workflow:
+
+### 1️⃣ Claude Code Integration (Recommended)
+
+**Use AutomatosX agents directly inside Claude Code conversations** with the `/ax:agent` slash command.
+
+```bash
+# In Claude Code, use the slash command
+/ax:agent Paris, design a REST API for user authentication
+/ax:agent Bob, implement the auth API from Paris's design
+/ax:agent Steve, security audit the authentication code
+```
+
+**Perfect for**:
+- 💬 Interactive development workflows
+- 🔄 Seamless context switching within Claude Code
+- 🤝 Collaborative coding sessions
+- 🎯 Quick agent delegation while coding
+
+**How it works**: Claude Code executes AutomatosX commands behind the scenes, brings results back into your conversation, and maintains full context.
+
+### 2️⃣ Terminal/CLI Mode (Power Users)
+
+**Use AutomatosX as a standalone CLI tool** for automation, scripting, and direct control.
+
+```bash
+# In any terminal (Bash, Zsh, PowerShell)
+ax run Paris "Design REST API for user authentication"
+ax run Bob "Implement the auth API"           # Auto-receives Paris's design from memory
+ax run Steve "Security audit the auth code"   # Auto-receives design + implementation
+
+# Full CLI power
+ax memory search "authentication"
+ax agent list --by-team engineering
+ax session list --active
+```
+
+**Perfect for**:
+- ⚙️ CI/CD pipelines and automation scripts
+- 🔧 Custom workflows and integrations
+- 📊 Batch processing and reporting
+- 🎛️ Advanced configuration and debugging
+
+**How it works**: Direct command-line execution with full control over providers, memory, sessions, and configuration.
+
+### Which Mode Should I Use?
+
+| Scenario | Recommended Mode |
+|----------|------------------|
+| Coding in Claude Code | **Claude Code Integration** (`/ax:agent`) |
+| Automation scripts | **Terminal Mode** (`ax run`) |
+| CI/CD pipelines | **Terminal Mode** |
+| Quick questions during dev | **Claude Code Integration** |
+| Memory management | **Terminal Mode** |
+| Agent creation/management | **Terminal Mode** |
+| Multi-agent workflows | **Both work great!** |
+
+### 📖 Learn More
+
+- **Using Terminal Mode?** → [Complete Terminal Mode Guide](docs/guide/terminal-mode.md)
+- **Using Claude Code?** → Continue reading below for slash command examples
+- **Want both?** → They work together seamlessly! Memory is shared across both modes.
+
+---
+
 ## ⚡ Quick Start
 
 ### Installation
@@ -206,30 +272,46 @@ Product response:
 npm install -g @defai.digital/automatosx
 ```
 
-### In Claude Code
+### Claude Code Integration
 
 ```bash
-# Initialize (first time only)
-/ax init
+# In Claude Code, initialize (first time only)
+# Ask Claude: "Please run ax init"
+# Or use terminal mode: ax init
 
-# Run agents (using friendly names)
-/ax run Paris "Design REST API for users"
-/ax run Bob "Implement the API"           # Auto-receives Paris's design
-/ax run Queenie "Write tests for the API" # Auto-receives design + implementation
-
-# Search memory
-/ax memory search "API design"
-/ax memory list --agent Paris
-
-# Manage agents
-/ax agent list
-/ax agent show Bob
-/ax agent create myagent --template developer
+# Then use the slash command for agents
+/ax:agent Paris, design REST API for users
+/ax:agent Bob, implement the API
+/ax:agent Queenie, write tests for the API
 ```
 
-**That's it!** Agents now remember everything and coordinate automatically.
+**What happens**:
+1. Claude Code executes AutomatosX behind the scenes
+2. Paris designs the API → Saved to memory
+3. Bob reads Paris's design from memory → Implements code
+4. Queenie reads everything → Writes comprehensive tests
+5. Results flow back into your Claude Code conversation
 
-📖 **[Full Installation Guide](docs/guide/installation.md)** | **[Quick Start Tutorial](docs/guide/quick-start.md)**
+### Terminal Mode
+
+```bash
+# Initialize your project
+ax init
+
+# Run agents from any terminal
+ax run Paris "Design REST API for users"
+ax run Bob "Implement the API"           # Auto-receives Paris's design from memory
+ax run Queenie "Write tests for the API" # Auto-receives design + implementation
+
+# Manage memory and agents
+ax memory search "API design"
+ax agent list --by-team engineering
+ax agent create myagent --template developer
+```
+
+**That's it!** Agents now remember everything and coordinate automatically across both modes.
+
+📖 **[Terminal Mode Guide](docs/guide/terminal-mode.md)** | **[Installation Guide](docs/guide/installation.md)** | **[Quick Start Tutorial](docs/guide/quick-start.md)**
 
 ---
 
@@ -237,6 +319,7 @@ npm install -g @defai.digital/automatosx
 
 ### Getting Started
 - **[Quick Start Guide](docs/guide/quick-start.md)** - Get up and running in 5 minutes
+- **[Terminal Mode Guide](docs/guide/terminal-mode.md)** - Complete CLI usage tutorial
 - **[Core Concepts](docs/guide/core-concepts.md)** - Understand agents, memory, providers
 - **[Installation Guide](docs/guide/installation.md)** - Detailed setup instructions
 - **[FAQ](docs/faq.md)** - Common questions and troubleshooting
@@ -276,18 +359,22 @@ npm install -g @defai.digital/automatosx
 
 ### 🏗️ Feature Development
 ```bash
-# Using friendly agent names
-/ax run Paris "Design user authentication feature"
+# Using friendly agent names in terminal
+ax run Paris "Design user authentication feature"
 # Paris creates spec → Saved to memory
 
-/ax run Bob "Implement auth based on spec"
+ax run Bob "Implement auth based on spec"
 # Bob auto-receives spec → Implements code
 
-/ax run Steve "Security audit the auth implementation"
+ax run Steve "Security audit the auth implementation"
 # Steve auto-receives spec + code → Performs audit
 
-/ax run Wendy "Document the auth system"
+ax run Wendy "Document the auth system"
 # Wendy auto-receives everything → Creates docs
+
+# Or in Claude Code:
+# /ax:agent Paris, design user authentication feature
+# /ax:agent Bob, implement auth based on spec
 ```
 
 **Result**: 4-step workflow, zero context re-explanation, complete audit trail
@@ -295,13 +382,13 @@ npm install -g @defai.digital/automatosx
 ### 🐛 Bug Investigation
 ```bash
 # Mix of names and roles (both work!)
-/ax run Queenie "Debug the payment timeout issue"
+ax run Queenie "Debug the payment timeout issue"
 # Queenie analyzes, saves findings to memory
 
-/ax run backend "Fix the issue Queenie found"
+ax run backend "Fix the issue Queenie found"
 # Backend reads Queenie's analysis → Implements fix
 
-/ax run quality "Test the payment fix"
+ax run quality "Test the payment fix"
 # Quality knows the bug + fix → Comprehensive testing
 ```
 
@@ -310,13 +397,13 @@ npm install -g @defai.digital/automatosx
 ### 📊 Research & Analysis
 ```bash
 # Using agent names for clarity
-/ax run Daisy "Analyze user behavior patterns"
+ax run Daisy "Analyze user behavior patterns"
 # Daisy analyzes patterns → Findings in memory
 
-/ax run Paris "Design features based on Daisy's analysis"
+ax run Paris "Design features based on Daisy's analysis"
 # Paris reads analysis → Creates product spec
 
-/ax run Eric "Business case for Paris's proposal"
+ax run Eric "Business case for Paris's proposal"
 # Eric has analysis + spec → Strategic evaluation
 ```
 
@@ -325,7 +412,7 @@ npm install -g @defai.digital/automatosx
 ### 🚀 Multi-Agent Delegation
 ```bash
 # Single command triggers automatic multi-agent coordination
-/ax run Paris "Build a user dashboard with real-time metrics"
+ax run Paris "Build a user dashboard with real-time metrics"
 
 # Paris analyzes and delegates automatically in its response:
 # "I've designed the dashboard architecture:
@@ -370,7 +457,7 @@ I need Daisy to analyze the data    # Need expression
 - **Audit trail** - complete history of all decisions
 
 ### For Claude Code Power Users
-- **Slash command integration** - `/ax` for instant access
+- **Slash command integration** - `/ax:agent` for instant access in Claude Code
 - **Terminal-native** - no context switching
 - **CLI-based** - scriptable and automatable
 - **Zero latency** - local memory = instant search
@@ -379,19 +466,19 @@ I need Daisy to analyze the data    # Need expression
 
 ## 🛠️ Production-Ready
 
-✅ **1,149 tests passing** (100% pass rate)
+✅ **1,201 tests passing** (100% pass rate)
 ✅ **TypeScript strict mode** (zero errors)
-✅ **~85% test coverage** (comprehensive testing)
-✅ **381KB bundle** (99.9% smaller than v3.x)
+✅ **~56% test coverage** (comprehensive testing)
+✅ **458KB bundle** (99.9% smaller than v3.x)
 ✅ **< 1ms memory search** (62x faster than v3.x)
 
 ### Performance Metrics
 
 ```
 Memory Search: < 1ms (10,000 entries)
-Bundle Size:   381KB (down from 340MB in v3.x)
+Bundle Size:   458KB (down from 340MB in v3.x)
 Dependencies:  19 packages (down from 589 in v3.x)
-Test Coverage: ~85% (1,149 tests passing, 100% pass rate)
+Test Coverage: ~56% (1,201 tests passing, 100% pass rate)
 Memory Cost:   $0 (no API calls)
 ```
 

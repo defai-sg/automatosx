@@ -1,6 +1,6 @@
 # Frequently Asked Questions (FAQ)
 
-Note: This FAQ applies to AutomatosX v5.0.13 (last updated 2025-10-10). For detailed release notes, see CHANGELOG.md.
+Note: This FAQ applies to AutomatosX v5.1.0 (last updated 2025-10-10). For detailed release notes, see CHANGELOG.md.
 
 ## Contents
 - [General Questions](#general-questions)
