@@ -11,7 +11,7 @@
 
 **Status**: ✅ Production Ready · v5.1.0 · October 2025
 
-Looking for answers? See the [FAQ](docs/faq.md).
+Looking for answers? See the [FAQ](FAQ.md).
 
 ---
 
@@ -359,7 +359,7 @@ ax mcp
 - **[Terminal Mode Guide](docs/guide/terminal-mode.md)** - Complete CLI usage tutorial
 - **[Core Concepts](docs/guide/core-concepts.md)** - Understand agents, memory, providers
 - **[Installation Guide](docs/guide/installation.md)** - Detailed setup instructions
-- **[FAQ](docs/faq.md)** - Common questions and troubleshooting
+- **[FAQ](FAQ.md)** - Common questions and troubleshooting
 
 ### Core Features
 - **[Agent Communication & Memory](docs/guide/agent-communication.md)** - How agents communicate and remember
@@ -565,7 +565,7 @@ AutomatosX is [Apache 2.0 licensed](LICENSE).
 - **📦 npm**: [@defai.digital/automatosx](https://www.npmjs.com/package/@defai.digital/automatosx)
 - **🐙 GitHub**: [defai-digital/automatosx](https://github.com/defai-digital/automatosx)
 - **📖 Documentation**: [docs/](docs/)
-- **❓ FAQ**: [docs/faq.md](docs/faq.md)
+- **❓ FAQ**: [FAQ.md](FAQ.md)
 - **🎉 Releases**: [GitHub Releases](https://github.com/defai-digital/automatosx/releases)
 - **📋 Changelog**: [CHANGELOG.md](CHANGELOG.md)
 

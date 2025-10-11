@@ -164,6 +164,8 @@ async function createDirectoryStructure(baseDir: string): Promise<void> {
     join(baseDir, 'abilities'),
     join(baseDir, 'templates'),      // v5.0: Agent templates
     join(baseDir, 'memory'),
+    join(baseDir, 'memory/exports'), // v5.1: MCP memory export directory
+    join(baseDir, 'sessions'),       // v5.1: Session persistence
     join(baseDir, 'workspaces'),
     join(baseDir, 'logs')
   ];

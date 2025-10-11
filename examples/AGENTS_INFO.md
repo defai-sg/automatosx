@@ -8,15 +8,16 @@ AutomatosX agents have **human-friendly names** to make them easier to remember 
 
 **Key Changes**:
 - ✅ **Role Ownership**: Quality owns code-review/debugging, Security owns security-audit
-- ✅ **Delegation Depth**: Implementers (0), Quality (1), Coordinators (1)
+- ✅ **Delegation Depth**: Most agents (1), Research only (0)
 - ✅ **Smart Ability Loading**: `abilitySelection` reduces prompt tokens by 30-50%
 - ✅ **Role-Specific Stages**: 8 unique workflow sequences
-- ✅ **No Cycles**: Implementers cannot re-delegate tasks
+- ✅ **No Cycles**: maxDelegationDepth: 1 prevents re-delegation
 
-**Agent Categories**:
-- **Implementers** (depth 0): backend, frontend, devops, data, security, design, writer, researcher
+**Agent Categories by Delegation Depth**:
+- **Implementers** (depth 1): backend, frontend, devops, data, security, design, writer
 - **Quality** (depth 1): quality (can delegate fixes to implementers)
 - **Coordinators** (depth 1): product, ceo, cto (delegate to implementers)
+- **Research** (depth 0): researcher (executes directly, no delegation)
 
 ## 🚀 Quick Overview: 12 Agents, 4 Teams, 3 Providers
 
@@ -52,44 +53,57 @@ Research shows humans remember names better than roles. Instead of remembering "
 
 ### 💻 Engineering Team (Implementers)
 
-**maxDelegationDepth: 0** - Execute tasks directly, no re-delegation
+**maxDelegationDepth: 1** - Can delegate once for cross-domain needs, no re-delegation
 
-| Name | Agent | Expertise | Best For | Primary | Fallback | Delegation |
-|------|-------|-----------|----------|---------|----------|------------|
-| **Bob** | backend | API design, database modeling, caching | Backend development, microservices | 🟣 claude-code | 🟢 openai | depth: 0 |
-| **Frank** | frontend | Component architecture, state management | Frontend development, React, accessibility | 🟣 claude-code | 🟢 openai | depth: 0 |
-| **Oliver** | devops | Infrastructure as code, CI/CD pipelines | DevOps, deployment, observability | 🟣 claude-code | 🟢 openai | depth: 0 |
-| **Steve** | security | **SOLE OWNER** of security-audit | Security review, threat modeling | 🟢 openai | 🔵 gemini-cli | depth: 0 |
+| Name | Agent | Expertise | Best For | Primary | Fallback | Can Delegate To |
+|------|-------|-----------|----------|---------|----------|-----------------|
+| **Bob** | backend | API design, database modeling, caching | Backend development, microservices | 🟣 claude-code | 🟢 openai | frontend, data, security, quality, devops |
+| **Frank** | frontend | Component architecture, state management | Frontend development, React, accessibility | 🟣 claude-code | 🟢 openai | backend, design, security, quality, devops |
+| **Oliver** | devops | Infrastructure as code, CI/CD pipelines | DevOps, deployment, observability | 🟣 claude-code | 🟢 openai | backend, frontend, security, quality |
+| **Steve** | security | **SOLE OWNER** of security-audit | Security review, threat modeling | 🟢 openai | 🔵 gemini-cli | backend, frontend, devops, quality |
 
-### 🎯 Quality Team
+### 🎯 Quality Team (Coordinator Role)
 
-**maxDelegationDepth: 1** - Can delegate implementation fixes back to developers
+**maxDelegationDepth: 1** - Can delegate fixes back to implementers, no re-delegation
 
-| Name | Agent | Expertise | Best For | Primary | Fallback | Delegation |
-|------|-------|-----------|----------|---------|----------|------------|
-| **Queenie** | quality | **SOLE OWNER** of code-review & debugging | Test planning, automation, quality gates | 🟢 openai | 🔵 gemini-cli | depth: 1 |
+| Name | Agent | Expertise | Best For | Primary | Fallback | Can Delegate To |
+|------|-------|-----------|----------|---------|----------|-----------------|
+| **Queenie** | quality | **SOLE OWNER** of code-review & debugging | Test planning, automation, quality gates | 🟢 openai | 🔵 gemini-cli | backend, frontend, security, devops, data |
 
 ### 🎨 Content Team (Implementers)
 
-**maxDelegationDepth: 0** - Execute tasks directly, no re-delegation
+**maxDelegationDepth: 1** - Can delegate once for cross-domain needs, no re-delegation
 
-| Name | Agent | Expertise | Best For | Primary | Fallback | Delegation |
-|------|-------|-----------|----------|---------|----------|------------|
-| **Debbee** | design | UX research, wireframes, design systems | UX design, prototyping, accessibility | 🔵 gemini-cli | 🟢 openai | depth: 0 |
-| **Wendy** | writer | API docs, ADRs, release notes | Technical writing, documentation | 🟢 openai | 🟣 claude-code | depth: 0 |
+| Name | Agent | Expertise | Best For | Primary | Fallback | Can Delegate To |
+|------|-------|-----------|----------|---------|----------|-----------------|
+| **Debbee** | design | UX research, wireframes, design systems | UX design, prototyping, accessibility | 🔵 gemini-cli | 🟢 openai | frontend, writer, quality |
+| **Wendy** | writer | API docs, ADRs, release notes | Technical writing, documentation | 🟢 openai | 🟣 claude-code | backend, frontend, design, quality |
 
-### 📊 Leadership & Data Team
+### 📊 Leadership Team (Coordinators)
 
-**Coordinators (maxDelegationDepth: 1)** - Delegate to implementers, focus on strategy
-**Data & Research (maxDelegationDepth: 0)** - Execute data/research tasks directly
+**maxDelegationDepth: 1** - Delegate to implementers, focus on strategy, no re-delegation
 
-| Name | Agent | Expertise | Best For | Primary | Fallback | Delegation |
-|------|-------|-----------|----------|---------|----------|------------|
-| **Paris** | product | Product strategy, feature planning | Product planning, roadmap prioritization | 🔵 gemini-cli | 🟣 claude-code | depth: 1 |
-| **Eric** | ceo | Business strategy, vision | Strategic decisions, organizational leadership | 🔵 gemini-cli | 🟣 claude-code | depth: 1 |
-| **Tony** | cto | Technology strategy, leadership | Tech strategy, architecture decisions | 🔵 gemini-cli | 🟣 claude-code | depth: 1 |
-| **Daisy** | data | Data modeling, ETL pipelines, SQL optimization | Data engineering, analytics | 🔵 gemini-cli | 🟣 claude-code | depth: 0 |
-| **Rodman** | researcher | Idea validation, feasibility analysis, risk assessment | Research reports, literature review | 🟢 openai | 🔵 gemini-cli | depth: 0 |
+| Name | Agent | Expertise | Best For | Primary | Fallback | Can Delegate To |
+|------|-------|-----------|----------|---------|----------|-----------------|
+| **Paris** | product | Product strategy, feature planning | Product planning, roadmap prioritization | 🔵 gemini-cli | 🟣 claude-code | backend, frontend, design, writer, quality |
+| **Eric** | ceo | Business strategy, vision | Strategic decisions, organizational leadership | 🔵 gemini-cli | 🟣 claude-code | paris, tony, all agents |
+| **Tony** | cto | Technology strategy, leadership | Tech strategy, architecture decisions | 🔵 gemini-cli | 🟣 claude-code | backend, frontend, devops, security, quality |
+
+### 🔬 Research Team (Specialist)
+
+**maxDelegationDepth: 0** - Execute research work directly, no delegation
+
+| Name | Agent | Expertise | Best For | Primary | Fallback | Can Delegate To |
+|------|-------|-----------|----------|---------|----------|-----------------|
+| **Rodman** | researcher | Idea validation, feasibility analysis | Research reports, literature review | 🟢 openai | 🔵 gemini-cli | None (depth: 0) |
+
+### 💾 Data Team (Implementer)
+
+**maxDelegationDepth: 1** - Can delegate once for cross-domain needs, no re-delegation
+
+| Name | Agent | Expertise | Best For | Primary | Fallback | Can Delegate To |
+|------|-------|-----------|----------|---------|----------|-----------------|
+| **Daisy** | data | Data modeling, ETL pipelines, SQL optimization | Data engineering, analytics | 🔵 gemini-cli | 🟣 claude-code | backend, security, quality |
 
 ---
 
