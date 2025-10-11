@@ -753,7 +753,8 @@ export class AgentExecutor {
       }
 
       // 9. Memory IDs collection
-      // TODO: Implement memory saving in future enhancement
+      // NOTE: Reserved for future enhancement - automatic memory saving from delegation results
+      // Currently returns empty array as memory saving is handled separately via MemoryManager
       const memoryIds: number[] = [];
 
       const endTime = new Date();

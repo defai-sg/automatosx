@@ -72,13 +72,12 @@ export class OpenAIProvider extends BaseProvider {
     }
   }
 
-  protected async generateEmbeddingInternal(text: string, options?: EmbeddingOptions): Promise<number[]> {
-    // OpenAI supports embeddings via text-embedding models
-    const model = options?.model || 'text-embedding-3-small';
-
+  protected async generateEmbeddingInternal(_text: string, options?: EmbeddingOptions): Promise<number[]> {
     try {
-      // TODO: Implement actual embedding generation with OpenAI SDK
-      // For now, return mock embedding
+      // NOTE: Legacy mock implementation for testing purposes only
+      // Vector search was removed in v4.11.0 (switched to SQLite FTS5)
+      // This method is retained for interface compatibility and test coverage
+      // OpenAI supports embeddings via text-embedding models (not implemented in mock)
       const dimensions = options?.dimensions || 1536;
       return Array(dimensions).fill(0).map(() => Math.random());
     } catch (error) {

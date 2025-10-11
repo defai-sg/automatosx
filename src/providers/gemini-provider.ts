@@ -69,13 +69,12 @@ export class GeminiProvider extends BaseProvider {
     }
   }
 
-  protected async generateEmbeddingInternal(text: string, options?: EmbeddingOptions): Promise<number[]> {
-    // Gemini supports embeddings via embedding-001 model
-    const model = options?.model || 'embedding-001';
-
+  protected async generateEmbeddingInternal(_text: string, options?: EmbeddingOptions): Promise<number[]> {
     try {
-      // TODO: Implement actual embedding generation with Google AI SDK
-      // For now, return mock embedding
+      // NOTE: Legacy mock implementation for testing purposes only
+      // Vector search was removed in v4.11.0 (switched to SQLite FTS5)
+      // This method is retained for interface compatibility and test coverage
+      // Gemini supports embeddings via embedding-001 model (not implemented in mock)
       const dimensions = options?.dimensions || 768;
       return Array(dimensions).fill(0).map(() => Math.random());
     } catch (error) {
@@ -230,23 +229,26 @@ export class GeminiProvider extends BaseProvider {
   /**
    * Build CLI arguments for Gemini CLI
    * Currently does not support parameter passing via CLI
-   * TODO: Implement when Gemini CLI adds support (Issue #5280)
+   *
+   * @see https://github.com/google-gemini/gemini-cli/issues/5280
+   * Blocked: Waiting for Gemini CLI to add support for maxTokens and temperature parameters
+   * When implemented, this method will be updated to support parameter passing
    */
-  protected buildCLIArgs(request: ExecutionRequest): string[] {
+  protected buildCLIArgs(_request: ExecutionRequest): string[] {
     const args: string[] = [];
 
     // Gemini CLI currently does not support parameter passing
     // Parameters would need to be configured in ~/.gemini/settings.json
     //
     // Future implementation (when Gemini CLI adds support):
-    // if (request.temperature !== undefined) {
-    //   args.push('--temperature', String(request.temperature));
+    // if (_request.temperature !== undefined) {
+    //   args.push('--temperature', String(_request.temperature));
     // }
-    // if (request.maxTokens !== undefined) {
-    //   args.push('--max-tokens', String(request.maxTokens));
+    // if (_request.maxTokens !== undefined) {
+    //   args.push('--max-tokens', String(_request.maxTokens));
     // }
-    // if (request.topP !== undefined) {
-    //   args.push('--top-p', String(request.topP));
+    // if (_request.topP !== undefined) {
+    //   args.push('--top-p', String(_request.topP));
     // }
 
     return args;
@@ -258,7 +260,7 @@ export class GeminiProvider extends BaseProvider {
    * See: https://github.com/google-gemini/gemini-cli/issues/5280
    */
   protected supportsParameter(
-    param: 'maxTokens' | 'temperature' | 'topP'
+    _param: 'maxTokens' | 'temperature' | 'topP'
   ): boolean {
     // Gemini CLI does not support any parameters yet
     // This will return true once Issue #5280 is resolved

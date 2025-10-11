@@ -73,7 +73,7 @@ export class ClaudeProvider extends BaseProvider {
     }
   }
 
-  protected async generateEmbeddingInternal(text: string, options?: EmbeddingOptions): Promise<number[]> {
+  protected async generateEmbeddingInternal(_text: string, _options?: EmbeddingOptions): Promise<number[]> {
     throw new Error('Claude does not support embeddings directly. Use OpenAI or Voyage AI for embeddings.');
   }
 

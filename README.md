@@ -7,11 +7,11 @@
 [![npm version](https://img.shields.io/npm/v/@defai.digital/automatosx.svg)](https://www.npmjs.com/package/@defai.digital/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-1,098%20passing-brightgreen.svg)](#)
+[![Tests](https://img.shields.io/badge/tests-1,149%20passing-brightgreen.svg)](#)
 
 **Status**: ✅ Production Ready · v5.0.13 · October 2025
 
-Looking for answers? See the [FAQ](FAQ.md).
+Looking for answers? See the [FAQ](docs/faq.md).
 
 ---
 
@@ -239,7 +239,7 @@ npm install -g @defai.digital/automatosx
 - **[Quick Start Guide](docs/guide/quick-start.md)** - Get up and running in 5 minutes
 - **[Core Concepts](docs/guide/core-concepts.md)** - Understand agents, memory, providers
 - **[Installation Guide](docs/guide/installation.md)** - Detailed setup instructions
-- **[FAQ](FAQ.md)** - Common questions and troubleshooting
+- **[FAQ](docs/faq.md)** - Common questions and troubleshooting
 
 ### Core Features
 - **[Agent Communication & Memory](docs/guide/agent-communication.md)** - How agents communicate and remember
@@ -379,19 +379,19 @@ I need Daisy to analyze the data    # Need expression
 
 ## 🛠️ Production-Ready
 
-✅ **1,098 tests passing** (99.7% pass rate)
+✅ **1,149 tests passing** (100% pass rate)
 ✅ **TypeScript strict mode** (zero errors)
-✅ **84% test coverage** (comprehensive testing)
-✅ **46MB bundle** (87% smaller than v3.x)
+✅ **~85% test coverage** (comprehensive testing)
+✅ **381KB bundle** (99.9% smaller than v3.x)
 ✅ **< 1ms memory search** (62x faster than v3.x)
 
 ### Performance Metrics
 
 ```
 Memory Search: < 1ms (10,000 entries)
-Bundle Size:   46MB (down from 340MB in v3.x)
-Dependencies:  158 packages (down from 589 in v3.x)
-Test Coverage: 84.19% (1,098 tests passing, 99.7% pass rate)
+Bundle Size:   381KB (down from 340MB in v3.x)
+Dependencies:  19 packages (down from 589 in v3.x)
+Test Coverage: ~85% (1,149 tests passing, 100% pass rate)
 Memory Cost:   $0 (no API calls)
 ```
 
@@ -402,7 +402,7 @@ Memory Cost:   $0 (no API calls)
 - **Memory**: SQLite + FTS5 (built-in full-text search)
 - **Testing**: Vitest 2.x (1,149 tests)
 - **Build**: tsup/esbuild
-- **Providers**: Claude CLI, Gemini CLI, OpenAI Codex
+- **Providers**: Claude CLI, Gemini CLI, Codex CLI (OpenAI)
 
 ---
 
@@ -441,7 +441,7 @@ AutomatosX is [Apache 2.0 licensed](LICENSE).
 - **📦 npm**: [@defai.digital/automatosx](https://www.npmjs.com/package/@defai.digital/automatosx)
 - **🐙 GitHub**: [defai-digital/automatosx](https://github.com/defai-digital/automatosx)
 - **📖 Documentation**: [docs/](docs/)
-- **❓ FAQ**: [FAQ.md](FAQ.md)
+- **❓ FAQ**: [docs/faq.md](docs/faq.md)
 - **🎉 Releases**: [GitHub Releases](https://github.com/defai-digital/automatosx/releases)
 - **📋 Changelog**: [CHANGELOG.md](CHANGELOG.md)
 
