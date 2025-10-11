@@ -791,6 +791,28 @@ ax run backend "Hello"
 
 ---
 
+## Platform-Specific Issues
+
+### Windows
+
+If you're experiencing issues on Windows 10/11:
+
+- **[Windows Quick Fix Guide](docs/troubleshooting/windows-quick-fix.md)** - Quick solutions for common Windows problems
+  - Initialization issues (0 agents, 0 providers)
+  - Mock provider testing
+  - Expected vs actual results
+
+- **[Windows Troubleshooting Guide](docs/troubleshooting/windows-troubleshooting.md)** - Comprehensive Windows troubleshooting
+  - Path separator problems
+  - PowerShell execution policy
+  - npm global installation path
+  - Long path issues
+  - File permission issues
+  - Provider CLI configuration
+  - Full diagnostic commands
+
+---
+
 ## Getting More Help
 
 If your issue is not covered here:

@@ -151,6 +151,12 @@ Actual costs depend on your usage patterns and chosen models.
 
 ## Installation & Setup
 
+### I'm on Windows and AutomatosX is not working
+
+See the [Windows Quick Fix Guide](docs/troubleshooting/windows-quick-fix.md) for common Windows issues and quick solutions.
+
+For comprehensive Windows troubleshooting, see the [Windows Troubleshooting Guide](docs/troubleshooting/windows-troubleshooting.md).
+
 ### What are the system requirements?
 
 - **Node.js**: 20.0.0 or higher
