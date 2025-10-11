@@ -359,7 +359,8 @@ ax mcp
 - **[Terminal Mode Guide](docs/guide/terminal-mode.md)** - Complete CLI usage tutorial
 - **[Core Concepts](docs/guide/core-concepts.md)** - Understand agents, memory, providers
 - **[Installation Guide](docs/guide/installation.md)** - Detailed setup instructions
-- **[FAQ](FAQ.md)** - Common questions and troubleshooting
+- **[FAQ](FAQ.md)** - Common questions and answers
+- **[Troubleshooting](TROUBLESHOOTING.md)** - Problem solving and platform-specific issues
 
 ### Core Features
 - **[Agent Communication & Memory](docs/guide/agent-communication.md)** - How agents communicate and remember
