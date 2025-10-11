@@ -1,8 +1,8 @@
 # AutomatosX
 
-> **AI Agent Orchestration for Claude Code**
+> **Provider-Agnostic AI Agent Orchestration**
 >
-> Transform Claude Code into a multi-agent powerhouse with persistent memory, intelligent delegation, and zero-cost knowledge management.
+> A CLI-first tool for orchestrating specialized AI agents with persistent memory, intelligent delegation, and cross-provider support (Claude, Gemini, OpenAI).
 
 [![npm version](https://img.shields.io/npm/v/@defai.digital/automatosx.svg)](https://www.npmjs.com/package/@defai.digital/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
