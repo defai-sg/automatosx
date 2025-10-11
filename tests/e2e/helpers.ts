@@ -113,15 +113,23 @@ export async function createAgentProfile(
     team?: string;
   } = {}
 ): Promise<string> {
-  const profile = `name: ${name}
-team: ${options.team || 'core'}
-role: ${options.role || 'assistant'}
-description: "${options.description || `Test agent: ${name}`}"
-systemPrompt: "${options.systemPrompt || 'You are a helpful assistant.'}"
-abilities: ${JSON.stringify(options.abilities || [])}
-provider: ${options.provider || 'claude'}
-temperature: ${options.temperature ?? 0.7}
-`;
+  // Build profile without team field for test env (allows fallback to defaults)
+  const profileLines = [
+    `name: ${name}`,
+    `role: ${options.role || 'assistant'}`,
+    `description: "${options.description || `Test agent: ${name}`}"`,
+    `systemPrompt: "${options.systemPrompt || 'You are a helpful assistant.'}"`,
+    `abilities: ${JSON.stringify(options.abilities || [])}`,
+    `provider: ${options.provider || 'claude'}`,
+    `temperature: ${options.temperature ?? 0.7}`
+  ];
+
+  // Only add team if explicitly specified
+  if (options.team) {
+    profileLines.splice(1, 0, `team: ${options.team}`);
+  }
+
+  const profile = profileLines.join('\n') + '\n';
 
   const profilePath = join(env.agentsDir, `${name}.yaml`);
   await writeFile(profilePath, profile);
