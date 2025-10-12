@@ -30,9 +30,13 @@ describe('CLI: init command', () => {
     const automatosxDir = join(testDir, '.automatosx');
     await expect(pathExists(automatosxDir)).resolves.toBe(true);
     await expect(pathExists(join(automatosxDir, 'agents'))).resolves.toBe(true);
+    await expect(pathExists(join(automatosxDir, 'teams'))).resolves.toBe(true);
     await expect(pathExists(join(automatosxDir, 'abilities'))).resolves.toBe(true);
+    await expect(pathExists(join(automatosxDir, 'templates'))).resolves.toBe(true);
     await expect(pathExists(join(automatosxDir, 'memory'))).resolves.toBe(true);
-    await expect(pathExists(join(automatosxDir, 'workspaces'))).resolves.toBe(true);
+    await expect(pathExists(join(automatosxDir, 'memory', 'exports'))).resolves.toBe(true);
+    await expect(pathExists(join(automatosxDir, 'sessions'))).resolves.toBe(true);
+    await expect(pathExists(join(automatosxDir, 'logs'))).resolves.toBe(true);
 
     // Verify config file
     const configPath = join(testDir, 'automatosx.config.json');

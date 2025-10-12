@@ -140,6 +140,11 @@ export const initCommand: CommandModule<Record<string, unknown>, InitOptions> = 
       createdResources.push(join(projectDir, '.claude'));
       console.log(chalk.green('   ✓ Claude Code integration configured'));
 
+      // Initialize git repository if needed (for Codex CLI compatibility)
+      console.log(chalk.cyan('🔧 Initializing git repository...'));
+      await initializeGitRepository(projectDir);
+      console.log(chalk.green('   ✓ Git repository initialized'));
+
       // Create .gitignore entry
       console.log(chalk.cyan('📝 Updating .gitignore...'));
       await updateGitignore(projectDir);
@@ -432,6 +437,74 @@ async function setupClaudeIntegration(projectDir: string, packageRoot: string): 
   for (const file of mcpFiles) {
     if (file.endsWith('.json')) {
       await copyFile(join(mcpSourceDir, file), join(mcpDir, file));
+    }
+  }
+}
+
+/**
+ * Initialize git repository if needed (for Codex CLI compatibility)
+ *
+ * Codex CLI requires the project to be in a git repository.
+ * This function checks if the directory is already a git repo and initializes if needed.
+ */
+async function initializeGitRepository(projectDir: string): Promise<void> {
+  const gitDir = join(projectDir, '.git');
+
+  try {
+    // Check if already a git repository
+    const isGitRepo = await checkExists(gitDir);
+
+    if (isGitRepo) {
+      logger.info('Git repository already exists, skipping initialization');
+      return;
+    }
+
+    // Try to initialize git repository
+    const { spawn } = await import('child_process');
+
+    await new Promise<void>((resolve, reject) => {
+      const child = spawn('git', ['init'], {
+        cwd: projectDir,
+        stdio: 'pipe'
+      });
+
+      let stderr = '';
+
+      child.stderr?.on('data', (data) => {
+        stderr += data.toString();
+      });
+
+      child.on('close', (code) => {
+        if (code !== 0) {
+          reject(new Error(`git init failed with code ${code}: ${stderr}`));
+        } else {
+          logger.info('Git repository initialized successfully');
+          resolve();
+        }
+      });
+
+      child.on('error', (error) => {
+        reject(error);
+      });
+    });
+
+  } catch (error) {
+    // Git initialization failed - this is non-critical
+    // Show warning but don't block initialization
+    const errorMessage = (error as Error).message;
+
+    if (errorMessage.includes('ENOENT') || errorMessage.includes('spawn git')) {
+      console.log(chalk.yellow('   ⚠️  Git is not installed - skipping repository initialization'));
+      console.log(chalk.gray('      Note: Codex CLI requires git. Install git to use Codex provider.'));
+      logger.warn('Git not found, skipping repository initialization', {
+        error: errorMessage
+      });
+    } else {
+      console.log(chalk.yellow('   ⚠️  Failed to initialize git repository'));
+      console.log(chalk.gray(`      ${errorMessage}`));
+      logger.warn('Git initialization failed', {
+        error: errorMessage
+      });
     }
   }
 }

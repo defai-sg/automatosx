@@ -30,6 +30,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Added
 
+- **Automatic Git Initialization** (`src/cli/commands/init.ts`):
+  - `ax init` now automatically initializes git repository for Codex CLI compatibility
+  - Smart detection: skips initialization if `.git` already exists
+  - Graceful handling: shows warning if git not installed, but continues initialization
+  - Impact: Codex provider works out-of-the-box without manual git setup
+  - Note: Claude CLI and Gemini CLI do not require git
+
 - **Enhanced Path Validation** (`src/core/workspace-manager.ts:validatePath()`):
   - Rejects empty paths and current directory (`''`, `'.'`)
   - Prevents path traversal attacks
@@ -41,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated all architecture documentation
   - Updated code review checklist
   - Added migration guide to CLAUDE.md
+  - Added git initialization documentation in README and CLAUDE.md
 
 #### Changed
 

@@ -315,6 +315,7 @@ ax init --force
 - Sets up memory database (SQLite FTS5)
 - Creates shared workspace structure (PRD for planning, tmp for temporary files)
 - Generates `automatosx.config.json`
+- **NEW (v5.2.0)**: Automatically initializes git repository (required for Codex provider)
 
 **Verify Initialization**:
 

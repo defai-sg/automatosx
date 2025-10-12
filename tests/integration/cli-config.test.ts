@@ -62,7 +62,7 @@ describe('CLI: config command', () => {
       expect(result.stdout).toContain('Timeout');
       expect(result.stdout).toContain('Command');
       expect(result.stdout).toContain('Cleanup Days');
-      expect(result.stdout).toContain('Max Files');
+      expect(result.stdout).toContain('Tmp Path');
     }, 10000);
   });
 
