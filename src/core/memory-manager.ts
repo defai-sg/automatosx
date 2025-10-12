@@ -454,9 +454,10 @@ export class MemoryManager implements IMemoryManager {
       }
 
       return results.map(row => {
-        // FTS5 rank is negative (higher rank = more relevant)
+        // FTS5 bm25() returns non-negative scores where lower is more relevant
         // Convert to similarity score (0-1, higher is better)
-        const similarity = Math.max(0, Math.min(1, 1 + (row.relevance / 10)));
+        // Use inverse function: as bm25 score increases, similarity decreases
+        const similarity = Math.max(0, Math.min(1, 1 / (1 + Math.abs(row.relevance))));
 
         return {
           entry: {
@@ -471,6 +472,10 @@ export class MemoryManager implements IMemoryManager {
           similarity,
           distance: 1 - similarity
         };
+      }).filter(result => {
+        // Apply threshold filter if specified
+        const threshold = query.threshold ?? 0;
+        return result.similarity >= threshold;
       });
     } catch (error) {
       throw new MemoryError(

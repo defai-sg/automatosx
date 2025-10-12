@@ -14,7 +14,7 @@ import type { Stage } from '../../types/agent.js';
 import { AgentNotFoundError } from '../../types/agent.js';
 import { MemoryManager } from '../../core/memory-manager.js';
 import { Router } from '../../core/router.js';
-import { PathResolver } from '../../core/path-resolver.js';
+import { PathResolver, detectProjectRoot } from '../../core/path-resolver.js';
 import { SessionManager } from '../../core/session-manager.js';
 import { WorkspaceManager } from '../../core/workspace-manager.js';
 import { TeamManager } from '../../core/team-manager.js';
@@ -125,11 +125,12 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
     let resolvedAgentName: string = argv.agent as string; // Default to input, will be resolved later
 
     try {
-      // 1. Load configuration
-      const config = await loadConfig(process.cwd());
+      // 1. Detect project root directory
+      // Use detectProjectRoot to properly resolve project root even from subdirectories
+      const projectDir = await detectProjectRoot(process.cwd());
 
-      // 2. Detect project directory
-      const projectDir = process.cwd(); // Use cwd for now
+      // 2. Load configuration from project root
+      const config = await loadConfig(projectDir);
 
       if (argv.verbose) {
         console.log(chalk.gray(`Project: ${projectDir}`));
