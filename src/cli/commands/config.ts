@@ -273,12 +273,12 @@ async function listConfig(config: AutomatosXConfig, verbose: boolean): Promise<v
   console.log(chalk.bold.white('│ ') + chalk.bold.cyan('Workspace'));
   console.log(chalk.bold.white('└─────────────────────────────────────────────────────\n'));
 
-  console.log(formatKeyValue('  Base Path      ', chalk.blue(config.workspace.basePath)));
-  console.log(formatKeyValue('  Auto Cleanup   ', config.workspace.autoCleanup ? chalk.green('✓ Enabled') : chalk.gray('✗ Disabled')));
+  console.log(formatKeyValue('  PRD Path       ', chalk.blue(config.workspace.prdPath)));
+  console.log(formatKeyValue('  Tmp Path       ', chalk.blue(config.workspace.tmpPath)));
+  console.log(formatKeyValue('  Auto Cleanup   ', config.workspace.autoCleanupTmp ? chalk.green('✓ Enabled') : chalk.gray('✗ Disabled')));
 
   if (verbose) {
-    console.log(formatKeyValue('  Cleanup Days   ', chalk.yellow(config.workspace.cleanupDays.toString())));
-    console.log(formatKeyValue('  Max Files      ', chalk.yellow(config.workspace.maxFiles.toString())));
+    console.log(formatKeyValue('  Cleanup Days   ', chalk.yellow(config.workspace.tmpCleanupDays.toString())));
   }
 
   // Logging Section

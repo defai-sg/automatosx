@@ -163,19 +163,18 @@ export interface Session {
 /**
  * Orchestration Configuration - Agent collaboration capabilities
  *
- * Defines workspace access and delegation depth limits for agents.
+ * Defines delegation depth limits for agents.
  * All agents can delegate by default (v4.9.0+). Safety is ensured through
  * cycle detection, depth limits, and timeouts.
+ *
+ * v5.2.0: Workspace permission fields removed. All agents have equal access
+ * to automatosx/PRD and automatosx/tmp.
  *
  * @example
  * ```yaml
  * # .automatosx/agents/backend.yaml
  * orchestration:
  *   maxDelegationDepth: 3
- *   canReadWorkspaces:
- *     - frontend
- *     - data
- *   canWriteToShared: true
  * ```
  */
 export interface OrchestrationConfig {
@@ -192,11 +191,8 @@ export interface OrchestrationConfig {
    */
   maxDelegationDepth?: number;
 
-  /** Whitelist of agents' workspaces this agent can read */
-  canReadWorkspaces?: string[];
-
-  /** Whether this agent can write to shared workspace */
-  canWriteToShared?: boolean;
+  // v5.2.0: Removed workspace permission controls
+  // All agents have equal access to automatosx/PRD and automatosx/tmp
 }
 
 /**
@@ -254,6 +250,9 @@ export class SessionError extends Error {
 
 /**
  * Workspace Error - Specialized error for workspace operations
+ *
+ * @deprecated v5.2.0 - Simplified WorkspaceManager now throws standard Error
+ * Kept for backward compatibility during transition period
  */
 export class WorkspaceError extends Error {
   constructor(

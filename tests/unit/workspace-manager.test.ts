@@ -1,5 +1,9 @@
 /**
- * Workspace Manager - Unit Tests
+ * Workspace Manager - Unit Tests (v5.2.0)
+ *
+ * Tests for simplified shared workspace structure:
+ * - automatosx/PRD/ - Planning documents (permanent)
+ * - automatosx/tmp/ - Temporary files (auto-cleanup)
  *
  * @group unit
  * @group core
@@ -9,12 +13,9 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
-import { randomUUID } from 'crypto';
 import { WorkspaceManager } from '../../src/core/workspace-manager.js';
-import { WorkspaceError } from '../../src/types/orchestration.js';
-import type { AgentProfile } from '../../src/types/agent.js';
 
-describe('WorkspaceManager', () => {
+describe('WorkspaceManager (v5.2.0)', () => {
   let workspaceManager: WorkspaceManager;
   let testProjectDir: string;
 
@@ -22,7 +23,6 @@ describe('WorkspaceManager', () => {
     // Create temp directory for testing
     testProjectDir = await fs.mkdtemp(path.join(os.tmpdir(), 'workspace-test-'));
     workspaceManager = new WorkspaceManager(testProjectDir);
-    await workspaceManager.initialize();
   });
 
   afterEach(async () => {
@@ -30,525 +30,445 @@ describe('WorkspaceManager', () => {
     await fs.rm(testProjectDir, { recursive: true, force: true });
   });
 
-  describe('Initialization', () => {
-    it('should create workspace directory structure', async () => {
-      const workspacesRoot = path.join(testProjectDir, '.automatosx', 'workspaces');
-      const sharedRoot = path.join(workspacesRoot, 'shared');
-      const sessionsRoot = path.join(sharedRoot, 'sessions');
-      const persistentRoot = path.join(sharedRoot, 'persistent');
+  describe('PRD Workspace', () => {
+    describe('Writing', () => {
+      it('should write file to PRD workspace', async () => {
+        const content = '# API Specification\n\nGET /users';
+        await workspaceManager.writePRD('api-spec.md', content);
 
-      const [workspacesStat, sharedStat, sessionsStat, persistentStat] = await Promise.all([
-        fs.stat(workspacesRoot),
-        fs.stat(sharedRoot),
-        fs.stat(sessionsRoot),
-        fs.stat(persistentRoot)
-      ]);
+        const filePath = path.join(testProjectDir, 'automatosx', 'PRD', 'api-spec.md');
+        const written = await fs.readFile(filePath, 'utf-8');
+        expect(written).toBe(content);
+      });
 
-      expect(workspacesStat.isDirectory()).toBe(true);
-      expect(sharedStat.isDirectory()).toBe(true);
-      expect(sessionsStat.isDirectory()).toBe(true);
-      expect(persistentStat.isDirectory()).toBe(true);
+      it('should create PRD directory on first write (lazy initialization)', async () => {
+        const prdPath = path.join(testProjectDir, 'automatosx', 'PRD');
+
+        // Verify directory doesn't exist yet
+        await expect(fs.stat(prdPath)).rejects.toThrow();
+
+        // Write a file - should create directory
+        await workspaceManager.writePRD('test.md', 'content');
+
+        // Verify directory was created
+        const stat = await fs.stat(prdPath);
+        expect(stat.isDirectory()).toBe(true);
+      });
+
+      it('should create nested directories when writing', async () => {
+        await workspaceManager.writePRD(
+          'features/auth/api-spec.md',
+          '# Auth API'
+        );
+
+        const filePath = path.join(
+          testProjectDir,
+          'automatosx',
+          'PRD',
+          'features/auth/api-spec.md'
+        );
+
+        const stat = await fs.stat(filePath);
+        expect(stat.isFile()).toBe(true);
+      });
+
+      it('should reject empty paths', async () => {
+        await expect(
+          workspaceManager.writePRD('', 'content')
+        ).rejects.toThrow('File path cannot be empty');
+      });
+
+      it('should reject current directory paths', async () => {
+        await expect(
+          workspaceManager.writePRD('.', 'content')
+        ).rejects.toThrow('Cannot write to base directory itself');
+
+        await expect(
+          workspaceManager.writePRD('./', 'content')
+        ).rejects.toThrow('Cannot write to base directory itself');
+      });
+
+      it('should reject path traversal attempts', async () => {
+        await expect(
+          workspaceManager.writePRD('../../../etc/passwd', 'malicious')
+        ).rejects.toThrow('Path traversal detected');
+      });
+
+      it('should reject absolute paths', async () => {
+        await expect(
+          workspaceManager.writePRD('/etc/passwd', 'malicious')
+        ).rejects.toThrow('Absolute paths not allowed');
+      });
+
+      it('should reject complex path traversal with multiple ..', async () => {
+        await expect(
+          workspaceManager.writePRD('a/../../b/../../../etc/passwd', 'malicious')
+        ).rejects.toThrow('Path traversal detected');
+      });
+
+      it('should allow valid nested paths with ./', async () => {
+        await expect(
+          workspaceManager.writePRD('./features/auth.md', 'content')
+        ).resolves.not.toThrow();
+
+        const filePath = path.join(
+          testProjectDir,
+          'automatosx',
+          'PRD',
+          'features/auth.md'
+        );
+
+        const stat = await fs.stat(filePath);
+        expect(stat.isFile()).toBe(true);
+      });
+
+      it('should reject files exceeding 10MB', async () => {
+        const largeContent = 'x'.repeat(11 * 1024 * 1024);
+
+        await expect(
+          workspaceManager.writePRD('large.txt', largeContent)
+        ).rejects.toThrow('File too large');
+      });
+
+      it('should accept files under 10MB', async () => {
+        const content = 'x'.repeat(5 * 1024 * 1024);
+
+        await expect(
+          workspaceManager.writePRD('ok.txt', content)
+        ).resolves.not.toThrow();
+      });
+
+      it('should handle multi-byte characters in file size calculation', async () => {
+        // Chinese characters are 3 bytes each
+        // 3.5M characters * 3 bytes = 10.5MB (over limit)
+        const largeContent = '測試'.repeat(3500000);
+
+        await expect(
+          workspaceManager.writePRD('chinese.txt', largeContent)
+        ).rejects.toThrow('File too large');
+      });
+    });
+
+    describe('Reading', () => {
+      it('should read file from PRD workspace', async () => {
+        const content = '# API Specification';
+        await workspaceManager.writePRD('api-spec.md', content);
+
+        const read = await workspaceManager.readPRD('api-spec.md');
+        expect(read).toBe(content);
+      });
+
+      it('should read nested files', async () => {
+        const content = '# Auth API';
+        await workspaceManager.writePRD('features/auth/spec.md', content);
+
+        const read = await workspaceManager.readPRD('features/auth/spec.md');
+        expect(read).toBe(content);
+      });
+
+      it('should throw error when file not found', async () => {
+        await expect(
+          workspaceManager.readPRD('nonexistent.md')
+        ).rejects.toThrow();
+      });
+
+      it('should reject path traversal in reads', async () => {
+        await expect(
+          workspaceManager.readPRD('../../../etc/passwd')
+        ).rejects.toThrow('Path traversal detected');
+      });
+    });
+
+    describe('Listing', () => {
+      it('should list files in PRD workspace', async () => {
+        await workspaceManager.writePRD('file1.md', 'content1');
+        await workspaceManager.writePRD('features/file2.md', 'content2');
+        await workspaceManager.writePRD('designs/ui.md', 'content3');
+
+        const files = await workspaceManager.listPRD();
+
+        expect(files).toHaveLength(3);
+        expect(files).toContain('file1.md');
+        expect(files).toContain(path.join('features', 'file2.md'));
+        expect(files).toContain(path.join('designs', 'ui.md'));
+      });
+
+      it('should return empty array when PRD directory is empty', async () => {
+        // Create PRD directory
+        await workspaceManager.writePRD('temp.md', 'content');
+        await fs.unlink(path.join(testProjectDir, 'automatosx', 'PRD', 'temp.md'));
+
+        const files = await workspaceManager.listPRD();
+        expect(files).toEqual([]);
+      });
+
+      it('should return empty array when PRD directory does not exist', async () => {
+        const files = await workspaceManager.listPRD();
+        expect(files).toEqual([]);
+      });
     });
   });
 
-  describe('Session Workspace Creation', () => {
-    it('should create session workspace with proper structure', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
+  describe('Tmp Workspace', () => {
+    describe('Writing', () => {
+      it('should write file to tmp workspace', async () => {
+        const content = 'console.log("test");';
+        await workspaceManager.writeTmp('test-script.js', content);
 
-      const workspacesRoot = path.join(testProjectDir, '.automatosx', 'workspaces');
-      const sessionDir = path.join(workspacesRoot, 'shared', 'sessions', sessionId);
-      const specsDir = path.join(sessionDir, 'specs');
-      const outputsDir = path.join(sessionDir, 'outputs');
+        const filePath = path.join(testProjectDir, 'automatosx', 'tmp', 'test-script.js');
+        const written = await fs.readFile(filePath, 'utf-8');
+        expect(written).toBe(content);
+      });
 
-      const [sessionStat, specsStat, outputsStat] = await Promise.all([
-        fs.stat(sessionDir),
-        fs.stat(specsDir),
-        fs.stat(outputsDir)
-      ]);
+      it('should create tmp directory on first write (lazy initialization)', async () => {
+        const tmpPath = path.join(testProjectDir, 'automatosx', 'tmp');
 
-      expect(sessionStat.isDirectory()).toBe(true);
-      expect(specsStat.isDirectory()).toBe(true);
-      expect(outputsStat.isDirectory()).toBe(true);
+        // Verify directory doesn't exist yet
+        await expect(fs.stat(tmpPath)).rejects.toThrow();
+
+        // Write a file - should create directory
+        await workspaceManager.writeTmp('test.js', 'content');
+
+        // Verify directory was created
+        const stat = await fs.stat(tmpPath);
+        expect(stat.isDirectory()).toBe(true);
+      });
+
+      it('should create nested directories when writing', async () => {
+        await workspaceManager.writeTmp(
+          'analysis/user-data.json',
+          '{"users": 100}'
+        );
+
+        const filePath = path.join(
+          testProjectDir,
+          'automatosx',
+          'tmp',
+          'analysis/user-data.json'
+        );
+
+        const stat = await fs.stat(filePath);
+        expect(stat.isFile()).toBe(true);
+      });
+
+      it('should reject path traversal attempts', async () => {
+        await expect(
+          workspaceManager.writeTmp('../../../etc/passwd', 'malicious')
+        ).rejects.toThrow('Path traversal detected');
+      });
+
+      it('should reject absolute paths', async () => {
+        await expect(
+          workspaceManager.writeTmp('/tmp/malicious.txt', 'malicious')
+        ).rejects.toThrow('Absolute paths not allowed');
+      });
     });
 
-    it('should handle duplicate session workspace creation gracefully', async () => {
-      const sessionId = randomUUID();
+    describe('Reading', () => {
+      it('should read file from tmp workspace', async () => {
+        const content = 'console.log("test");';
+        await workspaceManager.writeTmp('script.js', content);
 
-      await workspaceManager.createSessionWorkspace(sessionId);
-      await expect(
-        workspaceManager.createSessionWorkspace(sessionId)
-      ).resolves.not.toThrow();
-    });
-  });
+        const read = await workspaceManager.readTmp('script.js');
+        expect(read).toBe(content);
+      });
 
-  describe('Writing to Session', () => {
-    it('should write file to session workspace', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
+      it('should read nested files', async () => {
+        const content = '{"data": "test"}';
+        await workspaceManager.writeTmp('analysis/results.json', content);
 
-      const content = '# API Specification\n\nGET /users';
-      await workspaceManager.writeToSession(
-        sessionId,
-        'backend',
-        'api-spec.md',
-        content
-      );
+        const read = await workspaceManager.readTmp('analysis/results.json');
+        expect(read).toBe(content);
+      });
 
-      const workspacesRoot = path.join(testProjectDir, '.automatosx', 'workspaces');
-      const filePath = path.join(
-        workspacesRoot,
-        'shared',
-        'sessions',
-        sessionId,
-        'outputs',
-        'backend',
-        'api-spec.md'
-      );
-
-      const written = await fs.readFile(filePath, 'utf-8');
-      expect(written).toBe(content);
+      it('should throw error when file not found', async () => {
+        await expect(
+          workspaceManager.readTmp('nonexistent.js')
+        ).rejects.toThrow();
+      });
     });
 
-    it('should create nested directories when writing', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
+    describe('Listing', () => {
+      it('should list files in tmp workspace', async () => {
+        await workspaceManager.writeTmp('script1.js', 'content1');
+        await workspaceManager.writeTmp('analysis/data.json', 'content2');
+        await workspaceManager.writeTmp('reports/summary.md', 'content3');
 
-      await workspaceManager.writeToSession(
-        sessionId,
-        'backend',
-        'api/models/user.ts',
-        'export interface User {}'
-      );
+        const files = await workspaceManager.listTmp();
 
-      const workspacesRoot = path.join(testProjectDir, '.automatosx', 'workspaces');
-      const filePath = path.join(
-        workspacesRoot,
-        'shared',
-        'sessions',
-        sessionId,
-        'outputs',
-        'backend',
-        'api/models/user.ts'
-      );
+        expect(files).toHaveLength(3);
+        expect(files).toContain('script1.js');
+        expect(files).toContain(path.join('analysis', 'data.json'));
+        expect(files).toContain(path.join('reports', 'summary.md'));
+      });
 
-      const stat = await fs.stat(filePath);
-      expect(stat.isFile()).toBe(true);
+      it('should return empty array when tmp directory is empty', async () => {
+        // Create tmp directory
+        await workspaceManager.writeTmp('temp.js', 'content');
+        await fs.unlink(path.join(testProjectDir, 'automatosx', 'tmp', 'temp.js'));
+
+        const files = await workspaceManager.listTmp();
+        expect(files).toEqual([]);
+      });
+
+      it('should return empty array when tmp directory does not exist', async () => {
+        const files = await workspaceManager.listTmp();
+        expect(files).toEqual([]);
+      });
     });
 
-    it('should reject path traversal attempts', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
+    describe('Cleanup', () => {
+      it('should remove old temporary files', async () => {
+        // Create test files
+        await workspaceManager.writeTmp('old-file.txt', 'old content');
+        await workspaceManager.writeTmp('recent-file.txt', 'recent content');
 
-      await expect(
-        workspaceManager.writeToSession(
-          sessionId,
-          'backend',
-          '../../../etc/passwd',
-          'malicious'
-        )
-      ).rejects.toThrow(WorkspaceError);
-    });
+        // Modify old file's timestamp to be 8 days old
+        const oldFilePath = path.join(
+          testProjectDir,
+          'automatosx',
+          'tmp',
+          'old-file.txt'
+        );
+        const eightDaysAgo = Date.now() - 8 * 24 * 60 * 60 * 1000;
+        await fs.utimes(oldFilePath, new Date(eightDaysAgo), new Date(eightDaysAgo));
 
-    it('should reject absolute paths', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
+        // Cleanup files older than 7 days
+        const removed = await workspaceManager.cleanupTmp(7);
 
-      await expect(
-        workspaceManager.writeToSession(
-          sessionId,
-          'backend',
-          '/etc/passwd',
-          'malicious'
-        )
-      ).rejects.toThrow(WorkspaceError);
-    });
+        expect(removed).toBe(1);
 
-    it('should reject complex path traversal with multiple ..', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
+        // Verify old file is removed
+        await expect(fs.stat(oldFilePath)).rejects.toThrow();
 
-      await expect(
-        workspaceManager.writeToSession(
-          sessionId,
-          'backend',
-          'a/../../b/../../../etc/passwd',
-          'malicious'
-        )
-      ).rejects.toThrow(WorkspaceError);
-    });
+        // Verify recent file still exists
+        const recentFilePath = path.join(
+          testProjectDir,
+          'automatosx',
+          'tmp',
+          'recent-file.txt'
+        );
+        const stat = await fs.stat(recentFilePath);
+        expect(stat.isFile()).toBe(true);
+      });
 
-    it('should reject path traversal with mixed separators', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
+      it('should not remove files within age threshold', async () => {
+        await workspaceManager.writeTmp('recent.txt', 'content');
 
-      await expect(
-        workspaceManager.writeToSession(
-          sessionId,
-          'backend',
-          './../../etc/passwd',
-          'malicious'
-        )
-      ).rejects.toThrow(WorkspaceError);
-    });
+        const removed = await workspaceManager.cleanupTmp(7);
 
-    it('should allow valid nested paths', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
+        expect(removed).toBe(0);
 
-      // Valid path with ./
-      await expect(
-        workspaceManager.writeToSession(
-          sessionId,
-          'backend',
-          './api/users.ts',
-          'content'
-        )
-      ).resolves.not.toThrow();
+        const filePath = path.join(
+          testProjectDir,
+          'automatosx',
+          'tmp',
+          'recent.txt'
+        );
+        const stat = await fs.stat(filePath);
+        expect(stat.isFile()).toBe(true);
+      });
 
-      // Verify file was created
-      const workspacesRoot = path.join(testProjectDir, '.automatosx', 'workspaces');
-      const filePath = path.join(
-        workspacesRoot,
-        'shared',
-        'sessions',
-        sessionId,
-        'outputs',
-        'backend',
-        'api/users.ts'
-      );
+      it('should handle nested directories in cleanup', async () => {
+        // Create nested old files
+        await workspaceManager.writeTmp('analysis/old-data.json', 'data');
+        await workspaceManager.writeTmp('reports/old-report.md', 'report');
 
-      const stat = await fs.stat(filePath);
-      expect(stat.isFile()).toBe(true);
-    });
-  });
+        // Make files old
+        const file1 = path.join(testProjectDir, 'automatosx', 'tmp', 'analysis/old-data.json');
+        const file2 = path.join(testProjectDir, 'automatosx', 'tmp', 'reports/old-report.md');
+        const oldDate = Date.now() - 8 * 24 * 60 * 60 * 1000;
 
-  describe('Reading from Agent Workspace', () => {
-    const createAgentProfile = (
-      name: string,
-      canReadWorkspaces?: string[]
-    ): AgentProfile => ({
-      name,
-      role: 'test',
-      description: 'Test agent',
-      systemPrompt: 'Test',
-      abilities: [],
-      orchestration: {
-        canReadWorkspaces
-      }
-    });
+        await fs.utimes(file1, new Date(oldDate), new Date(oldDate));
+        await fs.utimes(file2, new Date(oldDate), new Date(oldDate));
 
-    it('should read file from authorized agent workspace', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
+        const removed = await workspaceManager.cleanupTmp(7);
 
-      const content = '# API Spec';
-      await workspaceManager.writeToSession(
-        sessionId,
-        'backend',
-        'api-spec.md',
-        content
-      );
+        expect(removed).toBe(2);
+      });
 
-      const frontendProfile = createAgentProfile('frontend', ['backend']);
+      it('should return 0 when tmp directory does not exist', async () => {
+        const removed = await workspaceManager.cleanupTmp(7);
+        expect(removed).toBe(0);
+      });
 
-      const read = await workspaceManager.readFromAgentWorkspace(
-        frontendProfile,
-        'backend',
-        sessionId,
-        'api-spec.md'
-      );
+      it('should return 0 when tmp directory is empty', async () => {
+        // Create and immediately delete to have empty directory
+        await workspaceManager.writeTmp('temp.txt', 'content');
+        await fs.unlink(path.join(testProjectDir, 'automatosx', 'tmp', 'temp.txt'));
 
-      expect(read).toBe(content);
-    });
-
-    it('should deny reading without permission', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
-
-      await workspaceManager.writeToSession(
-        sessionId,
-        'backend',
-        'api-spec.md',
-        'content'
-      );
-
-      const frontendProfile = createAgentProfile('frontend', []); // No read permissions
-
-      await expect(
-        workspaceManager.readFromAgentWorkspace(
-          frontendProfile,
-          'backend',
-          sessionId,
-          'api-spec.md'
-        )
-      ).rejects.toThrow(WorkspaceError);
-    });
-
-    it('should deny reading when canReadWorkspaces is undefined', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
-
-      await workspaceManager.writeToSession(
-        sessionId,
-        'backend',
-        'api-spec.md',
-        'content'
-      );
-
-      const frontendProfile = createAgentProfile('frontend'); // No orchestration config
-
-      await expect(
-        workspaceManager.readFromAgentWorkspace(
-          frontendProfile,
-          'backend',
-          sessionId,
-          'api-spec.md'
-        )
-      ).rejects.toThrow(WorkspaceError);
-    });
-
-    it('should throw error when file not found', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
-
-      const frontendProfile = createAgentProfile('frontend', ['backend']);
-
-      await expect(
-        workspaceManager.readFromAgentWorkspace(
-          frontendProfile,
-          'backend',
-          sessionId,
-          'nonexistent.md'
-        )
-      ).rejects.toThrow(WorkspaceError);
-    });
-  });
-
-  describe('Writing to Shared Workspace', () => {
-    const createAgentProfile = (
-      name: string,
-      canWriteToShared?: boolean
-    ): AgentProfile => ({
-      name,
-      role: 'test',
-      description: 'Test agent',
-      systemPrompt: 'Test',
-      abilities: [],
-      orchestration: {
-        canWriteToShared
-      }
-    });
-
-    it('should write to shared workspace with permission', async () => {
-      const agentProfile = createAgentProfile('backend', true);
-      const content = 'export const template = "...";';
-
-      await workspaceManager.writeToShared(
-        agentProfile,
-        'templates/api-template.ts',
-        content
-      );
-
-      const workspacesRoot = path.join(testProjectDir, '.automatosx', 'workspaces');
-      const filePath = path.join(
-        workspacesRoot,
-        'shared',
-        'persistent',
-        'templates/api-template.ts'
-      );
-
-      const written = await fs.readFile(filePath, 'utf-8');
-      expect(written).toBe(content);
-    });
-
-    it('should deny writing without permission', async () => {
-      const agentProfile = createAgentProfile('backend', false);
-
-      await expect(
-        workspaceManager.writeToShared(
-          agentProfile,
-          'templates/template.ts',
-          'content'
-        )
-      ).rejects.toThrow(WorkspaceError);
-    });
-
-    it('should reject path traversal in shared workspace', async () => {
-      const agentProfile = createAgentProfile('backend', true);
-
-      await expect(
-        workspaceManager.writeToShared(
-          agentProfile,
-          '../../../etc/passwd',
-          'malicious'
-        )
-      ).rejects.toThrow(WorkspaceError);
-    });
-  });
-
-  describe('Listing Session Files', () => {
-    it('should list files in session workspace', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
-
-      await workspaceManager.writeToSession(
-        sessionId,
-        'backend',
-        'file1.md',
-        'content1'
-      );
-      await workspaceManager.writeToSession(
-        sessionId,
-        'backend',
-        'api/file2.ts',
-        'content2'
-      );
-
-      const files = await workspaceManager.listSessionFiles(
-        sessionId,
-        'backend'
-      );
-
-      expect(files).toHaveLength(2);
-      expect(files).toContain('file1.md');
-      expect(files).toContain(path.join('api', 'file2.ts'));
-    });
-
-    it('should return empty array when no files exist', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
-
-      const files = await workspaceManager.listSessionFiles(
-        sessionId,
-        'backend'
-      );
-
-      expect(files).toEqual([]);
-    });
-  });
-
-  describe('Session Cleanup', () => {
-    it('should remove inactive session workspaces', async () => {
-      // Create multiple sessions
-      const session1 = randomUUID();
-      const session2 = randomUUID();
-      const session3 = randomUUID();
-
-      await workspaceManager.createSessionWorkspace(session1);
-      await workspaceManager.createSessionWorkspace(session2);
-      await workspaceManager.createSessionWorkspace(session3);
-
-      // Cleanup, keeping only session-1 and session-2
-      const removed = await workspaceManager.cleanupSessions([
-        session1,
-        session2
-      ]);
-
-      expect(removed).toBe(1);
-
-      // Verify session-3 is removed
-      const workspacesRoot = path.join(testProjectDir, '.automatosx', 'workspaces');
-      const session3Dir = path.join(workspacesRoot, 'shared', 'sessions', session3);
-
-      await expect(fs.stat(session3Dir)).rejects.toThrow();
-    });
-
-    it('should not remove active sessions', async () => {
-      const session1 = randomUUID();
-      await workspaceManager.createSessionWorkspace(session1);
-
-      const removed = await workspaceManager.cleanupSessions([session1]);
-
-      expect(removed).toBe(0);
-
-      // Verify session-1 still exists
-      const workspacesRoot = path.join(testProjectDir, '.automatosx', 'workspaces');
-      const session1Dir = path.join(workspacesRoot, 'shared', 'sessions', session1);
-
-      const stat = await fs.stat(session1Dir);
-      expect(stat.isDirectory()).toBe(true);
+        const removed = await workspaceManager.cleanupTmp(7);
+        expect(removed).toBe(0);
+      });
     });
   });
 
   describe('Workspace Statistics', () => {
     it('should return accurate workspace statistics', async () => {
-      await workspaceManager.createSessionWorkspace(randomUUID());
-      await workspaceManager.createSessionWorkspace(randomUUID());
-      await workspaceManager.createAgentWorkspace('backend');
+      // Create files in both workspaces
+      await workspaceManager.writePRD('api-spec.md', 'API specification');
+      await workspaceManager.writePRD('designs/ui.md', 'UI designs');
+      await workspaceManager.writeTmp('test.js', 'Test script');
 
       const stats = await workspaceManager.getStats();
 
-      expect(stats.totalSessions).toBe(2);
-      expect(stats.agentWorkspaces).toBe(1);
-      expect(stats.totalSizeBytes).toBeDefined();
+      expect(stats.prdFiles).toBe(2);
+      expect(stats.tmpFiles).toBe(1);
+      expect(stats.totalSizeBytes).toBeGreaterThan(0);
+      expect(stats.prdSizeBytes).toBeGreaterThan(0);
+      expect(stats.tmpSizeBytes).toBeGreaterThan(0);
     });
 
-    it('should return zero stats when no workspaces exist', async () => {
+    it('should return zero stats when workspaces are empty', async () => {
       const stats = await workspaceManager.getStats();
 
-      expect(stats.totalSessions).toBe(0);
-      expect(stats.agentWorkspaces).toBe(0);
+      expect(stats.prdFiles).toBe(0);
+      expect(stats.tmpFiles).toBe(0);
+      expect(stats.totalSizeBytes).toBe(0);
+      expect(stats.prdSizeBytes).toBe(0);
+      expect(stats.tmpSizeBytes).toBe(0);
+    });
+
+    it('should calculate file sizes correctly', async () => {
+      const prdContent = 'a'.repeat(1000); // 1KB
+      const tmpContent = 'b'.repeat(2000); // 2KB
+
+      await workspaceManager.writePRD('file.md', prdContent);
+      await workspaceManager.writeTmp('file.js', tmpContent);
+
+      const stats = await workspaceManager.getStats();
+
+      expect(stats.prdSizeBytes).toBeGreaterThanOrEqual(1000);
+      expect(stats.tmpSizeBytes).toBeGreaterThanOrEqual(2000);
+      expect(stats.totalSizeBytes).toBe(stats.prdSizeBytes + stats.tmpSizeBytes);
     });
   });
 
-  describe('Agent Workspace Creation', () => {
-    it('should create agent workspace with proper structure', async () => {
-      await workspaceManager.createAgentWorkspace('backend');
-
-      const workspacesRoot = path.join(testProjectDir, '.automatosx', 'workspaces');
-      const agentDir = path.join(workspacesRoot, 'backend');
-      const draftsDir = path.join(agentDir, 'drafts');
-      const tempDir = path.join(agentDir, 'temp');
-
-      const [agentStat, draftsStat, tempStat] = await Promise.all([
-        fs.stat(agentDir),
-        fs.stat(draftsDir),
-        fs.stat(tempDir)
-      ]);
-
-      expect(agentStat.isDirectory()).toBe(true);
-      expect(draftsStat.isDirectory()).toBe(true);
-      expect(tempStat.isDirectory()).toBe(true);
+  describe('Error Handling', () => {
+    it('should provide clear error messages for path traversal', async () => {
+      await expect(
+        workspaceManager.writePRD('../outside.txt', 'content')
+      ).rejects.toThrow(/Path traversal detected/);
     });
-  });
 
-  describe('File Size Limits', () => {
-    it('should reject files exceeding 10MB', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
+    it('should provide clear error messages for absolute paths', async () => {
+      await expect(
+        workspaceManager.writePRD('/absolute/path.txt', 'content')
+      ).rejects.toThrow(/Absolute paths not allowed/);
+    });
 
-      // Create content larger than 10MB
+    it('should provide clear error messages for empty paths', async () => {
+      await expect(
+        workspaceManager.writePRD('', 'content')
+      ).rejects.toThrow(/File path cannot be empty/);
+    });
+
+    it('should provide clear error messages for file size violations', async () => {
       const largeContent = 'x'.repeat(11 * 1024 * 1024);
 
       await expect(
-        workspaceManager.writeToSession(sessionId, 'agent', 'large.txt', largeContent)
-      ).rejects.toThrow('File too large');
-    });
-
-    it('should accept files under 10MB', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
-
-      // Create content under 10MB (5MB)
-      const content = 'x'.repeat(5 * 1024 * 1024);
-
-      await expect(
-        workspaceManager.writeToSession(sessionId, 'agent', 'ok.txt', content)
-      ).resolves.not.toThrow();
-    });
-
-    it('should handle multi-byte characters in file size calculation', async () => {
-      const sessionId = randomUUID();
-      await workspaceManager.createSessionWorkspace(sessionId);
-
-      // Chinese characters are 3 bytes each
-      // 3.5M characters * 3 bytes = 10.5MB (over limit)
-      const largeContent = '測試'.repeat(3500000);
-
-      await expect(
-        workspaceManager.writeToSession(sessionId, 'agent', 'chinese.txt', largeContent)
-      ).rejects.toThrow('File too large');
+        workspaceManager.writePRD('large.txt', largeContent)
+      ).rejects.toThrow(/File too large/);
     });
   });
 });

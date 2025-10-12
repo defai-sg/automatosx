@@ -420,32 +420,7 @@ export function validateConfig(config: AutomatosXConfig): string[] {
         errors.push(`Orchestration: delegation.timeout must be <= ${VALIDATION_LIMITS.MAX_TIMEOUT}ms`);
       }
     }
-
-    // workspace.maxFileSize
-    if (!isPositiveInteger(config.orchestration.workspace.maxFileSize)) {
-      errors.push('Orchestration: workspace.maxFileSize must be a positive integer');
-    } else {
-      if (config.orchestration.workspace.maxFileSize < VALIDATION_LIMITS.MIN_FILE_SIZE) {
-        errors.push(`Orchestration: workspace.maxFileSize must be >= ${VALIDATION_LIMITS.MIN_FILE_SIZE} bytes`);
-      }
-      if (config.orchestration.workspace.maxFileSize > VALIDATION_LIMITS.MAX_FILE_SIZE) {
-        errors.push(`Orchestration: workspace.maxFileSize must be <= ${VALIDATION_LIMITS.MAX_FILE_SIZE} bytes (100MB max)`);
-      }
-    }
-
-    // workspace.maxFiles
-    if (!isPositiveInteger(config.orchestration.workspace.maxFiles)) {
-      errors.push('Orchestration: workspace.maxFiles must be a positive integer');
-    } else if (config.orchestration.workspace.maxFiles > 10000) {
-      errors.push('Orchestration: workspace.maxFiles must be <= 10000');
-    }
-
-    // workspace.cleanupAfterDays
-    if (!isPositiveInteger(config.orchestration.workspace.cleanupAfterDays)) {
-      errors.push('Orchestration: workspace.cleanupAfterDays must be a positive integer');
-    } else if (config.orchestration.workspace.cleanupAfterDays > 365) {
-      errors.push('Orchestration: workspace.cleanupAfterDays must be <= 365 days');
-    }
+    // v5.2: workspace validation moved to root level (see below)
   }
 
   // Validate memory
@@ -535,17 +510,19 @@ export function validateConfig(config: AutomatosXConfig): string[] {
     }
   }
 
-  // Validate workspace (legacy)
-  if (!isPositiveInteger(config.workspace.cleanupDays)) {
-    errors.push('Workspace: cleanupDays must be a positive integer');
-  } else if (config.workspace.cleanupDays > 365) {
-    errors.push('Workspace: cleanupDays must be <= 365 days');
+  // Validate workspace (v5.2: PRD/tmp structure)
+  if (typeof config.workspace.prdPath !== 'string' || !config.workspace.prdPath.trim()) {
+    errors.push('Workspace: prdPath must be a non-empty string');
   }
 
-  if (!isPositiveInteger(config.workspace.maxFiles)) {
-    errors.push('Workspace: maxFiles must be a positive integer');
-  } else if (config.workspace.maxFiles > 10000) {
-    errors.push('Workspace: maxFiles must be <= 10000');
+  if (typeof config.workspace.tmpPath !== 'string' || !config.workspace.tmpPath.trim()) {
+    errors.push('Workspace: tmpPath must be a non-empty string');
+  }
+
+  if (!isPositiveInteger(config.workspace.tmpCleanupDays)) {
+    errors.push('Workspace: tmpCleanupDays must be a positive integer');
+  } else if (config.workspace.tmpCleanupDays > 365) {
+    errors.push('Workspace: tmpCleanupDays must be <= 365 days');
   }
 
   // Validate logging
@@ -663,8 +640,9 @@ export function validateConfig(config: AutomatosXConfig): string[] {
     { name: 'Abilities: basePath', value: config.abilities?.basePath },
     { name: 'Abilities: fallbackPath', value: config.abilities?.fallbackPath },
     { name: 'Orchestration: session.persistPath', value: config.orchestration?.session.persistPath },
-    { name: 'Orchestration: workspace.basePath', value: config.orchestration?.workspace.basePath },
-    { name: 'Workspace: basePath', value: config.workspace.basePath }
+    // v5.2: Workspace moved to root level
+    { name: 'Workspace: prdPath', value: config.workspace.prdPath },
+    { name: 'Workspace: tmpPath', value: config.workspace.tmpPath }
   ];
 
   for (const { name, value } of pathFields) {

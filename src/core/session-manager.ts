@@ -568,8 +568,8 @@ export class SessionManager {
    * const result = await sessionManager.cleanupOldSessions();
    * console.log(`Removed ${result.removedCount} sessions`);
    *
-   * // Use removedSessionIds to cleanup corresponding workspaces
-   * await workspaceManager.cleanupSessionWorkspaces(result.removedSessionIds);
+   * // v5.2: Session workspaces no longer exist
+   * // All agents share automatosx/PRD and automatosx/tmp
    * ```
    */
   async cleanupOldSessions(maxAgeDays: number = 7): Promise<{

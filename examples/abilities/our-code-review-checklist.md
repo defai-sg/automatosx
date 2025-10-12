@@ -21,9 +21,9 @@
 
 ### Security
 
-- [ ] **Path validation** - All file access through PathResolver
+- [ ] **Path validation** - All file access through PathResolver or WorkspaceManager
 - [ ] **Input sanitization** - User inputs sanitized before use
-- [ ] **Workspace isolation** - Writes only to agent workspace
+- [ ] **Workspace boundaries** - Writes only to automatosx/PRD or automatosx/tmp (v5.2+)
 - [ ] **File size limits** - Check file sizes to prevent DoS
 - [ ] **No hardcoded secrets** - Use environment variables
 
@@ -145,5 +145,5 @@ logger.info('Profile loaded', {
 
 ---
 
-**Last Updated:** 2025-10-10
-**For:** AutomatosX v5.0+
+**Last Updated:** 2025-10-11
+**For:** AutomatosX v5.2+

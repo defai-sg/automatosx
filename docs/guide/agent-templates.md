@@ -210,14 +210,11 @@ systemPrompt: |
   - Follow the team's coding standards
   - Provide explanations for technical decisions
 
-# Orchestration settings
+# Orchestration settings (v5.2+)
 orchestration:
   maxDelegationDepth: 2
-  canReadWorkspaces:
-    - frontend
-    - backend
-    - database
-  canWriteToShared: true
+  # canReadWorkspaces and canWriteToShared removed in v5.2
+  # All agents have equal access to shared workspaces
 ```
 
 ### Template Variables
@@ -274,7 +271,7 @@ systemPrompt: |
 
 orchestration:
   maxDelegationDepth: 2
-  canWriteToShared: true
+  # canWriteToShared removed in v5.2 - all agents share workspaces
 EOF
 ```
 

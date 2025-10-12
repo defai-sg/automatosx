@@ -52,8 +52,11 @@ describe('Init Command', () => {
       await expect(pathExists(join(automatosxDir, 'agents'))).resolves.toBe(true);
       await expect(pathExists(join(automatosxDir, 'abilities'))).resolves.toBe(true);
       await expect(pathExists(join(automatosxDir, 'memory'))).resolves.toBe(true);
-      await expect(pathExists(join(automatosxDir, 'workspaces'))).resolves.toBe(true);
       await expect(pathExists(join(automatosxDir, 'logs'))).resolves.toBe(true);
+
+      // v5.2.0: Workspace directories are NOT created during init (lazy initialization)
+      // They are created on-demand by WorkspaceManager when first needed
+      // Therefore we don't check for automatosx/PRD/ or automatosx/tmp/ here
 
       // Verify config file
       const configPath = join(testDir, 'automatosx.config.json');
@@ -120,8 +123,9 @@ describe('Init Command', () => {
       const content = await readFile(gitignorePath, 'utf-8');
       expect(content).toContain('# AutomatosX');
       expect(content).toContain('.automatosx/memory/');
-      expect(content).toContain('.automatosx/workspaces/');
       expect(content).toContain('.automatosx/logs/');
+      // v5.2.0: Changed from .automatosx/workspaces/ to automatosx/tmp/
+      expect(content).toContain('automatosx/tmp/');
     });
 
     it('should handle error when directory creation fails', async () => {

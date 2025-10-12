@@ -537,10 +537,10 @@ Performance:
   Memory Usage: 57MB
   Last Run: 5 minutes ago
 
-Workspace:
-  Path: /project/.automatosx/workspaces
-  Size: 12.5 MB
-  Agents: 3 active
+Workspace (v5.2+):
+  PRD: /project/automatosx/PRD (shared documents)
+  Tmp: /project/automatosx/tmp (temporary files)
+  Total Size: 12.5 MB
 
 Logs:
   Path: /project/.automatosx/logs
@@ -619,10 +619,11 @@ Memory:
   autoCleanup: true
   cleanupDays: 30
 
-Workspace:
-  basePath: .automatosx/workspaces
-  maxFiles: 100
-  autoCleanup: true
+Workspace (v5.2+):
+  prdPath: automatosx/PRD
+  tmpPath: automatosx/tmp
+  autoCleanupTmp: true
+  tmpCleanupDays: 7
 
 Logging:
   level: info

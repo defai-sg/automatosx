@@ -162,14 +162,12 @@ describe('Orchestration Types', () => {
   describe('OrchestrationConfig', () => {
     it('should validate OrchestrationConfig structure', () => {
       const config: OrchestrationConfig = {
-        maxDelegationDepth: 2,
-        canReadWorkspaces: ['frontend'],
-        canWriteToShared: true
+        maxDelegationDepth: 2
+        // v5.2.0: canReadWorkspaces and canWriteToShared removed
+        // All agents now have equal access to automatosx/PRD and automatosx/tmp
       };
 
       expect(config.maxDelegationDepth).toBe(2);
-      expect(config.canReadWorkspaces).toHaveLength(1);
-      expect(config.canWriteToShared).toBe(true);
     });
 
     it('should allow minimal config', () => {

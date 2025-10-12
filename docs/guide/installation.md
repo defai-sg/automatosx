@@ -136,44 +136,28 @@ This command creates:
 ├── abilities/           # Custom ability definitions
 │   ├── web-search.md    # Example ability
 │   └── ...
-├── memory.db            # SQLite + vec database
-└── workspaces/          # Agent workspaces (auto-created)
+└── memory/              # Memory storage
+    └── memories.db      # SQLite FTS5 database
 ```
 
 <details>
-<summary>Default Configuration</summary>
+<summary>Default Configuration (v5.2+)</summary>
 
-```json
-{
-  "version": "4.0.0",
-  "projectRoot": "/path/to/your/project",
-  "paths": {
-    "agents": ".automatosx/agents",
-    "abilities": ".automatosx/abilities",
-    "memory": ".automatosx/memory.db",
-    "workspaces": ".automatosx/workspaces"
-  },
-  "providers": {
-    "claude": {
-      "apiKey": "",
-      "enabled": false
-    },
-    "gemini": {
-      "apiKey": "",
-      "enabled": false
-    },
-    "openai": {
-      "apiKey": "",
-      "enabled": false
-    }
-  },
-  "memory": {
-    "enabled": true,
-    "dimensions": 1536,
-    "similarityThreshold": 0.7
-  }
-}
-```
+Configuration is managed through `automatosx.config.json` in the project root.
+
+Key sections:
+- **providers**: Provider CLI configuration (timeout, health checks)
+- **execution**: Execution parameters (timeout, retry logic)
+- **orchestration**: Session and delegation settings
+- **memory**: Memory storage configuration
+- **workspace**: PRD and tmp workspace paths (v5.2+)
+- **abilities**: Ability loading configuration
+- **logging**: Log levels and retention
+- **performance**: Cache settings and rate limiting
+
+Use `ax config show` to view full configuration, or `ax config get <key>` to get specific values.
+
+See `automatosx.config.json` in the project root for complete default values.
 
 </details>
 

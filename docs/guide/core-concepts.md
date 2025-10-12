@@ -406,59 +406,52 @@ A **workspace** is an isolated directory where an agent can write files.
 - ❌ System files (blocked)
 - ❌ Parent directories via `../` (blocked)
 
-**Write Access**: Agents can only write to:
+**Write Access** (v5.2+): Agents write to shared workspaces:
 
-- ✅ Their workspace: `.automatosx/workspaces/<agent-name>/`
-- ❌ Project files (blocked)
+- ✅ PRD workspace: `automatosx/PRD/` (planning documents)
+- ✅ Tmp workspace: `automatosx/tmp/` (temporary files)
+- ❌ Project files (blocked without explicit permission)
 - ❌ System files (blocked)
 
-### Workspace Structure
+### Workspace Structure (v5.2+)
 
 ```
-.automatosx/workspaces/
-├── assistant/           # assistant agent workspace
-│   ├── scratch.txt
-│   └── notes.md
-├── coder/              # coder agent workspace
-│   ├── generated-code.ts
-│   └── refactored.ts
-└── reviewer/           # reviewer agent workspace
-    ├── review-notes.md
-    └── issues.json
+automatosx/
+├── PRD/                # Shared planning documents
+│   ├── requirements.md
+│   ├── architecture.md
+│   └── design-specs/
+└── tmp/                # Temporary files (auto-cleanup)
+    ├── draft-code.ts
+    ├── analysis.json
+    └── scratch-notes.md
 ```
 
-### Why Workspaces?
+### Why This Structure?
 
-**Safety**: Prevent accidental overwrites
+**Collaboration**: All agents share the same workspace
 
 ```bash
-# Agent can't do this
-rm -rf /important-files
+# All agents can read/write to PRD
+echo "requirements" > automatosx/PRD/requirements.md
 
-# Agent can only do this
-echo "notes" > .automatosx/workspaces/assistant/notes.txt
+# All agents can use tmp for temporary work
+echo "draft" > automatosx/tmp/draft.md
 ```
 
-**Isolation**: Each agent has its own space
+**Automatic Cleanup**: Tmp files are automatically cleaned up
 
 ```bash
-# coder writes here
-.automatosx/workspaces/coder/output.ts
-
-# reviewer writes here
-.automatosx/workspaces/reviewer/review.md
-
-# No conflicts!
+# Files older than 7 days are removed automatically
+# (configurable via workspace.tmpCleanupDays)
 ```
 
-**Cleanup**: Easy to clean up agent outputs
+**Path Validation**: All writes are validated for security
 
 ```bash
-# Remove all agent outputs
-rm -rf .automatosx/workspaces/*
-
-# Remove specific agent
-rm -rf .automatosx/workspaces/coder/
+# Agents can't escape the workspace
+# Path traversal attempts (../) are blocked
+# Absolute paths are rejected
 ```
 
 ---
@@ -483,12 +476,12 @@ rm -rf .automatosx/workspaces/coder/
    - Loads `coder` profile from `.automatosx/agents/coder.yaml`
    - Loads abilities: `code-analysis`, `file-operations`
    - Searches memory for relevant past code reviews
-   - Creates workspace: `.automatosx/workspaces/coder/`
+   - Provides access to shared workspaces: `automatosx/PRD/` and `automatosx/tmp/`
 
 4. **AI Provider** (Claude):
    - Receives system prompt + abilities + memory context + user request
    - Generates refactored code
-   - Writes output to workspace
+   - Can write output to shared workspace (with path validation)
 
 5. **AutomatosX**:
    - Returns response to Claude Code

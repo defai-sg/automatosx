@@ -1,9 +1,11 @@
 /**
  * Context Manager - Create and manage execution contexts for agents
+ *
+ * v5.2.0: Simplified to use shared automatosx/PRD and automatosx/tmp
+ * instead of agent-specific workspaces
  */
 
-import { mkdir, chmod } from 'fs/promises';
-import { join, resolve } from 'path';
+import { join } from 'path';
 import type {
   ExecutionContext,
   AgentProfile,
@@ -92,26 +94,13 @@ export class ContextManager {
     const projectDir = await this.config.pathResolver.detectProjectRoot();
     const workingDir = process.cwd();
 
-    // Security: Sanitize agent name for directory (prevent path traversal)
+    // v5.2: Agent-specific workspaces removed
+    // Keep agentWorkspace field for backward compatibility, but don't create directory
+    // All agents now share automatosx/PRD and automatosx/tmp
     const agentDirName = agent.name.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
     const agentWorkspace = join(projectDir, '.automatosx', 'workspaces', agentDirName);
 
-    // Security: Verify workspace is within project boundary
-    const resolvedWorkspace = resolve(agentWorkspace);
-    const resolvedProject = resolve(projectDir);
-    if (!resolvedWorkspace.startsWith(resolvedProject)) {
-      throw PathError.traversal(agentWorkspace);
-    }
-
-    // 6. Create workspace with restricted permissions
-    await mkdir(agentWorkspace, { recursive: true });
-
-    // Security: Set restrictive permissions on Unix (700 = owner only)
-    if (process.platform !== 'win32') {
-      await chmod(agentWorkspace, 0o700);
-    }
-
-    logger.debug('Agent workspace created', { workspace: agentWorkspace });
+    logger.debug('Agent workspace path defined (not created)', { workspace: agentWorkspace });
 
     // 7. Handle session (if sessionId provided)
     let session: Session | undefined;
@@ -141,10 +130,9 @@ export class ContextManager {
       // Only exclude self to prevent direct self-delegation (cycles still detected)
       const availableAgents = allAgents.filter(a => a !== agent.name);
 
-      // Get shared workspace path
-      const sharedWorkspace = session
-        ? join(projectDir, '.automatosx', 'workspaces', 'shared', 'sessions', session.id)
-        : join(projectDir, '.automatosx', 'workspaces', 'shared', 'persistent');
+      // v5.2: Shared workspace now points to automatosx/PRD
+      // PRD is for planning documents and shared resources across all agents
+      const sharedWorkspace = join(projectDir, 'automatosx', 'PRD');
 
       // Respect maxDelegationDepth from agent config, default to 2
       const maxDelegationDepth = agent.orchestration?.maxDelegationDepth ?? 2;
@@ -473,14 +461,15 @@ export class ContextManager {
   }
 
   /**
-   * Cleanup context (delete workspace if needed)
+   * Cleanup context
+   *
+   * v5.2: No cleanup needed - agent workspaces no longer created
    */
   async cleanup(context: ExecutionContext): Promise<void> {
-    // For now, keep workspace for debugging
-    // In future, add option to auto-cleanup
-    logger.debug('Context cleanup', {
-      agent: context.agent.name,
-      workspace: context.agentWorkspace
+    // v5.2: Agent-specific workspaces no longer created
+    // All agents share automatosx/PRD and automatosx/tmp
+    logger.debug('Context cleanup (no-op in v5.2)', {
+      agent: context.agent.name
     });
   }
 }

@@ -11,8 +11,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { spawn } from 'child_process';
 import { join } from 'path';
+import { readFileSync } from 'fs';
 
 const CLI_PATH = join(process.cwd(), 'dist', 'index.js');
+const PACKAGE_JSON = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf-8'));
+const VERSION = PACKAGE_JSON.version;
 
 /**
  * Helper to execute CLI command
@@ -64,14 +67,14 @@ describe('CLI Entry Point (index.ts)', () => {
     it('should display version with --version', async () => {
       const result = await execCLI(['--version']);
 
-      expect(result.stdout).toContain('5.1.2');
+      expect(result.stdout).toContain(VERSION);
       expect(result.exitCode).toBe(0);
     });
 
     it('should display version with -v', async () => {
       const result = await execCLI(['-v']);
 
-      expect(result.stdout).toContain('5.1.2');
+      expect(result.stdout).toContain(VERSION);
       expect(result.exitCode).toBe(0);
     });
 
@@ -102,7 +105,7 @@ describe('CLI Entry Point (index.ts)', () => {
       const result = await execCLI(['--debug', '--version']);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('5.1.2');
+      expect(result.stdout).toContain(VERSION);
     });
 
     it('should accept -d flag (debug alias)', async () => {
@@ -243,7 +246,7 @@ describe('CLI Entry Point (index.ts)', () => {
       const result = await execCLI(['--debug', '--version']);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('5.1.2');
+      expect(result.stdout).toContain(VERSION);
     });
   });
 
@@ -258,7 +261,7 @@ describe('CLI Entry Point (index.ts)', () => {
       const result = await execCLI(['--debug', '--config', '/tmp/test.json', '--version']);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('5.1.2');
+      expect(result.stdout).toContain(VERSION);
     });
   });
 });

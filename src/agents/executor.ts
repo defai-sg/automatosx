@@ -713,8 +713,8 @@ export class AgentExecutor {
           // Add toAgent to session
           await this.sessionManager.addAgent(sessionId, request.toAgent);
 
-          // Create session workspace
-          await this.workspaceManager.createSessionWorkspace(sessionId);
+          // v5.2: Session workspace no longer created
+          // WorkspaceManager now manages automatosx/PRD and automatosx/tmp instead
         }
       } else {
         // Simple text-only delegation mode (no persistent session/workspace)
@@ -743,14 +743,10 @@ export class AgentExecutor {
         showProgress: true
       });
 
-      // 8. Collect outputs (only if WorkspaceManager is available)
-      let files: string[] = [];
-      if (this.workspaceManager && sessionId) {
-        files = await this.workspaceManager.listSessionFiles(
-          sessionId,
-          request.toAgent
-        );
-      }
+      // v5.2: Session workspace outputs collection removed
+      // WorkspaceManager now uses automatosx/PRD and automatosx/tmp
+      // Files are managed directly by agents, not through session workspaces
+      const files: string[] = [];
 
       // 9. Memory IDs collection
       // NOTE: Reserved for future enhancement - automatic memory saving from delegation results

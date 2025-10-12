@@ -248,38 +248,72 @@ describe('Config Validator', () => {
     });
   });
 
-  describe('Workspace Validation', () => {
-    it('should validate basePath is non-empty string', () => {
+  describe('Workspace Validation (v5.2.0)', () => {
+    it('should validate prdPath is non-empty string', () => {
       const config = {
         ...DEFAULT_CONFIG,
         workspace: {
           ...DEFAULT_CONFIG.workspace,
-          basePath: ''
+          prdPath: ''
         }
       };
 
       const result = validateConfig(config);
       expect(result.valid).toBe(false);
       expect(result.errors.some(e =>
-        e.path === 'workspace.basePath' &&
-        e.message === 'basePath cannot be empty'
+        e.path === 'workspace.prdPath' &&
+        e.message === 'prdPath cannot be empty'
       )).toBe(true);
     });
 
-    it('should validate maxFiles >= 1', () => {
+    it('should validate tmpPath is non-empty string', () => {
       const config = {
         ...DEFAULT_CONFIG,
         workspace: {
           ...DEFAULT_CONFIG.workspace,
-          maxFiles: 0
+          tmpPath: ''
         }
       };
 
       const result = validateConfig(config);
       expect(result.valid).toBe(false);
       expect(result.errors.some(e =>
-        e.path === 'workspace.maxFiles' &&
-        e.message === 'maxFiles must be >= 1'
+        e.path === 'workspace.tmpPath' &&
+        e.message === 'tmpPath cannot be empty'
+      )).toBe(true);
+    });
+
+    it('should validate autoCleanupTmp is boolean', () => {
+      const config = {
+        ...DEFAULT_CONFIG,
+        workspace: {
+          ...DEFAULT_CONFIG.workspace,
+          autoCleanupTmp: 'yes' as any
+        }
+      };
+
+      const result = validateConfig(config);
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e =>
+        e.path === 'workspace.autoCleanupTmp' &&
+        e.message === 'autoCleanupTmp must be a boolean'
+      )).toBe(true);
+    });
+
+    it('should validate tmpCleanupDays >= 1', () => {
+      const config = {
+        ...DEFAULT_CONFIG,
+        workspace: {
+          ...DEFAULT_CONFIG.workspace,
+          tmpCleanupDays: 0
+        }
+      };
+
+      const result = validateConfig(config);
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e =>
+        e.path === 'workspace.tmpCleanupDays' &&
+        e.message === 'tmpCleanupDays must be >= 1'
       )).toBe(true);
     });
   });

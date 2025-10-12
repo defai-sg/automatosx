@@ -5,6 +5,126 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.2.0] - 2025-10-11
+
+### 🎯 Major Workspace Structure Simplification
+
+**This release simplifies the workspace architecture by removing agent-specific isolation and introducing a shared PRD/tmp structure for better collaboration.**
+
+#### Breaking Changes
+
+- **Workspace Structure Simplified** (`src/core/workspace-manager.ts`):
+  - Removed agent-specific workspaces (`.automatosx/workspaces/{agent}/`)
+  - Introduced shared workspace structure:
+    - `automatosx/PRD/` - Planning documents (permanent, version controlled)
+    - `automatosx/tmp/` - Temporary files (auto-cleanup, gitignored)
+  - All agents now have equal read/write access to both directories
+  - 41% code reduction in WorkspaceManager (732 → 428 lines)
+  - Impact: Better agent collaboration, simpler mental model, clearer file organization
+
+- **Configuration Cleanup** (`src/types/config.ts`):
+  - Removed duplicate `orchestration.workspace` configuration section
+  - Workspace config now only at root level (`config.workspace`)
+  - Consolidated workspace validation logic
+  - Impact: Cleaner configuration structure, single source of truth
+
+#### Added
+
+- **Enhanced Path Validation** (`src/core/workspace-manager.ts:validatePath()`):
+  - Rejects empty paths and current directory (`''`, `'.'`)
+  - Prevents path traversal attacks
+  - Stronger security boundaries for workspace access
+  - Impact: More secure file operations
+
+- **Documentation**:
+  - Added ADR-011: Simplified Workspace Structure (v5.2.0)
+  - Updated all architecture documentation
+  - Updated code review checklist
+  - Added migration guide to CLAUDE.md
+
+#### Changed
+
+- **WorkspaceManager API** (`src/core/workspace-manager.ts`):
+  - `writePRD(relativePath, content)` - Write to PRD workspace
+  - `readPRD(relativePath)` - Read from PRD workspace
+  - `writeTmp(relativePath, content)` - Write to tmp workspace
+  - `readTmp(relativePath)` - Read from tmp workspace
+  - `cleanupTmp(olderThanDays)` - Auto-cleanup temporary files
+  - Removed: `getAgentWorkspace()`, `getSessionWorkspace()`, all agent/session-specific methods
+
+- **Init Command** (`src/cli/commands/init.ts`):
+  - Updated gitignore to ignore `automatosx/tmp/` instead of `.automatosx/workspaces/`
+  - Workspace directories created on-demand (lazy initialization)
+  - Impact: Cleaner project structure, smaller initialization footprint
+
+#### Migration Guide
+
+**From v5.1.x to v5.2.0:**
+
+1. Move existing workspace files if needed:
+   ```bash
+   # Example: Move planning documents
+   mv .automatosx/workspaces/{agent}/planning/* automatosx/PRD/
+
+   # Example: Move temporary files (or delete if no longer needed)
+   mv .automatosx/workspaces/{agent}/tmp/* automatosx/tmp/
+   ```
+
+2. Update `.gitignore`:
+   ```bash
+   # Remove: .automatosx/workspaces/
+   # Add:    automatosx/tmp/
+   ```
+
+3. Update custom scripts that reference `.automatosx/workspaces/`
+
+4. Run `ax init --force` to create new workspace structure
+
+**Benefits:**
+- Simpler mental model (2 directories vs many)
+- Better agent collaboration (shared workspace)
+- Clearer file organization by purpose (PRD vs tmp)
+- 41% less code to maintain
+
+#### Technical Details
+
+**Phase 1 - Core WorkspaceManager Rewrite**:
+- Replaced agent-specific workspace logic with shared PRD/tmp structure
+- Lazy initialization (directories created on first write)
+- Enhanced path validation security
+- 13 files modified, 732 → 428 lines (-41%)
+
+**Phase 2 - Context Manager Cleanup**:
+- Removed workspace permissions system (`canReadWorkspaces`, `canWriteToShared`)
+- Simplified agent context building
+- Updated team configuration types
+- 5 files modified
+
+**Phase 3 - Bug Fixes (Ultrathink Review)**:
+- Fixed configuration duplication bug
+- Enhanced path validation (reject empty paths)
+- Updated gitignore configuration
+- 5 files modified
+
+**Phase 4 - Documentation Updates**:
+- Added ADR-011 for workspace simplification
+- Updated project structure documentation
+- Updated code review checklist
+- Synchronized changes to examples/
+- 6 files modified
+
+**Phase 5 - Test Updates** (Pending):
+- 88 failing tests in workspace-related test files
+- Need to rewrite for new workspace structure
+
+#### Analysis Reports
+
+Detailed technical analysis available in:
+- `tmp/V5.2-WORKSPACE-REWORK-PRD.md` - Product requirements and implementation plan
+- `tmp/WORKSPACE-REWORK-PHASE1-REPORT.md` - Phase 1 implementation details
+- `tmp/WORKSPACE-REWORK-PHASE2-REPORT.md` - Phase 2 implementation details
+- `tmp/WORKSPACE-REWORK-BUGFIX-REPORT.md` - Ultrathink bug analysis and fixes
+
 ## [5.1.3] - 2025-10-11
 
 ### 🐛 Critical Bug Fixes - Init Command Improvements

@@ -476,13 +476,13 @@ Abilities are referenced in agent profiles and injected into prompts.
 
 ### Can agents access my files?
 
-Yes, but with security restrictions:
+Yes, but with security restrictions (v5.2+):
 
 - **Read access**: Validated paths within your project directory
-- **Write access**: Only to `.automatosx/workspaces/<agent-name>/`
-- **Prevented**: Path traversal attacks (`../../etc/passwd`)
+- **Write access**: Only to `automatosx/PRD/` and `automatosx/tmp/` (with path validation)
+- **Prevented**: Path traversal attacks (`../../etc/passwd`), absolute paths, empty paths
 
-This ensures agents can read your code but only write to isolated workspaces.
+This ensures agents can read your code but only write to controlled workspace directories.
 
 ## Memory System
 

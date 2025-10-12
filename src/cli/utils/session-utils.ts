@@ -31,6 +31,7 @@ import { join } from 'path';
  */
 export async function createSessionManager(): Promise<SessionManager> {
   try {
+    // v5.2: agentWorkspace path kept for PathResolver compatibility (directory not created)
     const projectDir = await new PathResolver({
       projectDir: process.cwd(),
       workingDir: process.cwd(),

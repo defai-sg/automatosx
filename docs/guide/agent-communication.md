@@ -39,7 +39,7 @@ This guide explains how both systems work and when to use each.
 │                                                          │
 │  3. Workspace Files (Shared Artifacts)                  │
 │     Purpose: File-based collaboration                   │
-│     Storage: .automatosx/workspaces/                    │
+│     Storage: automatosx/PRD/ and automatosx/tmp/       │
 │     Speed:   10-50ms I/O                                │
 │     Example: Shared code, docs, data                    │
 │                                                          │

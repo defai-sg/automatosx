@@ -132,6 +132,7 @@ export class McpServer {
     });
 
     // Initialize PathResolver
+    // v5.2: agentWorkspace path kept for PathResolver compatibility (directory not created)
     this.pathResolver = new PathResolver({
       projectDir,
       workingDir: process.cwd(),
@@ -187,8 +188,8 @@ export class McpServer {
     await this.sessionManager.initialize();
 
     // Initialize WorkspaceManager
+    // v5.2: WorkspaceManager uses lazy initialization (no need to call initialize)
     this.workspaceManager = new WorkspaceManager(projectDir);
-    await this.workspaceManager.initialize();
 
     // Initialize ContextManager
     this.contextManager = new ContextManager({

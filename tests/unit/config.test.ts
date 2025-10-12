@@ -128,10 +128,10 @@ describe('Config Management', () => {
           cleanupDays: 30
         },
         workspace: {
-          basePath: '.automatosx/workspaces',
-          autoCleanup: true,
-          cleanupDays: 7,
-          maxFiles: 100
+          prdPath: 'automatosx/PRD',
+          tmpPath: 'automatosx/tmp',
+          autoCleanupTmp: true,
+          tmpCleanupDays: 7
         },
         logging: {
           level: 'info',
@@ -161,10 +161,10 @@ describe('Config Management', () => {
           cleanupDays: 30
         },
         workspace: {
-          basePath: '.automatosx/workspaces',
-          autoCleanup: true,
-          cleanupDays: 7,
-          maxFiles: 100
+          prdPath: 'automatosx/PRD',
+          tmpPath: 'automatosx/tmp',
+          autoCleanupTmp: true,
+          tmpCleanupDays: 7
         },
         logging: {
           level: 'info',
@@ -195,10 +195,10 @@ describe('Config Management', () => {
           cleanupDays: 30
         },
         workspace: {
-          basePath: '.automatosx/workspaces',
-          autoCleanup: true,
-          cleanupDays: 7,
-          maxFiles: 100
+          prdPath: 'automatosx/PRD',
+          tmpPath: 'automatosx/tmp',
+          autoCleanupTmp: true,
+          tmpCleanupDays: 7
         },
         logging: {
           level: 'info',
@@ -229,10 +229,10 @@ describe('Config Management', () => {
           cleanupDays: 30
         },
         workspace: {
-          basePath: '.automatosx/workspaces',
-          autoCleanup: true,
-          cleanupDays: 7,
-          maxFiles: 100
+          prdPath: 'automatosx/PRD',
+          tmpPath: 'automatosx/tmp',
+          autoCleanupTmp: true,
+          tmpCleanupDays: 7
         },
         logging: {
           level: 'info',
@@ -255,10 +255,10 @@ describe('Config Management', () => {
           cleanupDays: 30
         },
         workspace: {
-          basePath: '.automatosx/workspaces',
-          autoCleanup: true,
-          cleanupDays: 7,
-          maxFiles: 100
+          prdPath: 'automatosx/PRD',
+          tmpPath: 'automatosx/tmp',
+          autoCleanupTmp: true,
+          tmpCleanupDays: 7
         },
         logging: {
           level: 'info',
@@ -282,10 +282,10 @@ describe('Config Management', () => {
           cleanupDays: 0 // Invalid: must be >= 1
         },
         workspace: {
-          basePath: '.automatosx/workspaces',
-          autoCleanup: true,
-          cleanupDays: 7,
-          maxFiles: 100
+          prdPath: 'automatosx/PRD',
+          tmpPath: 'automatosx/tmp',
+          autoCleanupTmp: true,
+          tmpCleanupDays: 7
         },
         logging: {
           level: 'info',
@@ -299,7 +299,7 @@ describe('Config Management', () => {
       expect(errors.some(e => e.includes('cleanupDays must be a positive integer'))).toBe(true);
     });
 
-    it('should detect invalid workspace.cleanupDays', () => {
+    it('should detect invalid workspace.tmpCleanupDays', () => {
       const config: AutomatosXConfig = {
         providers: {},
         memory: {
@@ -309,10 +309,10 @@ describe('Config Management', () => {
           cleanupDays: 30
         },
         workspace: {
-          basePath: '.automatosx/workspaces',
-          autoCleanup: true,
-          cleanupDays: 0, // Invalid: must be >= 1
-          maxFiles: 100
+          prdPath: 'automatosx/PRD',
+          tmpPath: 'automatosx/tmp',
+          autoCleanupTmp: true,
+          tmpCleanupDays: 0 // Invalid: must be >= 1
         },
         logging: {
           level: 'info',
@@ -322,8 +322,8 @@ describe('Config Management', () => {
       };
 
       const errors = validateConfig(config);
-      // v5.0: Enhanced validation with type checking
-      expect(errors.some(e => e.includes('cleanupDays must be a positive integer'))).toBe(true);
+      // v5.2.0: Check tmpCleanupDays validation
+      expect(errors.some(e => e.includes('tmpCleanupDays must be a positive integer'))).toBe(true);
     });
 
     it('should detect invalid workspace.maxFiles', () => {
@@ -336,10 +336,11 @@ describe('Config Management', () => {
           cleanupDays: 30
         },
         workspace: {
-          basePath: '.automatosx/workspaces',
-          autoCleanup: true,
-          cleanupDays: 7,
-          maxFiles: 0 // Invalid: must be >= 1
+          prdPath: 'automatosx/PRD',
+          tmpPath: 'automatosx/tmp',
+          autoCleanupTmp: true,
+          tmpCleanupDays: 7
+          // v5.2.0: maxFiles validation removed (no longer in WorkspaceConfig)
         },
         logging: {
           level: 'info',
@@ -349,8 +350,8 @@ describe('Config Management', () => {
       };
 
       const errors = validateConfig(config);
-      // v5.0: Enhanced validation with type checking
-      expect(errors.some(e => e.includes('maxFiles must be a positive integer'))).toBe(true);
+      // v5.2.0: maxFiles no longer exists, config should be valid
+      expect(errors).toHaveLength(0);
     });
 
     it('should detect multiple validation errors', () => {
@@ -370,10 +371,10 @@ describe('Config Management', () => {
           cleanupDays: 0 // Invalid
         },
         workspace: {
-          basePath: '.automatosx/workspaces',
-          autoCleanup: true,
-          cleanupDays: 7,
-          maxFiles: 100
+          prdPath: 'automatosx/PRD',
+          tmpPath: 'automatosx/tmp',
+          autoCleanupTmp: true,
+          tmpCleanupDays: 7
         },
         logging: {
           level: 'info',

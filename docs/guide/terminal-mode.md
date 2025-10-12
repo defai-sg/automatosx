@@ -628,16 +628,16 @@ ax workspace cleanup --agent backend
 ax workspace cleanup --force
 ```
 
-### 工作區位置
+### 工作區位置 (v5.2+)
 
 ```
-.automatosx/workspaces/
-├── backend/          # Backend 代理的工作區
-├── frontend/         # Frontend 代理的工作區
-├── security/         # Security 代理的工作區
-└── shared/
-    └── sessions/     # 會話共享工作區
-        └── <session-id>/
+automatosx/
+├── PRD/              # 共享規劃文檔
+│   ├── requirements.md
+│   └── architecture.md
+└── tmp/              # 臨時文件（自動清理）
+    ├── draft-code.ts
+    └── analysis.json
 ```
 
 ---
@@ -695,7 +695,7 @@ delegationChain:
   - backend → security (completed)
   - product → frontend (completed)
 
-workspace: .automatosx/workspaces/shared/sessions/abc123de.../
+workspace: automatosx/PRD/ (shared)
 
 results:
   product: "Dashboard architecture designed..."

@@ -84,6 +84,7 @@ export const statusCommand: CommandModule<Record<string, unknown>, StatusOptions
       const projectDir = process.cwd();
 
       // Initialize path resolver
+      // v5.2: agentWorkspace path kept for PathResolver compatibility (directory not created)
       const pathResolver = new PathResolver({
         projectDir,
         workingDir: process.cwd(),

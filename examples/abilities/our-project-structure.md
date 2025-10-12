@@ -36,7 +36,11 @@ automatosx/
 │   ├── abilities/            # User's custom abilities
 │   ├── memory/               # SQLite database (memory.db)
 │   ├── sessions/             # Session persistence
-│   └── workspaces/           # Agent workspaces (isolated)
+│   └── logs/                 # Application logs
+│
+├── automatosx/               # Workspace directory (v5.2+)
+│   ├── PRD/                  # Planning documents (permanent)
+│   └── tmp/                  # Temporary files (auto-cleanup)
 │
 └── tmp/                      # Temporary files (gitignored)
 ```
@@ -135,12 +139,14 @@ import type { Provider } from '../types/provider.js';
 
 **Bundle target:** ESM, Node 20+, <250KB target
 
-## Workspace Structure
+## Workspace Structure (v5.2.0)
 
-**Agent workspaces:** `.automatosx/workspaces/{agent-name}/`
+**Shared workspaces:**
 
-- Isolated workspace for file operations
-- Permissions: 700 (owner only on Unix)
+- `automatosx/PRD/` - Planning documents, feature designs, proposals (permanent)
+- `automatosx/tmp/` - Test scripts, analysis tools, temporary reports (auto-cleanup)
+
+**All agents** have equal read/write access to both directories.
 
 **Memory storage:** `.automatosx/memory/memory.db`
 
@@ -161,15 +167,17 @@ import type { Provider } from '../types/provider.js';
 
 **Allowed writes:**
 
-- `.automatosx/workspaces/{agent-name}/**/*` only
+- `automatosx/PRD/**/*` - Planning documents
+- `automatosx/tmp/**/*` - Temporary files
 
 **Forbidden:**
 
+- Empty paths or current directory (`''`, `'.'`)
 - Path traversal (`../../../etc/passwd`)
 - Symbolic links outside project
-- Writing outside workspace
+- Absolute paths
 
 ---
 
-**Last Updated:** 2025-10-10
-**For:** AutomatosX v5.0+
+**Last Updated:** 2025-10-11
+**For:** AutomatosX v5.2+

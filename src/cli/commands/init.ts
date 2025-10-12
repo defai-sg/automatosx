@@ -225,7 +225,7 @@ async function createDirectoryStructure(baseDir: string): Promise<void> {
     join(baseDir, 'memory'),
     join(baseDir, 'memory/exports'), // v5.1: MCP memory export directory
     join(baseDir, 'sessions'),       // v5.1: Session persistence
-    join(baseDir, 'workspaces'),
+    // v5.2: Removed 'workspaces' - automatosx/PRD and automatosx/tmp created on-demand
     join(baseDir, 'logs')
   ];
 
@@ -446,8 +446,8 @@ async function updateGitignore(projectDir: string): Promise<void> {
     '',
     '# AutomatosX',
     '.automatosx/memory/',
-    '.automatosx/workspaces/',
     '.automatosx/logs/',
+    'automatosx/tmp/  # v5.2: Temporary files',
     'automatosx.config.json  # Optional: remove to track config',
     ''
   ].join('\n');

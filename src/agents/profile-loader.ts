@@ -608,20 +608,9 @@ export class ProfileLoader {
         }
       }
 
-      if (orch.canReadWorkspaces !== undefined) {
-        if (!Array.isArray(orch.canReadWorkspaces)) {
-          throw new AgentValidationError('orchestration.canReadWorkspaces must be an array');
-        }
-        orch.canReadWorkspaces.forEach((workspace, i) => {
-          if (typeof workspace !== 'string') {
-            throw new AgentValidationError(`orchestration.canReadWorkspaces[${i}] must be a string`);
-          }
-        });
-      }
-
-      if (orch.canWriteToShared !== undefined && typeof orch.canWriteToShared !== 'boolean') {
-        throw new AgentValidationError('orchestration.canWriteToShared must be a boolean');
-      }
+      // v5.2: Workspace permission fields removed
+      // All agents now have equal access to automatosx/PRD and automatosx/tmp
+      // canReadWorkspaces and canWriteToShared no longer used
     }
 
     return true;

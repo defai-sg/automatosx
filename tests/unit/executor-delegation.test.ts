@@ -108,20 +108,21 @@ describe('AgentExecutor - Delegation', () => {
       })
     } as unknown as SessionManager;
 
-    // Mock WorkspaceManager
+    // Mock WorkspaceManager (v5.2.0: Simplified API)
     mockWorkspaceManager = {
-      initialize: vi.fn().mockResolvedValue(undefined),
-      createSessionWorkspace: vi.fn().mockResolvedValue(undefined),
-      createAgentWorkspace: vi.fn().mockResolvedValue(undefined),
-      writeToSession: vi.fn().mockResolvedValue(undefined),
-      readFromAgentWorkspace: vi.fn().mockResolvedValue(''),
-      writeToShared: vi.fn().mockResolvedValue(undefined),
-      listSessionFiles: vi.fn().mockResolvedValue(['file1.md', 'api/users.ts']),
-      cleanupSessions: vi.fn().mockResolvedValue(0),
+      writePRD: vi.fn().mockResolvedValue(undefined),
+      readPRD: vi.fn().mockResolvedValue(''),
+      listPRD: vi.fn().mockResolvedValue(['design.md']),
+      writeTmp: vi.fn().mockResolvedValue(undefined),
+      readTmp: vi.fn().mockResolvedValue(''),
+      listTmp: vi.fn().mockResolvedValue(['test.sh']),
+      cleanupTmp: vi.fn().mockResolvedValue(0),
       getStats: vi.fn().mockResolvedValue({
-        totalSessions: 1,
-        totalSizeBytes: 0,
-        agentWorkspaces: 2
+        prdFiles: 1,
+        tmpFiles: 1,
+        totalSizeBytes: 2048,
+        prdSizeBytes: 1024,
+        tmpSizeBytes: 1024
       })
     } as unknown as WorkspaceManager;
 
@@ -269,7 +270,7 @@ describe('AgentExecutor - Delegation', () => {
         'Create user interface',
         'backend'
       );
-      expect(mockWorkspaceManager.createSessionWorkspace).toHaveBeenCalled();
+      // v5.2.0: No more createSessionWorkspace - workspaces are shared
     });
 
     it('should join existing session when sessionId provided', async () => {
@@ -288,7 +289,7 @@ describe('AgentExecutor - Delegation', () => {
 
       expect(mockSessionManager.getSession).toHaveBeenCalledWith('session-123');
       expect(mockSessionManager.createSession).not.toHaveBeenCalled();
-      expect(mockWorkspaceManager.createSessionWorkspace).not.toHaveBeenCalled();
+      // v5.2.0: No more createSessionWorkspace
     });
 
     it('should add toAgent to session', async () => {
@@ -306,7 +307,7 @@ describe('AgentExecutor - Delegation', () => {
       );
     });
 
-    it('should collect output files from delegated agent', async () => {
+    it('should return delegation outputs structure', async () => {
       const request: DelegationRequest = {
         fromAgent: 'backend',
         toAgent: 'frontend',
@@ -315,22 +316,10 @@ describe('AgentExecutor - Delegation', () => {
 
       const result = await executor.delegateToAgent(request);
 
-      expect(result.outputs.files).toEqual(['file1.md', 'api/users.ts']);
-      expect(mockWorkspaceManager.listSessionFiles).toHaveBeenCalledWith(
-        'session-123',
-        'frontend'
-      );
-    });
-
-    it('should return workspace path in outputs', async () => {
-      const request: DelegationRequest = {
-        fromAgent: 'backend',
-        toAgent: 'frontend',
-        task: 'Create user interface'
-      };
-
-      const result = await executor.delegateToAgent(request);
-
+      // v5.2.0: Files are managed directly by agents in automatosx/PRD and automatosx/tmp
+      // Output files are not collected automatically anymore
+      expect(result.outputs.files).toEqual([]);
+      expect(result.outputs.memoryIds).toEqual([]);
       expect(result.outputs.workspacePath).toBe(
         'sessions/session-123/outputs/frontend'
       );

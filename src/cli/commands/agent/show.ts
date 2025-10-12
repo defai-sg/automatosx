@@ -95,13 +95,8 @@ export const showCommand: CommandModule<{}, ShowOptions> = {
           console.log(chalk.white(`  Max Delegation Depth: ${orch.maxDelegationDepth}`));
         }
 
-        if (orch.canReadWorkspaces && orch.canReadWorkspaces.length > 0) {
-          console.log(chalk.white(`  Can Read Workspaces:  ${orch.canReadWorkspaces.join(', ')}`));
-        }
-
-        if (orch.canWriteToShared !== undefined) {
-          console.log(chalk.white(`  Can Write to Shared:  ${orch.canWriteToShared ? 'Yes' : 'No'}`));
-        }
+        // v5.2: Workspace permission fields removed
+        // All agents now have equal access to automatosx/PRD and automatosx/tmp
 
         console.log();
       }

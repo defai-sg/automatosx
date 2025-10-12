@@ -7,9 +7,9 @@
 [![npm version](https://img.shields.io/npm/v/@defai.digital/automatosx.svg)](https://www.npmjs.com/package/@defai.digital/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-1,136%20passing-brightgreen.svg)](#)
+[![Tests](https://img.shields.io/badge/tests-1,259%20passing-brightgreen.svg)](#)
 
-**Status**: ✅ Production Ready · v5.1.3 · October 2025
+**Status**: ✅ Production Ready · v5.2.0 · October 2025
 
 Looking for answers? See the [FAQ](FAQ.md).
 
@@ -134,7 +134,7 @@ Product response:
 - **Cycle detection**: Prevents infinite loops
 - **Depth limits**: Default 2 levels (configurable)
 - **Session tracking**: Who did what, when
-- **Workspace isolation**: No file collisions
+- **Shared workspace**: Organized PRD/tmp structure for collaboration
 
 ### Benefits
 
@@ -313,7 +313,7 @@ ax init --force
 **What This Does**:
 - Creates `.automatosx/` directory with 12 agents, 15 abilities, 4 teams
 - Sets up memory database (SQLite FTS5)
-- Creates workspace directories
+- Creates shared workspace structure (PRD for planning, tmp for temporary files)
 - Generates `automatosx.config.json`
 
 **Verify Initialization**:
@@ -577,7 +577,7 @@ I need Daisy to analyze the data    # Need expression
 
 ## 🛠️ Production-Ready
 
-✅ **1,136 tests passing** (100% pass rate)
+✅ **1,259 tests passing** (100% pass rate)
 ✅ **TypeScript strict mode** (zero errors)
 ✅ **~56% test coverage** (comprehensive testing)
 ✅ **458KB bundle** (99.9% smaller than v3.x)
@@ -589,7 +589,7 @@ I need Daisy to analyze the data    # Need expression
 Memory Search: < 1ms (10,000 entries)
 Bundle Size:   458KB (down from 340MB in v3.x)
 Dependencies:  19 packages (down from 589 in v3.x)
-Test Coverage: ~56% (1,136 tests passing, 100% pass rate)
+Test Coverage: ~56% (1,259 tests passing, 100% pass rate)
 Memory Cost:   $0 (no API calls)
 ```
 
@@ -598,7 +598,7 @@ Memory Cost:   $0 (no API calls)
 - **Runtime**: Node.js 20+
 - **Language**: TypeScript 5.3 (strict mode)
 - **Memory**: SQLite + FTS5 (built-in full-text search)
-- **Testing**: Vitest 2.x (1,136 tests)
+- **Testing**: Vitest 2.x (1,259 tests)
 - **Build**: tsup/esbuild
 - **Providers**: Claude CLI, Gemini CLI, Codex CLI (OpenAI)
 

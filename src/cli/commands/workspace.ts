@@ -1,17 +1,16 @@
 /**
- * Workspace Command - Manage agent workspaces
+ * Workspace Command - Manage automatosx workspace (PRD/tmp)
  *
  * @since v4.7.0
+ * @updated v5.2.0 - Simplified to PRD/tmp management
  */
 
 import type { CommandModule } from 'yargs';
 import { WorkspaceManager } from '../../core/workspace-manager.js';
-import { createSessionManager } from '../utils/session-utils.js';
 import chalk from 'chalk';
-import Table from 'cli-table3';
 
 interface WorkspaceListOptions {
-  session?: string;
+  type?: 'prd' | 'tmp';
   json?: boolean;
 }
 
@@ -26,16 +25,19 @@ interface WorkspaceCleanupOptions {
 
 /**
  * Workspace List Command
+ * v5.2: Lists PRD or tmp files
  */
 const listCommand: CommandModule<Record<string, unknown>, WorkspaceListOptions> = {
   command: 'list',
-  describe: 'List workspace files',
+  describe: 'List workspace files (PRD or tmp)',
 
   builder: (yargs) => {
     return yargs
-      .option('session', {
-        describe: 'Session ID to list files for',
-        type: 'string'
+      .option('type', {
+        describe: 'Workspace type to list',
+        type: 'string',
+        choices: ['prd', 'tmp'],
+        default: 'prd'
       })
       .option('json', {
         describe: 'Output as JSON',
@@ -50,43 +52,24 @@ const listCommand: CommandModule<Record<string, unknown>, WorkspaceListOptions> 
       const projectDir = await detectProjectRoot(process.cwd());
       const workspaceManager = new WorkspaceManager(projectDir);
 
-      if (argv.session) {
-        const sessionManager = await createSessionManager();
-        const session = await sessionManager.getSession(argv.session);
+      const files = argv.type === 'tmp'
+        ? await workspaceManager.listTmp()
+        : await workspaceManager.listPRD();
 
-        if (!session) {
-          console.log(chalk.red.bold(`\n✗ Session not found: ${argv.session}\n`));
-          process.exit(1);
-        }
+      if (argv.json) {
+        console.log(JSON.stringify({ type: argv.type, files }, null, 2));
+        process.exit(0);
+      }
 
-        console.log(chalk.blue.bold(`\n📁 Session Workspace Files\n`));
-        console.log(chalk.gray(`Session: ${argv.session}`));
-        console.log(chalk.gray(`Task: ${session.task}\n`));
+      console.log(chalk.blue.bold(`\n📁 ${argv.type === 'tmp' ? 'Temporary' : 'PRD'} Files\n`));
 
-        for (const agentName of session.agents) {
-          const files = await workspaceManager.listSessionFiles(argv.session, agentName);
-
-          if (files.length > 0) {
-            console.log(chalk.cyan(`\n${agentName}:`));
-            files.forEach(file => {
-              console.log(chalk.gray(`  - ${file}`));
-            });
-          }
-        }
-
-        console.log();
+      if (files.length === 0) {
+        console.log(chalk.gray('  (No files)\n'));
       } else {
-        const stats = await workspaceManager.getStats();
-
-        if (argv.json) {
-          console.log(JSON.stringify(stats, null, 2));
-          process.exit(0);
-        }
-
-        console.log(chalk.blue.bold('\n📊 Workspace Statistics\n'));
-        console.log(chalk.gray(`Session workspaces: ${chalk.white(stats.totalSessions)}`));
-        console.log(chalk.gray(`Agent workspaces: ${chalk.white(stats.agentWorkspaces)}`));
-        console.log();
+        files.forEach(file => {
+          console.log(chalk.gray(`  - ${file}`));
+        });
+        console.log(chalk.gray(`\nTotal: ${files.length} file(s)\n`));
       }
 
       process.exit(0);
@@ -100,6 +83,7 @@ const listCommand: CommandModule<Record<string, unknown>, WorkspaceListOptions> 
 
 /**
  * Workspace Stats Command
+ * v5.2: Shows PRD/tmp statistics
  */
 const statsCommand: CommandModule<Record<string, unknown>, WorkspaceStatsOptions> = {
   command: 'stats',
@@ -127,9 +111,9 @@ const statsCommand: CommandModule<Record<string, unknown>, WorkspaceStatsOptions
       }
 
       console.log(chalk.blue.bold('\n📊 Workspace Statistics\n'));
-      console.log(chalk.gray(`Session workspaces: ${chalk.white(stats.totalSessions)}`));
-      console.log(chalk.gray(`Agent workspaces: ${chalk.white(stats.agentWorkspaces)}`));
-      console.log(chalk.gray(`Total size: ${chalk.white((stats.totalSizeBytes / 1024 / 1024).toFixed(2))} MB`));
+      console.log(chalk.gray(`PRD files:        ${chalk.white(stats.prdFiles)}`));
+      console.log(chalk.gray(`Temporary files:  ${chalk.white(stats.tmpFiles)}`));
+      console.log(chalk.gray(`Total size:       ${chalk.white((stats.totalSizeBytes / 1024 / 1024).toFixed(2))} MB`));
       console.log();
 
       process.exit(0);
@@ -143,15 +127,16 @@ const statsCommand: CommandModule<Record<string, unknown>, WorkspaceStatsOptions
 
 /**
  * Workspace Cleanup Command
+ * v5.2: Cleans up temporary files
  */
 const cleanupCommand: CommandModule<Record<string, unknown>, WorkspaceCleanupOptions> = {
   command: 'cleanup',
-  describe: 'Clean up old session workspaces',
+  describe: 'Clean up temporary files',
 
   builder: (yargs) => {
     return yargs
       .option('older-than', {
-        describe: 'Clean up sessions older than N days',
+        describe: 'Clean up files older than N days',
         type: 'number',
         default: 7
       })
@@ -167,23 +152,17 @@ const cleanupCommand: CommandModule<Record<string, unknown>, WorkspaceCleanupOpt
       const { detectProjectRoot } = await import('../../core/path-resolver.js');
       const projectDir = await detectProjectRoot(process.cwd());
       const workspaceManager = new WorkspaceManager(projectDir);
-      const sessionManager = await createSessionManager();
-
-      // Get active sessions
-      const activeSessions = await sessionManager.getActiveSessions();
-      const activeIds = activeSessions.map(s => s.id);
 
       if (!argv.confirm) {
-        console.log(chalk.yellow(`\n⚠ This will remove workspace files for inactive sessions`));
-        console.log(chalk.gray(`Active sessions (${activeIds.length}) will be kept\n`));
+        console.log(chalk.yellow(`\n⚠ This will remove temporary files older than ${argv.olderThan} days`));
         console.log(chalk.gray('Run with --confirm to proceed\n'));
         process.exit(0);
       }
 
-      const removed = await workspaceManager.cleanupSessions(activeIds);
+      const removed = await workspaceManager.cleanupTmp(argv.olderThan);
 
       console.log(chalk.green.bold(`\n✓ Cleanup complete\n`));
-      console.log(chalk.gray(`Removed ${removed} session workspace(s)\n`));
+      console.log(chalk.gray(`Removed ${removed} temporary file(s)\n`));
 
       process.exit(0);
     } catch (error) {

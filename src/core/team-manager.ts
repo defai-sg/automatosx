@@ -191,9 +191,8 @@ export class TeamManager {
       throw new TeamValidationError('sharedAbilities must be an array');
     }
 
-    if (team.orchestration?.canReadWorkspaces && !Array.isArray(team.orchestration.canReadWorkspaces)) {
-      throw new TeamValidationError('orchestration.canReadWorkspaces must be an array');
-    }
+    // v5.2: Workspace permission validation removed
+    // All agents now have equal access to automatosx/PRD and automatosx/tmp
 
     logger.debug('Team validation passed', { name: team.name });
   }

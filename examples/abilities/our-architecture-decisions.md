@@ -59,18 +59,18 @@
 
 ## ADR-004: Three-Layer Security Model
 
-**Decision:** Implement path validation, workspace isolation, and input sanitization
+**Decision:** Implement path validation, workspace access control, and input sanitization
 
 **Layers:**
 
 1. **Path Resolution:** All file access through PathResolver
-2. **Workspace Isolation:** Agent-specific workspaces with restricted permissions (700)
+2. **Workspace Access Control:** Shared workspaces with path validation (v5.2+)
 3. **Input Validation:** Sanitize all user inputs
 
 **Impact:**
 
 - ✅ Prevents path traversal attacks
-- ✅ Agent isolation
+- ✅ Controlled workspace access with validation
 - ✅ No privilege escalation
 - ⚠️ Slightly more complex file operations
 

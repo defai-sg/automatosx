@@ -220,33 +220,54 @@ describe('E2E Orchestration Workflows (v4.7.0)', () => {
     }, 20000);
   });
 
-  describe('Workspace Isolation', () => {
-    it('should create isolated workspaces for each agent', async () => {
+  describe('Shared Workspace Access (v5.2.0)', () => {
+    it('should allow all agents to write to PRD workspace', async () => {
       await createAgentProfile(env, 'backend');
       await createAgentProfile(env, 'frontend');
 
       const { WorkspaceManager } = await import('../../src/core/workspace-manager.js');
       const workspaceManager = new WorkspaceManager(env.testDir);
-      await workspaceManager.initialize();
 
-      // Create agent workspaces
-      await workspaceManager.createAgentWorkspace('backend');
-      await workspaceManager.createAgentWorkspace('frontend');
+      // v5.2.0: All agents can write to shared PRD workspace
+      await workspaceManager.writePRD('feature-auth.md', '# Auth Feature\n\nDesign by backend');
+      await workspaceManager.writePRD('ui-design.md', '# UI Design\n\nDesign by frontend');
 
-      // Construct expected paths
-      const backendWorkspace = join(env.testDir, '.automatosx', 'workspaces', 'backend');
-      const frontendWorkspace = join(env.testDir, '.automatosx', 'workspaces', 'frontend');
+      // Verify both files exist in automatosx/PRD/
+      const prdPath = join(env.testDir, 'automatosx', 'PRD');
 
-      // Verify they are different directories
-      expect(backendWorkspace).not.toBe(frontendWorkspace);
-      expect(backendWorkspace).toContain('backend');
-      expect(frontendWorkspace).toContain('frontend');
-
-      // Verify directories exist
-      const backendExists = await access(backendWorkspace)
+      const authExists = await access(join(prdPath, 'feature-auth.md'))
         .then(() => true)
         .catch(() => false);
-      const frontendExists = await access(frontendWorkspace)
+      const uiExists = await access(join(prdPath, 'ui-design.md'))
+        .then(() => true)
+        .catch(() => false);
+
+      expect(authExists).toBe(true);
+      expect(uiExists).toBe(true);
+
+      // Verify content
+      const authContent = await workspaceManager.readPRD('feature-auth.md');
+      expect(authContent).toContain('Design by backend');
+    }, 20000);
+
+    it('should allow all agents to write to tmp workspace', async () => {
+      await createAgentProfile(env, 'backend');
+      await createAgentProfile(env, 'frontend');
+
+      const { WorkspaceManager } = await import('../../src/core/workspace-manager.js');
+      const workspaceManager = new WorkspaceManager(env.testDir);
+
+      // v5.2.0: All agents can write to shared tmp workspace
+      await workspaceManager.writeTmp('test-backend.sh', '#!/bin/bash\necho "backend test"');
+      await workspaceManager.writeTmp('test-frontend.sh', '#!/bin/bash\necho "frontend test"');
+
+      // Verify both files exist in automatosx/tmp/
+      const tmpPath = join(env.testDir, 'automatosx', 'tmp');
+
+      const backendExists = await access(join(tmpPath, 'test-backend.sh'))
+        .then(() => true)
+        .catch(() => false);
+      const frontendExists = await access(join(tmpPath, 'test-frontend.sh'))
         .then(() => true)
         .catch(() => false);
 
@@ -254,91 +275,28 @@ describe('E2E Orchestration Workflows (v4.7.0)', () => {
       expect(frontendExists).toBe(true);
     }, 20000);
 
-    it('should create shared session workspace', async () => {
-      await createAgentProfile(env, 'backend');
-
+    it('should support nested directories in shared workspaces', async () => {
       const { WorkspaceManager } = await import('../../src/core/workspace-manager.js');
-      const { SessionManager } = await import('../../src/core/session-manager.js');
-
       const workspaceManager = new WorkspaceManager(env.testDir);
-      await workspaceManager.initialize();
 
-      const sessionManager = new SessionManager();
-      await sessionManager.initialize();
+      // v5.2.0: Support nested paths in PRD/tmp
+      await workspaceManager.writePRD('features/auth/design.md', '# Auth Design');
+      await workspaceManager.writeTmp('scripts/tests/unit.sh', '#!/bin/bash');
 
-      const session = await sessionManager.createSession('Task', 'backend');
+      // Verify nested files exist
+      const prdFile = join(env.testDir, 'automatosx', 'PRD', 'features', 'auth', 'design.md');
+      const tmpFile = join(env.testDir, 'automatosx', 'tmp', 'scripts', 'tests', 'unit.sh');
 
-      // Create session workspace
-      await workspaceManager.createSessionWorkspace(session.id);
+      const prdExists = await access(prdFile).then(() => true).catch(() => false);
+      const tmpExists = await access(tmpFile).then(() => true).catch(() => false);
 
-      // Construct expected path
-      const sessionWorkspace = join(
-        env.testDir,
-        '.automatosx',
-        'workspaces',
-        'shared',
-        'sessions',
-        session.id
-      );
-
-      // Verify directory structure
-      expect(sessionWorkspace).toContain('sessions');
-      expect(sessionWorkspace).toContain(session.id);
-
-      const exists = await access(sessionWorkspace)
-        .then(() => true)
-        .catch(() => false);
-      expect(exists).toBe(true);
-    }, 20000);
-
-    it('should enforce write permissions for session workspaces', async () => {
-      const { WorkspaceManager } = await import('../../src/core/workspace-manager.js');
-      const { SessionManager } = await import('../../src/core/session-manager.js');
-      const { ProfileLoader } = await import('../../src/agents/profile-loader.js');
-
-      // Create agents with orchestration capabilities
-      await createAgentProfile(env, 'backend');
-      await createAgentProfile(env, 'frontend');
-
-      const profileLoader = new ProfileLoader(env.agentsDir);
-      const backendProfile = await profileLoader.loadProfile('backend');
-      const frontendProfile = await profileLoader.loadProfile('frontend');
-
-      const workspaceManager = new WorkspaceManager(env.testDir);
-      await workspaceManager.initialize();
-
-      const sessionManager = new SessionManager();
-      await sessionManager.initialize();
-
-      const session = await sessionManager.createSession('Task', 'backend');
-      await workspaceManager.createSessionWorkspace(session.id);
-
-      // Backend (caller) tries to write to backend workspace - should succeed
-      await expect(
-        workspaceManager.writeToSession(
-          session.id,
-          'backend',
-          'test.txt',
-          'content',
-          backendProfile
-        )
-      ).resolves.not.toThrow();
-
-      // Frontend (caller) tries to write to backend workspace - should fail
-      await expect(
-        workspaceManager.writeToSession(
-          session.id,
-          'backend',
-          'test.txt',
-          'malicious content',
-          frontendProfile
-        )
-      ).rejects.toThrow(/not authorized/);
+      expect(prdExists).toBe(true);
+      expect(tmpExists).toBe(true);
     }, 20000);
   });
 
   describe('Cleanup Coordination', () => {
-    it('should cleanup old sessions and their workspaces together', async () => {
+    it('should cleanup old sessions and temporary files independently', async () => {
       const { SessionManager } = await import('../../src/core/session-manager.js');
       const { WorkspaceManager } = await import('../../src/core/workspace-manager.js');
 
@@ -349,7 +307,6 @@ describe('E2E Orchestration Workflows (v4.7.0)', () => {
       await sessionManager.initialize();
 
       const workspaceManager = new WorkspaceManager(env.testDir);
-      await workspaceManager.initialize();
 
       // Create sessions
       const session1 = await sessionManager.createSession('Task 1', 'backend');
@@ -359,9 +316,9 @@ describe('E2E Orchestration Workflows (v4.7.0)', () => {
       await sessionManager.completeSession(session1.id);
       await sessionManager.completeSession(session2.id);
 
-      // Create session workspaces
-      await workspaceManager.createSessionWorkspace(session1.id);
-      await workspaceManager.createSessionWorkspace(session2.id);
+      // Create temporary files related to sessions
+      await workspaceManager.writeTmp(`session-${session1.id}-analysis.txt`, 'Analysis for task 1');
+      await workspaceManager.writeTmp(`session-${session2.id}-analysis.txt`, 'Analysis for task 2');
 
       // Manually set old updatedAt to trigger cleanup
       const s1 = await sessionManager.getSession(session1.id);
@@ -369,25 +326,18 @@ describe('E2E Orchestration Workflows (v4.7.0)', () => {
       if (s1) s1.updatedAt = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
       if (s2) s2.updatedAt = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
 
-      // Cleanup old sessions
+      // Cleanup old sessions (v5.2.0: session and workspace cleanup are now independent)
       const result = await sessionManager.cleanupOldSessions(7);
-
-      // Cleanup corresponding workspaces
-      await workspaceManager.cleanupSessionWorkspaces(result.removedSessionIds);
 
       // Verify sessions were removed
       expect(result.removedCount).toBe(2);
       expect(result.removedSessionIds).toContain(session1.id);
       expect(result.removedSessionIds).toContain(session2.id);
 
-      // Verify workspaces were removed
-      const session1WorkspaceExists = await access(
-        join(env.testDir, '.automatosx', 'workspaces', 'shared', 'sessions', session1.id)
-      )
-        .then(() => true)
-        .catch(() => false);
-
-      expect(session1WorkspaceExists).toBe(false);
+      // v5.2.0: Temporary files are cleaned up separately by age, not by session
+      // Files created just now are still present
+      const tmpFiles = await workspaceManager.listTmp();
+      expect(tmpFiles.length).toBe(2);
     }, 20000);
 
     it('should persist cleanup to sessions file', async () => {

@@ -77,19 +77,20 @@ export interface DelegationConfig {
   enableCycleDetection: boolean;
 }
 
-export interface WorkspaceSystemConfig {
-  maxFileSize: number;         // max file size (bytes)
-  maxFiles: number;            // max files per workspace
-  cleanupAfterDays: number;    // cleanup old workspaces after N days
-  autoCleanup: boolean;
-  permissions: number;         // Unix permissions (e.g., 0o700)
-  basePath: string;
-}
+/**
+ * Workspace System Configuration (v5.2.0 - Simplified)
+ *
+ * Manages automatosx/ directory structure:
+ * - PRD/: Planning documents (permanent)
+ * - tmp/: Temporary files (auto-cleanup)
+ */
+// v5.2: WorkspaceSystemConfig removed - workspace moved to root level
+// Use WorkspaceConfig instead (defined below in Legacy section)
 
 export interface OrchestrationConfigSystem {
   session: SessionConfig;
   delegation: DelegationConfig;
-  workspace: WorkspaceSystemConfig;
+  // v5.2: workspace moved to root level of AutomatosXConfig
 }
 
 // ========================================
@@ -253,10 +254,10 @@ export interface CLIConfig {
 // ========================================
 
 export interface WorkspaceConfig {
-  basePath: string;
-  autoCleanup: boolean;
-  cleanupDays: number;
-  maxFiles: number;
+  prdPath: string;        // v5.2: Path to PRD directory
+  tmpPath: string;        // v5.2: Path to tmp directory
+  autoCleanupTmp: boolean;  // v5.2: Auto-cleanup temporary files
+  tmpCleanupDays: number;   // v5.2: Cleanup tmp files older than N days
 }
 
 export interface OpenAIConfig {
@@ -365,15 +366,8 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
       maxDepth: 2,
       timeout: 1500000,  // 25 minutes (v5.1.0: increased from 15 min based on user feedback)
       enableCycleDetection: true
-    },
-    workspace: {
-      maxFileSize: 10485760,  // 10 MB
-      maxFiles: 100,
-      cleanupAfterDays: 7,
-      autoCleanup: true,
-      permissions: 0o700,
-      basePath: '.automatosx/workspaces'
     }
+    // v5.2: workspace moved to root level
   },
 
   memory: {
@@ -404,10 +398,10 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
   },
 
   workspace: {
-    basePath: '.automatosx/workspaces',
-    autoCleanup: true,
-    cleanupDays: 7,
-    maxFiles: 100
+    prdPath: 'automatosx/PRD',
+    tmpPath: 'automatosx/tmp',
+    autoCleanupTmp: true,
+    tmpCleanupDays: 7
   },
 
   logging: {

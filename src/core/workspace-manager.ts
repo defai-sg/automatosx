@@ -1,654 +1,411 @@
 /**
- * Workspace Manager - Manages agent workspaces and session-based collaboration
+ * Workspace Manager - Simplified management for automatosx/ directory
  *
  * Provides:
- * - Session-based workspace organization
- * - Agent workspace isolation with controlled sharing
- * - Permission-based access control
- * - Automatic cleanup of old session workspaces
+ * - automatosx/PRD/ - Planning documents (permanent storage)
+ * - automatosx/tmp/ - Temporary files (auto-cleanup)
+ *
+ * Changes in v5.2.0:
+ * - Removed agent-specific workspace isolation
+ * - Removed session-based workspaces
+ * - Removed permission control system
+ * - Simplified to PRD/tmp structure
  *
  * @module core/workspace-manager
- * @since v4.7.0
+ * @since v5.2.0
  */
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import type { AgentProfile } from '../types/agent.js';
-import type { WorkspaceSystemConfig } from '../types/config.js';
-import { WorkspaceError } from '../types/orchestration.js';
 import { logger } from '../utils/logger.js';
 
 /**
- * Workspace structure:
- * ```
- * .automatosx/workspaces/
- * ├── shared/
- * │   ├── sessions/<sessionId>/     # Session-specific shared workspace
- * │   │   ├── specs/                # Requirements, designs
- * │   │   └── outputs/
- * │   │       ├── <agentName>/      # Each agent's outputs
- * │   │       └── ...
- * │   └── persistent/               # Cross-session shared files
- * └── <agentName>/                  # Agent private workspace
- *     ├── drafts/
- *     └── temp/
- * ```
+ * Workspace statistics
  */
-
 export interface WorkspaceStats {
-  /** Total number of session workspaces */
-  totalSessions: number;
+  /** Number of PRD files */
+  prdFiles: number;
 
-  /** Total disk space used (bytes) */
+  /** Number of temporary files */
+  tmpFiles: number;
+
+  /** Total size in bytes */
   totalSizeBytes: number;
 
-  /** Number of agent workspaces */
-  agentWorkspaces: number;
+  /** PRD workspace size in bytes */
+  prdSizeBytes: number;
+
+  /** Tmp workspace size in bytes */
+  tmpSizeBytes: number;
 }
 
 /**
- * Workspace Manager
+ * Simplified Workspace Manager (v5.2.0)
  *
- * Manages workspace organization for multi-agent collaboration with:
- * - Session-based isolation (each session gets its own workspace)
- * - Permission-based access control (based on OrchestrationConfig)
- * - Automatic cleanup of old sessions
+ * Manages automatosx/ working directory with two subdirectories:
+ * - PRD/: Planning documents, workflow designs, proposals (permanent)
+ * - tmp/: Scripts, tools, temporary analysis (auto-cleanup)
+ *
+ * Key features:
+ * - Lazy initialization (directories created on first use)
+ * - Path security validation (prevents path traversal)
+ * - No permission control (all agents have equal access)
+ * - Auto-cleanup for temporary files
  *
  * @example
  * ```typescript
  * const workspaceManager = new WorkspaceManager('/path/to/project');
  *
- * // Create session workspace
- * await workspaceManager.createSessionWorkspace('session-123');
+ * // Write PRD document
+ * await workspaceManager.writePRD('feature-auth.md', '# Auth Feature...');
  *
- * // Agent writes to session
- * await workspaceManager.writeToSession(
- *   'session-123',
- *   'backend',
- *   'api-spec.md',
- *   '# API Specification...'
- * );
+ * // Write temporary script
+ * await workspaceManager.writeTmp('test.sh', '#!/bin/bash...');
  *
- * // Another agent reads from backend's output
- * const spec = await workspaceManager.readFromAgentWorkspace(
- *   'frontend',
- *   'backend',
- *   'session-123',
- *   'api-spec.md'
- * );
+ * // Clean up old temporary files
+ * await workspaceManager.cleanupTmp(7); // older than 7 days
  * ```
  */
 export class WorkspaceManager {
-  private readonly workspacesRoot: string;
-  private readonly sharedRoot: string;
-  private readonly sessionsRoot: string;
-  private readonly persistentRoot: string;
+  private readonly projectDir: string;
+  private readonly prdDir: string;
+  private readonly tmpDir: string;
+  private directoriesEnsured: boolean = false;
 
-  /** Maximum file size for writeToSession (from config) */
-  private readonly maxFileSize: number;
-
-  /** UUID v4 validation regex (static for performance) */
-  private static readonly UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  /** Maximum file size in bytes (10MB) */
+  private static readonly MAX_FILE_SIZE = 10 * 1024 * 1024;
 
   /**
    * Create WorkspaceManager
    *
    * @param projectDir - Project directory path
-   * @param config - Workspace configuration (optional, defaults to 10MB max file size)
+   * @param config - Optional workspace configuration
    */
-  constructor(projectDir: string, config?: WorkspaceSystemConfig) {
-    this.workspacesRoot = path.join(projectDir, '.automatosx', 'workspaces');
-    this.sharedRoot = path.join(this.workspacesRoot, 'shared');
-    this.sessionsRoot = path.join(this.sharedRoot, 'sessions');
-    this.persistentRoot = path.join(this.sharedRoot, 'persistent');
+  constructor(projectDir: string, config?: { prdPath?: string; tmpPath?: string }) {
+    this.projectDir = projectDir;
 
-    // v5.0: Use config value instead of hardcoded constant
-    this.maxFileSize = config?.maxFileSize ?? 10 * 1024 * 1024; // Default: 10 MB
+    // Support custom paths or use defaults
+    const prdPath = config?.prdPath ?? 'automatosx/PRD';
+    const tmpPath = config?.tmpPath ?? 'automatosx/tmp';
+
+    this.prdDir = path.join(projectDir, prdPath);
+    this.tmpDir = path.join(projectDir, tmpPath);
   }
 
   /**
-   * Initialize workspace structure
+   * Ensure PRD/tmp directories exist (lazy initialization with caching)
    *
-   * Creates all necessary directories for workspace management.
-   *
-   * @example
-   * ```typescript
-   * await workspaceManager.initialize();
-   * ```
+   * Creates directories only when needed, not during init.
+   * Uses caching to avoid repeated filesystem checks.
    */
-  async initialize(): Promise<void> {
-    await fs.mkdir(this.workspacesRoot, { recursive: true });
-    await fs.mkdir(this.sharedRoot, { recursive: true });
-    await fs.mkdir(this.sessionsRoot, { recursive: true });
-    await fs.mkdir(this.persistentRoot, { recursive: true });
+  private async ensureDirectories(): Promise<void> {
+    if (this.directoriesEnsured) {
+      return; // Already ensured, skip
+    }
 
-    logger.debug('Workspace structure initialized', {
-      workspacesRoot: this.workspacesRoot
+    await fs.mkdir(this.prdDir, { recursive: true });
+    await fs.mkdir(this.tmpDir, { recursive: true });
+
+    this.directoriesEnsured = true;
+    logger.debug('Workspace directories ensured', {
+      prdDir: this.prdDir,
+      tmpDir: this.tmpDir
     });
   }
 
   /**
-   * Create workspace for a session
+   * Validate file size
    *
-   * @param sessionId - Session ID
-   * @throws {WorkspaceError} If creation fails
-   *
-   * @example
-   * ```typescript
-   * await workspaceManager.createSessionWorkspace('session-123');
-   * ```
+   * @param content - File content
+   * @throws {Error} If file size exceeds MAX_FILE_SIZE
    */
-  async createSessionWorkspace(sessionId: string): Promise<void> {
-    const sessionDir = this.getSessionDir(sessionId);
-    const specsDir = path.join(sessionDir, 'specs');
-    const outputsDir = path.join(sessionDir, 'outputs');
-
-    try {
-      await fs.mkdir(sessionDir, { recursive: true });
-      await fs.mkdir(specsDir, { recursive: true });
-      await fs.mkdir(outputsDir, { recursive: true });
-
-      logger.info('Session workspace created', {
-        sessionId,
-        path: sessionDir
-      });
-    } catch (error) {
-      throw new WorkspaceError(
-        `Failed to create session workspace: ${(error as Error).message}`,
-        sessionDir,
-        'creation_failed'
+  private validateFileSize(content: string): void {
+    const sizeInBytes = Buffer.byteLength(content, 'utf-8');
+    if (sizeInBytes > WorkspaceManager.MAX_FILE_SIZE) {
+      throw new Error(
+        `File too large: ${sizeInBytes} bytes (max: ${WorkspaceManager.MAX_FILE_SIZE} bytes)`
       );
     }
   }
 
   /**
-   * Get agent's output directory within a session
+   * Validate path security (prevent path traversal attacks)
    *
-   * @param sessionId - Session ID
-   * @param agentName - Agent name
-   * @returns Path to agent's output directory
-   */
-  private getAgentOutputDir(sessionId: string, agentName: string): string {
-    return path.join(this.getSessionDir(sessionId), 'outputs', agentName);
-  }
-
-  /**
-   * Validate session ID format (must be valid UUID v4)
-   *
-   * @param sessionId - Session ID to validate
-   * @throws {WorkspaceError} If session ID is invalid
-   */
-  private validateSessionId(sessionId: string): void {
-    // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-    // where y is 8, 9, a, or b
-    if (!WorkspaceManager.UUID_V4_REGEX.test(sessionId)) {
-      throw new WorkspaceError(
-        `Invalid session ID format: ${sessionId}. Session IDs must be valid UUID v4.`,
-        undefined,
-        'invalid_session_id'
-      );
-    }
-  }
-
-  /**
-   * Get session directory path
-   *
-   * @param sessionId - Session ID
-   * @returns Session directory path
-   */
-  private getSessionDir(sessionId: string): string {
-    this.validateSessionId(sessionId);
-    return path.join(this.sessionsRoot, sessionId);
-  }
-
-  /**
-   * Validate that a file path is safe (prevents path traversal attacks)
+   * Security checks:
+   * 1. Reject absolute paths
+   * 2. Normalize path and check for '..' at start
+   * 3. Verify resolved path is within base directory
    *
    * @param baseDir - Base directory that file must be within
    * @param filePath - Relative file path to validate
    * @returns Resolved absolute path
-   * @throws {WorkspaceError} If path is unsafe
-   *
-   * Security checks:
-   * 1. Normalize path to resolve '..' and '.'
-   * 2. Resolve to absolute path
-   * 3. Verify resolved path is within base directory
-   * 4. Prevent symlink attacks by checking real path
+   * @throws {Error} If path is unsafe
    */
-  private async validatePath(baseDir: string, filePath: string): Promise<string> {
-    // 1. Reject absolute paths immediately
+  private validatePath(baseDir: string, filePath: string): string {
+    // 0. Reject empty paths
+    if (!filePath || !filePath.trim()) {
+      throw new Error('File path cannot be empty');
+    }
+
+    // 1. Reject absolute paths
     if (path.isAbsolute(filePath)) {
-      throw new WorkspaceError(
-        `Absolute paths not allowed: ${filePath}`,
-        filePath,
-        'permission_denied'
-      );
+      throw new Error(`Absolute paths not allowed: ${filePath}`);
     }
 
-    // 2. Normalize the path (resolves '..' and '.')
+    // 2. Normalize and check for path traversal
     const normalized = path.normalize(filePath);
-
-    // 3. Additional check: normalized path shouldn't start with '..'
     if (normalized.startsWith('..')) {
-      throw new WorkspaceError(
-        `Path traversal detected: ${filePath}`,
-        filePath,
-        'permission_denied'
-      );
+      throw new Error(`Path traversal detected: ${filePath}`);
     }
 
-    // 4. Resolve to absolute path
-    const resolved = path.resolve(baseDir, normalized);
+    // 3. Reject paths that resolve to base directory itself
+    if (normalized === '.' || normalized === './') {
+      throw new Error('Cannot write to base directory itself');
+    }
 
-    // 5. Verify resolved path is within base directory
+    // 4. Resolve and verify within base directory
+    const resolved = path.resolve(baseDir, normalized);
     const resolvedBase = path.resolve(baseDir);
+
     if (!resolved.startsWith(resolvedBase + path.sep) && resolved !== resolvedBase) {
-      throw new WorkspaceError(
-        `Path outside workspace: ${filePath}`,
-        filePath,
-        'permission_denied'
-      );
+      throw new Error(`Path outside workspace: ${filePath}`);
     }
 
     return resolved;
   }
 
   /**
-   * Get agent's private workspace directory
+   * Write PRD document
    *
-   * @param agentName - Agent name
-   * @returns Agent workspace path
-   */
-  private getAgentWorkspaceDir(agentName: string): string {
-    return path.join(this.workspacesRoot, agentName);
-  }
-
-  /**
-   * Write file to session workspace (agent's output area)
+   * PRD documents are permanent and should contain:
+   * - Feature designs (feature-*.md)
+   * - Workflow plans (workflow-*.md)
+   * - Architecture proposals (proposal-*.md)
    *
-   * @param sessionId - Session ID
-   * @param agentName - Agent writing the file
-   * @param filePath - Relative file path within agent's output
+   * @param fileName - Relative file path within PRD/
    * @param content - File content
-   * @param callerAgent - Optional: Agent profile of the caller (for permission verification)
-   * @throws {WorkspaceError} If write fails, path is invalid, or permission denied
+   * @throws {Error} If path is invalid, file too large, or write fails
    *
    * @example
    * ```typescript
-   * await workspaceManager.writeToSession(
-   *   'session-123',
-   *   'backend',
-   *   'api/users.ts',
-   *   'export interface User { ... }',
-   *   backendProfile  // Verify caller is actually 'backend'
-   * );
+   * await workspaceManager.writePRD('feature-auth.md', '# Authentication Feature...');
    * ```
    */
-  async writeToSession(
-    sessionId: string,
-    agentName: string,
-    filePath: string,
-    content: string,
-    callerAgent?: AgentProfile
-  ): Promise<void> {
-    // Permission check: Verify caller is the agent they claim to be
-    if (callerAgent && callerAgent.name !== agentName) {
-      throw new WorkspaceError(
-        `Agent '${callerAgent.name}' is not authorized to write to '${agentName}' workspace`,
-        undefined,
-        'permission_denied'
-      );
-    }
+  async writePRD(fileName: string, content: string): Promise<void> {
+    await this.ensureDirectories();
 
-    const agentOutputDir = this.getAgentOutputDir(sessionId, agentName);
+    // Validate file size before writing
+    this.validateFileSize(content);
 
-    // Validate path security (prevents path traversal)
-    const fullPath = await this.validatePath(agentOutputDir, filePath);
+    const fullPath = this.validatePath(this.prdDir, fileName);
 
-    // Check file size (prevent disk quota exhaustion)
-    const fileSize = Buffer.byteLength(content, 'utf-8');
-    if (fileSize > this.maxFileSize) {
-      throw new WorkspaceError(
-        `File too large: ${fileSize} bytes (max: ${this.maxFileSize} bytes)`,
-        fullPath,
-        'quota_exceeded'
-      );
-    }
+    // Ensure parent directory exists
+    await fs.mkdir(path.dirname(fullPath), { recursive: true });
 
-    try {
-      // Ensure directory exists
-      await fs.mkdir(path.dirname(fullPath), { recursive: true });
+    // Write file
+    await fs.writeFile(fullPath, content, 'utf-8');
 
-      // Write file
-      await fs.writeFile(fullPath, content, 'utf-8');
-
-      logger.debug('File written to session workspace', {
-        sessionId,
-        agentName,
-        filePath,
-        size: content.length
-      });
-    } catch (error) {
-      throw new WorkspaceError(
-        `Failed to write file: ${(error as Error).message}`,
-        fullPath,
-        'permission_denied'
-      );
-    }
+    logger.info('PRD document created', { fileName, size: content.length });
   }
 
   /**
-   * Read file from another agent's workspace (within a session)
+   * Write temporary file
    *
-   * Requires permission check: requestingAgent must have targetAgent
-   * in their canReadWorkspaces whitelist.
+   * Temporary files should contain:
+   * - Test scripts
+   * - Analysis tools
+   * - Temporary reports
    *
-   * @param requestingAgent - Agent profile requesting access
-   * @param targetAgent - Target agent whose workspace to read
-   * @param sessionId - Session ID
-   * @param filePath - Relative file path within target agent's output
+   * These files can be cleaned up anytime.
+   *
+   * @param fileName - Relative file path within tmp/
+   * @param content - File content
+   * @throws {Error} If path is invalid, file too large, or write fails
+   *
+   * @example
+   * ```typescript
+   * await workspaceManager.writeTmp('test.sh', '#!/bin/bash\necho "test"');
+   * ```
+   */
+  async writeTmp(fileName: string, content: string): Promise<void> {
+    await this.ensureDirectories();
+
+    // Validate file size before writing
+    this.validateFileSize(content);
+
+    const fullPath = this.validatePath(this.tmpDir, fileName);
+
+    // Ensure parent directory exists
+    await fs.mkdir(path.dirname(fullPath), { recursive: true });
+
+    // Write file
+    await fs.writeFile(fullPath, content, 'utf-8');
+
+    logger.debug('Temporary file created', { fileName, size: content.length });
+  }
+
+  /**
+   * Read PRD document
+   *
+   * @param fileName - Relative file path within PRD/
    * @returns File content
-   * @throws {WorkspaceError} If permission denied or file not found
+   * @throws {Error} If path is invalid or file not found
    *
    * @example
    * ```typescript
-   * const spec = await workspaceManager.readFromAgentWorkspace(
-   *   frontendProfile,
-   *   'backend',
-   *   'session-123',
-   *   'api-spec.md'
-   * );
+   * const content = await workspaceManager.readPRD('feature-auth.md');
    * ```
    */
-  async readFromAgentWorkspace(
-    requestingAgent: AgentProfile,
-    targetAgent: string,
-    sessionId: string,
-    filePath: string
-  ): Promise<string> {
-    // Permission check
-    const canRead = requestingAgent.orchestration?.canReadWorkspaces;
-    if (!canRead || !canRead.includes(targetAgent)) {
-      throw new WorkspaceError(
-        `Agent '${requestingAgent.name}' is not authorized to read '${targetAgent}' workspace`,
-        undefined,
-        'permission_denied'
-      );
-    }
-
-    const agentOutputDir = this.getAgentOutputDir(sessionId, targetAgent);
-
-    // Validate path security (prevents path traversal)
-    const fullPath = await this.validatePath(agentOutputDir, filePath);
-
-    try {
-      const content = await fs.readFile(fullPath, 'utf-8');
-
-      logger.debug('File read from agent workspace', {
-        requestingAgent: requestingAgent.name,
-        targetAgent,
-        sessionId,
-        filePath
-      });
-
-      return content;
-    } catch (error) {
-      const err = error as NodeJS.ErrnoException;
-      if (err.code === 'ENOENT') {
-        throw new WorkspaceError(
-          `File not found: ${filePath}`,
-          fullPath,
-          'not_found'
-        );
-      }
-      throw new WorkspaceError(
-        `Failed to read file: ${err.message}`,
-        fullPath,
-        'permission_denied'
-      );
-    }
+  async readPRD(fileName: string): Promise<string> {
+    const fullPath = this.validatePath(this.prdDir, fileName);
+    return await fs.readFile(fullPath, 'utf-8');
   }
 
   /**
-   * Write to persistent shared workspace (cross-session)
+   * Read temporary file
    *
-   * Requires permission check: agent must have canWriteToShared enabled.
-   *
-   * @param agent - Agent profile
-   * @param filePath - Relative file path
-   * @param content - File content
-   * @throws {WorkspaceError} If permission denied or write fails
-   *
-   * @example
-   * ```typescript
-   * await workspaceManager.writeToShared(
-   *   agentProfile,
-   *   'templates/api-template.ts',
-   *   'export const template = ...'
-   * );
-   * ```
+   * @param fileName - Relative file path within tmp/
+   * @returns File content
+   * @throws {Error} If path is invalid or file not found
    */
-  async writeToShared(
-    agent: AgentProfile,
-    filePath: string,
-    content: string
-  ): Promise<void> {
-    // Permission check
-    if (!agent.orchestration?.canWriteToShared) {
-      throw new WorkspaceError(
-        `Agent '${agent.name}' is not authorized to write to shared workspace`,
-        undefined,
-        'permission_denied'
-      );
-    }
-
-    // Validate path security (prevents path traversal)
-    const fullPath = await this.validatePath(this.persistentRoot, filePath);
-
-    // Check file size (prevent disk quota exhaustion)
-    const fileSize = Buffer.byteLength(content, 'utf-8');
-    if (fileSize > this.maxFileSize) {
-      throw new WorkspaceError(
-        `File too large: ${fileSize} bytes (max: ${this.maxFileSize} bytes)`,
-        fullPath,
-        'quota_exceeded'
-      );
-    }
-
-    try {
-      await fs.mkdir(path.dirname(fullPath), { recursive: true });
-      await fs.writeFile(fullPath, content, 'utf-8');
-
-      logger.info('File written to persistent shared workspace', {
-        agentName: agent.name,
-        filePath,
-        size: fileSize
-      });
-    } catch (error) {
-      throw new WorkspaceError(
-        `Failed to write to shared workspace: ${(error as Error).message}`,
-        fullPath,
-        'permission_denied'
-      );
-    }
+  async readTmp(fileName: string): Promise<string> {
+    const fullPath = this.validatePath(this.tmpDir, fileName);
+    return await fs.readFile(fullPath, 'utf-8');
   }
 
   /**
-   * List files in session workspace for a specific agent
+   * List all PRD documents
    *
-   * @param sessionId - Session ID
-   * @param agentName - Agent name
    * @returns Array of relative file paths
-   * @throws {WorkspaceError} If listing fails
    *
    * @example
    * ```typescript
-   * const files = await workspaceManager.listSessionFiles('session-123', 'backend');
-   * console.log(files); // ['api-spec.md', 'models/user.ts']
+   * const prdFiles = await workspaceManager.listPRD();
+   * // ['feature-auth.md', 'workflow-ci-cd.md']
    * ```
    */
-  async listSessionFiles(sessionId: string, agentName: string): Promise<string[]> {
-    const agentOutputDir = this.getAgentOutputDir(sessionId, agentName);
-
+  async listPRD(): Promise<string[]> {
     try {
-      const files: string[] = [];
-      await this.collectFiles(agentOutputDir, agentOutputDir, files);
-      return files;
+      await this.ensureDirectories();
+      return await this.listFiles(this.prdDir);
+    } catch (error) {
+      // If directory doesn't exist yet, return empty array
+      const err = error as NodeJS.ErrnoException;
+      if (err.code === 'ENOENT') {
+        return [];
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * List all temporary files
+   *
+   * @returns Array of relative file paths
+   */
+  async listTmp(): Promise<string[]> {
+    try {
+      await this.ensureDirectories();
+      return await this.listFiles(this.tmpDir);
     } catch (error) {
       const err = error as NodeJS.ErrnoException;
       if (err.code === 'ENOENT') {
-        return []; // Directory doesn't exist yet
+        return [];
       }
-      throw new WorkspaceError(
-        `Failed to list files: ${err.message}`,
-        agentOutputDir,
-        'permission_denied'
-      );
+      throw error;
     }
   }
 
   /**
-   * Recursively collect files from a directory
+   * Clean up temporary files (recursively)
    *
-   * @param dir - Directory to scan
-   * @param baseDir - Base directory for relative paths
-   * @param files - Array to collect file paths
-   */
-  private async collectFiles(
-    dir: string,
-    baseDir: string,
-    files: string[]
-  ): Promise<void> {
-    try {
-      const entries = await fs.readdir(dir, { withFileTypes: true });
-
-      for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-
-        try {
-          if (entry.isDirectory()) {
-            await this.collectFiles(fullPath, baseDir, files);
-          } else {
-            const relativePath = path.relative(baseDir, fullPath);
-            files.push(relativePath);
-          }
-        } catch (err) {
-          // Skip files/directories that were deleted during traversal
-          const error = err as NodeJS.ErrnoException;
-          if (error.code === 'ENOENT') {
-            logger.debug('File removed during traversal', { path: fullPath });
-            continue;
-          }
-          throw err;
-        }
-      }
-    } catch (err) {
-      // If directory is deleted during traversal, just log and return
-      const error = err as NodeJS.ErrnoException;
-      if (error.code === 'ENOENT') {
-        logger.debug('Directory removed during traversal', { path: dir });
-        return;
-      }
-      throw err;
-    }
-  }
-
-  /**
-   * Cleanup old session workspaces
-   *
-   * Removes session workspaces older than specified days.
-   * Should be called in sync with SessionManager cleanup.
-   *
-   * @param sessionIds - Active session IDs to keep
-   * @returns Number of sessions cleaned up
+   * @param olderThanDays - Optional: Only remove files older than N days
+   * @returns Number of files removed
    *
    * @example
    * ```typescript
-   * const activeSessions = await sessionManager.getActiveSessions();
-   * const activeIds = activeSessions.map(s => s.id);
-   * const removed = await workspaceManager.cleanupSessions(activeIds);
+   * // Remove all temporary files
+   * await workspaceManager.cleanupTmp();
+   *
+   * // Remove files older than 7 days
+   * await workspaceManager.cleanupTmp(7);
    * ```
    */
-  async cleanupSessions(sessionIds: string[]): Promise<number> {
+  async cleanupTmp(olderThanDays?: number): Promise<number> {
     try {
-      const sessionDirs = await fs.readdir(this.sessionsRoot);
-      const activeSet = new Set(sessionIds);
-      let removed = 0;
-
-      for (const sessionId of sessionDirs) {
-        if (!activeSet.has(sessionId)) {
-          try {
-            const sessionDir = this.getSessionDir(sessionId);
-            await fs.rm(sessionDir, { recursive: true, force: true });
-            removed++;
-
-            logger.debug('Session workspace removed', { sessionId });
-          } catch (err) {
-            // Skip invalid session directories (non-UUID names)
-            if (err instanceof WorkspaceError && err.reason === 'invalid_session_id') {
-              logger.warn('Skipping invalid session directory', { sessionId });
-              continue;
-            }
-            throw err;
-          }
-        }
-      }
-
-      if (removed > 0) {
-        logger.info('Session workspaces cleaned up', { removed });
-      }
-
-      return removed;
+      await this.ensureDirectories();
+      return await this.cleanupDirectory(this.tmpDir, olderThanDays);
     } catch (error) {
-      logger.warn('Failed to cleanup session workspaces', {
-        error: (error as Error).message
+      const err = error as NodeJS.ErrnoException;
+      if (err.code === 'ENOENT') {
+        return 0; // Directory doesn't exist, nothing to clean
+      }
+      logger.warn('Failed to cleanup temporary files', {
+        error: err.message
       });
       return 0;
     }
   }
 
   /**
-   * Cleanup specific session workspaces by session IDs
+   * Helper: Clean up directory recursively
    *
-   * Removes workspace directories for the specified session IDs.
-   * Useful when coordinating with SessionManager cleanup.
-   *
-   * @param sessionIds - Session IDs to remove
-   * @returns Number of workspaces removed
-   *
-   * @example
-   * ```typescript
-   * const result = await sessionManager.cleanupOldSessions(7);
-   * await workspaceManager.cleanupSessionWorkspaces(result.removedSessionIds);
-   * ```
+   * @param dir - Directory to clean
+   * @param olderThanDays - Optional: Only remove files older than N days
+   * @returns Number of files removed
    */
-  async cleanupSessionWorkspaces(sessionIds: string[]): Promise<number> {
+  private async cleanupDirectory(dir: string, olderThanDays?: number): Promise<number> {
     let removed = 0;
 
-    for (const sessionId of sessionIds) {
-      try {
-        const sessionDir = this.getSessionDir(sessionId);
-        await fs.rm(sessionDir, { recursive: true, force: true });
-        removed++;
+    try {
+      const entries = await fs.readdir(dir, { withFileTypes: true });
 
-        logger.debug('Session workspace removed', { sessionId });
-      } catch (error) {
-        const err = error as NodeJS.ErrnoException;
-        // Ignore ENOENT errors (workspace already doesn't exist)
-        if (err.code !== 'ENOENT') {
-          logger.warn('Failed to remove session workspace', {
-            sessionId,
-            error: err.message
+      for (const entry of entries) {
+        const filePath = path.join(dir, entry.name);
+
+        if (entry.isDirectory()) {
+          // Recursively clean subdirectory
+          removed += await this.cleanupDirectory(filePath, olderThanDays);
+          continue;
+        }
+
+        // Check age if specified
+        if (olderThanDays !== undefined) {
+          try {
+            const stats = await fs.stat(filePath);
+            const ageInDays = (Date.now() - stats.mtimeMs) / (1000 * 60 * 60 * 24);
+            if (ageInDays < olderThanDays) {
+              continue; // Skip files newer than threshold
+            }
+          } catch (statError) {
+            // Skip if can't stat (file might be deleted)
+            continue;
+          }
+        }
+
+        // Remove file
+        try {
+          await fs.unlink(filePath);
+          removed++;
+        } catch (rmError) {
+          // Log but continue with other files
+          logger.warn('Failed to remove temporary file', {
+            path: path.relative(this.tmpDir, filePath),
+            error: (rmError as Error).message
           });
         }
       }
-    }
 
-    if (removed > 0) {
-      logger.info('Session workspaces cleaned up', {
-        removed,
-        total: sessionIds.length
-      });
+      if (removed > 0) {
+        logger.info('Temporary files cleaned up', { removed, olderThanDays });
+      }
+    } catch (error) {
+      const err = error as NodeJS.ErrnoException;
+      if (err.code === 'ENOENT') {
+        // Directory might have been deleted during cleanup
+        return removed;
+      }
+      throw error;
     }
 
     return removed;
@@ -662,70 +419,104 @@ export class WorkspaceManager {
    * @example
    * ```typescript
    * const stats = await workspaceManager.getStats();
-   * console.log(`${stats.totalSessions} session workspaces`);
+   * console.log(`PRD files: ${stats.prdFiles}, Tmp files: ${stats.tmpFiles}`);
    * ```
    */
   async getStats(): Promise<WorkspaceStats> {
     try {
-      const sessionDirs = await fs.readdir(this.sessionsRoot);
-      const agentDirs = await fs.readdir(this.workspacesRoot);
+      await this.ensureDirectories();
 
-      // Count only directories (exclude 'shared')
-      const agentWorkspaces = agentDirs.filter(
-        name => name !== 'shared'
-      ).length;
+      const prdFiles = await this.listFiles(this.prdDir);
+      const tmpFiles = await this.listFiles(this.tmpDir);
 
-      // Calculate total size (simplified - doesn't traverse all files)
-      const stats: WorkspaceStats = {
-        totalSessions: sessionDirs.length,
-        totalSizeBytes: 0,
-        agentWorkspaces
+      // Calculate PRD size
+      let prdSize = 0;
+      for (const file of prdFiles) {
+        try {
+          const stats = await fs.stat(path.join(this.prdDir, file));
+          prdSize += stats.size;
+        } catch {
+          // Skip files that can't be stat'd
+        }
+      }
+
+      // Calculate Tmp size
+      let tmpSize = 0;
+      for (const file of tmpFiles) {
+        try {
+          const stats = await fs.stat(path.join(this.tmpDir, file));
+          tmpSize += stats.size;
+        } catch {
+          // Skip files that can't be stat'd
+        }
+      }
+
+      return {
+        prdFiles: prdFiles.length,
+        tmpFiles: tmpFiles.length,
+        totalSizeBytes: prdSize + tmpSize,
+        prdSizeBytes: prdSize,
+        tmpSizeBytes: tmpSize
       };
-
-      return stats;
     } catch (error) {
       logger.warn('Failed to get workspace stats', {
         error: (error as Error).message
       });
 
       return {
-        totalSessions: 0,
+        prdFiles: 0,
+        tmpFiles: 0,
         totalSizeBytes: 0,
-        agentWorkspaces: 0
+        prdSizeBytes: 0,
+        tmpSizeBytes: 0
       };
     }
   }
 
   /**
-   * Create agent's private workspace
+   * Helper: List files recursively in a directory
    *
-   * @param agentName - Agent name
-   *
-   * @example
-   * ```typescript
-   * await workspaceManager.createAgentWorkspace('backend');
-   * ```
+   * @param dir - Directory to scan
+   * @returns Array of relative file paths
    */
-  async createAgentWorkspace(agentName: string): Promise<void> {
-    const agentDir = this.getAgentWorkspaceDir(agentName);
-    const draftsDir = path.join(agentDir, 'drafts');
-    const tempDir = path.join(agentDir, 'temp');
+  private async listFiles(dir: string): Promise<string[]> {
+    const files: string[] = [];
 
     try {
-      await fs.mkdir(agentDir, { recursive: true });
-      await fs.mkdir(draftsDir, { recursive: true });
-      await fs.mkdir(tempDir, { recursive: true });
+      const entries = await fs.readdir(dir, { withFileTypes: true });
 
-      logger.debug('Agent workspace created', {
-        agentName,
-        path: agentDir
-      });
-    } catch (error) {
-      throw new WorkspaceError(
-        `Failed to create agent workspace: ${(error as Error).message}`,
-        agentDir,
-        'creation_failed'
-      );
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        const relativePath = path.relative(dir, fullPath);
+
+        try {
+          if (entry.isDirectory()) {
+            // Recursively list subdirectory files
+            const subFiles = await this.listFiles(fullPath);
+            files.push(...subFiles.map(f => path.join(relativePath, f)));
+          } else {
+            files.push(relativePath);
+          }
+        } catch (err) {
+          // Skip files/directories that were deleted during traversal
+          const error = err as NodeJS.ErrnoException;
+          if (error.code === 'ENOENT') {
+            logger.debug('File removed during traversal', { path: relativePath });
+            continue;
+          }
+          throw err;
+        }
+      }
+    } catch (err) {
+      // If directory is deleted during traversal, return what we have
+      const error = err as NodeJS.ErrnoException;
+      if (error.code === 'ENOENT') {
+        logger.debug('Directory removed during traversal', { path: dir });
+        return files;
+      }
+      throw err;
     }
+
+    return files;
   }
 }

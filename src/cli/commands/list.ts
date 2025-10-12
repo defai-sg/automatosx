@@ -30,6 +30,7 @@ export const listCommand: CommandModule<Record<string, unknown>, ListOptions> = 
   handler: async (argv) => {
     try {
       const projectDir = await detectProjectRoot();
+      // v5.2: agentWorkspace path kept for PathResolver compatibility (directory not created)
       const pathResolver = new PathResolver({
         projectDir,
         workingDir: process.cwd(),

@@ -23,11 +23,12 @@ export interface TeamProviderConfig {
  *
  * Default orchestration settings for all agents in the team.
  * Individual agents can override these in their profile.
+ *
+ * v5.2.0: Workspace permission fields removed. All agents have equal access
+ * to automatosx/PRD and automatosx/tmp.
  */
 export interface TeamOrchestrationDefaults {
   maxDelegationDepth?: number;
-  canWriteToShared?: boolean;
-  canReadWorkspaces?: string[];
 }
 
 /**

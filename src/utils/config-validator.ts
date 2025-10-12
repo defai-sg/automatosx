@@ -251,7 +251,7 @@ function validateMemory(memory: any): ValidationError[] {
 }
 
 /**
- * Validate workspace configuration
+ * Validate workspace configuration (v5.2.0)
  */
 function validateWorkspace(workspace: any): ValidationError[] {
   const errors: ValidationError[] = [];
@@ -266,59 +266,61 @@ function validateWorkspace(workspace: any): ValidationError[] {
     return errors;
   }
 
-  // basePath
-  if (typeof workspace.basePath !== 'string') {
+  // prdPath (v5.2.0)
+  if (typeof workspace.prdPath !== 'string') {
     errors.push({
-      path: `${basePath}.basePath`,
-      message: 'basePath must be a string',
-      value: workspace.basePath
+      path: `${basePath}.prdPath`,
+      message: 'prdPath must be a string',
+      value: workspace.prdPath
     });
-  } else if (workspace.basePath.trim() === '') {
+  } else if (workspace.prdPath.trim() === '') {
     errors.push({
-      path: `${basePath}.basePath`,
-      message: 'basePath cannot be empty',
-      value: workspace.basePath
-    });
-  }
-
-  // autoCleanup
-  if (typeof workspace.autoCleanup !== 'boolean') {
-    errors.push({
-      path: `${basePath}.autoCleanup`,
-      message: 'autoCleanup must be a boolean',
-      value: workspace.autoCleanup
+      path: `${basePath}.prdPath`,
+      message: 'prdPath cannot be empty',
+      value: workspace.prdPath
     });
   }
 
-  // cleanupDays
-  if (typeof workspace.cleanupDays !== 'number') {
+  // tmpPath (v5.2.0)
+  if (typeof workspace.tmpPath !== 'string') {
     errors.push({
-      path: `${basePath}.cleanupDays`,
-      message: 'cleanupDays must be a number',
-      value: workspace.cleanupDays
+      path: `${basePath}.tmpPath`,
+      message: 'tmpPath must be a string',
+      value: workspace.tmpPath
     });
-  } else if (workspace.cleanupDays < 1) {
+  } else if (workspace.tmpPath.trim() === '') {
     errors.push({
-      path: `${basePath}.cleanupDays`,
-      message: 'cleanupDays must be >= 1',
-      value: workspace.cleanupDays
+      path: `${basePath}.tmpPath`,
+      message: 'tmpPath cannot be empty',
+      value: workspace.tmpPath
     });
   }
 
-  // maxFiles
-  if (typeof workspace.maxFiles !== 'number') {
+  // autoCleanupTmp (v5.2.0)
+  if (typeof workspace.autoCleanupTmp !== 'boolean') {
     errors.push({
-      path: `${basePath}.maxFiles`,
-      message: 'maxFiles must be a number',
-      value: workspace.maxFiles
-    });
-  } else if (workspace.maxFiles < 1) {
-    errors.push({
-      path: `${basePath}.maxFiles`,
-      message: 'maxFiles must be >= 1',
-      value: workspace.maxFiles
+      path: `${basePath}.autoCleanupTmp`,
+      message: 'autoCleanupTmp must be a boolean',
+      value: workspace.autoCleanupTmp
     });
   }
+
+  // tmpCleanupDays (v5.2.0)
+  if (typeof workspace.tmpCleanupDays !== 'number') {
+    errors.push({
+      path: `${basePath}.tmpCleanupDays`,
+      message: 'tmpCleanupDays must be a number',
+      value: workspace.tmpCleanupDays
+    });
+  } else if (workspace.tmpCleanupDays < 1) {
+    errors.push({
+      path: `${basePath}.tmpCleanupDays`,
+      message: 'tmpCleanupDays must be >= 1',
+      value: workspace.tmpCleanupDays
+    });
+  }
+
+  // v5.2.0: maxFiles removed (no longer needed)
 
   return errors;
 }

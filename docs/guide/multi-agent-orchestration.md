@@ -45,16 +45,17 @@ Create → Add Agents → Execute Tasks → Complete
 
 **Max Depth**: 2 levels by default (prevents over-delegation)
 
-### Workspaces
+### Workspaces (v5.2+)
 
-**Agent Workspace**: `.automatosx/workspaces/<agent>/`
-- Isolated per agent
-- Read/write access for owning agent only
+**PRD Workspace**: `automatosx/PRD/`
+- Shared planning documents
+- All agents can read/write
+- Persistent across sessions
 
-**Session Workspace**: `.automatosx/workspaces/shared/sessions/<session-id>/`
-- Shared collaboration space
-- Multiple agents can access
-- Requires `canWriteToShared: true` permission
+**Tmp Workspace**: `automatosx/tmp/`
+- Temporary working files
+- All agents can read/write
+- Auto-cleanup after configured days (default: 7)
 
 ---
 
@@ -160,34 +161,32 @@ abilities:
 systemPrompt: |
   You are a senior backend engineer...
 
-# Orchestration configuration
+# Orchestration configuration (v5.2+)
 orchestration:
   maxDelegationDepth: 2           # Max delegation chain depth
-  canReadWorkspaces:              # Readable workspaces
-    - frontend
-    - database
-  canWriteToShared: true          # Can write to shared workspace
 ```
 
-### Configuration Fields
+### Configuration Fields (v5.2+)
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `maxDelegationDepth` | number | 2 | Maximum delegation chain depth |
-| `canReadWorkspaces` | array | `[]` | Agent workspaces this agent can read |
-| `canWriteToShared` | boolean | `false` | Can write to shared session workspace |
 
-### Security Model
+**Note**: `canReadWorkspaces` and `canWriteToShared` removed in v5.2. All agents now have equal access to shared workspaces with path validation.
+
+### Security Model (v5.2+)
 
 **Read Permissions**:
-- ✅ Own workspace: Always allowed
-- ✅ Other workspaces: Must be listed in `canReadWorkspaces`
+- ✅ Project files: Validated by PathResolver
+- ✅ PRD workspace: All agents can read
+- ✅ Tmp workspace: All agents can read
 - ❌ Arbitrary paths: Blocked by PathResolver
 
 **Write Permissions**:
-- ✅ Own workspace: Always allowed
-- ✅ Shared workspace: Only if `canWriteToShared: true`
-- ❌ Other agent workspaces: Never allowed
+- ✅ PRD workspace: All agents (with path validation)
+- ✅ Tmp workspace: All agents (with path validation)
+- ❌ Path traversal: Blocked (../, absolute paths, empty paths)
+- ❌ Base directory: Blocked (., ./)
 
 ---
 
@@ -259,7 +258,7 @@ Agents (3):
   • frontend - Active
   • database - Completed
 
-Workspace: .automatosx/workspaces/shared/sessions/session-abc123
+Workspace: automatosx/PRD/ (shared)
 
 Delegation Chain:
   backend -> database (completed)
@@ -436,25 +435,19 @@ orchestration:
   maxDelegationDepth: 5  # Too many levels
 ```
 
-### 3. **Grant Minimal Permissions**
+### 3. **Keep Delegation Chains Short** (v5.2+)
 
 ```yaml
-# ✅ Good: Only necessary workspaces
+# ✅ Good: Limited delegation depth
 orchestration:
-  canReadWorkspaces:
-    - frontend    # Needs frontend code
-  canWriteToShared: true
+  maxDelegationDepth: 2  # Prevents over-delegation
 
-# ❌ Bad: Too permissive
+# ❌ Bad: Too deep
 orchestration:
-  canReadWorkspaces:
-    - frontend
-    - backend
-    - database
-    - devops
-    - design
-    # Too many! Why does this agent need all these?
+  maxDelegationDepth: 5  # Causes complexity
 ```
+
+**Note**: In v5.2+, all agents have equal access to shared workspaces with path validation. No need for permission configuration.
 
 ### 4. **Use Display Names for Clarity**
 
@@ -519,12 +512,14 @@ orchestration:
 
 **Symptom**: Error: "Permission denied: cannot write to shared workspace"
 
-**Cause**: Agent missing `canWriteToShared: true` permission.
+**Cause** (v5.1 and earlier): Agent missing `canWriteToShared: true` permission.
 
-**Solution**: Update agent configuration
+**Solution** (v5.2+): No configuration needed. All agents can write to shared workspaces with path validation.
+
 ```yaml
+# v5.2+: No permission configuration needed
 orchestration:
-  canWriteToShared: true
+  maxDelegationDepth: 2
 ```
 
 ### False delegation detection (v5.0.0 and earlier)
@@ -565,34 +560,27 @@ npm install -g @defai.digital/automatosx@5.0.1
 
 ### Custom Orchestration Patterns
 
-**Coordinator Pattern**:
+**Coordinator Pattern** (v5.2+):
 ```yaml
 name: coordinator
 orchestration:
   maxDelegationDepth: 1  # Only coordinate, don't execute
-  canReadWorkspaces:
-    - backend
-    - frontend
-    - database
+  # All agents can read project files and shared workspaces
 ```
 
-**Specialist Pattern**:
+**Specialist Pattern** (v5.2+):
 ```yaml
 name: algorithm-specialist
 orchestration:
   maxDelegationDepth: 0  # Cannot delegate, only execute
 ```
 
-**Team Lead Pattern**:
+**Team Lead Pattern** (v5.2+):
 ```yaml
 name: engineering-lead
 orchestration:
-  maxDelegationDepth: 2
-  canReadWorkspaces:
-    - backend
-    - frontend
-    - devops
-  canWriteToShared: true
+  maxDelegationDepth: 2  # Can delegate to team members
+  # All agents can write to shared workspaces
 ```
 
 ### Session Metadata

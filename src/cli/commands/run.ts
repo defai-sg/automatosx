@@ -213,6 +213,7 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         argv.saveMemory = false;
       }
 
+      // v5.2: agentWorkspace path kept for PathResolver compatibility (directory not created)
       const pathResolver = new PathResolver({
         projectDir,
         workingDir: process.cwd(),
@@ -269,8 +270,8 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
       await sessionManager.initialize();
 
       // Initialize WorkspaceManager
+      // v5.2: WorkspaceManager uses lazy initialization (no need to call initialize)
       workspaceManager = new WorkspaceManager(projectDir);
-      await workspaceManager.initialize();
 
       // If session ID provided, verify and join it
       if (argv.session) {
