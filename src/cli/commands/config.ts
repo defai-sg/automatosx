@@ -92,8 +92,8 @@ export const configCommand: CommandModule<Record<string, unknown>, ConfigOptions
         configPath = (argv as any).config;
       } else if ((argv as any).c) {
         configPath = (argv as any).c;
-      } else if (process.env.AUTOMATOSX_CONFIG) {
-        configPath = process.env.AUTOMATOSX_CONFIG;
+      } else if (process.env.AUTOMATOSX_CONFIG_PATH) {
+        configPath = process.env.AUTOMATOSX_CONFIG_PATH;
       } else {
         // Check in priority order: project root config, then hidden dir config
         const projectConfig = resolve(process.cwd(), 'automatosx.config.json');
@@ -212,10 +212,22 @@ async function validateConfigFile(
  * Reset configuration to defaults
  */
 async function resetConfig(path: string, verbose: boolean): Promise<void> {
+  // Read version from package.json dynamically
+  const { createRequire } = await import('module');
+  const require = createRequire(import.meta.url);
+  let version = '5.2.2'; // fallback
+  try {
+    const packageJson = require('../../package.json');
+    version = packageJson.version;
+  } catch {
+    // Use fallback version
+  }
+
   const config = {
     ...DEFAULT_CONFIG,
-    $schema: './schema/config.json',
-    version: '5.0.0'  // v5.0+ with YAML support
+    // Note: $schema removed because schema directory is not copied to user projects
+    // Users should rely on IDE JSON Schema plugins that fetch from npm package
+    version
   };
 
   await saveConfigFile(path, config);

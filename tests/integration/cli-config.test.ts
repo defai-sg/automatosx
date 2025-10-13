@@ -211,8 +211,10 @@ describe('CLI: config command', () => {
       const content = await readFile(configPath, 'utf-8');
       const config = JSON.parse(content);
       expect(config.logging.level).toBe(DEFAULT_CONFIG.logging.level);
-      expect(config.$schema).toBe('./schema/config.json');
-      expect(config.version).toBe('5.0.0');
+      // Note: $schema is no longer included (not copied to user projects)
+      expect(config.$schema).toBeUndefined();
+      // Version should be dynamically read from package.json
+      expect(config.version).toMatch(/^\d+\.\d+\.\d+/); // Semantic version format
     }, 10000);
   });
 

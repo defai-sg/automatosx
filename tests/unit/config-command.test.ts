@@ -266,8 +266,10 @@ describe('Config Command', () => {
       const resetConfig = JSON.parse(resetContent);
 
       expect(resetConfig.logging.level).toBe(DEFAULT_CONFIG.logging.level);
-      expect(resetConfig.$schema).toBe('./schema/config.json');
-      expect(resetConfig.version).toBe('5.0.0');
+      // Note: $schema is no longer included (not copied to user projects)
+      expect(resetConfig.$schema).toBeUndefined();
+      // Version should be dynamically read from package.json
+      expect(resetConfig.version).toMatch(/^\d+\.\d+\.\d+/); // Semantic version format
 
       consoleSpy.mockRestore();
     });

@@ -130,7 +130,7 @@ export const initCommand: CommandModule<Record<string, unknown>, InitOptions> = 
 
       // Create default config
       console.log(chalk.cyan('⚙️  Generating configuration...'));
-      await createDefaultConfig(configPath, argv.force ?? false);
+      await createDefaultConfig(configPath, argv.force ?? false, version);
       createdResources.push(configPath);
       console.log(chalk.green('   ✓ Configuration created'));
 
@@ -389,7 +389,8 @@ async function copyExampleTemplates(baseDir: string, packageRoot: string): Promi
  */
 async function createDefaultConfig(
   configPath: string,
-  force: boolean
+  force: boolean,
+  version: string
 ): Promise<void> {
   const exists = await checkExists(configPath);
 
@@ -400,8 +401,9 @@ async function createDefaultConfig(
   const config = {
     ...DEFAULT_CONFIG,
     // Add metadata
-    $schema: './schema/config.json',
-    version: '5.0.0'
+    // Note: $schema removed because schema directory is not copied to user projects
+    // Users should rely on IDE JSON Schema plugins that fetch from npm package
+    version
   };
 
   const content = JSON.stringify(config, null, 2);
