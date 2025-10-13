@@ -7,7 +7,7 @@
 # Runs in <1 minute with mock providers (no API costs).
 #
 # Usage:
-#   ./scripts/smoke-test.sh
+#   ./tools/smoke-test.sh
 #
 # Exit codes:
 #   0 - All tests passed

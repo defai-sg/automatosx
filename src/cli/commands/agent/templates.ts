@@ -56,7 +56,8 @@ export const templatesCommand: CommandModule = {
       const hasProjectTemplates = existsSync(projectTemplatesDir);
 
       // Default templates location (package examples)
-      const defaultTemplatesDir = join(__dirname, '../../../../examples/templates');
+      // After bundling, __dirname is dist/, so go up 1 level to project root
+      const defaultTemplatesDir = join(__dirname, '../examples/templates');
       const hasDefaultTemplates = existsSync(defaultTemplatesDir);
 
       if (!hasProjectTemplates && !hasDefaultTemplates) {

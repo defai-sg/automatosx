@@ -9,7 +9,7 @@
 # WARNING: This will make real API calls and incur costs!
 #
 # Usage:
-#   ./scripts/real-provider-test.sh [options]
+#   ./tools/real-provider-test.sh [options]
 #
 # Options:
 #   --provider <name>    Test specific provider (claude|gemini|openai)

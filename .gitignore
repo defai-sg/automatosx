@@ -44,6 +44,10 @@ temp/
 .automatosx/
 .automatosx-backups/
 
+# Workspace directories (v5.2.0+)
+automatosx/tmp/
+automatosx/PRD/
+
 # === INTERNAL DOCUMENTATION (NEVER COMMIT TO PUBLIC REPO) ===
 
 # Product Requirements Documents (Internal Planning)

@@ -9,7 +9,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
 [![Tests](https://img.shields.io/badge/tests-1,259%20passing-brightgreen.svg)](#)
 
-**Status**: ✅ Production Ready · v5.2.0 · October 2025
+**Status**: ✅ Production Ready · v5.2.2 · October 2025
 
 Looking for answers? See the [FAQ](FAQ.md).
 

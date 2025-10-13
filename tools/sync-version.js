@@ -6,8 +6,8 @@
  * Run this script when bumping version:
  *
  * Usage:
- *   node scripts/sync-version.js <version>
- *   node scripts/sync-version.js 5.0.6
+ *   node tools/sync-version.js <version>
+ *   node tools/sync-version.js 5.0.6
  *
  * Or use npm version commands which will auto-trigger this via hook.
  */

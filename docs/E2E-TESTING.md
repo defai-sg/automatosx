@@ -42,7 +42,7 @@ export AUTOMATOSX_MOCK_PROVIDERS=false
 npm test e2e
 
 # Or use the dedicated script
-./scripts/real-provider-test.sh
+./tools/real-provider-test.sh
 ```
 
 **Warning**: Real provider tests will incur API costs (~$0.01-0.10 per run).

@@ -122,49 +122,41 @@ export const createCommand: CommandModule<{}, CreateOptions> = {
       const templateContent = await readFile(templatePath, 'utf-8');
       const templateYaml = loadYaml(templateContent) as any;
 
-      // 5. Collect variables
+      // 5. Collect variables (keep undefined if not provided)
       const variables: TemplateVariables = {
         AGENT_NAME: argv.agent,
-        DISPLAY_NAME: argv.displayName || '',
-        ROLE: argv.role || '',
-        DESCRIPTION: argv.description || '',
-        TEAM: argv.team || ''
+        DISPLAY_NAME: argv.displayName,
+        ROLE: argv.role,
+        DESCRIPTION: argv.description,
+        TEAM: argv.team
       };
 
-      // 6. Interactive mode - ask for missing values
+      // 6. Handle missing values
       if (argv.interactive) {
-        // Only ask in interactive mode
+        // Interactive mode: ask for missing values
         if (!variables.DISPLAY_NAME) {
           variables.DISPLAY_NAME = await ask('Display Name', argv.agent);
         }
 
-        if (!variables.ROLE && templateYaml.role?.includes('{{')) {
+        if (!variables.ROLE && typeof templateYaml.role === 'string' && templateYaml.role.includes('{{')) {
           variables.ROLE = await ask('Role', extractDefault(templateYaml.role) || 'AI Assistant');
         }
 
-        if (!variables.DESCRIPTION && templateYaml.description?.includes('{{')) {
+        if (!variables.DESCRIPTION && typeof templateYaml.description === 'string' && templateYaml.description.includes('{{')) {
           variables.DESCRIPTION = await ask(
             'Description',
             extractDefault(templateYaml.description) || 'A helpful AI assistant'
           );
         }
 
-        if (!variables.TEAM && templateYaml.team?.includes('{{')) {
+        if (!variables.TEAM && typeof templateYaml.team === 'string' && templateYaml.team.includes('{{')) {
           variables.TEAM = await askTeam(extractDefault(templateYaml.team) || 'core');
         }
       } else {
-        // Non-interactive mode: use defaults for missing values
+        // Non-interactive mode: only set required DISPLAY_NAME
+        // Let template engine handle other defaults from template
         if (!variables.DISPLAY_NAME) {
           variables.DISPLAY_NAME = argv.agent;
-        }
-        if (!variables.ROLE && templateYaml.role?.includes('{{')) {
-          variables.ROLE = extractDefault(templateYaml.role) || 'AI Assistant';
-        }
-        if (!variables.DESCRIPTION && templateYaml.description?.includes('{{')) {
-          variables.DESCRIPTION = extractDefault(templateYaml.description) || 'A helpful AI assistant';
-        }
-        if (!variables.TEAM && templateYaml.team?.includes('{{')) {
-          variables.TEAM = extractDefault(templateYaml.team) || 'core';
         }
       }
 
@@ -220,7 +212,8 @@ async function findTemplate(name: string): Promise<string> {
   }
 
   // Check default templates
-  const defaultTemplate = join(__dirname, '../../../../examples/templates', `${name}.yaml`);
+  // After bundling, __dirname is dist/, so go up 1 level to project root
+  const defaultTemplate = join(__dirname, '../examples/templates', `${name}.yaml`);
   if (existsSync(defaultTemplate)) {
     return defaultTemplate;
   }

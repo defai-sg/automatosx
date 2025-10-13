@@ -70,5 +70,9 @@ temp/
 .automatosx/
 .automatosx-backups/
 
+# Workspace directories (v5.2.0+)
+automatosx/tmp/
+automatosx/PRD/
+
 # Environment
 .env*

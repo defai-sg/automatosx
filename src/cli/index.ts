@@ -75,7 +75,7 @@ const argv = await yargs(hideBin(process.argv))
 
   // Global options
   .option('debug', {
-    alias: 'd',
+    alias: 'D',
     type: 'boolean',
     description: 'Enable debug mode with verbose output',
     global: true
