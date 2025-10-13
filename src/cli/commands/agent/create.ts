@@ -125,10 +125,10 @@ export const createCommand: CommandModule<{}, CreateOptions> = {
       // 5. Collect variables (keep undefined if not provided)
       const variables: TemplateVariables = {
         AGENT_NAME: argv.agent,
-        DISPLAY_NAME: argv.displayName,
-        ROLE: argv.role,
-        DESCRIPTION: argv.description,
-        TEAM: argv.team
+        DISPLAY_NAME: argv.displayName || '',
+        ROLE: argv.role || '',
+        DESCRIPTION: argv.description || '',
+        TEAM: argv.team || ''
       };
 
       // 6. Handle missing values
