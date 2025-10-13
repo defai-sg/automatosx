@@ -14,18 +14,20 @@ AutomatosX agents have **human-friendly names** to make them easier to remember 
 - ✅ **No Cycles**: maxDelegationDepth: 1 prevents re-delegation
 
 **Agent Categories by Delegation Depth**:
-- **Implementers** (depth 1): backend, frontend, devops, data, security, design, writer
+- **Implementers** (depth 1): backend, frontend, fullstack, mobile, devops, security, design, writer
+- **Data Specialists** (depth 1): data (engineer), data-scientist
 - **Quality** (depth 1): quality (can delegate fixes to implementers)
 - **Coordinators** (depth 1): product, ceo, cto (delegate to implementers)
 - **Research** (depth 0): researcher (executes directly, no delegation)
 
-## 🚀 Quick Overview: 12 Agents, 4 Teams, 3 Providers
+## 🚀 Quick Overview: 15 Agents, 5 Teams, 3 Providers
 
-AutomatosX agents are organized into **4 professional teams**, each optimized with the best AI provider for their domain:
+AutomatosX agents are organized into **5 professional teams**, each optimized with the best AI provider for their domain:
 
 | Team | Primary Provider | Agent Count | Expertise |
 |------|------------------|-------------|-----------|
-| **💻 Engineering Team** | 🟣 **Claude** (claude-code) | 5 | Backend, frontend, security, DevOps, data engineering |
+| **💻 Engineering Team** | 🟣 **Claude** (claude-code) | 6 | Backend, frontend, fullstack, mobile, DevOps, security |
+| **💾 Data Team** | 🔵 **Gemini** (gemini-cli) | 2 | Data engineering, data science & ML |
 | **🎯 Quality Team** | 🟣 **Claude** (claude-code) | 1 | Code review, debugging, testing (sole ownership) |
 | **🎨 Content Team** | Various | 2 | UX/UI design, technical documentation |
 | **📊 Leadership Team** | Various | 4 | CEO, CTO, Product Management, research & feasibility analysis |
@@ -59,6 +61,8 @@ Research shows humans remember names better than roles. Instead of remembering "
 |------|-------|-----------|----------|---------|----------|-----------------|
 | **Bob** | backend | API design, database modeling, caching | Backend development, microservices | 🟣 claude-code | 🟢 openai | frontend, data, security, quality, devops |
 | **Frank** | frontend | Component architecture, state management | Frontend development, React, accessibility | 🟣 claude-code | 🟢 openai | backend, design, security, quality, devops |
+| **Felix** | fullstack | End-to-end features, API integration, E2E testing | Full-stack development, cross-layer features | 🟣 claude-code | 🟢 openai | backend, frontend, design, devops, quality |
+| **Maya** | mobile | Native iOS/Android, React Native, Flutter | Mobile app development (native & cross-platform) | 🟣 claude-code | 🟢 openai | backend, design, devops, quality |
 | **Oliver** | devops | Infrastructure as code, CI/CD pipelines | DevOps, deployment, observability | 🟣 claude-code | 🟢 openai | backend, frontend, security, quality |
 | **Steve** | security | **SOLE OWNER** of security-audit | Security review, threat modeling | 🟢 openai | 🔵 gemini-cli | backend, frontend, devops, quality |
 
@@ -85,9 +89,9 @@ Research shows humans remember names better than roles. Instead of remembering "
 
 | Name | Agent | Expertise | Best For | Primary | Fallback | Can Delegate To |
 |------|-------|-----------|----------|---------|----------|-----------------|
-| **Paris** | product | Product strategy, feature planning | Product planning, roadmap prioritization | 🔵 gemini-cli | 🟣 claude-code | backend, frontend, design, writer, quality |
-| **Eric** | ceo | Business strategy, vision | Strategic decisions, organizational leadership | 🔵 gemini-cli | 🟣 claude-code | paris, tony, all agents |
-| **Tony** | cto | Technology strategy, leadership | Tech strategy, architecture decisions | 🔵 gemini-cli | 🟣 claude-code | backend, frontend, devops, security, quality |
+| **Paris** | product | User research, feature planning, prioritization | Product strategy, roadmap planning | 🔵 gemini-cli | 🟣 claude-code | backend, frontend, design, writer, quality |
+| **Eric** | ceo | Business strategy, market analysis, vision | Strategic decisions, organizational leadership | 🔵 gemini-cli | 🟣 claude-code | paris, tony, all agents |
+| **Tony** | cto | Architecture governance, tech strategy, innovation | Technology roadmap, platform decisions | 🟢 openai | 🟣 claude-code | backend, frontend, devops, security, quality |
 
 ### 🔬 Research Team (Specialist)
 
@@ -97,13 +101,14 @@ Research shows humans remember names better than roles. Instead of remembering "
 |------|-------|-----------|----------|---------|----------|-----------------|
 | **Rodman** | researcher | Idea validation, feasibility analysis | Research reports, literature review | 🟢 openai | 🔵 gemini-cli | None (depth: 0) |
 
-### 💾 Data Team (Implementer)
+### 💾 Data Team (Specialists)
 
 **maxDelegationDepth: 1** - Can delegate once for cross-domain needs, no re-delegation
 
 | Name | Agent | Expertise | Best For | Primary | Fallback | Can Delegate To |
 |------|-------|-----------|----------|---------|----------|-----------------|
-| **Daisy** | data | Data modeling, ETL pipelines, SQL optimization | Data engineering, analytics | 🔵 gemini-cli | 🟣 claude-code | backend, security, quality |
+| **Daisy** | data | ETL pipelines, data infrastructure, SQL optimization | Data engineering, data pipelines | 🔵 gemini-cli | 🟣 claude-code | backend, security, quality |
+| **Dana** | data-scientist | Statistical analysis, ML modeling, data visualization | Data science, analytics, predictive modeling | 🔵 gemini-cli | 🟣 claude-code | data, backend, quality |
 
 ---
 
@@ -166,9 +171,9 @@ AutomatosX uses a **3-layer fallback system** for maximum reliability:
 
 | AI Provider | Agent Count | Agents |
 |-------------|-------------|--------|
-| 🔵 **Gemini** (gemini-cli) | 5 | Eric, Tony, Paris, Daisy, Debbee |
-| 🟢 **OpenAI** (openai) | 4 | Wendy, Queenie, Steve, Rodman |
-| 🟣 **Claude** (claude-code) | 3 | Bob, Frank, Oliver |
+| 🔵 **Gemini** (gemini-cli) | 5 | Eric, Paris, Daisy, Dana, Debbee |
+| 🟣 **Claude** (claude-code) | 6 | Bob, Frank, Felix, Maya, Oliver |
+| 🟢 **OpenAI** (openai) | 4 | Tony, Wendy, Queenie, Steve, Rodman |
 
 ### Provider Selection Logic
 
@@ -259,6 +264,8 @@ automatosx run security "Review this authentication code"
 # More memorable! Use the human-friendly display name
 automatosx run Bob "Design a RESTful API for user management"
 automatosx run Frank "Create a React login component"
+automatosx run Felix "Build an end-to-end user registration feature"
+automatosx run Maya "Create a mobile app login screen for iOS and Android"
 automatosx run Steve "Review this authentication code"
 
 # Quick help from experts
@@ -267,7 +274,8 @@ automatosx run Tony "What's our cloud migration strategy?"
 automatosx run Paris "How should we price this feature?"
 
 # Get insights
-automatosx run Daisy "Analyze our user engagement trends"
+automatosx run Daisy "Build an ETL pipeline for user data"
+automatosx run Dana "Analyze our user engagement trends with ML models"
 automatosx run Debbee "Review this dashboard design"
 ```
 
@@ -335,13 +343,16 @@ role: Custom Backend Engineer
 
 - **Bob** - "Bob the **B**ackend **B**uilder"
 - **Frank** - "**F**rank the **F**rontend friend"
+- **Felix** - "**F**elix handles **F**ull-stack **F**eatures"
+- **Maya** - "**M**aya makes **M**obile apps"
 - **Steve** - "**S**teve keeps it **S**ecure"
 - **Oliver** - "**O**liver **O**perates servers"
 - **Queenie** - "**Q**ueenie ensures **Q**uality"
 - **Eric** - "**E**ric's the **E**xecutive"
 - **Tony** - "**T**ony leads **T**echnology"
 - **Paris** - "**P**aris plans **P**roducts"
-- **Daisy** - "**D**aisy dives into **D**ata"
+- **Daisy** - "**D**aisy manages **D**ata pipelines"
+- **Dana** - "**D**ana does **D**ata science"
 - **Debbee** - "**D**ebbee **D**esigns beautifully"
 
 ### Team Analogy
@@ -350,9 +361,14 @@ Think of AutomatosX like assembling your dream team:
 
 - Need backend work? **Call Bob**
 - UI problems? **Ask Frank**
+- Full-stack features? **Work with Felix**
+- Mobile apps? **Reach out to Maya**
 - Security concerns? **Talk to Steve**
+- Data pipelines? **Contact Daisy**
+- Data science & ML? **Collaborate with Dana**
 - Strategy questions? **Consult Eric**
 - Product decisions? **Meet with Paris**
+- Design feedback? **Chat with Debbee**
 
 ## Next Steps
 

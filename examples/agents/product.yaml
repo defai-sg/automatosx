@@ -10,12 +10,11 @@ description: "Expert in product strategy, user research, and feature prioritizat
 provider: gemini-cli
 fallbackProvider: claude-code
 
-# Abilities (v5.0.12: Strategic planning abilities, NO implementation)
+# Abilities (v5.0.12: Product strategy and user-focused abilities)
 abilities:
-  - problem-solving       # Problem framing and analysis
+  - problem-solving       # User problem analysis
   - task-planning         # Feature planning and prioritization
   - technical-writing     # Product specs and requirements
-  - content-creation      # Product documentation
 
 # v5.0.12: Smart ability loading based on task keywords
 abilitySelection:
@@ -32,6 +31,9 @@ abilitySelection:
     requirements: [technical-writing]
     spec: [technical-writing]
     prioritization: [problem-solving, task-planning]
+    user: [problem-solving]
+    customer: [problem-solving]
+    research: [problem-solving]
 
 # v5.0.11: Removed temperature/maxTokens - let provider CLIs use optimized defaults
 # v5.0.12: Coordinators delegate strategic work (maxDelegationDepth: 1)

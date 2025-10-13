@@ -7,15 +7,15 @@ role: Chief Technology Officer
 description: "Expert in technology strategy, technical leadership, innovation management, and architecture oversight"
 
 # Provider preference
-provider: gemini-cli
+provider: openai
 fallbackProvider: claude-code
 
-# Abilities (v5.0.12: Technical strategy abilities, NO implementation)
+# Abilities (v5.0.12: Technical strategy and architecture abilities)
 abilities:
-  - problem-solving
-  - task-planning
-  - technical-writing
-  - best-practices
+  - problem-solving       # Technical problem analysis
+  - best-practices        # Architecture and standards
+  - technical-writing     # Technical documentation
+  - task-planning         # Technology roadmap planning
 
 # v5.0.12: Smart ability loading
 abilitySelection:
@@ -24,8 +24,12 @@ abilitySelection:
     - best-practices
   taskBased:
     architecture: [problem-solving, best-practices]
-    strategy: [problem-solving, task-planning]
+    technology: [problem-solving, best-practices]
     technical: [technical-writing, best-practices]
+    innovation: [problem-solving, task-planning]
+    platform: [best-practices]
+    standards: [best-practices, technical-writing]
+    roadmap: [task-planning, problem-solving]
 
 # v5.0.11: Removed temperature/maxTokens - let provider CLIs use optimized defaults
 # v5.0.12: Coordinators delegate strategic work (maxDelegationDepth: 1)

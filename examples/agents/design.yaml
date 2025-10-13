@@ -15,29 +15,29 @@ abilities:
   - problem-solving       # UX problem solving
   - content-creation      # Design content and assets
   - technical-writing     # Design documentation
-  # Design-specific abilities (using existing until new ones created)
-  # - wireframing
-  # - user-flows
-  # - a11y-evaluation
-  # - design-tokens
+  - wireframing          # Wireframe and prototype design
+  - user-flows           # User journey and flow mapping
+  - accessibility-review # Accessibility evaluation and compliance
 
 # v5.0.12: Smart ability loading based on task keywords
 abilitySelection:
   # Core abilities (always loaded)
   core:
     - problem-solving
-    - content-creation
+    - wireframing
 
   # Task-based abilities (loaded when keywords match)
   taskBased:
-    wireframe: [content-creation]  # Will add wireframing when created
+    wireframe: [wireframing, content-creation]
+    prototype: [wireframing, user-flows]
     design: [content-creation, problem-solving]
-    ux: [problem-solving]
-    ui: [content-creation]
-    accessibility: [problem-solving]  # Will add a11y-evaluation when created
-    a11y: [problem-solving]
-    flow: [problem-solving]  # Will add user-flows when created
-    tokens: [content-creation]  # Will add design-tokens when created
+    ux: [problem-solving, user-flows]
+    ui: [content-creation, wireframing]
+    accessibility: [accessibility-review, problem-solving]
+    a11y: [accessibility-review]
+    flow: [user-flows, problem-solving]
+    journey: [user-flows]
+    wcag: [accessibility-review]
 
 # v5.0.11: Removed temperature/maxTokens - let provider CLIs use optimized defaults
 # v5.0.12: Implementers focus on execution (maxDelegationDepth: 0)

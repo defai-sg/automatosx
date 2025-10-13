@@ -10,22 +10,24 @@ description: "Expert in business strategy, organizational leadership, and produc
 provider: gemini-cli
 fallbackProvider: claude-code
 
-# Abilities (v5.0.12: Strategic leadership abilities, NO implementation)
+# Abilities (v5.0.12: Business strategy and leadership abilities)
 abilities:
-  - problem-solving
-  - task-planning
-  - technical-writing
-  - content-creation
+  - problem-solving       # Business problem analysis
+  - content-creation      # Vision and communication
+  - technical-writing     # Business documentation
 
 # v5.0.12: Smart ability loading
 abilitySelection:
   core:
     - problem-solving
-    - task-planning
+    - content-creation
   taskBased:
-    strategy: [problem-solving, task-planning]
+    strategy: [problem-solving, content-creation]
+    business: [problem-solving, content-creation]
     vision: [problem-solving, content-creation]
-    planning: [task-planning]
+    market: [problem-solving]
+    organization: [problem-solving]
+    communication: [content-creation, technical-writing]
 
 # v5.0.11: Removed temperature/maxTokens - let provider CLIs use optimized defaults
 # v5.0.12: Coordinators delegate strategic work (maxDelegationDepth: 1)
