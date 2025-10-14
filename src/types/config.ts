@@ -6,6 +6,7 @@
  */
 
 import type { LogLevel } from './logger.js';
+import type { TimeoutConfig } from './timeout.js';
 
 // ========================================
 // Provider Configuration
@@ -87,6 +88,7 @@ export interface ExecutionConfig {
   retry: RetryConfig;
   provider: ExecutionProviderConfig;
   stages?: StageExecutionConfigOptions;  // v5.3.0: stage-based execution
+  timeouts?: TimeoutConfig;  // v5.4.0: layered timeout configuration (optional)
 }
 
 // ========================================

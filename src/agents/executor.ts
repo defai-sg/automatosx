@@ -11,13 +11,15 @@
 import type { ExecutionContext } from '../types/agent.js';
 import type { ExecutionResponse } from '../types/provider.js';
 import type { DelegationRequest, DelegationResult } from '../types/orchestration.js';
-import type { RetryConfig } from '../types/config.js';
+import type { RetryConfig, AutomatosXConfig } from '../types/config.js';
 import { DelegationError } from '../types/orchestration.js';
 import type { SessionManager } from '../core/session-manager.js';
 import type { WorkspaceManager } from '../core/workspace-manager.js';
 import type { ContextManager } from './context-manager.js';
 import type { ProfileLoader } from './profile-loader.js';
 import { DelegationParser } from './delegation-parser.js';
+import { TimeoutManager } from '../core/timeout-manager.js';
+import { validateAndBuildTimeoutConfig } from '../utils/timeout-validator.js';
 import { formatError } from '../utils/error-formatter.js';
 import { randomUUID } from 'crypto';
 import { logger } from '../utils/logger.js';
@@ -53,6 +55,8 @@ export interface AgentExecutorConfig {
   profileLoader?: ProfileLoader;
   /** Default retry configuration (v5.0+) */
   defaultRetryConfig?: RetryConfig;
+  /** Configuration for timeout management (v5.4.0+) */
+  config?: AutomatosXConfig;
 }
 
 /**
@@ -74,6 +78,16 @@ export class AgentExecutor {
   private readonly defaultRetryConfig: RetryConfig;
 
   /**
+   * Timeout manager for layered timeout configuration (v5.4.0+)
+   */
+  private readonly timeoutManager?: TimeoutManager;
+
+  /**
+   * Configuration (v5.4.0+)
+   */
+  private readonly config?: AutomatosXConfig;
+
+  /**
    * Create AgentExecutor with optional delegation support
    *
    * @param config - Optional configuration for delegation features
@@ -84,6 +98,7 @@ export class AgentExecutor {
     this.contextManager = config?.contextManager;
     this.profileLoader = config?.profileLoader;
     this.delegationParser = new DelegationParser(config?.profileLoader);
+    this.config = config?.config;
 
     // v5.0: Use config value instead of hardcoded constant
     this.defaultRetryConfig = config?.defaultRetryConfig ?? {
@@ -100,6 +115,22 @@ export class AgentExecutor {
         'timeout'
       ]
     };
+
+    // v5.4.0: Initialize TimeoutManager if config provided
+    if (this.config?.execution) {
+      try {
+        const timeoutConfig = validateAndBuildTimeoutConfig(this.config.execution);
+        if (Object.keys(timeoutConfig).length > 0) {
+          this.timeoutManager = new TimeoutManager(timeoutConfig);
+          logger.debug('TimeoutManager initialized', { timeoutConfig });
+        }
+      } catch (error) {
+        logger.warn('Failed to initialize TimeoutManager', {
+          error: (error as Error).message
+        });
+        // Continue without TimeoutManager (backward compatible)
+      }
+    }
   }
 
   /**
@@ -109,6 +140,38 @@ export class AgentExecutor {
     context: ExecutionContext,
     options: ExecutionOptions = {}
   ): Promise<ExecutionResult> {
+    // v5.4.0: Resolve timeout using TimeoutManager if not explicitly provided
+    if (!options.timeout && this.timeoutManager) {
+      try {
+        const resolved = this.timeoutManager.resolve({
+          agentName: context.agent.name,
+          teamName: context.agent.team || 'unknown',
+          runtimeTimeout: options.timeout,
+        });
+
+        // Use resolved timeout
+        options = { ...options, timeout: resolved.value };
+
+        logger.debug('Timeout resolved', {
+          agent: context.agent.name,
+          team: context.agent.team,
+          timeout: resolved.value,
+          source: resolved.source,
+        });
+
+        // Start monitoring for warnings
+        this.timeoutManager.startMonitoring(resolved, {
+          agentName: context.agent.name,
+          taskDescription: context.task,
+        });
+      } catch (error) {
+        logger.warn('Failed to resolve timeout', {
+          error: (error as Error).message,
+        });
+        // Continue with default timeout
+      }
+    }
+
     // If both retry and timeout are enabled
     if (options.retry && options.timeout) {
       return this.executeWithTimeout(context, {
