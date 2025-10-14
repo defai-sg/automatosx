@@ -302,6 +302,37 @@ export const statusCommand: CommandModule<Record<string, unknown>, StatusOptions
         }
         console.log();
 
+        // ENV Variable Overrides (Phase 2: v5.4.0)
+        console.log(chalk.cyan('ENV Variable Overrides:'));
+        const envVars = [
+          { name: 'CLAUDE_CLI', provider: 'claude-code' },
+          { name: 'GEMINI_CLI', provider: 'gemini-cli' },
+          { name: 'CODEX_CLI', provider: 'openai' }
+        ];
+
+        let hasAnyEnvVar = false;
+        for (const { name, provider } of envVars) {
+          const value = process.env[name];
+          if (value) {
+            hasAnyEnvVar = true;
+            const exists = existsSync(value);
+            const icon = exists ? chalk.green('✓') : chalk.yellow('⚠');
+            const statusMsg = exists ? chalk.green('valid') : chalk.yellow('path not found');
+            console.log(`  ${icon} ${name}: ${statusMsg}`);
+            if (argv.verbose) {
+              console.log(chalk.gray(`     ${value}`));
+            }
+          }
+        }
+
+        if (!hasAnyEnvVar) {
+          console.log(chalk.gray('  No ENV variables set (using PATH detection)'));
+          if (argv.verbose) {
+            console.log(chalk.gray('  Tip: Set CLAUDE_CLI, GEMINI_CLI, or CODEX_CLI to override detection'));
+          }
+        }
+        console.log();
+
         // Router
         console.log(chalk.cyan('Router:'));
         console.log(`  Total providers: ${chalk.white(status.router.totalProviders)}`);

@@ -10,6 +10,14 @@ export interface ProviderConfig {
   command: string;
   rateLimits?: RateLimitConfig;
   retryPolicy?: RetryConfig;
+
+  // Phase 2 (v5.4.0): Enhanced CLI detection
+  /** Custom CLI path override (takes precedence over PATH detection) */
+  customPath?: string;
+  /** Custom version check argument (default: --version) */
+  versionArg?: string;
+  /** Minimum required version (semantic versioning) */
+  minVersion?: string;
 }
 
 export interface RateLimitConfig {

@@ -25,6 +25,7 @@ import type {
 } from '../types/provider.js';
 import { logger } from '../utils/logger.js';
 import { ProviderResponseCache } from '../core/cache.js';
+import { existsSync } from 'fs';
 
 export abstract class BaseProvider implements Provider {
   protected config: ProviderConfig;
@@ -126,12 +127,84 @@ export abstract class BaseProvider implements Provider {
       return true;
     }
 
-    // Check if CLI command actually exists
+    // Check if CLI command actually exists (with enhanced detection)
+    return this.checkCLIAvailabilityEnhanced();
+  }
+
+  /**
+   * Enhanced CLI availability check with ENV variable and config path support.
+   * Falls back to standard PATH detection if no overrides configured.
+   *
+   * Priority:
+   * 1. ENV variable (e.g., CLAUDE_CLI, GEMINI_CLI, CODEX_CLI)
+   * 2. Config customPath
+   * 3. Standard PATH detection
+   *
+   * @returns true if CLI is available and working
+   */
+  private async checkCLIAvailabilityEnhanced(): Promise<boolean> {
+    // 1. Check ENV variable override (highest priority)
+    const envVarName = `${this.config.name.toUpperCase().replace(/-/g, '_')}_CLI`;
+    const envPath = process.env[envVarName];
+
+    if (envPath) {
+      logger.debug(`Checking ENV variable ${envVarName}`, { path: envPath });
+
+      if (this.checkPathExists(envPath)) {
+        logger.debug(`Provider ${this.config.name} found via ENV variable`, {
+          envVar: envVarName,
+          path: envPath
+        });
+        return true;
+      }
+
+      logger.warn(`ENV variable ${envVarName} points to non-existent path`, {
+        path: envPath
+      });
+      // Continue to next detection method
+    }
+
+    // 2. Check config customPath (second priority)
+    if (this.config.customPath) {
+      logger.debug(`Checking config customPath`, { path: this.config.customPath });
+
+      if (this.checkPathExists(this.config.customPath)) {
+        logger.debug(`Provider ${this.config.name} found via config customPath`, {
+          path: this.config.customPath
+        });
+        return true;
+      }
+
+      logger.warn(`Config customPath points to non-existent path`, {
+        path: this.config.customPath
+      });
+      // Continue to fallback
+    }
+
+    // 3. Fall back to standard PATH detection (lowest priority)
+    logger.debug(`Using standard PATH detection for ${this.config.name}`);
     return this.checkCLIAvailability();
   }
 
   /**
-   * Check if the CLI command is available in the system
+   * Check if a file path exists and is accessible.
+   * @param path File path to check
+   * @returns true if path exists
+   */
+  private checkPathExists(path: string): boolean {
+    try {
+      return existsSync(path);
+    } catch (error) {
+      logger.debug(`Error checking path existence`, {
+        path,
+        error: (error as Error).message
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Check if the CLI command is available in the system (standard PATH detection)
    */
   private async checkCLIAvailability(): Promise<boolean> {
     try {
