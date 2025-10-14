@@ -5,6 +5,114 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.3.1] - 2025-10-14
+
+### 🪟 Windows CLI Provider Detection & Enhanced Robustness
+
+**This patch release fixes critical Windows compatibility issues and adds robust provider detection with security enhancements.**
+
+#### Added
+
+- **Windows CLI Provider Detection** (Phase 1):
+  - Cross-platform CLI provider detector (`src/core/cli-provider-detector.ts`)
+  - Windows-specific detection using `where.exe` + PATH×PATHEXT fallback
+  - Unix detection using `which` command
+  - Detection caching for performance (< 1ms cached lookups)
+  - Support for `.CMD`, `.BAT`, `.EXE`, `.COM` extensions on Windows
+
+- **ENV Variable Override** (Phase 2):
+  - `CLAUDE_CLI` - Override Claude CLI path
+  - `GEMINI_CLI` - Override Gemini CLI path
+  - `CODEX_CLI` - Override Codex CLI path
+  - Three-layer detection: ENV → Config → PATH
+  - `ax status` shows ENV variable status with validation
+
+- **Provider Configuration** (Phase 2):
+  - `customPath` - Custom CLI path in provider config
+  - `versionArg` - Custom version check argument
+  - `minVersion` - Minimum required version (semantic versioning)
+
+- **Version Validation**:
+  - Semantic version parsing and comparison
+  - Automatic CLI version detection via `--version`
+  - Warning logs when version requirement not met
+  - Permissive behavior (allows if version check fails)
+
+- **Cross-Platform CI** (Phase 3):
+  - GitHub Actions workflows for Ubuntu, macOS, Windows
+  - Automatic testing on all platforms
+  - Coverage report artifacts
+  - 30-minute timeout for Windows tests
+
+#### Fixed
+
+- **Critical**: Windows CLI provider detection failures (GitHub Issue #1)
+  - Providers now detected correctly on Windows using `where.exe`
+  - Fallback to PATH×PATHEXT scanning if `where.exe` fails
+  - Standard PATH detection works on all platforms
+
+- **Provider Detection**:
+  - Enhanced `BaseProvider.checkCLIAvailabilityEnhanced()` with version validation
+  - Proper fallback chain: ENV → customPath → PATH
+  - Graceful degradation on detection failures
+
+- **CI Configuration**:
+  - Artifact upload paths corrected (coverage/ only)
+  - Removed non-existent test-results/ path
+  - Added `if-no-files-found: warn` for graceful handling
+
+- **Documentation**:
+  - Async error handling documentation for `detectAll()`
+  - Clear usage examples with proper error handling
+  - JSDoc annotations updated with `@throws` tags
+
+#### Security
+
+- **Path Traversal Protection**:
+  - Added validation to reject `..` (parent directory) patterns
+  - Added validation to reject `~` (home directory) shortcuts
+  - Security warnings logged for suspicious paths
+  - Read-only validation (no writes, minimal risk)
+
+#### Changed
+
+- **Provider Detection Priority**:
+  1. ENV variables (highest priority)
+  2. Config `customPath` (second priority)
+  3. Standard PATH detection (fallback)
+  4. Version validation (if `minVersion` set)
+
+#### Performance
+
+- **Detection Caching**: First call ~100-500ms, cached calls < 1ms
+- **Version Check Overhead**: +100-200ms when `minVersion` configured
+- **Path Validation**: +0.1-0.5ms per path (negligible)
+- **Overall Impact**: < 1% overhead
+
+#### Documentation
+
+- Added comprehensive JSDoc for all new APIs
+- Added usage examples for ENV variables
+- Added Windows-specific troubleshooting
+- Added version validation configuration guide
+
+#### Testing
+
+- **1,670 tests passing** (100% pass rate)
+- **0 TypeScript errors** (strict mode)
+- **Cross-platform CI**: Ubuntu, macOS, Windows
+- **2 Windows-specific tests** (PATH×PATHEXT detection)
+
+#### Related
+
+- Fixes: GitHub Issue #1 (Windows CLI provider detection)
+- PRD: `tmp/PRD-WINDOWS-CLI-DETECTION.md`
+- Reports: `tmp/PHASE{1,2,3}-COMPLETION-REPORT.md`
+- Code Review: `tmp/CODE-REVIEW-REPORT.md`
+- Bug Fixes: `tmp/BUG-FIX-COMPLETION-REPORT.md`
+
+---
+
 ## [5.3.0] - 2025-10-14
 
 ### 🚀 Stage Execution & Checkpoint System

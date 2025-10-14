@@ -332,6 +332,94 @@ ax list agents
 
 ---
 
+### 🪟 Windows Support & Provider Detection (Optional)
+
+**AutomatosX v5.3.1+ fully supports Windows** with enhanced CLI provider detection:
+
+#### Provider Detection (Cross-Platform)
+
+AutomatosX automatically detects AI provider CLIs using a **three-layer hierarchy**:
+
+1. **ENV Variables** (highest priority) - Override provider paths
+2. **Config File** (`automatosx.config.json`) - Custom paths and version requirements
+3. **PATH Detection** (fallback) - Standard system PATH
+   - **Windows**: Uses `where.exe` + PATH×PATHEXT (`.CMD`, `.BAT`, `.EXE`, `.COM`)
+   - **Unix/macOS**: Uses `which` command
+
+#### Setting ENV Variables (Optional)
+
+If providers are not detected automatically, you can override their paths:
+
+**Unix/macOS**:
+```bash
+export CLAUDE_CLI=/usr/local/bin/claude
+export GEMINI_CLI=/usr/local/bin/gemini
+export CODEX_CLI=/usr/local/bin/codex
+```
+
+**Windows (Command Prompt)**:
+```cmd
+set CLAUDE_CLI=C:\Users\YourName\AppData\Roaming\npm\claude.cmd
+set GEMINI_CLI=C:\Users\YourName\AppData\Roaming\npm\gemini.cmd
+set CODEX_CLI=C:\Users\YourName\AppData\Roaming\npm\codex.cmd
+```
+
+**Windows (PowerShell)**:
+```powershell
+$env:CLAUDE_CLI="C:\Users\YourName\AppData\Roaming\npm\claude.cmd"
+$env:GEMINI_CLI="C:\Users\YourName\AppData\Roaming\npm\gemini.cmd"
+$env:CODEX_CLI="C:\Users\YourName\AppData\Roaming\npm\codex.cmd"
+```
+
+#### Verify Provider Detection
+
+```bash
+# Check provider status
+ax status
+
+# Verbose mode shows detected paths
+ax status --verbose
+```
+
+**Output Example**:
+```
+✅ Provider: claude-code (enabled, priority: 3)
+✅ Provider: gemini-cli (enabled, priority: 2)
+✅ Provider: openai (enabled, priority: 1)
+
+ENV Variable Overrides:
+  ✓ CLAUDE_CLI: valid
+     /usr/local/bin/claude
+  No GEMINI_CLI or CODEX_CLI set (using PATH detection)
+```
+
+#### Configuration File (Advanced)
+
+For more control, use `automatosx.config.json`:
+
+```json
+{
+  "providers": {
+    "claude-code": {
+      "customPath": "/custom/path/to/claude",
+      "minVersion": "2.0.0"
+    },
+    "gemini-cli": {
+      "customPath": "C:\\custom\\path\\gemini.cmd"
+    }
+  }
+}
+```
+
+**Features**:
+- `customPath`: Custom CLI binary path
+- `minVersion`: Minimum required version (semantic versioning)
+- `versionArg`: Custom version check argument (default: `--version`)
+
+> **💡 Tip**: ENV variables take precedence over config file paths. Use ENV vars for temporary overrides, config file for permanent setup.
+
+---
+
 ### Step 3: Run Your First Agent
 
 **Terminal Mode** (any platform):
