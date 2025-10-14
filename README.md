@@ -9,7 +9,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
 [![Tests](https://img.shields.io/badge/tests-1,717%20passing-brightgreen.svg)](#)
 
-**Status**: ✅ Production Ready · v5.3.4 · October 2025
+**Status**: ✅ Production Ready · v5.3.5 · October 2025
 
 Looking for answers? See the [FAQ](FAQ.md).
 
@@ -340,7 +340,7 @@ npm install -g @defai.digital/automatosx
 
 ```bash
 ax --version
-# Should show: 5.3.3 (or later)
+# Should show: 5.3.5 (or later)
 ```
 
 > **Windows Users**: If `ax` command not found, see [Windows Troubleshooting](docs/troubleshooting/windows-troubleshooting.md)
@@ -396,9 +396,44 @@ ax list agents
 
 ### 🪟 Windows Support (Fully Tested)
 
-**AutomatosX v5.3.1+ fully supports Windows 10 & 11** with automatic CLI provider detection.
+**AutomatosX v5.3.5+ fully supports Windows 10 & 11** with automatic CLI provider detection and native Claude Code integration.
 
-#### Quick Start for Windows Users
+#### ✨ NEW in v5.3.5: Automatic Claude Code Detection
+
+**Windows + Claude Code users no longer need manual configuration!**
+
+When running AutomatosX inside Claude Code on Windows, the system automatically:
+- ✅ **Detects Claude Code environment** (via ENV variables and process detection)
+- ✅ **Auto-enables mock providers** (no external CLI tools needed)
+- ✅ **Provides helpful error messages** with environment-specific guidance
+- ✅ **Zero configuration required** for most users
+
+```bash
+# In Claude Code on Windows - works automatically!
+ax run backend "Create a user authentication API"
+# → Auto-detects Claude Code, uses mock providers seamlessly
+
+# To verify auto-detection:
+ax status
+# → Should show: "Detected Claude Code environment - auto-enabling mock providers"
+```
+
+**How it works**: AutomatosX detects you're running inside Claude Code and automatically enables mock providers, eliminating the "claude: command not found" errors that plagued previous versions.
+
+**Need real AI responses?** You can still use real providers:
+```cmd
+REM Windows CMD
+set AUTOMATOSX_MOCK_PROVIDERS=false
+ax run backend "task"
+
+REM PowerShell
+$env:AUTOMATOSX_MOCK_PROVIDERS="false"
+ax run backend "task"
+```
+
+📖 **Complete Guide**: [Windows + Claude Code Integration](docs/troubleshooting/windows-claude-code-integration.md)
+
+#### Quick Start for Windows Users (Terminal Mode)
 
 **Most users don't need any configuration** - AutomatosX automatically detects provider CLIs installed via npm:
 

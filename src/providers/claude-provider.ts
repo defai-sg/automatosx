@@ -14,6 +14,7 @@ import type {
   Cost,
   StreamingOptions
 } from '../types/provider.js';
+import { getProviderSuggestion } from '../utils/environment.js';
 
 export class ClaudeProvider extends BaseProvider {
   constructor(config: ProviderConfig) {
@@ -153,9 +154,10 @@ export class ClaudeProvider extends BaseProvider {
       } catch (error) {
         const err = error as NodeJS.ErrnoException;
         if (err.code === 'ENOENT') {
+          const suggestion = getProviderSuggestion('claude');
           reject(new Error(
-            `Claude CLI not found. Please ensure Claude Code is installed and '${this.config.command}' is in your PATH.\n` +
-            `Install from: https://claude.ai/download`
+            `Claude CLI not found: '${this.config.command}'\n\n` +
+            `${suggestion}`
           ));
         } else {
           reject(new Error(`Failed to start Claude CLI: ${err.message}`));
@@ -247,9 +249,10 @@ export class ClaudeProvider extends BaseProvider {
         const err = error as NodeJS.ErrnoException;
 
         if (err.code === 'ENOENT') {
+          const suggestion = getProviderSuggestion('claude');
           reject(new Error(
-            `Claude CLI command '${this.config.command}' not found.\n` +
-            `Please install Claude Code from https://claude.ai/download`
+            `Claude CLI command '${this.config.command}' not found.\n\n` +
+            `${suggestion}`
           ));
         } else if (err.code === 'EACCES') {
           reject(new Error(

@@ -27,6 +27,7 @@ import { logger } from '../utils/logger.js';
 import { ProviderResponseCache } from '../core/cache.js';
 import { existsSync } from 'fs';
 import { findOnPath } from '../core/cli-provider-detector.js';
+import { shouldAutoEnableMockProviders } from '../utils/environment.js';
 
 export abstract class BaseProvider implements Provider {
   protected config: ProviderConfig;
@@ -123,8 +124,12 @@ export abstract class BaseProvider implements Provider {
       return false;
     }
 
-    // In mock mode, always return true (for testing)
-    if (process.env.AUTOMATOSX_MOCK_PROVIDERS === 'true') {
+    // Check if mock mode should be enabled (explicit or auto-detected)
+    if (shouldAutoEnableMockProviders()) {
+      logger.debug(`Mock providers enabled for ${this.config.name}`, {
+        provider: this.config.name,
+        reason: 'Auto-detected AI IDE environment or explicit AUTOMATOSX_MOCK_PROVIDERS=true'
+      });
       return true;
     }
 
