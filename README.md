@@ -7,9 +7,9 @@
 [![npm version](https://img.shields.io/npm/v/@defai.digital/automatosx.svg)](https://www.npmjs.com/package/@defai.digital/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-1,657%20passing-brightgreen.svg)](#)
+[![Tests](https://img.shields.io/badge/tests-1,717%20passing-brightgreen.svg)](#)
 
-**Status**: ✅ Production Ready · v5.3.3 · October 2025
+**Status**: ✅ Production Ready · v5.3.4 · October 2025
 
 Looking for answers? See the [FAQ](FAQ.md).
 
@@ -179,6 +179,7 @@ Product response:
 ## 🎭 12 Specialized Agents with Clear Governance
 
 **v5.0.12 introduces strict role ownership and delegation controls to eliminate cycles**:
+**v5.3.4 Phase 2 Pilot**: 3 coordinator agents now support 3-layer delegation for complex multi-phase workflows
 
 ### 💻 Engineering Team (Implementers)
 **maxDelegationDepth: 1** - Can delegate once for cross-domain needs, no re-delegation
@@ -186,12 +187,16 @@ Product response:
   - Can delegate to: frontend, data, security, quality, devops
 - **Frank** (frontend) - Component architecture, state management, accessibility
   - Can delegate to: backend, design, security, quality, devops
-- **Oliver** (devops) - Infrastructure as code, CI/CD pipelines, observability
+- **Oliver** (devops) - **🆕 v5.3.4: Infrastructure Coordinator (depth 3)** - Orchestrate complex deployment pipelines
   - Can delegate to: backend, frontend, security, quality
+  - 3-layer capability for multi-phase infrastructure workflows
 - **Daisy** (data) - Data modeling, ETL pipelines, SQL optimization
   - Can delegate to: backend, security, quality
 - **Steve** (security) - **Sole owner** of security-audit, threat modeling, secure coding review
   - Can delegate to: backend, frontend, devops, quality
+- **Dana** (data-scientist) - **🆕 v5.3.4: Data Science Coordinator (depth 3)** - End-to-end ML pipelines
+  - Can delegate to: data, backend, quality
+  - 3-layer capability for complex data science workflows
 
 ### 🎯 Quality Team (Coordinator Role)
 **maxDelegationDepth: 1** - Can delegate fixes back to implementers, no re-delegation
@@ -206,13 +211,16 @@ Product response:
   - Can delegate to: backend, frontend, design, quality
 
 ### 📊 Leadership Team (Coordinators)
-**maxDelegationDepth: 1** - Delegate to implementers, focus on strategy, no re-delegation
+**maxDelegationDepth: 1-3** - Delegate to implementers, focus on strategy
 - **Paris** (product) - Product strategy, feature planning, roadmap
   - Can delegate to: backend, frontend, design, writer, quality
+  - maxDelegationDepth: 1
 - **Eric** (ceo) - Business strategy, organizational leadership
   - Can delegate to: paris, tony, all agents
-- **Tony** (cto) - Technology strategy, technical leadership
+  - maxDelegationDepth: 1
+- **Tony** (cto) - **🆕 v5.3.4: Strategic Coordinator (depth 3)** - Multi-phase technical initiatives
   - Can delegate to: backend, frontend, devops, security, quality
+  - 3-layer capability for strategic technology projects with sub-coordination
 
 ### 🔬 Research Team (Specialist)
 **maxDelegationDepth: 0** - Execute research work directly, no delegation
@@ -221,6 +229,8 @@ Product response:
   - Produces: executive summaries, feasibility studies, long-form research reports
 
 **New in v5.0.12**: Each agent has role-specific workflow stages, smart ability loading (abilitySelection), and explicit delegation scopes. Most agents have `maxDelegationDepth: 1` to allow cross-domain collaboration while preventing delegation cycles.
+
+**New in v5.3.4 (Phase 2 Pilot)**: 3 coordinator agents (Tony/CTO, Oliver/DevOps, Dana/Data Scientist) now support `maxDelegationDepth: 3` for orchestrating complex multi-layer workflows. This enables strategic coordination of multi-phase projects while maintaining safety through depth limits and cycle detection.
 
 [📖 Complete Agent Directory](examples/AGENTS_INFO.md)
 
