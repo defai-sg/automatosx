@@ -26,6 +26,7 @@ import type {
 import { logger } from '../utils/logger.js';
 import { ProviderResponseCache } from '../core/cache.js';
 import { existsSync } from 'fs';
+import { findOnPath } from '../core/cli-provider-detector.js';
 
 export abstract class BaseProvider implements Provider {
   protected config: ProviderConfig;
@@ -349,51 +350,24 @@ export abstract class BaseProvider implements Provider {
 
   /**
    * Check if the CLI command is available in the system (standard PATH detection)
+   * Uses cross-platform detection from cli-provider-detector for Windows compatibility
    */
   private async checkCLIAvailability(): Promise<boolean> {
     try {
-      const { spawn } = await import('child_process');
+      // v5.3.4: Use cross-platform detection logic (Windows: where.exe + PATHEXT, Unix: which)
+      const result = findOnPath(this.config.command);
 
-      return new Promise<boolean>((resolve) => {
-        // Try to spawn the command with --version or --help
-        const child = spawn(this.config.command, ['--version'], {
-          stdio: 'ignore',
-          timeout: 5000
-        });
+      if (!result.found) {
+        logger.warn(`CLI command not found: ${this.config.command}`);
+        return false;
+      }
 
-        let resolved = false;
-
-        child.on('close', (code) => {
-          if (!resolved) {
-            resolved = true;
-            // Consider success if exit code is 0 or 1 (some CLIs return 1 for --version)
-            resolve(code === 0 || code === 1);
-          }
-        });
-
-        child.on('error', (error: NodeJS.ErrnoException) => {
-          if (!resolved) {
-            resolved = true;
-            // ENOENT means command not found
-            if (error.code === 'ENOENT') {
-              logger.warn(`CLI command not found: ${this.config.command}`);
-              resolve(false);
-            } else {
-              // Other errors might be temporary
-              resolve(true);
-            }
-          }
-        });
-
-        // Timeout fallback
-        setTimeout(() => {
-          if (!resolved) {
-            resolved = true;
-            child.kill();
-            resolve(false);
-          }
-        }, 5000);
+      logger.debug(`Provider ${this.config.name} found on PATH`, {
+        command: this.config.command,
+        path: result.path
       });
+
+      return true;
     } catch (error) {
       logger.error(`Error checking CLI availability: ${(error as Error).message}`);
       return false;

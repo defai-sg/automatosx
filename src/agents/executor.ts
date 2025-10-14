@@ -750,7 +750,11 @@ export class AgentExecutor {
       // maxDepth = 2 allows up to 2 delegations: A→B (1st), B→C (2nd)
       // So we reject when delegationChain.length >= maxDepth (3rd delegation attempt)
       // v4.11.0+: Default to 2 (agents evaluate capability first, delegate only when needed)
-      const maxDepth = fromAgentProfile.orchestration?.maxDelegationDepth ?? 2;
+      // v5.3.4: Check initiator's depth, not current agent's depth
+      //         This allows coordinators (CTO, DevOps) to orchestrate deeper delegation chains
+      const initiatorName = delegationChain.length > 0 ? (delegationChain[0] ?? request.fromAgent) : request.fromAgent;
+      const initiatorProfile = await this.profileLoader.loadProfile(initiatorName);
+      const maxDepth = initiatorProfile.orchestration?.maxDelegationDepth ?? 2;
       if (delegationChain.length >= maxDepth) {
         throw new DelegationError(
           `Max delegation depth (${maxDepth}) exceeded. Chain: ${delegationChain.join(' -> ')} (length ${delegationChain.length})`,

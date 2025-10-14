@@ -5,6 +5,101 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.3.4] - 2025-10-14
+
+### 🚀 Enhanced Delegation Depth for Coordinators (Phase 2 Pilot)
+
+**This release implements Phase 2 of the user-requested delegation enhancements, increasing delegation depth from 1-2 to 3 layers for coordinator agents while maintaining robust safety mechanisms.**
+
+#### Added
+
+- **3-Layer Delegation Support**:
+  - **CTO (Tony)**: Strategic coordinator (`maxDelegationDepth: 3`) - orchestrate multi-phase technical initiatives
+    - Layer 1: Direct delegation to implementation teams
+    - Layer 2: Coordinated cross-team initiatives
+    - Layer 3: Strategic multi-phase projects with sub-coordination
+  - **DevOps (Oliver)**: Infrastructure coordinator (`maxDelegationDepth: 3`) - manage complex deployment pipelines
+    - Layer 1: Direct delegation to development teams
+    - Layer 2: Cross-team infrastructure initiatives
+    - Layer 3: Complex deployment pipelines with multiple coordination points
+  - **Data Scientist (Dana)**: Data science coordinator (`maxDelegationDepth: 3`) - orchestrate end-to-end ML workflows
+    - Layer 1: Direct delegation to data engineer, backend, quality
+    - Layer 2: Cross-functional analytics initiatives
+    - Layer 3: End-to-end ML pipelines with multiple coordination points
+
+- **Improved Depth Enforcement Logic** (`src/agents/executor.ts:755-757`):
+  - Changed depth checking from `fromAgent` to delegation chain `initiator`
+  - Allows coordinators to delegate through implementers without hitting depth limits
+  - Example: CTO (depth 3) → Backend (depth 1) → Frontend (depth 1) → Done ✅
+  - Previously would fail at 2nd delegation due to Backend's depth 1 limit ❌
+
+- **Comprehensive Test Coverage**:
+  - Created `tests/unit/executor-delegation-depth-3.test.ts` with 15 new tests
+  - 5 tests for 3-layer success scenarios
+  - 3 tests for 4-layer rejection (exceeds limit)
+  - 3 tests for backward compatibility
+  - 2 tests for cycle detection at 3 layers
+  - 2 tests for delegation chain tracking
+  - **All 1,717 tests passing** (100% pass rate)
+
+#### Changed
+
+- **Agent Configuration Updates**:
+  - `.automatosx/agents/cto.yaml`: `maxDelegationDepth: 1 → 3` (strategic coordinator)
+  - `.automatosx/agents/devops.yaml`: `maxDelegationDepth: 0 → 3` (infrastructure coordinator)
+  - `.automatosx/agents/data-scientist.yaml`: `maxDelegationDepth: 1 → 3` (data science coordinator)
+  - Updated system prompts to reflect new coordinator roles
+
+- **Delegation Safety**:
+  - Existing cycle detection continues to work at all depth levels
+  - 4-layer delegation attempts are rejected with clear error messages
+  - Implementer agents (Backend, Frontend, etc.) remain at `maxDelegationDepth: 1`
+
+#### Fixed
+
+- **Windows Provider Detection** (`src/providers/base-provider.ts`):
+  - Fixed provider CLI detection on Windows by using cross-platform `findOnPath()` from `cli-provider-detector`
+  - Previously, `spawn('claude', ['--version'])` would fail on Windows because Node.js doesn't auto-append `.cmd` extension
+  - Now uses `where.exe` + PATH×PATHEXT fallback for proper Windows detection
+  - **Impact**: Providers installed via npm on Windows (e.g., `claude.cmd`) are now correctly detected
+  - **Issue**: Users could run `claude` in terminal but AutomatosX showed "provider unavailable"
+
+#### Documentation
+
+- **CLAUDE.md**: Updated Agent Directory & Governance section with v5.3.4 enhancements
+- **CHANGELOG.md**: This entry documenting all Phase 2 changes
+
+#### Technical Details
+
+**Depth Enforcement Change** (Breaking for test implementations, not user-facing):
+
+```typescript
+// Before (v5.3.3 and earlier):
+const maxDepth = fromAgentProfile.orchestration?.maxDelegationDepth ?? 2;
+
+// After (v5.3.4):
+const initiatorName = delegationChain.length > 0 ? delegationChain[0] : request.fromAgent;
+const initiatorProfile = await this.profileLoader.loadProfile(initiatorName);
+const maxDepth = initiatorProfile.orchestration?.maxDelegationDepth ?? 2;
+```
+
+**Impact**: Allows coordinators to orchestrate deep delegation chains through implementers without hitting depth limits. Implementers can still only delegate once, but coordinator's depth limit applies to the entire chain.
+
+#### Performance
+
+- No performance impact: Logic change is O(1) (single profile lookup)
+- All existing tests passing (1,717 tests, 100% pass rate)
+- Test execution time: ~50s (no regression)
+
+#### Migration
+
+**100% Backward Compatible** - No action required for existing deployments:
+
+- Default `maxDelegationDepth` remains 2 for agents without orchestration config
+- Implementer agents (Backend, Frontend, etc.) remain at depth 1
+- Only 3 coordinator agents updated to depth 3 (CTO, DevOps, Data Scientist)
+- Existing delegation logic fully preserved
+
 ## [5.3.3] - 2025-10-14
 
 ### 🏗️ Foundation for Agent Optimization

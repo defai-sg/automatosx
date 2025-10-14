@@ -133,6 +133,20 @@ describe('AgentExecutor - Delegation', () => {
         if (agentName === 'frontend') return frontendProfile;
         if (agentName === 'database') return databaseProfile;
         if (agentName === 'unauthorized') return unauthorizedProfile;
+        // v5.3.4: Support generic test agents (agent1, agent2, etc.) for delegation chain tests
+        // These agents have depth 3 to match backend/frontend/database profiles
+        if (agentName.startsWith('agent') || ['a', 'b'].includes(agentName)) {
+          return {
+            name: agentName,
+            role: 'test agent',
+            description: 'Test agent for delegation',
+            systemPrompt: 'Test',
+            abilities: [],
+            orchestration: {
+              maxDelegationDepth: 3
+            }
+          };
+        }
         throw new Error(`Profile not found: ${agentName}`);
       }),
       listAgents: vi.fn().mockResolvedValue(['backend', 'frontend', 'database'])
@@ -499,6 +513,19 @@ describe('AgentExecutor - Delegation', () => {
       (mockProfileLoader.loadProfile as any).mockImplementation(async (name: string) => {
         if (name === 'no-depth') return noDepthProfile;
         if (name === 'frontend') return frontendProfile;
+        // v5.3.4: Support generic test agents for delegation chain
+        if (['a', 'b'].includes(name)) {
+          return {
+            name: name,
+            role: 'test agent',
+            description: 'Test agent',
+            systemPrompt: 'Test',
+            abilities: [],
+            orchestration: {
+              maxDelegationDepth: 2 // Match default depth
+            }
+          };
+        }
         throw new Error(`Profile not found: ${name}`);
       });
 
