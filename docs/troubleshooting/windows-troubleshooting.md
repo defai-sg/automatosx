@@ -2,9 +2,10 @@
 
 This guide provides comprehensive troubleshooting solutions for AutomatosX on Windows 10 and Windows 11.
 
-**Last Updated**: 2025-10-11
-**Applies to**: AutomatosX v5.1.0+
+**Last Updated**: 2025-10-14
+**Applies to**: AutomatosX v5.3.1+
 **Platform**: Windows 10/11
+**Tested on**: Windows 10, Windows 11
 
 ---
 
@@ -13,9 +14,10 @@ This guide provides comprehensive troubleshooting solutions for AutomatosX on Wi
 Before diving into detailed troubleshooting, verify these essentials:
 
 - ✅ **Node.js**: v20.0.0 or higher installed
-- ✅ **AutomatosX**: Latest version (v5.1.0+)
+- ✅ **AutomatosX**: Latest version (v5.3.1+)
 - ✅ **Initialization**: Run `ax init` in your project directory
 - ✅ **Provider CLIs**: At least one provider CLI installed (Claude, Gemini, or OpenAI)
+- ✅ **Provider Detection**: AutomatosX v5.3.1+ automatically detects providers on Windows
 
 ---
 
@@ -76,7 +78,7 @@ npm install -g @defai.digital/automatosx@latest
 
 # Verify version
 npx @defai.digital/automatosx --version
-# Expected: 5.1.0
+# Expected: 5.3.1 or later
 ```
 
 ## 🔍 Diagnostic Commands
@@ -230,6 +232,81 @@ set AUTOMATOSX_MOCK_PROVIDERS=true
 npx @defai.digital/automatosx run backend "test"
 ```
 
+### Issue 7: Provider Detection Not Working (v5.3.1+)
+
+**Symptom**: `ax status` shows providers as disabled or not found
+
+**Cause**: AutomatosX v5.3.1+ uses enhanced provider detection, but paths may not be in standard locations
+
+**Check Detection**:
+```bash
+# Check provider status with verbose output
+ax status --verbose
+
+# Find provider CLI paths manually
+where claude
+where gemini
+where openai
+```
+
+**Solution 1: ENV Variable Override (Recommended)**:
+
+**Windows Command Prompt**:
+```cmd
+set CLAUDE_CLI=C:\Users\YourName\AppData\Roaming\npm\claude.cmd
+set GEMINI_CLI=C:\Users\YourName\AppData\Roaming\npm\gemini.cmd
+set CODEX_CLI=C:\Users\YourName\AppData\Roaming\npm\openai.cmd
+ax status
+```
+
+**Windows PowerShell**:
+```powershell
+$env:CLAUDE_CLI="C:\Users\YourName\AppData\Roaming\npm\claude.cmd"
+$env:GEMINI_CLI="C:\Users\YourName\AppData\Roaming\npm\gemini.cmd"
+$env:CODEX_CLI="C:\Users\YourName\AppData\Roaming\npm\openai.cmd"
+ax status
+```
+
+**Solution 2: Configuration File (Permanent)**:
+
+Create or edit `automatosx.config.json`:
+
+```json
+{
+  "providers": {
+    "claude-code": {
+      "customPath": "C:\\Users\\YourName\\AppData\\Roaming\\npm\\claude.cmd",
+      "minVersion": "2.0.0"
+    },
+    "gemini-cli": {
+      "customPath": "C:\\Users\\YourName\\AppData\\Roaming\\npm\\gemini.cmd"
+    },
+    "openai": {
+      "customPath": "C:\\Users\\YourName\\AppData\\Roaming\\npm\\openai.cmd"
+    }
+  }
+}
+```
+
+**Note**: Use double backslashes (`\\`) in JSON files.
+
+**How Provider Detection Works (v5.3.1+)**:
+
+AutomatosX uses a **three-layer detection system**:
+
+1. **ENV Variables** (highest priority)
+   - `CLAUDE_CLI`, `GEMINI_CLI`, `CODEX_CLI`
+   - Best for temporary overrides or testing
+
+2. **Config File** (second priority)
+   - `automatosx.config.json` → `providers.<name>.customPath`
+   - Best for permanent project-specific configuration
+
+3. **PATH Detection** (fallback)
+   - **Windows**: Uses `where.exe` + PATH×PATHEXT scanning
+     - Supported extensions: `.CMD`, `.BAT`, `.EXE`, `.COM`
+   - **Automatic**: No configuration needed if installed via npm
+
 ---
 
 ## 🔧 Full Diagnostic Report
@@ -296,7 +373,7 @@ npm uninstall -g @defai.digital/automatosx
 npm cache clean --force
 
 # 3. Reinstall latest
-npm install -g @defai.digital/automatosx@5.1.0
+npm install -g @defai.digital/automatosx@latest
 
 # 4. Verify
 npx @defai.digital/automatosx --version
@@ -372,7 +449,7 @@ When encountering issues, gather this information for effective troubleshooting:
 
 ---
 
-## 🐛 Known Windows Issues (v5.1.0)
+## 🐛 Known Windows Issues (v5.3.1)
 
 ### 1. JSON Module Warning (HARMLESS)
 
@@ -385,12 +462,17 @@ ExperimentalWarning: Importing JSON modules is an experimental feature
 **Reason**: Node.js 20.x experimental feature, not a bug
 **Fix**: This will be resolved when Node.js stabilizes JSON imports
 
-### 2. Path Traversal on Windows
+### 2. Provider CLI Detection
+
+**Status**: ✅ FIXED in v5.3.1
+**Details**: Windows CLI provider detection now works reliably using `where.exe` + PATH×PATHEXT scanning
+
+### 3. Path Traversal on Windows
 
 **Status**: ✅ FIXED in v5.1.0
-**Details**: PathResolver now correctly handles Windows paths with backslashes
+**Details**: PathResolver correctly handles Windows paths with backslashes
 
-### 3. MCP Server on Windows
+### 4. MCP Server on Windows
 
 **Status**: ✅ SUPPORTED in v5.1.0
 **Details**: MCP server works on Windows, but ensure `.automatosx/memory/exports` exists
@@ -402,7 +484,7 @@ ExperimentalWarning: Importing JSON modules is an experimental feature
 ### Step 1: Verify Installation
 
 ```bash
-# Should output version 5.1.0
+# Should output version 5.3.1 or later
 npx @defai.digital/automatosx --version
 ```
 
@@ -450,9 +532,9 @@ Please include the following in your issue:
 **Issue Template**:
 ```markdown
 **Environment**
-- OS: Windows 10/11
+- OS: Windows 10 or Windows 11
 - Node.js: v[your version] (run: node --version)
-- AutomatosX: v[your version] (run: ax --version)
+- AutomatosX: v[your version] (run: ax --version - should be v5.3.1+)
 - npm: v[your version] (run: npm --version)
 
 **Command Executed**
@@ -493,30 +575,34 @@ Please include the following in your issue:
 
 ## ✅ Resolution Checklist
 
-- [ ] Update to AutomatosX v5.1.0
+- [ ] Update to AutomatosX v5.3.1 or later
 - [ ] Verify Node.js v20+ is installed
-- [ ] Run diagnostic commands
+- [ ] Run `ax init` in your project directory
+- [ ] Run diagnostic commands (`ax status --verbose`)
 - [ ] Check PowerShell execution policy
 - [ ] Verify npm global path in PATH
-- [ ] Test with mock providers
-- [ ] Check provider CLIs installed
+- [ ] Try ENV variable override for providers
+- [ ] Test with mock providers (`AUTOMATOSX_MOCK_PROVIDERS=true`)
+- [ ] Check provider CLIs installed (via `where claude`, etc.)
 - [ ] Review Windows Defender exclusions
-- [ ] Enable long paths if needed
-- [ ] Get specific error message
+- [ ] Enable long paths if needed (for deep directory structures)
+- [ ] Get specific error message and stack trace
 - [ ] Create GitHub issue if unresolved
 
 ---
 
 ## 📚 Additional Resources
 
-- **Windows Installation Guide**: docs/guide/installation.md
-- **Troubleshooting Guide**: TROUBLESHOOTING.md
-- **FAQ**: FAQ.md
+- **Windows Setup Guide**: [docs/troubleshooting/windows-setup.md](windows-setup.md) - Complete installation walkthrough
+- **General Troubleshooting**: [TROUBLESHOOTING.md](../../TROUBLESHOOTING.md) - Cross-platform issues
+- **FAQ**: [FAQ.md](../../FAQ.md) - Frequently asked questions
+- **Installation Guide**: [docs/guide/installation.md](../guide/installation.md) - Platform-specific installation
 - **GitHub Issues**: https://github.com/defai-digital/automatosx/issues
 - **npm Package**: https://www.npmjs.com/package/@defai.digital/automatosx
 
 ---
 
-**Last Updated**: 2025-10-11
-**Applies to**: AutomatosX v5.1.0
+**Last Updated**: 2025-10-14
+**Applies to**: AutomatosX v5.3.1+
 **Platform**: Windows 10/11
+**Tested on**: Windows 10, Windows 11

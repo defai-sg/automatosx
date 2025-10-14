@@ -95,6 +95,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added usage examples for ENV variables
 - Added Windows-specific troubleshooting
 - Added version validation configuration guide
+- **README.md**: Enhanced with tested platforms (macOS 15, Ubuntu 24.04, Windows 10/11)
+- **README.md**: Simplified Windows Support section with clearer quick-start instructions
+- **Windows Setup Guide** (NEW): Complete installation walkthrough for Windows users
+- **Windows Troubleshooting**: Updated to v5.3.1 with provider detection solutions
 
 #### Testing
 
