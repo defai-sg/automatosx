@@ -3,12 +3,13 @@
 
 name: product
 displayName: Paris
+team: business
+
+# v5.3.3: Team-based configuration (inherits provider from business team)
+# Provider: claude (primary) with fallback to codex, gemini
 role: Product Manager
 description: "Expert in product strategy, user research, and feature prioritization"
 
-# Provider preference
-provider: gemini-cli
-fallbackProvider: claude-code
 
 # Abilities (v5.0.12: Product strategy and user-focused abilities)
 abilities:

@@ -3,12 +3,13 @@
 
 name: backend
 displayName: Bob
+team: engineering
+
+# v5.3.3: Team-based configuration (inherits provider from engineering team)
+# Provider: codex (primary) with fallback to gemini, claude
 role: Senior Backend Engineer
 description: "Expert in server-side architecture, API design, database optimization, and microservices"
 
-# Provider preference
-provider: claude-code
-fallbackProvider: openai
 
 # Abilities (v5.0.12: Specialized backend abilities only)
 abilities:

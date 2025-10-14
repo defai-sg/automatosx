@@ -9,7 +9,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
 [![Tests](https://img.shields.io/badge/tests-1,657%20passing-brightgreen.svg)](#)
 
-**Status**: ✅ Production Ready · v5.3.0 · October 2025
+**Status**: ✅ Production Ready · v5.3.3 · October 2025
 
 Looking for answers? See the [FAQ](FAQ.md).
 
@@ -19,13 +19,42 @@ Looking for answers? See the [FAQ](FAQ.md).
 
 **AutomatosX extends Claude Code with specialized AI agents that remember context, delegate tasks, and collaborate autonomously.**
 
-```bash
-# In Claude Code, simply use /ax:agent
-/ax:agent Paris, design authentication system with JWT
-/ax:agent Bob, implement the auth design  # Bob auto-receives Paris's design from memory
+### 💡 Best Way to Use: Natural Language Collaboration (Recommended)
+
+Instead of directly commanding agents, **let Claude Code think and coordinate**:
+
+```
+✅ RECOMMENDED: Natural language collaboration
+"please work with ax agent to implement user authentication with JWT"
+
+What happens:
+1. Claude Code analyzes your project structure
+2. AutomatosX selects the most suitable agent automatically
+3. Provides full context to the agent
+4. Validates the results
+5. Helps you understand and iterate
 ```
 
-**The result**: Claude Code becomes a **learning, coordinated team** instead of a stateless assistant.
+**vs.**
+
+```
+⚡ EXPRESS: Direct slash command (for simple tasks)
+/ax:agent backend, implement JWT auth
+
+What happens:
+1. Backend agent executes directly
+2. Limited project context
+3. No validation or planning
+```
+
+### 🎓 Think of it This Way
+
+- **Natural Collaboration** = Having a conversation with an intelligent coordinator who summons experts
+- **Slash Commands** = Directly commanding the experts without coordination
+
+**Recommendation**: Use natural language for 80% of tasks, slash commands for quick 20%.
+
+📖 **[Complete Best Practices Guide](docs/BEST-PRACTICES.md)**
 
 ---
 
@@ -203,22 +232,45 @@ AutomatosX offers **two powerful modes** to fit your workflow:
 
 ### 1️⃣ Claude Code Integration (Recommended)
 
-**Use AutomatosX agents directly inside Claude Code conversations** with the `/ax:agent` slash command.
+**The best way**: Use **natural language collaboration** to let Claude Code coordinate agents intelligently.
 
-```bash
-# In Claude Code, use the slash command
-/ax:agent Paris, design a REST API for user authentication
-/ax:agent Bob, implement the auth API from Paris's design
-/ax:agent Steve, security audit the authentication code
+#### Natural Language Collaboration (Primary Method - 80% of tasks)
+
+```
+# Let Claude Code think, plan, and coordinate
+"please work with ax agent to implement user authentication"
+"please work with ax agent to design a secure API for our application"
+"please work with ax agent to refactor this module with best practices"
 ```
 
-**Perfect for**:
-- 💬 Interactive development workflows
-- 🔄 Seamless context switching within Claude Code
-- 🤝 Collaborative coding sessions
-- 🎯 Quick agent delegation while coding
+**Why this is better**:
+- 🧠 Claude Code analyzes your project first
+- 🎯 Automatically selects the best agents
+- 📚 Provides full context from your codebase
+- ✅ Validates results and handles errors
+- 🔄 Easy to iterate and refine
 
-**How it works**: Claude Code executes AutomatosX commands behind the scenes, brings results back into your conversation, and maintains full context.
+#### Slash Commands (Express Method - 20% of tasks)
+
+```bash
+# Direct execution for simple, well-defined tasks
+/ax:agent Paris, design a REST API for user authentication
+/ax:agent Bob, write a function to validate emails
+/ax:agent Steve, review this code snippet
+```
+
+**Use slash commands when**:
+- ⚡ Task is simple and well-defined
+- 🎯 You know exactly which agent to use
+- 🚀 Speed matters more than planning
+
+**Perfect for**:
+- 💬 All types of development workflows
+- 🔄 Both simple and complex tasks
+- 🤝 Single and multi-agent coordination
+- 🎯 Interactive and automated workflows
+
+**How it works**: Claude Code acts as an intelligent coordinator, analyzing context, selecting agents, and orchestrating their work seamlessly.
 
 ### 2️⃣ Terminal/CLI Mode (Power Users)
 
@@ -278,7 +330,7 @@ npm install -g @defai.digital/automatosx
 
 ```bash
 ax --version
-# Should show: 5.3.0 (or later)
+# Should show: 5.3.3 (or later)
 ```
 
 > **Windows Users**: If `ax` command not found, see [Windows Troubleshooting](docs/troubleshooting/windows-troubleshooting.md)
@@ -390,7 +442,36 @@ Having issues on Windows? See our comprehensive guides:
 
 ### Step 3: Run Your First Agent
 
-**Terminal Mode** (any platform):
+#### Option A: Claude Code Integration (Recommended)
+
+**Best Practice: Natural Language Collaboration**
+
+Open Claude Code and try these prompts:
+
+```
+✅ "please work with ax agent to create a simple calculator function"
+✅ "please work with ax agent to design a REST API for user management"
+✅ "please work with ax agent to implement secure authentication"
+```
+
+**What happens**:
+1. Claude Code analyzes your project context
+2. Selects and coordinates the best agents
+3. Agents execute with full context
+4. Results are validated and explained
+5. Easy to iterate: "please improve the error handling"
+
+**Express Option: Slash Commands** (for simple tasks)
+
+```bash
+# Quick, direct execution
+/ax:agent backend, write a function to validate email
+/ax:agent quality, review this code snippet
+```
+
+📖 **Learn more**: [Best Practices Guide](docs/BEST-PRACTICES.md)
+
+#### Option B: Terminal Mode (Power Users)
 
 ```bash
 # Test with backend agent
@@ -401,22 +482,6 @@ ax run Paris "Design REST API for users"
 ax run Bob "Implement the API"           # Auto-receives Paris's design
 ax run Queenie "Write tests for the API" # Auto-receives design + implementation
 ```
-
-**Claude Code Integration**:
-
-```bash
-# In Claude Code, use the slash command
-/ax:agent Paris, design REST API for users
-/ax:agent Bob, implement the API
-/ax:agent Queenie, write tests for the API
-```
-
-**What happens**:
-1. Claude Code executes AutomatosX behind the scenes
-2. Paris designs the API → Saved to memory
-3. Bob reads Paris's design from memory → Implements code
-4. Queenie reads everything → Writes comprehensive tests
-5. Results flow back into your Claude Code conversation
 
 ---
 

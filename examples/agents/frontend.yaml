@@ -3,12 +3,13 @@
 
 name: frontend
 displayName: Frank
+team: engineering
+
+# v5.3.3: Team-based configuration (inherits provider from engineering team)
+# Provider: codex (primary) with fallback to gemini, claude
 role: Senior Frontend Developer
 description: "Expert in user-centric interface design, React patterns, performance optimization, and accessibility"
 
-# Provider preference
-provider: claude-code
-fallbackProvider: openai
 
 # Abilities (v5.0.12: Specialized frontend abilities only)
 abilities:

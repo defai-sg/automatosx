@@ -3,12 +3,13 @@
 
 name: fullstack
 displayName: Felix
+team: engineering
+
+# v5.3.3: Team-based configuration (inherits provider from engineering team)
+# Provider: codex (primary) with fallback to gemini, claude
 role: Fullstack Engineer
 description: "Expert in full-stack development, API integration, end-to-end testing, and cross-layer feature implementation"
 
-# Provider preference
-provider: claude-code
-fallbackProvider: openai
 
 # Abilities (v5.0.12: Cross-stack development abilities)
 abilities:

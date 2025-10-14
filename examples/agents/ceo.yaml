@@ -3,12 +3,13 @@
 
 name: ceo
 displayName: Eric
+team: business
+
+# v5.3.3: Team-based configuration (inherits provider from business team)
+# Provider: claude (primary) with fallback to codex, gemini
 role: Chief Executive Officer
 description: "Expert in business strategy, organizational leadership, and product vision"
 
-# Provider preference
-provider: gemini-cli
-fallbackProvider: claude-code
 
 # Abilities (v5.0.12: Business strategy and leadership abilities)
 abilities:

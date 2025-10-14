@@ -3,10 +3,12 @@
 
 name: security
 displayName: Steve
+team: core
 role: Security Engineer
 description: "Expert in application security, threat modeling, and security best practices"
 
-# Provider preference
+# v5.3.3: Team-based configuration with performance optimization
+# Team: core (claude primary), but overridden with openai for better performance
 provider: openai
 fallbackProvider: gemini-cli
 

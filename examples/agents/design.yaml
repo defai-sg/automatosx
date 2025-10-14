@@ -3,12 +3,13 @@
 
 name: design
 displayName: Debbee
+team: design
+
+# v5.3.3: Team-based configuration (inherits provider from design team)
+# Provider: gemini (primary) with fallback to claude, codex
 role: UX/UI Designer
 description: "Expert in user experience design, visual design, and design systems"
 
-# Provider preference
-provider: gemini-cli
-fallbackProvider: openai
 
 # Abilities (v5.0.12: Specialized design abilities)
 abilities:

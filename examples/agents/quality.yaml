@@ -3,10 +3,12 @@
 
 name: quality
 displayName: Queenie
+team: core
 role: QA Engineer
 description: "Expert in testing strategies, quality assurance, and test automation"
 
-# Provider preference
+# v5.3.3: Team-based configuration with performance optimization
+# Team: core (claude primary), but overridden with openai for better performance
 provider: openai
 fallbackProvider: gemini-cli
 

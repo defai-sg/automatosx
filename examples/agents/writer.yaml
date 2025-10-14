@@ -3,12 +3,13 @@
 
 name: writer
 displayName: Wendy
+team: design
+
+# v5.3.3: Team-based configuration (inherits provider from design team)
+# Provider: gemini (primary) with fallback to claude, codex
 role: Technical Writer
 description: "Expert technical writer specialized in documentation, articles, and clear communication"
 
-# Provider preference
-provider: openai
-fallbackProvider: claude-code
 
 # Abilities (v5.0.12: Specialized writing abilities)
 abilities:

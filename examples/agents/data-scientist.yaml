@@ -3,12 +3,13 @@
 
 name: data-scientist
 displayName: Dana
+team: engineering
+
+# v5.3.3: Team-based configuration (inherits provider from engineering team)
+# Provider: codex (primary) with fallback to gemini, claude
 role: Data Scientist
 description: "Expert in data analysis, machine learning, statistical modeling, and predictive analytics"
 
-# Provider preference
-provider: gemini-cli
-fallbackProvider: claude-code
 
 # Abilities (v5.0.12: Specialized data science abilities)
 abilities:

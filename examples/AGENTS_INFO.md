@@ -1,8 +1,42 @@
 # AutomatosX Agent Directory
 
-**v5.0.12 Update**: Major agent governance rework to eliminate delegation cycles and improve role clarity.
+**v5.3.4 Update**: Team-based configuration complete. Best practices guide added.
 
 AutomatosX agents have **human-friendly names** to make them easier to remember and use. Each agent has both a technical role name and a memorable display name.
+
+## 💡 How to Use These Agents (Best Practices)
+
+### Recommended: Natural Language Collaboration
+
+Instead of directly commanding agents with slash commands, **let Claude Code coordinate**:
+
+```
+✅ BEST: "please work with backend agent to implement user authentication"
+✅ BEST: "please discuss with backend and security agents to design our API"
+✅ BEST: "please plan with the engineering team to refactor this module"
+```
+
+**Why this is better**:
+- 🧠 Claude Code analyzes your project first
+- 🎯 Provides full context to agents
+- ✅ Validates results
+- 🔄 Easy to iterate
+
+### Express Method: Slash Commands (for simple tasks only)
+
+```
+⚡ EXPRESS: /ax:agent backend, write an email validation function
+⚡ EXPRESS: /ax:agent quality, review this code snippet
+```
+
+**Use slash commands only when**:
+- Task is simple and well-defined
+- You know exactly which agent to use
+- Speed matters more than planning
+
+📖 **[Complete Best Practices Guide](../docs/BEST-PRACTICES.md)**
+
+---
 
 ## 🎯 v5.0.12: Agent Governance & Delegation Controls
 

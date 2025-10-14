@@ -3,12 +3,13 @@
 
 name: data
 displayName: Daisy
+team: engineering
+
+# v5.3.3: Team-based configuration (inherits provider from engineering team)
+# Provider: codex (primary) with fallback to gemini, claude
 role: Data Engineer
 description: "Expert in data pipelines, ETL processes, and data infrastructure"
 
-# Provider preference
-provider: gemini-cli
-fallbackProvider: claude-code
 
 # Abilities (v5.0.12: Specialized data engineering abilities)
 abilities:

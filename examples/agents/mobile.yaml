@@ -3,12 +3,13 @@
 
 name: mobile
 displayName: Maya
+team: engineering
+
+# v5.3.3: Team-based configuration (inherits provider from engineering team)
+# Provider: codex (primary) with fallback to gemini, claude
 role: Mobile Engineer
 description: "Expert in native iOS/Android development, cross-platform frameworks, and mobile UX patterns"
 
-# Provider preference
-provider: claude-code
-fallbackProvider: openai
 
 # Abilities (v5.0.12: Specialized mobile development abilities)
 abilities:

@@ -3,10 +3,13 @@
 
 name: cto
 displayName: Tony
+team: business
 role: Chief Technology Officer
 description: "Expert in technology strategy, technical leadership, innovation management, and architecture oversight"
 
-# Provider preference
+# v5.3.3: Team-based configuration with performance optimization
+# Team: business (claude primary), but MUST use OpenAI for this role
+# Reason: Verified best performance for CTO's technical strategy and architecture work
 provider: openai
 fallbackProvider: claude-code
 

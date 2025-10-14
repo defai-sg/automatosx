@@ -3,12 +3,13 @@
 
 name: devops
 displayName: Oliver
+team: engineering
+
+# v5.3.3: Team-based configuration (inherits provider from engineering team)
+# Provider: codex (primary) with fallback to gemini, claude
 role: DevOps Engineer
 description: "Expert in infrastructure automation, CI/CD pipelines, and cloud platforms"
 
-# Provider preference
-provider: claude-code
-fallbackProvider: openai
 
 # Abilities (v5.0.12: Specialized DevOps abilities only)
 abilities:
