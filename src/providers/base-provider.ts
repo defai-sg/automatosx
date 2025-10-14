@@ -134,15 +134,19 @@ export abstract class BaseProvider implements Provider {
   /**
    * Enhanced CLI availability check with ENV variable and config path support.
    * Falls back to standard PATH detection if no overrides configured.
+   * Also validates minimum version requirement if configured.
    *
    * Priority:
    * 1. ENV variable (e.g., CLAUDE_CLI, GEMINI_CLI, CODEX_CLI)
    * 2. Config customPath
    * 3. Standard PATH detection
+   * 4. Version validation (if minVersion configured)
    *
-   * @returns true if CLI is available and working
+   * @returns true if CLI is available and meets version requirement
    */
   private async checkCLIAvailabilityEnhanced(): Promise<boolean> {
+    let detectedPath: string | null = null;
+
     // 1. Check ENV variable override (highest priority)
     const envVarName = `${this.config.name.toUpperCase().replace(/-/g, '_')}_CLI`;
     const envPath = process.env[envVarName];
@@ -155,44 +159,99 @@ export abstract class BaseProvider implements Provider {
           envVar: envVarName,
           path: envPath
         });
-        return true;
+        detectedPath = envPath;
+      } else {
+        logger.warn(`ENV variable ${envVarName} points to non-existent path`, {
+          path: envPath
+        });
+        // Continue to next detection method
       }
-
-      logger.warn(`ENV variable ${envVarName} points to non-existent path`, {
-        path: envPath
-      });
-      // Continue to next detection method
     }
 
     // 2. Check config customPath (second priority)
-    if (this.config.customPath) {
+    if (!detectedPath && this.config.customPath) {
       logger.debug(`Checking config customPath`, { path: this.config.customPath });
 
       if (this.checkPathExists(this.config.customPath)) {
         logger.debug(`Provider ${this.config.name} found via config customPath`, {
           path: this.config.customPath
         });
-        return true;
+        detectedPath = this.config.customPath;
+      } else {
+        logger.warn(`Config customPath points to non-existent path`, {
+          path: this.config.customPath
+        });
+        // Continue to fallback
       }
-
-      logger.warn(`Config customPath points to non-existent path`, {
-        path: this.config.customPath
-      });
-      // Continue to fallback
     }
 
     // 3. Fall back to standard PATH detection (lowest priority)
-    logger.debug(`Using standard PATH detection for ${this.config.name}`);
-    return this.checkCLIAvailability();
+    if (!detectedPath) {
+      logger.debug(`Using standard PATH detection for ${this.config.name}`);
+      const available = await this.checkCLIAvailability();
+      if (!available) {
+        return false;
+      }
+      detectedPath = this.config.command; // Use command name for version check
+    }
+
+    // 4. Validate minimum version if configured
+    if (this.config.minVersion && detectedPath) {
+      logger.debug('Checking minimum version requirement', {
+        provider: this.config.name,
+        minVersion: this.config.minVersion
+      });
+
+      const actualVersion = await this.getProviderVersion(detectedPath);
+      if (!actualVersion) {
+        logger.warn('Could not detect provider version, allowing by default', {
+          provider: this.config.name,
+          path: detectedPath
+        });
+        return true; // Permissive: allow if version check fails
+      }
+
+      const meetsRequirement = this.compareVersions(actualVersion, this.config.minVersion);
+      if (!meetsRequirement) {
+        logger.warn('Provider version too old', {
+          provider: this.config.name,
+          actualVersion,
+          minVersion: this.config.minVersion
+        });
+        return false;
+      }
+
+      logger.debug('Provider version meets requirement', {
+        provider: this.config.name,
+        actualVersion,
+        minVersion: this.config.minVersion
+      });
+    }
+
+    return true;
   }
 
   /**
    * Check if a file path exists and is accessible.
+   * Validates path to prevent path traversal attacks.
+   *
    * @param path File path to check
-   * @returns true if path exists
+   * @returns true if path exists and is valid
    */
   private checkPathExists(path: string): boolean {
     try {
+      // Security: Reject suspicious path patterns
+      if (path.includes('..')) {
+        logger.warn('Path traversal pattern detected (..)', { path });
+        return false;
+      }
+
+      if (path.startsWith('~') || path.includes('~')) {
+        logger.warn('Home directory shortcut detected (~)', { path });
+        return false;
+      }
+
+      // Check if path exists
       return existsSync(path);
     } catch (error) {
       logger.debug(`Error checking path existence`, {
@@ -200,6 +259,91 @@ export abstract class BaseProvider implements Provider {
         error: (error as Error).message
       });
       return false;
+    }
+  }
+
+  /**
+   * Parse semantic version string into comparable parts.
+   * Supports formats: "1.2.3", "v1.2.3", "1.2", "1"
+   *
+   * @param versionStr Version string to parse
+   * @returns Parsed version parts [major, minor, patch] or null if invalid
+   */
+  private parseVersion(versionStr: string): number[] | null {
+    try {
+      // Remove 'v' prefix if present
+      const cleaned = versionStr.trim().replace(/^v/i, '');
+
+      // Extract version numbers (handle formats like "1.2.3-beta" -> "1.2.3")
+      const match = cleaned.match(/^(\d+)(?:\.(\d+))?(?:\.(\d+))?/);
+      if (!match) {
+        return null;
+      }
+
+      const major = parseInt(match[1] || '0', 10);
+      const minor = parseInt(match[2] || '0', 10);
+      const patch = parseInt(match[3] || '0', 10);
+
+      return [major, minor, patch];
+    } catch (error) {
+      logger.debug('Failed to parse version', { versionStr, error });
+      return null;
+    }
+  }
+
+  /**
+   * Compare two semantic versions.
+   *
+   * @param version Version to check
+   * @param minVersion Minimum required version
+   * @returns true if version >= minVersion
+   */
+  private compareVersions(version: string, minVersion: string): boolean {
+    const v1 = this.parseVersion(version);
+    const v2 = this.parseVersion(minVersion);
+
+    if (!v1 || !v2) {
+      // If parsing fails, allow the version (permissive)
+      logger.debug('Version parsing failed, allowing by default', { version, minVersion });
+      return true;
+    }
+
+    // Compare major.minor.patch
+    for (let i = 0; i < 3; i++) {
+      if ((v1[i] ?? 0) > (v2[i] ?? 0)) return true;
+      if ((v1[i] ?? 0) < (v2[i] ?? 0)) return false;
+    }
+
+    return true; // Versions are equal
+  }
+
+  /**
+   * Get CLI version by executing --version command.
+   *
+   * @param command CLI command to check
+   * @returns Version string or null if detection fails
+   */
+  private async getProviderVersion(command: string): Promise<string | null> {
+    try {
+      const { spawnSync } = await import('child_process');
+
+      const result = spawnSync(command, ['--version'], {
+        encoding: 'utf8',
+        timeout: 5000,
+        stdio: 'pipe'
+      });
+
+      if (result.status === 0 && result.stdout) {
+        // Extract version from output (usually first line)
+        const output = result.stdout.trim();
+        const match = output.match(/\d+\.\d+\.\d+/);
+        return match ? match[0] : (output.split('\n')[0] || null);
+      }
+
+      return null;
+    } catch (error) {
+      logger.debug('Failed to get provider version', { command, error });
+      return null;
     }
   }
 

@@ -82,15 +82,30 @@ const DETECT_CACHE = new Map<Provider, Resolved | null>();
 /**
  * Detect all providers and return detailed reports.
  *
+ * **Important**: This is an async function and must be properly awaited to avoid
+ * unhandled promise rejections.
+ *
  * @param config - Optional configuration for detection
- * @returns Array of detection reports for each provider
+ * @returns Promise that resolves to array of detection reports for each provider
+ * @throws Never throws - all errors are caught and reported in the DetectionReport
  *
  * @example
  * ```typescript
- * const reports = await detectAll({
- *   minVersions: { claude: '2.0.0', gemini: '0.8.0' }
+ * // Correct usage with proper error handling:
+ * try {
+ *   const reports = await detectAll({
+ *     minVersions: { claude: '2.0.0', gemini: '0.8.0' }
+ *   });
+ *   console.table(reports);
+ * } catch (error) {
+ *   console.error('Catastrophic detection failure:', error);
+ * }
+ *
+ * // Alternative: Promise-style with catch
+ * detectAll(config).catch(err => {
+ *   console.error('Detection failed:', err);
+ *   return [];  // Return empty array on failure
  * });
- * console.table(reports);
  * ```
  */
 export async function detectAll(config: ProviderConfig = {}): Promise<DetectionReport[]> {

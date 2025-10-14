@@ -47,15 +47,14 @@ jobs:
         env:
           AUTOMATOSX_MOCK_PROVIDERS: 'true'
 
-      - name: Upload test results
+      - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.os }}
-          path: |
-            coverage/
-            test-results/
+          name: coverage-${{ matrix.os }}
+          path: coverage/
           retention-days: 7
+          if-no-files-found: warn
 
   lint:
     name: Lint
