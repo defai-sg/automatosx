@@ -7,9 +7,9 @@
 [![npm version](https://img.shields.io/npm/v/@defai.digital/automatosx.svg)](https://www.npmjs.com/package/@defai.digital/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-1,259%20passing-brightgreen.svg)](#)
+[![Tests](https://img.shields.io/badge/tests-1,657%20passing-brightgreen.svg)](#)
 
-**Status**: ✅ Production Ready · v5.2.2 · October 2025
+**Status**: ✅ Production Ready · v5.3.0 · October 2025
 
 Looking for answers? See the [FAQ](FAQ.md).
 
@@ -278,7 +278,7 @@ npm install -g @defai.digital/automatosx
 
 ```bash
 ax --version
-# Should show: 5.1.0 (or later)
+# Should show: 5.3.0 (or later)
 ```
 
 > **Windows Users**: If `ax` command not found, see [Windows Troubleshooting](docs/troubleshooting/windows-troubleshooting.md)
@@ -426,6 +426,26 @@ ax mcp
 
 ---
 
+## ⏱️ Stage Checkpoints & Run History
+
+AutomatosX 5.3 introduces stage-aware checkpoints so you can pause long-running agent workflows, inspect intermediate outputs, and resume exactly where the run stopped.
+
+### Enable resumable runs
+- CLI: `ax run <agent> "<task>" --resumable` (add `--interactive` or `--hybrid` for live approval)
+- Config: set `execution.stages.enabled` to `true` in `automatosx.config.json` to make stage checkpoints the default. Combine with `execution.stages.autoSaveCheckpoint` to persist after every stage.
+
+When a stage finishes, AutomatosX stores a checkpoint under `.automatosx/checkpoints/<run-id>/` (artifacts, logs, and metadata). The CLI prints the UUID so you can resume or inspect it later.
+
+### Manage checkpoints
+- `ax resume <run-id>` — Resume a saved run. Flags such as `--interactive`, `--streaming`, `--hybrid`, or `--auto-continue` override the saved execution mode.
+- `ax runs list [--status running|paused|completed|failed|aborted] [--agent <name>] [--limit <n>]` — Review recent checkpoints with progress and status.
+- `ax runs show <run-id> [--artifacts]` — Inspect stage history, retry counts, and generated artifacts before resuming.
+- `ax runs delete <run-id> [--force]` — Remove stale checkpoints or clear sensitive artifacts once a run is finalized.
+
+Set `execution.stages.cleanupAfterDays` to control automatic pruning (default 7 days). For an end-to-end guide, see [Checkpoints & Run History](docs/guide/checkpoints-and-resume.md).
+
+---
+
 ## 📚 Documentation
 
 ### Getting Started
@@ -441,6 +461,7 @@ ax mcp
 - **[Multi-Agent Orchestration](docs/guide/multi-agent-orchestration.md)** - Natural language delegation
 - **[Team Configuration](docs/guide/team-configuration.md)** - Team-based agent organization
 - **[Agent Templates](docs/guide/agent-templates.md)** - Quick agent creation
+- **[Checkpoints & Run History](docs/guide/checkpoints-and-resume.md)** - Manage resumable runs and checkpoint storage
 
 ### Tutorials
 - **[Memory Management](docs/tutorials/memory-management.md)** - Hands-on memory system guide

@@ -125,7 +125,7 @@ export const createCommand: CommandModule<{}, CreateOptions> = {
       // 5. Collect variables (keep undefined if not provided to allow template defaults)
       const variables: TemplateVariables = {
         AGENT_NAME: argv.agent,
-        DISPLAY_NAME: argv.displayName,
+        DISPLAY_NAME: argv.displayName || argv.agent,
         ROLE: argv.role,
         DESCRIPTION: argv.description,
         TEAM: argv.team

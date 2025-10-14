@@ -11,7 +11,8 @@ import type {
   ExecutionRequest,
   ExecutionResponse,
   EmbeddingOptions,
-  Cost
+  Cost,
+  StreamingOptions
 } from '../types/provider.js';
 
 export class GeminiProvider extends BaseProvider {
@@ -265,5 +266,45 @@ export class GeminiProvider extends BaseProvider {
     // Gemini CLI does not support any parameters yet
     // This will return true once Issue #5280 is resolved
     return false;
+  }
+
+  /**
+   * Check if provider supports streaming
+   * Gemini CLI doesn't support native streaming
+   */
+  override supportsStreaming(): boolean {
+    return false;
+  }
+
+  /**
+   * Execute with synthetic progress simulation
+   *
+   * Gemini CLI doesn't support streaming, so we simulate progress updates.
+   */
+  override async executeStreaming(
+    request: ExecutionRequest,
+    options: StreamingOptions
+  ): Promise<ExecutionResponse> {
+    // Start synthetic progress simulation
+    const progressInterval = setInterval(() => {
+      const progress = Math.min(95, Math.random() * 90 + 5); // 5-95%
+      if (options.onProgress) {
+        options.onProgress(progress);
+      }
+    }, 1000); // Update every second
+
+    try {
+      // Execute normally (no real streaming)
+      const result = await this.execute(request);
+
+      // Complete progress
+      if (options.onProgress) {
+        options.onProgress(100);
+      }
+
+      return result;
+    } finally {
+      clearInterval(progressInterval);
+    }
   }
 }

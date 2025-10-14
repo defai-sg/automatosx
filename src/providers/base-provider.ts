@@ -20,7 +20,8 @@ import type {
   Cost,
   UsageStats,
   EmbeddingOptions,
-  RetryConfig
+  RetryConfig,
+  StreamingOptions
 } from '../types/provider.js';
 import { logger } from '../utils/logger.js';
 import { ProviderResponseCache } from '../core/cache.js';
@@ -87,6 +88,23 @@ export abstract class BaseProvider implements Provider {
    * @returns Array of CLI arguments
    */
   protected abstract buildCLIArgs(request: ExecutionRequest): string[];
+
+  /**
+   * Check if provider supports streaming
+   * @returns true if provider supports streaming
+   */
+  abstract supportsStreaming(): boolean;
+
+  /**
+   * Execute with streaming (if supported)
+   * @param request Execution request
+   * @param options Streaming options
+   * @returns Execution response
+   */
+  async executeStreaming?(
+    request: ExecutionRequest,
+    options: StreamingOptions
+  ): Promise<ExecutionResponse>;
 
   /**
    * Check if provider supports a specific parameter

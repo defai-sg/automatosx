@@ -38,6 +38,7 @@ describe('AgentExecutor', () => {
         model: 'mock-model',
         finishReason: 'stop'
       } as ExecutionResponse),
+      supportsStreaming: vi.fn().mockReturnValue(false),
       generateEmbedding: vi.fn().mockResolvedValue([0.1, 0.2, 0.3]),
       isAvailable: vi.fn().mockResolvedValue(true),
       getHealth: vi.fn().mockResolvedValue({

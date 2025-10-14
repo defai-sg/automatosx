@@ -52,10 +52,41 @@ export interface ExecutionProviderConfig {
   fallbackDelay?: number; // v5.0: delay before trying fallback provider (ms)
 }
 
+/**
+ * Stage Execution Configuration (v5.3.0+)
+ */
+export interface StageRetryConfig {
+  defaultMaxRetries: number;    // default max retries per stage
+  defaultRetryDelay: number;    // default retry delay (ms)
+}
+
+export interface StagePromptConfig {
+  timeout: number;              // prompt timeout (ms)
+  autoConfirm: boolean;         // auto-confirm (skip prompts)
+  locale: 'en' | 'zh';          // prompt language
+}
+
+export interface StageProgressConfig {
+  updateInterval: number;       // progress update interval (ms)
+  syntheticProgress: boolean;   // enable synthetic progress for non-streaming providers
+}
+
+export interface StageExecutionConfigOptions {
+  enabled: boolean;             // enable stage-based execution
+  defaultTimeout: number;       // default timeout per stage (ms)
+  checkpointPath: string;       // checkpoint storage path
+  autoSaveCheckpoint: boolean;  // auto-save checkpoints after each stage
+  cleanupAfterDays: number;     // cleanup checkpoints after N days
+  retry: StageRetryConfig;      // stage retry configuration
+  prompts: StagePromptConfig;   // prompt configuration
+  progress: StageProgressConfig; // progress configuration
+}
+
 export interface ExecutionConfig {
   defaultTimeout: number;  // default execution timeout (ms)
   retry: RetryConfig;
   provider: ExecutionProviderConfig;
+  stages?: StageExecutionConfigOptions;  // v5.3.0: stage-based execution
 }
 
 // ========================================
@@ -350,6 +381,27 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
     provider: {
       maxWaitMs: 60000,      // 1 minute
       fallbackDelay: 5000    // v5.0: Wait 5s before trying fallback provider
+    },
+    // v5.3.0: Stage-based execution configuration
+    stages: {
+      enabled: false,        // Opt-in feature (backward compatible)
+      defaultTimeout: 1800000,  // 30 minutes per stage
+      checkpointPath: '.automatosx/checkpoints',
+      autoSaveCheckpoint: true,
+      cleanupAfterDays: 7,
+      retry: {
+        defaultMaxRetries: 1,
+        defaultRetryDelay: 2000  // 2 seconds
+      },
+      prompts: {
+        timeout: 600000,      // 10 minutes for user decision
+        autoConfirm: false,   // Require user confirmation
+        locale: 'en'          // Default to English
+      },
+      progress: {
+        updateInterval: 2000,       // Update every 2 seconds
+        syntheticProgress: true     // Enable synthetic progress
+      }
     }
   },
 

@@ -30,6 +30,11 @@ export interface ExecutionOptions {
   retry?: RetryConfig;
   timeout?: number;
   signal?: AbortSignal;
+  streaming?: {
+    enabled: boolean;
+    onToken?: (token: string) => void;
+    onProgress?: (progress: number) => void;
+  };
 }
 
 export interface ExecutionResult {
@@ -248,16 +253,33 @@ export class AgentExecutor {
         spinner.text = `Executing with ${context.provider.name}...`;
       }
 
-      // Execute via provider
+      // Execute via provider (with streaming support)
       const startTime = Date.now();
-      const response = await context.provider.execute({
+
+      const request = {
         prompt,
         systemPrompt: context.agent.systemPrompt,
         model: context.agent.model,
         temperature: context.agent.temperature,
         maxTokens: context.agent.maxTokens,
         signal: options.signal  // v5.0.7: Pass abort signal for cancellation
-      });
+      };
+
+      let response;
+
+      // Use streaming if enabled
+      if (options.streaming?.enabled && context.provider.executeStreaming) {
+        // Try streaming execution (works for both native and synthetic)
+        response = await context.provider.executeStreaming(request, {
+          enabled: true,
+          onToken: options.streaming.onToken,
+          onProgress: options.streaming.onProgress
+        });
+      } else {
+        // Regular execution (streaming not enabled or not available)
+        response = await context.provider.execute(request);
+      }
+
       const duration = Date.now() - startTime;
 
       // Check for delegation requests in response (v4.7.2+)

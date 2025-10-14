@@ -33,6 +33,7 @@ describe('Router', () => {
         model: 'model1',
         finishReason: 'stop'
       } as ExecutionResponse),
+      supportsStreaming: vi.fn().mockReturnValue(false),
       generateEmbedding: vi.fn().mockResolvedValue([0.1, 0.2, 0.3]),
       isAvailable: vi.fn().mockResolvedValue(true),
       getHealth: vi.fn().mockResolvedValue({
@@ -82,6 +83,7 @@ describe('Router', () => {
         model: 'model2',
         finishReason: 'stop'
       } as ExecutionResponse),
+      supportsStreaming: vi.fn().mockReturnValue(false),
       generateEmbedding: vi.fn().mockResolvedValue([0.1, 0.2, 0.3]),
       isAvailable: vi.fn().mockResolvedValue(true),
       getHealth: vi.fn().mockResolvedValue({

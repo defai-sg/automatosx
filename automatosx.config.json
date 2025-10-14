@@ -53,6 +53,26 @@
     "provider": {
       "maxWaitMs": 60000,
       "fallbackDelay": 5000
+    },
+    "stages": {
+      "enabled": false,
+      "defaultTimeout": 1800000,
+      "checkpointPath": ".automatosx/checkpoints",
+      "autoSaveCheckpoint": true,
+      "cleanupAfterDays": 7,
+      "retry": {
+        "defaultMaxRetries": 1,
+        "defaultRetryDelay": 2000
+      },
+      "prompts": {
+        "timeout": 600000,
+        "autoConfirm": false,
+        "locale": "en"
+      },
+      "progress": {
+        "updateInterval": 2000,
+        "syntheticProgress": true
+      }
     }
   },
   "orchestration": {
@@ -191,6 +211,5 @@
       "defaultLimit": 10
     }
   },
-  "$schema": "./schema/config.json",
-  "version": "5.0.0"
+  "version": "5.3.0"
 }

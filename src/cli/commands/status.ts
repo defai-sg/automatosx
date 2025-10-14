@@ -12,6 +12,7 @@
 import type { CommandModule } from 'yargs';
 import { Router } from '../../core/router.js';
 import { PathResolver } from '../../core/path-resolver.js';
+import { WorkspaceManager } from '../../core/workspace-manager.js';
 import { ClaudeProvider } from '../../providers/claude-provider.js';
 import { GeminiProvider } from '../../providers/gemini-provider.js';
 import { OpenAIProvider } from '../../providers/openai-provider.js';
@@ -99,7 +100,10 @@ export const statusCommand: CommandModule<Record<string, unknown>, StatusOptions
       const agentsDir = join(automatosxDir, 'agents');
       const abilitiesDir = join(automatosxDir, 'abilities');
       const memoryDir = join(automatosxDir, 'memory');
-      const workspacesDir = join(automatosxDir, 'workspaces');
+
+      // v5.2.0: New workspace structure
+      const prdDir = join(detectedProjectDir, 'automatosx', 'PRD');
+      const tmpDir = join(detectedProjectDir, 'automatosx', 'tmp');
 
       // Initialize providers
       const providers = [];
@@ -150,8 +154,9 @@ export const statusCommand: CommandModule<Record<string, unknown>, StatusOptions
         }))
       );
 
-      // Collect workspace statistics
-      const workspaceStats = await getWorkspaceStatistics(workspacesDir);
+      // v5.2.0: Collect workspace statistics using WorkspaceManager
+      const workspaceManager = new WorkspaceManager(detectedProjectDir);
+      const workspaceStats = await workspaceManager.getStats();
 
       // Collect memory statistics
       const memoryStats = await getMemoryStatistics(memoryDir);
@@ -186,7 +191,18 @@ export const statusCommand: CommandModule<Record<string, unknown>, StatusOptions
           agents: { path: agentsDir, exists: existsSync(agentsDir), count: agentCount },
           abilities: { path: abilitiesDir, exists: existsSync(abilitiesDir), count: abilityCount },
           memory: { path: memoryDir, exists: existsSync(memoryDir), ...memoryStats },
-          workspaces: { path: workspacesDir, exists: existsSync(workspacesDir), ...workspaceStats }
+          prd: {
+            path: prdDir,
+            exists: existsSync(prdDir),
+            files: workspaceStats.prdFiles,
+            sizeBytes: workspaceStats.prdSizeBytes
+          },
+          tmp: {
+            path: tmpDir,
+            exists: existsSync(tmpDir),
+            files: workspaceStats.tmpFiles,
+            sizeBytes: workspaceStats.tmpSizeBytes
+          }
         },
         providers: providerHealth,
         router: {
@@ -259,9 +275,9 @@ export const statusCommand: CommandModule<Record<string, unknown>, StatusOptions
           } else if (name === 'memory' && 'files' in dir) {
             const memDir = dir as { files: number; sizeBytes: number };
             info = ` (${memDir.files} ${memDir.files === 1 ? 'file' : 'files'}, ${formatBytes(memDir.sizeBytes || 0)})`;
-          } else if (name === 'workspaces' && 'workspaces' in dir) {
-            const wsDir = dir as { workspaces: number; totalSizeBytes: number };
-            info = ` (${wsDir.workspaces} ${wsDir.workspaces === 1 ? 'workspace' : 'workspaces'}, ${formatBytes(wsDir.totalSizeBytes || 0)})`;
+          } else if ((name === 'prd' || name === 'tmp') && 'files' in dir) {
+            const wsDir = dir as { files: number; sizeBytes: number };
+            info = ` (${wsDir.files} ${wsDir.files === 1 ? 'file' : 'files'}, ${formatBytes(wsDir.sizeBytes || 0)})`;
           }
 
           console.log(`  ${statusIcon} ${name}${info}`);
@@ -336,42 +352,6 @@ export const statusCommand: CommandModule<Record<string, unknown>, StatusOptions
  * Helper Functions
  */
 
-/**
- * Get workspace statistics
- */
-async function getWorkspaceStatistics(workspacesDir: string): Promise<{
-  workspaces: number;
-  totalSizeBytes: number;
-  files: number;
-}> {
-  if (!existsSync(workspacesDir)) {
-    return { workspaces: 0, totalSizeBytes: 0, files: 0 };
-  }
-
-  try {
-    const entries = await readdir(workspacesDir, { withFileTypes: true });
-    const workspaces = entries.filter(e => e.isDirectory());
-
-    let totalSizeBytes = 0;
-    let files = 0;
-
-    for (const workspace of workspaces) {
-      const workspacePath = join(workspacesDir, workspace.name);
-      const stats = await getDirectoryStats(workspacePath);
-      totalSizeBytes += stats.size;
-      files += stats.files;
-    }
-
-    return {
-      workspaces: workspaces.length,
-      totalSizeBytes,
-      files
-    };
-  } catch (error) {
-    logger.warn('Failed to get workspace statistics', { error: (error as Error).message });
-    return { workspaces: 0, totalSizeBytes: 0, files: 0 };
-  }
-}
 
 /**
  * Get memory statistics

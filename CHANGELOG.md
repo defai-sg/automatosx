@@ -5,6 +5,90 @@ All notable changes to AutomatosX will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.3.0] - 2025-10-14
+
+### 🚀 Stage Execution & Checkpoint System
+
+**This release introduces a checkpoint-based stage execution system for fault-tolerant, long-running workflows with interactive, streaming, and hybrid execution modes.**
+
+#### Added
+
+- **Stage Execution System**:
+  - `StageExecutionController` - Orchestrates multi-stage execution with checkpoint support
+  - `CheckpointManager` - JSON-based checkpoint persistence with automatic cleanup
+  - `ProgressChannel` - Event-based real-time progress tracking
+  - `PromptManager` - User interaction prompts with timeout handling
+  - **Commands**:
+    - `ax resume <run-id>` - Resume execution from saved checkpoint
+    - `ax runs list` - List all checkpoint runs with filtering
+    - `ax runs show <run-id>` - Show detailed checkpoint information
+    - `ax runs delete <run-id>` - Delete checkpoint with confirmation
+
+- **Execution Modes**:
+  - `--interactive` - Pause between stages for user decisions
+  - `--streaming` - Real-time progress updates during execution
+  - `--hybrid` - Both interactive and streaming (shortcut for `--interactive --streaming`)
+  - `--resumable` - Enable checkpoint save for resume capability
+  - `--auto-continue` - Auto-confirm all checkpoints (CI-friendly mode)
+
+- **Configuration** (`automatosx.config.json`):
+  - `execution.stages.enabled` - Enable stage-based execution (opt-in)
+  - `execution.stages.autoSaveCheckpoint` - Auto-save checkpoints after each stage
+  - `execution.stages.checkpointPath` - Checkpoint storage directory
+  - `execution.stages.cleanupAfterDays` - Automatic checkpoint cleanup
+  - `execution.stages.prompts.autoConfirm` - Default auto-confirm behavior
+  - `execution.stages.progress.updateInterval` - Progress update frequency
+  - `execution.stages.progress.syntheticProgress` - Enable synthetic progress
+
+#### Fixed
+
+- **Critical**: Removed `argv.interactive || true` forcing all executions into interactive mode (src/cli/commands/run.ts:458)
+  - Now respects CLI flags: `--interactive`, `--streaming`, `--hybrid`, `--resumable` work correctly
+  - Fixes regression where flagship v5.3.0 features were broken
+
+- **Major**:
+  - Resume command now passes `memoryManager` to `StageExecutionController` for memory persistence (src/cli/commands/resume.ts:243-244)
+  - Config-driven automation settings now properly honored instead of being overridden by CLI defaults
+    - `autoSaveCheckpoint` uses config value when CLI flag not specified
+    - `autoConfirm` uses config value when CLI flag not specified
+  - Resume flow now preserves original `autoConfirm` choice from checkpoint instead of defaulting to `false`
+  - CLI options (`--interactive`, `--resumable`, `--auto-continue`, `--streaming`, `--hybrid`) no longer have hardcoded `default: false`, allowing proper config fallback
+
+- **Minor**:
+  - Removed duplicate spinner in streaming mode - `ProgressRenderer` now handles all visual feedback (src/core/stage-execution-controller.ts:1286)
+
+#### Technical Details
+
+- **New Core Modules**:
+  - `src/core/stage-execution-controller.ts` - Stage lifecycle, checkpoint integration, progress tracking
+  - `src/core/checkpoint-manager.ts` - Checkpoint CRUD, JSON persistence, automatic cleanup
+  - `src/core/progress-channel.ts` - Event-based progress updates with percentage tracking
+  - `src/core/prompt-manager.ts` - CLI user prompts with timeout and validation
+  - `src/cli/commands/resume.ts` - Resume from checkpoint with mode override support
+  - `src/cli/commands/runs.ts` - Checkpoint management (list, show, delete)
+  - `src/cli/renderers/progress-renderer.ts` - Real-time progress visualization
+  - `src/types/stage-execution.ts` - Complete type definitions for stage system
+
+- **Checkpoint Structure**:
+  ```
+  .automatosx/checkpoints/
+  └── <run-id>/
+      ├── checkpoint.json    # Checkpoint metadata and stage states
+      └── artifacts/         # Stage outputs and files
+  ```
+
+- **Benefits**:
+  - ✅ Fault tolerance: Resume from failure points
+  - ✅ Long-running workflows: Execute multi-hour tasks safely
+  - ✅ User control: Pause and review between stages
+  - ✅ Real-time feedback: Monitor progress during execution
+  - ✅ Audit trail: Complete execution history with artifacts
+
+#### Known Limitations
+
+- Test coverage for new features (StageExecutionController, CheckpointManager, resume, runs) is minimal
+  - Recommendation: Add comprehensive tests before production use
+
 ## [5.2.2] - 2025-10-14
 
 ### 🧪 Quality & Maintenance Release

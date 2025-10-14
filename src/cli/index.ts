@@ -50,6 +50,8 @@ import { statusCommand } from './commands/status.js';
 import { updateCommand } from './commands/update.js';
 import { workspaceCommand } from './commands/workspace.js';
 import { agentCommand } from './commands/agent/index.js';
+import { resumeCommand } from './commands/resume.js';
+import { runsCommand } from './commands/runs.js';
 
 // Mark CLI startup
 globalTracker.mark('cli_start');
@@ -64,6 +66,9 @@ const argv = await yargs(hideBin(process.argv))
   .example('$0 agent create backend --template developer', 'Create agent from template')
   .example('$0 agent list', 'List all agents')
   .example('$0 run assistant "Hello"', 'Run assistant agent')
+  .example('$0 run backend "task" --interactive', 'Run with interactive checkpoints')
+  .example('$0 resume <run-id>', 'Resume from checkpoint')
+  .example('$0 runs list', 'List checkpoint runs')
   .example('$0 session create "Build API" backend', 'Create multi-agent session')
   .example('$0 session list', 'List all sessions')
   .example('$0 workspace stats', 'Show workspace statistics')
@@ -98,6 +103,8 @@ const argv = await yargs(hideBin(process.argv))
   .command(agentCommand)
   .command(listCommand)
   .command(runCommand)
+  .command(resumeCommand)
+  .command(runsCommand)
   .command(sessionCommand)
   .command(workspaceCommand)
   .command(configCommand)

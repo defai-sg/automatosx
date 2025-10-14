@@ -89,6 +89,20 @@ export interface EmbeddingOptions {
 }
 
 /**
+ * Streaming Options (v5.3.0)
+ *
+ * Configuration for streaming execution.
+ */
+export interface StreamingOptions {
+  /** Enable streaming mode */
+  enabled: boolean;
+  /** Callback for each token received */
+  onToken?: (token: string) => void;
+  /** Callback for progress updates (0-100) */
+  onProgress?: (progress: number) => void;
+}
+
+/**
  * Production-ready provider interface
  * Supports rate limiting, cost estimation, health checks
  */
@@ -105,6 +119,13 @@ export interface Provider {
 
   // Execution
   execute(request: ExecutionRequest): Promise<ExecutionResponse>;
+
+  // Streaming (v5.3.0)
+  supportsStreaming(): boolean;
+  executeStreaming?(
+    request: ExecutionRequest,
+    options: StreamingOptions
+  ): Promise<ExecutionResponse>;
 
   // Embeddings
   generateEmbedding(text: string, options?: EmbeddingOptions): Promise<number[]>;

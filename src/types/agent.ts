@@ -31,6 +31,12 @@ export interface Stage {
   parallel?: boolean;        // Can this stage run in parallel with others?
   streaming?: boolean;       // Enable streaming output for this stage
   saveToMemory?: boolean;    // Persist this stage's results to memory
+
+  // v5.3: Checkpoint and retry configuration
+  checkpoint?: boolean;      // Pause for user confirmation after this stage
+  timeout?: number;          // Stage-specific timeout in milliseconds
+  maxRetries?: number;       // Maximum retry attempts for this stage
+  retryDelay?: number;       // Delay before retry in milliseconds
 }
 
 /**

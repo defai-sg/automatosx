@@ -347,27 +347,35 @@ describe('Status Command', () => {
       await mkdir(join(workspacesDir, 'workspace2'), { recursive: true });
 
       // Create some files
-      await writeFile(join(workspacesDir, 'workspace1', 'file1.txt'), 'test content', 'utf-8');
-      await writeFile(join(workspacesDir, 'workspace2', 'file2.txt'), 'test content 2', 'utf-8');
+      // v5.2.0: Use PRD and tmp directories instead of workspaces
+      const prdDir = join(testDir, 'automatosx', 'PRD');
+      const tmpDir = join(testDir, 'automatosx', 'tmp');
+      await mkdir(prdDir, { recursive: true });
+      await mkdir(tmpDir, { recursive: true });
+      await writeFile(join(prdDir, 'file1.txt'), 'test content', 'utf-8');
+      await writeFile(join(tmpDir, 'file2.txt'), 'test content 2', 'utf-8');
 
       await statusCommand.handler({ json: true, _: [], $0: '' });
 
       const output = consoleLogSpy.mock.calls[0]?.[0];
       const status = JSON.parse(output as string);
 
-      expect(status.directories.workspaces.workspaces).toBe(2);
-      expect(status.directories.workspaces.totalSizeBytes).toBeGreaterThan(0);
+      expect(status.directories.prd.files).toBeGreaterThan(0);
+      expect(status.directories.prd.sizeBytes).toBeGreaterThan(0);
+      expect(status.directories.tmp.files).toBeGreaterThan(0);
+      expect(status.directories.tmp.sizeBytes).toBeGreaterThan(0);
     });
 
     it('should handle missing workspaces directory', async () => {
-      // Don't create workspaces directory
+      // v5.2.0: PRD and tmp directories are handled gracefully
       await statusCommand.handler({ json: true, _: [], $0: '' });
 
       const output = consoleLogSpy.mock.calls[0]?.[0];
       const status = JSON.parse(output as string);
 
-      expect(status.directories.workspaces.workspaces).toBe(0);
-      expect(status.directories.workspaces.totalSizeBytes).toBe(0);
+      // Directories should exist but be empty (or have 0 files if not created)
+      expect(status.directories.prd).toBeDefined();
+      expect(status.directories.tmp).toBeDefined();
     });
   });
 

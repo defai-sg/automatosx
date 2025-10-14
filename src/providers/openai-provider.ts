@@ -11,7 +11,8 @@ import type {
   ExecutionRequest,
   ExecutionResponse,
   EmbeddingOptions,
-  Cost
+  Cost,
+  StreamingOptions
 } from '../types/provider.js';
 
 export class OpenAIProvider extends BaseProvider {
@@ -25,7 +26,7 @@ export class OpenAIProvider extends BaseProvider {
 
   get capabilities(): ProviderCapabilities {
     return {
-      supportsStreaming: false,
+      supportsStreaming: true, // v5.3.0: Native streaming support
       supportsEmbedding: true,
       supportsVision: true,
       maxContextTokens: 128000, // GPT-4 Turbo/GPT-4o has 128k context
@@ -270,5 +271,212 @@ export class OpenAIProvider extends BaseProvider {
   ): boolean {
     // OpenAI Codex CLI supports maxTokens and temperature
     return param === 'maxTokens' || param === 'temperature';
+  }
+
+  /**
+   * Check if provider supports streaming
+   * OpenAI CLI supports native streaming
+   */
+  override supportsStreaming(): boolean {
+    return true;
+  }
+
+  /**
+   * Execute with streaming (native streaming support)
+   *
+   * OpenAI CLI supports --stream flag for real-time token streaming.
+   */
+  override async executeStreaming(
+    request: ExecutionRequest,
+    options: StreamingOptions
+  ): Promise<ExecutionResponse> {
+    const startTime = Date.now();
+
+    try {
+      // Build prompt with system prompt if provided
+      let fullPrompt = request.prompt;
+      if (request.systemPrompt) {
+        fullPrompt = `System: ${request.systemPrompt}\n\nUser: ${request.prompt}`;
+      }
+
+      // Check if running in mock mode
+      const useMock = process.env.AUTOMATOSX_MOCK_PROVIDERS === 'true';
+
+      if (useMock) {
+        // Mock streaming simulation
+        return this.mockStreamingExecution(fullPrompt, request, options);
+      }
+
+      // Real streaming execution
+      return this.executeStreamingCLI(fullPrompt, request, options);
+
+    } catch (error) {
+      throw new Error(`OpenAI streaming execution failed: ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Mock streaming simulation for testing
+   */
+  private async mockStreamingExecution(
+    prompt: string,
+    request: ExecutionRequest,
+    options: StreamingOptions
+  ): Promise<ExecutionResponse> {
+    const startTime = Date.now();
+    const mockResponse = `[Mock Streaming Response from OpenAI]\n\nTask received: ${prompt.substring(0, 100)}...\n\nThis is a placeholder streaming response.`;
+    const tokens = mockResponse.split(' ');
+    let fullOutput = '';
+
+    // Simulate token streaming
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i] + (i < tokens.length - 1 ? ' ' : '');
+      fullOutput += token;
+
+      if (options.onToken) {
+        options.onToken(token);
+      }
+
+      if (options.onProgress) {
+        const progress = Math.min(100, ((i + 1) / tokens.length) * 100);
+        options.onProgress(progress);
+      }
+
+      // Small delay to simulate streaming
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+
+    return {
+      content: fullOutput,
+      model: request.model || 'openai-default',
+      tokensUsed: {
+        prompt: this.estimateTokens(prompt),
+        completion: this.estimateTokens(fullOutput),
+        total: this.estimateTokens(prompt) + this.estimateTokens(fullOutput)
+      },
+      latencyMs: Date.now() - startTime,
+      finishReason: 'stop'
+    };
+  }
+
+  /**
+   * Execute real streaming CLI
+   */
+  private async executeStreamingCLI(
+    prompt: string,
+    request: ExecutionRequest,
+    options: StreamingOptions
+  ): Promise<ExecutionResponse> {
+    const { spawn } = await import('child_process');
+    const startTime = Date.now();
+
+    return new Promise((resolve, reject) => {
+      let fullOutput = '';
+      let tokenCount = 0;
+      let stderr = '';
+      let hasTimedOut = false;
+
+      // Build CLI args with streaming enabled
+      const args = this.buildCLIArgs(request);
+      args.push('--stream'); // Enable streaming in OpenAI CLI
+      args.push(prompt);
+
+      // Spawn the CLI process
+      const child = spawn(this.config.command, args, {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: process.env
+      });
+
+      // Handle abort signal
+      if (request.signal) {
+        request.signal.addEventListener('abort', () => {
+          hasTimedOut = true;
+          child.kill('SIGTERM');
+          setTimeout(() => {
+            if (!child.killed) {
+              child.kill('SIGKILL');
+            }
+          }, 5000);
+          reject(new Error('Execution aborted by timeout'));
+        });
+      }
+
+      // Collect stdout with token streaming
+      child.stdout?.on('data', (chunk) => {
+        const token = chunk.toString();
+        fullOutput += token;
+        tokenCount++;
+
+        // Emit token event
+        if (options.onToken) {
+          options.onToken(token);
+        }
+
+        // Estimate progress (rough estimation)
+        const estimatedTotal = 1000; // TODO: Better estimation
+        const progress = Math.min(100, (tokenCount / estimatedTotal) * 100);
+        if (options.onProgress) {
+          options.onProgress(progress);
+        }
+      });
+
+      // Collect stderr
+      child.stderr?.on('data', (data) => {
+        stderr += data.toString();
+      });
+
+      // Handle process exit
+      child.on('close', (code) => {
+        if (hasTimedOut) {
+          return; // Already rejected by timeout
+        }
+
+        if (code !== 0) {
+          reject(new Error(`OpenAI CLI exited with code ${code}: ${stderr}`));
+        } else {
+          // Emit final progress
+          if (options.onProgress) {
+            options.onProgress(100);
+          }
+
+          resolve({
+            content: fullOutput.trim(),
+            model: request.model || 'openai-default',
+            tokensUsed: {
+              prompt: this.estimateTokens(prompt),
+              completion: this.estimateTokens(fullOutput),
+              total: this.estimateTokens(prompt) + this.estimateTokens(fullOutput)
+            },
+            latencyMs: Date.now() - startTime,
+            finishReason: 'stop'
+          });
+        }
+      });
+
+      // Handle process errors
+      child.on('error', (error) => {
+        if (!hasTimedOut) {
+          reject(new Error(`Failed to spawn OpenAI CLI: ${error.message}`));
+        }
+      });
+
+      // Set timeout
+      const timeout = setTimeout(() => {
+        hasTimedOut = true;
+        child.kill('SIGTERM');
+
+        setTimeout(() => {
+          if (!child.killed) {
+            child.kill('SIGKILL');
+          }
+        }, 1000);
+
+        reject(new Error(`OpenAI CLI streaming timeout after ${this.config.timeout}ms`));
+      }, this.config.timeout);
+
+      child.on('close', () => {
+        clearTimeout(timeout);
+      });
+    });
   }
 }
