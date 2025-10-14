@@ -122,13 +122,13 @@ export const createCommand: CommandModule<{}, CreateOptions> = {
       const templateContent = await readFile(templatePath, 'utf-8');
       const templateYaml = loadYaml(templateContent) as any;
 
-      // 5. Collect variables (keep undefined if not provided)
+      // 5. Collect variables (keep undefined if not provided to allow template defaults)
       const variables: TemplateVariables = {
         AGENT_NAME: argv.agent,
-        DISPLAY_NAME: argv.displayName || '',
-        ROLE: argv.role || '',
-        DESCRIPTION: argv.description || '',
-        TEAM: argv.team || ''
+        DISPLAY_NAME: argv.displayName,
+        ROLE: argv.role,
+        DESCRIPTION: argv.description,
+        TEAM: argv.team
       };
 
       // 6. Handle missing values
