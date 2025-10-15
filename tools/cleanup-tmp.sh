@@ -11,9 +11,12 @@
 
 set -e
 
-PROJECT_ROOT="/Users/akiralam/Desktop/defai/automatosx"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 TMP_DIR="$PROJECT_ROOT/tmp"
-ARCHIVE_DIR="$TMP_DIR/archive-2025-10"
+# Generate dynamic archive directory based on current date
+ARCHIVE_DATE=$(date +%Y-%m)
+ARCHIVE_DIR="$TMP_DIR/archive-$ARCHIVE_DATE"
 
 cd "$PROJECT_ROOT"
 
@@ -73,4 +76,4 @@ echo "Files remaining: $TOTAL_AFTER"
 echo "Files archived: $ARCHIVED"
 echo ""
 echo "📂 Remaining files:"
-ls -1 "$TMP_DIR" | grep -v "^archive-2025-10$"
+ls -1 "$TMP_DIR" | grep -v "^archive-$ARCHIVE_DATE$"

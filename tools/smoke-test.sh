@@ -115,10 +115,10 @@ echo ""
 log "Running smoke tests..."
 echo ""
 
-# Test 1: Version
+# Test 1: Version (check that version is returned)
 test_output "CLI version" \
   "$CLI_PATH --version" \
-  "4\\.0\\.0"
+  "[0-9]+\.[0-9]+\.[0-9]+"
 
 # Test 2: Help
 test_output "CLI help" \

@@ -242,16 +242,17 @@ echo "✅ Version consistency verified"
 
 ## 🔄 Tool Evolution
 
-### Current Version (v1.0)
+### Current Version (v2.0)
 - ✅ Sync package.json, version.json
 - ✅ Update README.md status line
 - ✅ Update CLAUDE.md version headers
 - ✅ Check CHANGELOG.md has entry
 - ✅ Colorful console output
 - ✅ Clear next steps guidance
+- ✅ **NEW**: Automatically run tests and update test counts
+- ✅ **NEW**: Update README.md test badges automatically
 
-### Future Enhancements (v2.0)
-- [ ] Automatically run tests and update test counts
+### Future Enhancements (v3.0)
 - [ ] Calculate coverage percentage and update badges
 - [ ] Interactive mode for CHANGELOG.md entries
 - [ ] Dry-run mode for verification

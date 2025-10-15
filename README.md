@@ -7,7 +7,10 @@
 [![npm version](https://img.shields.io/npm/v/@defai.digital/automatosx.svg)](https://www.npmjs.com/package/@defai.digital/automatosx)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-1,717%20passing-brightgreen.svg)](#)
+[![Tests](https://img.shields.io/badge/tests-1,845%20passing-brightgreen.svg)](#)
+[![macOS](https://img.shields.io/badge/macOS-26.0-blue.svg)](https://www.apple.com/macos)
+[![Windows](https://img.shields.io/badge/Windows-10+-blue.svg)](https://www.microsoft.com/windows)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-orange.svg)](https://ubuntu.com)
 
 **Status**: ✅ Production Ready · v5.3.5 · October 2025
 
@@ -765,7 +768,7 @@ I need Daisy to analyze the data    # Need expression
 
 ## 🛠️ Production-Ready
 
-✅ **1,670 tests passing** (100% pass rate)
+✅ **1,845 tests passing** (100% pass rate)
 ✅ **TypeScript strict mode** (zero errors)
 ✅ **~56% test coverage** (comprehensive testing)
 ✅ **458KB bundle** (99.9% smaller than v3.x)
@@ -785,7 +788,7 @@ AutomatosX has been thoroughly tested across multiple operating systems:
 Memory Search: < 1ms (10,000 entries)
 Bundle Size:   458KB (down from 340MB in v3.x)
 Dependencies:  19 packages (down from 589 in v3.x)
-Test Coverage: ~56% (1,259 tests passing, 100% pass rate)
+Test Coverage: ~56% (1,845 tests passing, 100% pass rate)
 Memory Cost:   $0 (no API calls)
 ```
 

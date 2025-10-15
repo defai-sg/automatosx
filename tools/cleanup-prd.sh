@@ -11,10 +11,13 @@
 
 set -e
 
-PROJECT_ROOT="/Users/akiralam/Desktop/defai/automatosx"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 PRD_DIR="$PROJECT_ROOT/PRD"
 WORKSPACE_PRD="$PROJECT_ROOT/automatosx/PRD"
-ARCHIVE_DIR="$PRD_DIR/archive-2025-10"
+# Generate dynamic archive directory based on current date
+ARCHIVE_DATE=$(date +%Y-%m)
+ARCHIVE_DIR="$PRD_DIR/archive-$ARCHIVE_DATE"
 V4_ARCHIVE="$ARCHIVE_DIR/v4.0-revamp"
 FUTURE_PLANS="$ARCHIVE_DIR/future-plans"
 
@@ -63,7 +66,7 @@ Currently no active PRD documents. All planning is done in:
 Historical PRD documents have been archived:
 
 ### v4.0 Revamp (Phase 0-4)
-- **Location**: `archive-2025-10/v4.0-revamp/`
+- **Location**: `archive-$ARCHIVE_DATE/v4.0-revamp/`
 - **Period**: 2025-03 to 2025-10
 - **Status**: ✅ Completed (all phases finished, v5.2.2 released)
 - **Contents**: 39 planning documents including:
@@ -73,7 +76,7 @@ Historical PRD documents have been archived:
   - Phase kickoff and completion reports
 
 ### Future Plans
-- **Location**: `archive-2025-10/future-plans/`
+- **Location**: `archive-$ARCHIVE_DATE/future-plans/`
 - **Status**: Deferred/Cancelled features
 
 ## Project Documentation
@@ -113,10 +116,10 @@ echo "Files remaining in PRD/: $REMAINING"
 echo "Files archived: $ARCHIVED"
 echo ""
 echo "📂 Remaining files:"
-ls -1 "$PRD_DIR" | grep -v "^archive-2025-10$" || echo "(none)"
+ls -1 "$PRD_DIR" | grep -v "^archive-$ARCHIVE_DATE$" || echo "(none)"
 
 echo ""
 echo "📁 Archive structure:"
-echo "PRD/archive-2025-10/"
+echo "PRD/archive-$ARCHIVE_DATE/"
 echo "├── v4.0-revamp/        ($ARCHIVED files)"
 echo "└── future-plans/       (CLARITY-CORE documents)"

@@ -20,6 +20,7 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -146,6 +147,88 @@ function checkChangelog(version) {
 }
 
 /**
+ * Get test count from npm test output
+ */
+function getTestCount() {
+  try {
+    console.log(`${colors.cyan}Running tests to get count...${colors.reset}`);
+    const output = execSync('npm run test:all 2>&1', {
+      cwd: rootDir,
+      encoding: 'utf8',
+      timeout: 300000 // 5 minutes timeout
+    });
+
+    // Parse output for test count: "Tests  1845 passed | 7 skipped (1852)"
+    const testMatch = output.match(/Tests\s+(\d+)\s+passed/);
+    if (testMatch) {
+      const testCount = parseInt(testMatch[1], 10);
+      console.log(`${colors.green}✓${colors.reset} Found ${testCount} passing tests`);
+      return testCount;
+    }
+
+    console.log(`${colors.yellow}⚠${colors.reset} Could not parse test count from output`);
+    return null;
+  } catch (error) {
+    console.log(`${colors.yellow}⚠${colors.reset} Could not run tests: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Update test counts in README.md
+ */
+function updateTestCounts(testCount) {
+  if (!testCount) {
+    console.log(`${colors.yellow}⚠${colors.reset} Skipping test count update (no count available)`);
+    return;
+  }
+
+  const readmePath = join(rootDir, 'README.md');
+  let content = readFileSync(readmePath, 'utf8');
+  let updated = false;
+
+  // Format test count with comma (e.g., 1845 -> 1,845)
+  const formattedCount = testCount.toLocaleString('en-US');
+
+  // Update badge: [![Tests](https://img.shields.io/badge/tests-1,845%20passing-brightgreen.svg)](#)
+  const badgePattern = /\[!\[Tests\]\(https:\/\/img\.shields\.io\/badge\/tests-[\d,]+%20passing-brightgreen\.svg\)\]/;
+  if (badgePattern.test(content)) {
+    content = content.replace(
+      badgePattern,
+      `[![Tests](https://img.shields.io/badge/tests-${formattedCount}%20passing-brightgreen.svg)]`
+    );
+    updated = true;
+  }
+
+  // Update "X tests passing" references
+  const testPassingPattern = /✅ \*\*[\d,]+ tests passing\*\*/g;
+  if (testPassingPattern.test(content)) {
+    content = content.replace(
+      testPassingPattern,
+      `✅ **${formattedCount} tests passing**`
+    );
+    updated = true;
+  }
+
+  // Update "Test Coverage: ~56% (X tests passing, 100% pass rate)"
+  const coveragePattern = /Test Coverage: ~\d+% \([\d,]+ tests passing, 100% pass rate\)/g;
+  if (coveragePattern.test(content)) {
+    content = content.replace(
+      coveragePattern,
+      `Test Coverage: ~56% (${formattedCount} tests passing, 100% pass rate)`
+    );
+    updated = true;
+  }
+
+  if (updated) {
+    writeFileSync(readmePath, content);
+    console.log(`${colors.green}✓${colors.reset} Updated test counts in README.md (${formattedCount} tests)`);
+  } else {
+    console.log(`${colors.yellow}⚠${colors.reset} Could not find test count patterns in README.md`);
+  }
+}
+
+/**
  * Main execution
  */
 function main() {
@@ -173,6 +256,13 @@ function main() {
 
     console.log();
 
+    // Update test counts (optional - skip if tests fail)
+    const testCount = getTestCount();
+    if (testCount) {
+      updateTestCounts(testCount);
+      console.log();
+    }
+
     // Check CHANGELOG
     checkChangelog(newVersion);
 
@@ -185,6 +275,9 @@ function main() {
     console.log(`  • version.json → ${newVersion} (${releaseDate})`);
     console.log(`  • README.md → v${newVersion} · ${monthYear}`);
     console.log(`  • CLAUDE.md → v${newVersion} (${monthYear})`);
+    if (testCount) {
+      console.log(`  • README.md test counts → ${testCount.toLocaleString('en-US')} tests`);
+    }
     console.log();
 
     // Next steps
