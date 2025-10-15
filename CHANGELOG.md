@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.4.2](https://github.com/defai-digital/automatosx/compare/v5.4.1...v5.4.2) (2025-10-15)
+
+
+### Testing
+
+* **release:** test automated release workflow and npm publishing process
+
+
 ## [5.4.1](https://github.com/defai-digital/automatosx/compare/v5.4.0...v5.4.1) (2025-10-15)
 
 
