@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.4.1](https://github.com/defai-digital/automatosx/compare/v5.4.0...v5.4.1) (2025-10-15)
+
+
+### Improvements
+
+* **ci:** add tags-ignore to CI workflow to prevent conflict with release workflow
+* **docs:** complete P0 implementation documentation and verification
+
+
+### Documentation
+
+* Complete P0-1 (GitHub Actions automated release) implementation summary
+* Complete P0-2 (npm provenance) verification summary
+* Complete P0-3 (package optimization) implementation summary
+* Add comprehensive P0 overall completion report
+
 ## [5.4.0](https://github.com/defai-digital/automatosx/compare/v5.3.7...v5.4.0) (2025-10-15)
 
 
