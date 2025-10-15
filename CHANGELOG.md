@@ -1,9 +1,23 @@
 # Changelog
 
-All notable changes to AutomatosX will be documented in this file.
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [5.4.0](https://github.com/defai-digital/automatosx/compare/v5.3.7...v5.4.0) (2025-10-15)
+
+
+### Features
+
+* implement P0 improvements - automated release, provenance, and package optimization ([442ac50](https://github.com/defai-digital/automatosx/commit/442ac5044b5cc653ee0d7039efe0e32207d6a6c1))
+* **release:** enhance pre-release workflow with beta/rc detection ([699b149](https://github.com/defai-digital/automatosx/commit/699b1493fe3c62e4b30c2e6e7a7290c0a052e3a7))
+* **release:** implement P1 release process enhancements ([835d4e0](https://github.com/defai-digital/automatosx/commit/835d4e0880177919162d97563b7b6ed98e19f72a))
+* **release:** setup conventional commits with automated changelog generation ([848f24c](https://github.com/defai-digital/automatosx/commit/848f24c4434f2853993ec99681da11fa50c0b858))
+* **test:** add smoke tests for package verification ([5a8e5b4](https://github.com/defai-digital/automatosx/commit/5a8e5b462797beb553f4fd799441e2ea50350770))
+* **test:** add smoke tests for package verification ([bceee8d](https://github.com/defai-digital/automatosx/commit/bceee8d24c078b79729fd13283246ea68d9f58ae))
+
+
+### Code Refactoring
+
+* **version:** simplify version management using package.json as single source of truth ([0d334ae](https://github.com/defai-digital/automatosx/commit/0d334ae4e0953ea44ed7704d383e47e0b56cb74c))
 
 ## [5.3.7] - 2025-10-15
 
