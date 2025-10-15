@@ -32,6 +32,7 @@ import { workspaceCommand } from './commands/workspace.js';
 import { agentCommand } from './commands/agent/index.js';
 import { resumeCommand } from './commands/resume.js';
 import { runsCommand } from './commands/runs.js';
+import { geminiCommand } from './commands/gemini.js';
 
 // Mark CLI startup
 globalTracker.mark('cli_start');
@@ -57,6 +58,7 @@ const argv = await yargs(hideBin(process.argv))
   .example('$0 config --list', 'View configuration')
   .example('$0 mcp', 'Start MCP server for Claude Code')
   .example('$0 update', 'Update to latest version')
+  .example('$0 gemini status', 'Show Gemini CLI integration status')
 
   // Global options
   .option('debug', {
@@ -91,6 +93,7 @@ const argv = await yargs(hideBin(process.argv))
   .command(statusCommand)
   .command(memoryCommand)
   .command(mcpCommand)
+  .command(geminiCommand)
   .command(updateCommand)
 
   // Configuration
