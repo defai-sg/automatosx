@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.4.3-beta.0](https://github.com/defai-digital/automatosx/compare/v5.4.2...v5.4.3-beta.0) (2025-10-15)
+
+
+### Features (In Development)
+
+* **gemini-cli:** Research and planning for Gemini CLI integration
+* **mcp:** Explore Gemini MCP support and custom commands integration
+
+
+### Development
+
+* Planning phase for Gemini CLI integration with AutomatosX
+* Investigating custom command support for Gemini
+* Researching MCP integration strategies
+
+
 ## [5.4.2](https://github.com/defai-digital/automatosx/compare/v5.4.1...v5.4.2) (2025-10-15)
 
 
