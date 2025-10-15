@@ -48,11 +48,11 @@ jobs:
           echo "🔍 Running TypeScript type check..."
           npm run typecheck
 
-          echo "🧪 Running test suite..."
-          npm run test:all
-
           echo "🔨 Building project..."
           npm run build
+
+          echo "🧪 Running test suite..."
+          npm run test:all
 
           echo "🧪 Running smoke tests..."
           npm run test:smoke
