@@ -32,10 +32,7 @@
     "sync:all-versions": "node tools/sync-all-versions.js",
     "prerelease": "npm run sync:all-versions && npm run typecheck && npm run test:all",
     "release:check": "node tools/check-release.js",
-    "prototype:path": "tsx tmp/phase0-prototypes/03-path-resolution-poc.ts",
-    "prototype:sqlite": "tsx tmp/phase0-prototypes/01-sqlite-vec-poc.ts",
-    "prototype:ts": "tsx tmp/phase0-prototypes/02-typescript-migration-poc.ts",
-    "prototype:provider": "tsx tmp/phase0-prototypes/04-provider-abstraction-poc.ts"
+    "tools:check": "bash -c 'echo \"🔍 Checking shell scripts syntax...\"; for f in tools/*.sh; do echo \"  Checking $f...\"; bash -n \"$f\" && echo \"  ✓ $f OK\" || echo \"  ✗ $f FAILED\"; done; echo \"✅ All tools checked\"'"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",

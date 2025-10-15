@@ -412,9 +412,26 @@ export class OpenAIProvider extends BaseProvider {
           options.onToken(token);
         }
 
-        // Estimate progress (rough estimation)
-        const estimatedTotal = 1000; // TODO: Better estimation
-        const progress = Math.min(100, (tokenCount / estimatedTotal) * 100);
+        // Dynamic progress estimation based on prompt length
+        // Typical completion is 0.5-2x the prompt length
+        // Use adaptive estimation that gets more accurate as tokens are received
+        const promptTokens = this.estimateTokens(prompt);
+        let estimatedTotal: number;
+
+        if (tokenCount < 50) {
+          // Early stage: conservative estimate (1.5x prompt)
+          estimatedTotal = Math.max(100, Math.floor(promptTokens * 1.5));
+        } else if (tokenCount < 200) {
+          // Mid stage: adjust based on current rate
+          // If we've already exceeded initial estimate, extend it
+          const initialEstimate = Math.floor(promptTokens * 1.5);
+          estimatedTotal = Math.max(initialEstimate, Math.floor(tokenCount * 1.2));
+        } else {
+          // Late stage: use current count + 20% buffer
+          estimatedTotal = Math.floor(tokenCount * 1.2);
+        }
+
+        const progress = Math.min(95, (tokenCount / estimatedTotal) * 100);
         if (options.onProgress) {
           options.onProgress(progress);
         }
