@@ -3,6 +3,10 @@
   "version": "5.3.7",
   "description": "AI Agent Orchestration Platform",
   "type": "module",
+  "publishConfig": {
+    "provenance": true,
+    "access": "public"
+  },
   "bin": {
     "automatosx": "./dist/index.js",
     "ax": "./dist/index.js"
@@ -32,6 +36,7 @@
     "sync:all-versions": "node tools/sync-all-versions.js",
     "prerelease": "npm run sync:all-versions && npm run typecheck && npm run test:all",
     "release:check": "node tools/check-release.js",
+    "check:size": "bash tools/check-package-size.sh",
     "tools:check": "bash -c 'echo \"🔍 Checking shell scripts syntax...\"; for f in tools/*.sh; do echo \"  Checking $f...\"; bash -n \"$f\" && echo \"  ✓ $f OK\" || echo \"  ✗ $f FAILED\"; done; echo \"✅ All tools checked\"'"
   },
   "devDependencies": {

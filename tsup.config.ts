@@ -6,7 +6,8 @@ export default defineConfig({
   format: ['esm'],
   dts: true,
   splitting: false,
-  sourcemap: true,
+  sourcemap: false,  // Disabled to reduce package size (~25% reduction)
+  treeshake: true,   // Enable tree shaking for optimization
   clean: true,
   shims: true,
   outDir: 'dist',

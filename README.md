@@ -803,6 +803,22 @@ Memory Cost:   $0 (no API calls)
 
 ---
 
+## 🔒 Security
+
+AutomatosX packages are published with [npm provenance](https://docs.npmjs.com/generating-provenance-statements), providing supply chain security and verifying package authenticity.
+
+You can verify the provenance of any version:
+
+```bash
+npm view @defai.digital/automatosx@latest --json | jq .dist
+```
+
+Look for the `attestations` field which confirms the package was built in GitHub Actions.
+
+For more information, see our [Security Policy](SECURITY.md).
+
+---
+
 ## 🚧 Coming Soon
 
 - Enhanced Claude Code integration

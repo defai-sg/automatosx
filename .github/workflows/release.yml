@@ -1,0 +1,78 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  id-token: write  # Required for npm provenance
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run quality checks
+        run: |
+          echo "🔍 Running TypeScript type check..."
+          npm run typecheck
+
+          echo "🧪 Running test suite..."
+          npm run test:all
+
+          echo "🔨 Building project..."
+          npm run build
+
+      - name: Test package
+        run: |
+          echo "📦 Creating package tarball..."
+          npm pack
+
+          echo "📋 Inspecting package contents..."
+          tar -tzf *.tgz | head -30
+
+          echo "📊 Package size:"
+          ls -lh *.tgz
+
+      - name: Publish to npm
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          files: |
+            *.tgz
+            CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify success
+        run: |
+          echo "✅ Successfully released version ${{ steps.version.outputs.VERSION }}"
+          echo "📦 npm: https://www.npmjs.com/package/@defai.digital/automatosx/v/${{ steps.version.outputs.VERSION }}"
+          echo "🏷️ GitHub: https://github.com/defai-digital/automatosx/releases/tag/v${{ steps.version.outputs.VERSION }}"

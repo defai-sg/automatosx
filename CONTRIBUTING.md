@@ -335,6 +335,15 @@ if (!isValidPath(path)) {
    - Command implementations
    - User interface
 
+## Release Process
+
+See [docs/release-process.md](./docs/release-process.md) for detailed release instructions.
+
+Quick summary:
+1. Update version: `npm run version:patch`
+2. Push: `git push && git push --tags`
+3. GitHub Actions handles the rest automatically
+
 ## Getting Help
 
 - Check existing [documentation](docs/)
