@@ -25,6 +25,21 @@ jobs:
           node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
 
+      # Determine if this is a pre-release
+      - name: Check if pre-release
+        id: prerelease
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          if [[ "$TAG_NAME" =~ -(beta|rc|alpha)\. ]]; then
+            echo "IS_PRERELEASE=true" >> $GITHUB_OUTPUT
+            echo "NPM_TAG=beta" >> $GITHUB_OUTPUT
+            echo "This is a pre-release: $TAG_NAME"
+          else
+            echo "IS_PRERELEASE=false" >> $GITHUB_OUTPUT
+            echo "NPM_TAG=latest" >> $GITHUB_OUTPUT
+            echo "This is a stable release: $TAG_NAME"
+          fi
+
       - name: Install dependencies
         run: npm ci
 
@@ -53,8 +68,9 @@ jobs:
           echo "📊 Package size:"
           ls -lh *.tgz
 
+      # Publish with appropriate tag
       - name: Publish to npm
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public --tag ${{ steps.prerelease.outputs.NPM_TAG }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -62,12 +78,13 @@ jobs:
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
+      # Create GitHub Release (mark as pre-release if beta/rc)
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.prerelease.outputs.IS_PRERELEASE }}
           files: |
             *.tgz
             CHANGELOG.md
@@ -78,4 +95,5 @@ jobs:
         run: |
           echo "✅ Successfully released version ${{ steps.version.outputs.VERSION }}"
           echo "📦 npm: https://www.npmjs.com/package/@defai.digital/automatosx/v/${{ steps.version.outputs.VERSION }}"
-          echo "🏷️ GitHub: https://github.com/defai-digital/automatosx/releases/tag/v${{ steps.version.outputs.VERSION }}"
+          echo "🏷️  npm tag: ${{ steps.prerelease.outputs.NPM_TAG }}"
+          echo "🔗 GitHub: https://github.com/defai-digital/automatosx/releases/tag/v${{ steps.version.outputs.VERSION }}"
