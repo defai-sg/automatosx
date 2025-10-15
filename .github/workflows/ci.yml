@@ -37,6 +37,9 @@ jobs:
       - name: TypeScript type check
         run: npm run typecheck
 
+      - name: Build project
+        run: npm run build
+
       - name: Run unit tests
         run: npm run test:unit
         timeout-minutes: 15
