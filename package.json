@@ -17,7 +17,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsx src/cli/index.ts",
-    "test": "npm run test:unit && npm run test:integration",
+    "test": "npm run test:unit && npm run test:integration && npm run test:smoke",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
     "test:all": "vitest run",
@@ -28,7 +28,7 @@
     "prepublishOnly": "npm run typecheck && npm run test:all && npm run build",
     "prepack": "npm run build",
     "postpack": "echo '✅ Package created successfully'",
-    "version": "node tools/sync-version.js && git add version.json",
+    "version": "node tools/sync-all-versions.js && git add README.md CLAUDE.md",
     "version:patch": "npm version patch -m 'chore: bump version to %s'",
     "version:minor": "npm version minor -m 'chore: bump version to %s'",
     "version:major": "npm version major -m 'chore: bump version to %s'",
@@ -66,7 +66,6 @@
   "files": [
     "dist",
     "examples",
-    "version.json",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
