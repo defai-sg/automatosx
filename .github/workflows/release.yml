@@ -39,6 +39,9 @@ jobs:
           echo "🔨 Building project..."
           npm run build
 
+          echo "🧪 Running smoke tests..."
+          npm run test:smoke
+
       - name: Test package
         run: |
           echo "📦 Creating package tarball..."
