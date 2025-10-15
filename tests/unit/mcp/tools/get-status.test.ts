@@ -171,7 +171,7 @@ describe('MCP Tool: get_status', () => {
 
       const result = await handler({});
 
-      // Version should be either from version.json, package.json, or 'unknown'
+      // Version should be from package.json (single source of truth) or 'unknown'
       expect(typeof result.version).toBe('string');
       expect(result.version.length).toBeGreaterThan(0);
     });

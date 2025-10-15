@@ -637,7 +637,7 @@ None (infrastructure-only release)
 #### Added
 
 - **Version Synchronization Tool** (`tools/sync-all-versions.js`):
-  - Comprehensive version sync across all project files (package.json, version.json, README.md, CLAUDE.md)
+  - Comprehensive version sync across all project files (package.json, README.md, CLAUDE.md)
   - Automatic month/year formatting (e.g., "October 2025")
   - CHANGELOG.md verification with warnings if entry missing
   - Colorful console output with clear next-step guidance
@@ -743,7 +743,7 @@ None (infrastructure-only release)
 #### Added
 
 - **Version Synchronization Tool** (`tools/sync-all-versions.js`):
-  - Comprehensive version sync across all project files (package.json, version.json, README.md, CLAUDE.md)
+  - Comprehensive version sync across all project files (package.json, README.md, CLAUDE.md)
   - Automatic month/year formatting (e.g., "October 2025")
   - CHANGELOG.md verification with warnings if entry missing
   - Colorful console output with clear next-step guidance

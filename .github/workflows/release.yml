@@ -30,7 +30,7 @@ jobs:
         id: prerelease
         run: |
           TAG_NAME=${GITHUB_REF#refs/tags/}
-          if [[ "$TAG_NAME" =~ -(beta|rc|alpha)\. ]]; then
+          if [[ "$TAG_NAME" =~ -(beta|rc)\. ]]; then
             echo "IS_PRERELEASE=true" >> $GITHUB_OUTPUT
             echo "NPM_TAG=beta" >> $GITHUB_OUTPUT
             echo "This is a pre-release: $TAG_NAME"
@@ -84,7 +84,7 @@ jobs:
         with:
           generate_release_notes: true
           draft: false
-          prerelease: ${{ steps.prerelease.outputs.IS_PRERELEASE }}
+          prerelease: ${{ steps.prerelease.outputs.IS_PRERELEASE == 'true' }}
           files: |
             *.tgz
             CHANGELOG.md

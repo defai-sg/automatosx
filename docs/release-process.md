@@ -88,22 +88,66 @@ npm publish --provenance
 gh release create vx.x.x --title "vx.x.x - Title" --notes-file CHANGELOG.md
 ```
 
-## Pre-release (Beta/RC)
+## Pre-release Versions (Beta/RC)
 
-For pre-release versions:
+Use pre-releases to validate new features before promoting them to `latest`.
 
-```bash
-# Create beta version
-npm version prerelease --preid=beta
-# Creates: 5.4.0-beta.0
+### Creating a Beta
 
-# Tag and push
-git push && git push --tags
+1. Bump the version:
+   ```bash
+   npm run version:beta
+   # Produces 5.4.0-beta.0, 5.4.0-beta.1, ...
+   ```
+2. Push the tag:
+   ```bash
+   git push && git push --tags
+   ```
+3. The release workflow will:
+   - Detect the `-beta.` tag suffix
+   - Publish to npm with the `beta` dist-tag
+   - Create a GitHub pre-release
 
-# Workflow will publish with "beta" tag instead of "latest"
-```
-
-Users can install beta with:
+Install the latest beta with:
 ```bash
 npm install @defai.digital/automatosx@beta
 ```
+
+### Creating a Release Candidate
+
+1. Bump the RC version:
+   ```bash
+   npm run version:rc
+   # Produces 5.4.0-rc.0, 5.4.0-rc.1, ...
+   ```
+2. Push the commit and tag:
+   ```bash
+   git push && git push --tags
+   ```
+3. The workflow treats RCs the same as betas (published with the `beta` dist-tag).
+
+Install a specific RC:
+```bash
+npm install @defai.digital/automatosx@5.4.0-rc.1
+```
+
+### Recommended Beta Testing Loop
+
+1. Merge feature work to `main`
+2. Cut a beta: `npm run version:beta`
+3. Test in downstream projects (`npm install @defai.digital/automatosx@beta`)
+4. Iterate with additional betas/RCs as fixes land
+5. Promote to stable when confident:
+   ```bash
+   npm run version:minor   # or :patch / :major
+   git push && git push --tags
+   ```
+
+### Verifications Before Promoting to Stable
+
+- Run `npm dist-tag ls @defai.digital/automatosx` and confirm `latest` still points to the stable version
+- Validate upgrade flow in a clean environment:
+  ```bash
+  npm install -g @defai.digital/automatosx@beta
+  automatosx --version
+  ```

@@ -115,7 +115,23 @@ npm run test:coverage
 
 ### Commit Messages
 
-Follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+We follow [Conventional Commits](https://www.conventionalcommits.org/) specification. This enables automated changelog generation and semantic versioning.
+
+#### Quick Start
+
+Use the interactive commit tool:
+
+```bash
+npm run commit
+```
+
+Or write manually:
+
+```bash
+git commit -m "feat(agents): add delegation depth validation"
+```
+
+#### Format
 
 ```
 <type>(<scope>): <subject>
@@ -125,35 +141,47 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) specific
 <footer>
 ```
 
-**Types**:
+**Required**:
+- `type`: feat, fix, docs, style, refactor, perf, test, chore, ci, build, revert
+- `subject`: Short description (max 100 chars, lowercase, no period)
 
-- `feat` - New feature
-- `fix` - Bug fix
-- `docs` - Documentation changes
-- `test` - Test changes
-- `refactor` - Code refactoring
-- `perf` - Performance improvements
-- `chore` - Build/tooling changes
+**Optional**:
+- `scope`: Module affected (agents, cli, memory, router, providers, etc.)
+- `body`: Detailed explanation
+- `footer`: Issue references, breaking changes
 
-**Examples**:
+#### Examples
 
-```
-feat(memory): add vector search optimization
+```bash
+# Feature
+feat(agents): add delegation depth validation
 
-Implement caching layer for frequently accessed vectors
-to reduce query latency by 40%.
-
-Closes #123
-```
-
-```
+# Bug fix
 fix(cli): resolve path resolution bug in Windows
 
-Fix path separator issues when running on Windows.
-Add cross-platform path normalization.
+# Documentation
+docs: update release process guide
 
-Fixes #456
+# Breaking change
+feat(router)!: remove deprecated fallback option
+
+BREAKING CHANGE: The `enableFallback` option has been removed.
+Use `fallbackChain` instead.
 ```
+
+#### Commit Hooks
+
+Git hooks will validate your commit messages:
+- Invalid commits will be rejected
+- Use `npm run commit` for guided input
+- See [docs/conventional-commits.md](./docs/conventional-commits.md) for full guide
+
+#### Benefits
+
+- 📝 Automated CHANGELOG generation
+- 🏷️ Semantic version automation
+- 📊 Clear commit history
+- 🤝 Better collaboration
 
 ### Pull Request Process
 

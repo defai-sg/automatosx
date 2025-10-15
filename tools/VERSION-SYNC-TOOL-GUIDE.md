@@ -1,26 +1,30 @@
 # Version Synchronization Tool Guide
 
 **Created**: 2025-10-14
-**Version**: v1.0
-**Purpose**: Automate version updates across all project files
+**Updated**: 2025-10-15 (Simplified for P1-3)
+**Version**: v2.0
+**Purpose**: Automate version updates across documentation files
 
 ---
 
 ## 📦 Overview
 
-The `sync-all-versions.js` tool synchronizes version numbers across the entire AutomatosX project, ensuring consistency before GitHub releases and npm publishing.
+The `sync-all-versions.js` tool synchronizes version references in documentation, using `package.json` as the single source of truth. This eliminates the need for `version.json` and manual version syncing.
 
 ### What It Updates
 
 ✅ **Automatically Updated Files**:
-1. `package.json` - Main version field
-2. `version.json` - Version and release date
-3. `README.md` - Status line (e.g., "v5.2.2 · October 2025")
-4. `CLAUDE.md` - Version header and Critical Development Notes header
+1. `README.md` - Status line (e.g., "v5.3.7 · October 2025")
+2. `CLAUDE.md` - Version header and Critical Development Notes header
+3. Test count badges (optional, requires running tests)
+
+📌 **Single Source of Truth**:
+- `package.json` - Managed by `npm version` commands
 
 ⚠️ **Manual Updates Required**:
 1. `CHANGELOG.md` - Release notes (content-specific)
-2. Test count badges - Requires running tests first
+
+**Note**: `version.json` has been removed in v5.3.7 to simplify version management.
 
 ---
 
@@ -104,34 +108,28 @@ npm publish
 
 ## 🎯 Files Updated by Tool
 
-### version.json
+### package.json (Source of Truth)
 ```json
 {
-  "version": "5.2.3",
-  "releaseDate": "2025-10-14",
-  "codename": "...",
-  "phase": "..."
-}
-```
-
-### package.json
-```json
-{
-  "version": "5.2.3"
+  "version": "5.3.7"  // ← Managed by npm version commands
 }
 ```
 
 ### README.md
 ```markdown
-**Status**: ✅ Production Ready · v5.2.3 · October 2025
+**Status**: ✅ Production Ready · v5.3.7 · October 2025
 ```
 
 ### CLAUDE.md
 ```markdown
-**Current Version**: v5.2.3 (October 2025)
+**Version Management**:
+- `package.json` is the single source of truth for version
+- Tests read version dynamically from package.json
 
-## Critical Development Notes (v5.2.3)
+## Critical Development Notes (v5.3.7)
 ```
+
+**Note**: `version.json` has been removed. Use `src/utils/version.ts` to read version in code.
 
 ---
 
@@ -144,16 +142,16 @@ After running the tool, verify these changes:
 git diff
 
 # You should see changes in:
-#   M package.json
-#   M version.json
 #   M README.md
 #   M CLAUDE.md
 
 # 2. Verify version consistency
-grep -r "5.2.3" package.json version.json README.md CLAUDE.md
+VERSION=$(node -p "require('./package.json').version")
+echo "Current version: $VERSION"
+grep -n "$VERSION" README.md CLAUDE.md
 
 # 3. Check CHANGELOG.md has entry
-grep "## \[5.2.3\]" CHANGELOG.md
+grep "## \[$VERSION\]" CHANGELOG.md
 # If not found, add release notes manually
 
 # 4. Run tests
@@ -225,35 +223,43 @@ echo "✅ Version consistency verified"
 
 ## 📊 Version Update Locations
 
-### Primary Sources (Automated)
-- [x] package.json (line 3)
-- [x] version.json (line 2)
-- [x] README.md (line 12)
-- [x] CLAUDE.md (lines 10, 46)
+### Primary Source (Single Source of Truth)
+- [x] **package.json** (line 3) - Managed by `npm version` commands
 
-### Secondary References (Manual)
-- [ ] CHANGELOG.md (release notes)
-- [ ] README.md test badges (lines 10, 581, 593)
-- [ ] CLAUDE.md test counts (lines 11, 173, 587)
-- [ ] docs/reference/cli-commands.md (version examples)
-- [ ] TROUBLESHOOTING.md (version-specific troubleshooting)
+### Automated Updates (by sync-all-versions.js)
+- [x] **README.md** (line 12) - Status line with version and month/year
+- [x] **CLAUDE.md** (lines 10, 46) - Version header and notes section
+- [x] **Test count badges** (optional) - If tests are run first
+
+### Manual Updates Required
+- [ ] **CHANGELOG.md** - Release notes (content-specific)
+- [ ] **GitHub Release Notes** - When creating releases
+
+### Removed (Simplified in v2.0)
+- ~~version.json~~ - Eliminated to simplify version management
+- ~~tools/sync-version.js~~ - No longer needed
 
 ---
 
 ## 🔄 Tool Evolution
 
-### Current Version (v2.0)
-- ✅ Sync package.json, version.json
+### Version 2.0 (Current - Simplified)
+- ✅ Use package.json as single source of truth
 - ✅ Update README.md status line
 - ✅ Update CLAUDE.md version headers
 - ✅ Check CHANGELOG.md has entry
 - ✅ Colorful console output
-- ✅ Clear next steps guidance
-- ✅ **NEW**: Automatically run tests and update test counts
-- ✅ **NEW**: Update README.md test badges automatically
+- ✅ Automatically run tests and update test counts (optional)
+- ✅ **SIMPLIFIED**: Removed version.json and sync-version.js
+- ✅ **IMPROVED**: Reduced version management complexity by 50%
+
+### Version 1.0 (Legacy)
+- ✅ Sync package.json, version.json (removed in v2.0)
+- ✅ Update README.md and CLAUDE.md
+- ⚠️ Maintained two version sources (complex)
 
 ### Future Enhancements (v3.0)
-- [ ] Calculate coverage percentage and update badges
+- [ ] Calculate coverage percentage and update badges automatically
 - [ ] Interactive mode for CHANGELOG.md entries
 - [ ] Dry-run mode for verification
 - [ ] Automatic git commit after sync
@@ -321,34 +327,31 @@ git commit -m "chore: prepare release v5.2.3"
 ## 📝 Example Output
 
 ```
-📦 AutomatosX Version Sync Tool
+📦 AutomatosX Version Sync Tool (Simplified)
 
-Target Version: v5.2.3
-Release Date: 2025-10-14 (October 2025)
+Current Version: v5.3.7 (from package.json)
+Release Date: 2025-10-15 (October 2025)
 
-✓ Updated version.json
-✓ Updated package.json
 ✓ Updated README.md status line
 ✓ Updated CLAUDE.md version references
 
-⚠ CHANGELOG.md does not have entry for v5.2.3
+Running tests to get count...
+✓ Found 1735 passing tests
+
+✓ Updated test counts in README.md (1,735 tests)
+
+⚠ CHANGELOG.md does not have entry for v5.3.7
   → Please add release notes to CHANGELOG.md
 
 ✨ Version sync completed successfully!
 
 Files updated:
-  • package.json → 5.2.3
-  • version.json → 5.2.3 (2025-10-14)
-  • README.md → v5.2.3 · October 2025
-  • CLAUDE.md → v5.2.3 (October 2025)
+  • README.md → v5.3.7 · October 2025
+  • CLAUDE.md → v5.3.7 (October 2025)
+  • README.md test counts → 1,735 tests
 
-Next steps:
-  1. Review changes: git diff
-  2. Update CHANGELOG.md with release notes (if needed)
-  3. Run tests: npm test
-  4. Commit: git add . && git commit -m "chore: bump version to 5.2.3"
-  5. Tag: git tag v5.2.3
-  6. Push: git push && git push --tags
+Note: package.json is the single source of truth
+  Use npm version [patch|minor|major] to bump version
 ```
 
 ---

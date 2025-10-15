@@ -33,7 +33,7 @@
     "version:minor": "npm version minor -m 'chore: bump version to %s'",
     "version:major": "npm version major -m 'chore: bump version to %s'",
     "version:beta": "npm version prerelease --preid=beta -m 'chore: bump version to %s'",
-    "sync:version": "node tools/sync-version.js",
+    "version:rc": "npm version prerelease --preid=rc -m 'chore: bump version to %s'",
     "sync:all-versions": "node tools/sync-all-versions.js",
     "prerelease": "npm run sync:all-versions && npm run typecheck && npm run test:all",
     "release:check": "node tools/check-release.js",
