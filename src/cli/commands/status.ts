@@ -22,38 +22,12 @@ import chalk from 'chalk';
 import { existsSync, statSync } from 'fs';
 import { readdir, stat } from 'fs/promises';
 import { join, basename } from 'path';
-import { createRequire } from 'module';
 import os from 'os';
 import { printError } from '../../utils/error-formatter.js';
+import { getVersion } from '../../utils/version.js';
 
-// Read version from version.json (single source of truth)
-const require = createRequire(import.meta.url);
-let VERSION = 'unknown';
-try {
-  // Try to load from same directory first (when built to dist/)
-  const versionData = require('../version.json');
-  VERSION = versionData.version || 'unknown';
-} catch (err) {
-  // Fallback: try parent directory
-  try {
-    const versionData = require('../../version.json');
-    VERSION = versionData.version || 'unknown';
-  } catch (err2) {
-    // Fallback: try grandparent directory (development mode from src/cli/commands/)
-    try {
-      const versionData = require('../../../version.json');
-      VERSION = versionData.version || 'unknown';
-    } catch (err3) {
-      // Final fallback: package.json
-      try {
-        const packageJson = require('../../../package.json');
-        VERSION = packageJson.version || 'unknown';
-      } catch (err4) {
-        logger.debug('Version file not found, using fallback');
-      }
-    }
-  }
-}
+// Get version from package.json (single source of truth)
+const VERSION = getVersion();
 
 interface StatusOptions {
   verbose?: boolean;

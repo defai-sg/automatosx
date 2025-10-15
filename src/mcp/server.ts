@@ -5,8 +5,8 @@
  * Exposes AutomatosX capabilities as MCP tools for Claude Code and other clients.
  */
 
-import { createRequire } from 'module';
 import { join } from 'path';
+import { getVersion } from '../utils/version.js';
 import type {
   JsonRpcRequest,
   JsonRpcResponse,
@@ -80,20 +80,8 @@ export class McpServer {
       setLogLevel('debug');
     }
 
-    // Get version (try ../../version.json first, then package.json)
-    const require = createRequire(import.meta.url);
-    this.version = 'unknown';
-    try {
-      const versionData = require('../../version.json');
-      this.version = versionData.version || 'unknown';
-    } catch {
-      try {
-        const packageJson = require('../../package.json');
-        this.version = packageJson.version || 'unknown';
-      } catch {
-        // Keep 'unknown'
-      }
-    }
+    // Get version from package.json (single source of truth)
+    this.version = getVersion();
 
     logger.info('[MCP Server] Initializing AutomatosX MCP Server', {
       version: this.version

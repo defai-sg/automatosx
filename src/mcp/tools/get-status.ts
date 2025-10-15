@@ -9,8 +9,8 @@ import type { ToolHandler, GetStatusOutput } from '../types.js';
 import type { IMemoryManager } from '../../types/memory.js';
 import { SessionManager } from '../../core/session-manager.js';
 import { Router } from '../../core/router.js';
-import { createRequire } from 'module';
 import { logger } from '../../utils/logger.js';
+import { getVersion } from '../../utils/version.js';
 
 export interface GetStatusDependencies {
   memoryManager: IMemoryManager;
@@ -25,20 +25,8 @@ export function createGetStatusHandler(
     logger.info('[MCP] get_status called');
 
     try {
-      // Get version (try ../../version.json first, then package.json)
-      const require = createRequire(import.meta.url);
-      let version = 'unknown';
-      try {
-        const versionData = require('../../../version.json');
-        version = versionData.version || 'unknown';
-      } catch {
-        try {
-          const packageJson = require('../../../package.json');
-          version = packageJson.version || 'unknown';
-        } catch {
-          // Keep 'unknown'
-        }
-      }
+      // Get version from package.json (single source of truth)
+      const version = getVersion();
 
       // Get memory stats
       const memoryStats = await deps.memoryManager.getStats();

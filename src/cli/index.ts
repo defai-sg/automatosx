@@ -11,32 +11,12 @@
 
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { createRequire } from 'module';
 import { logger, setLogLevel } from '../utils/logger.js';
 import { globalTracker } from '../utils/performance.js';
+import { getVersion } from '../utils/version.js';
 
-// Read version from version.json (single source of truth)
-const require = createRequire(import.meta.url);
-let VERSION = 'unknown';
-try {
-  // Try to load from same directory first (when built to dist/)
-  const versionData = require('../version.json');
-  VERSION = versionData.version || 'unknown';
-} catch (err) {
-  // Fallback: try parent directory (development mode)
-  try {
-    const versionData = require('../../version.json');
-    VERSION = versionData.version || 'unknown';
-  } catch (err2) {
-    // Final fallback: package.json
-    try {
-      const packageJson = require('../../package.json');
-      VERSION = packageJson.version || 'unknown';
-    } catch (err3) {
-      logger.debug('Version file not found, using fallback');
-    }
-  }
-}
+// Get version from package.json (single source of truth)
+const VERSION = getVersion();
 
 // Import all commands directly (lazy loading broke command options)
 import { configCommand } from './commands/config.js';

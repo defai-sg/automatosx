@@ -12,7 +12,7 @@
 [![Windows](https://img.shields.io/badge/Windows-10+-blue.svg)](https://www.microsoft.com/windows)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-orange.svg)](https://ubuntu.com)
 
-**Status**: ✅ Production Ready · v5.3.5 · October 2025
+**Status**: ✅ Production Ready · v5.3.7 · October 2025
 
 Looking for answers? See the [FAQ](FAQ.md).
 

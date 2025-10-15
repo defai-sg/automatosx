@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 /**
- * Comprehensive Version Sync Script
+ * Version Sync Script (Simplified)
  *
- * Syncs version numbers across all project files:
- * - package.json, version.json
- * - README.md (status line)
+ * Syncs version-related information across project files:
+ * - README.md (status line and version badges)
  * - CLAUDE.md (version header and notes)
+ *
+ * Note: package.json is now the single source of truth for version.
+ * version.json has been removed to simplify version management.
  *
  * Usage:
  *   npm run sync:all-versions              # Use package.json version
- *   node tools/sync-all-versions.js 5.2.3  # Specify version
+ *   node tools/sync-all-versions.js        # Same as above
  *
  * Run this before:
  *   - Creating GitHub releases
@@ -47,31 +49,9 @@ function getMonthYear(date) {
 }
 
 /**
- * Update version.json
+ * Note: version.json and manual package.json updates are removed.
+ * package.json is now the single source of truth, managed by npm version commands.
  */
-function updateVersionJson(version, releaseDate) {
-  const versionPath = join(rootDir, 'version.json');
-  const versionData = JSON.parse(readFileSync(versionPath, 'utf8'));
-
-  versionData.version = version;
-  versionData.releaseDate = releaseDate;
-
-  writeFileSync(versionPath, JSON.stringify(versionData, null, 2) + '\n');
-  console.log(`${colors.green}✓${colors.reset} Updated version.json`);
-}
-
-/**
- * Update package.json
- */
-function updatePackageJson(version) {
-  const packagePath = join(rootDir, 'package.json');
-  const packageData = JSON.parse(readFileSync(packagePath, 'utf8'));
-
-  packageData.version = version;
-
-  writeFileSync(packagePath, JSON.stringify(packageData, null, 2) + '\n');
-  console.log(`${colors.green}✓${colors.reset} Updated package.json`);
-}
 
 /**
  * Update README.md status line
@@ -232,27 +212,24 @@ function updateTestCounts(testCount) {
  * Main execution
  */
 function main() {
-  console.log(`\n${colors.blue}📦 AutomatosX Version Sync Tool${colors.reset}\n`);
+  console.log(`\n${colors.blue}📦 AutomatosX Version Sync Tool (Simplified)${colors.reset}\n`);
 
-  // Read current package.json
+  // Read current package.json (single source of truth)
   const packagePath = join(rootDir, 'package.json');
   const packageData = JSON.parse(readFileSync(packagePath, 'utf8'));
 
-  // Get version from command line or use package.json
-  const newVersion = process.argv[2] || packageData.version;
+  const currentVersion = packageData.version;
   const releaseDate = new Date().toISOString().split('T')[0];
   const monthYear = getMonthYear(new Date());
 
-  console.log(`${colors.cyan}Target Version:${colors.reset} v${newVersion}`);
+  console.log(`${colors.cyan}Current Version:${colors.reset} v${currentVersion} (from package.json)`);
   console.log(`${colors.cyan}Release Date:${colors.reset} ${releaseDate} (${monthYear})`);
   console.log();
 
   try {
-    // Update all files
-    updateVersionJson(newVersion, releaseDate);
-    updatePackageJson(newVersion);
-    updateReadme(newVersion, monthYear);
-    updateClaudeMd(newVersion, monthYear);
+    // Update documentation files only (package.json managed by npm version)
+    updateReadme(currentVersion, monthYear);
+    updateClaudeMd(currentVersion, monthYear);
 
     console.log();
 
@@ -264,30 +241,23 @@ function main() {
     }
 
     // Check CHANGELOG
-    checkChangelog(newVersion);
+    checkChangelog(currentVersion);
 
     console.log();
     console.log(`${colors.green}✨ Version sync completed successfully!${colors.reset}\n`);
 
     // Summary
     console.log(`${colors.cyan}Files updated:${colors.reset}`);
-    console.log(`  • package.json → ${newVersion}`);
-    console.log(`  • version.json → ${newVersion} (${releaseDate})`);
-    console.log(`  • README.md → v${newVersion} · ${monthYear}`);
-    console.log(`  • CLAUDE.md → v${newVersion} (${monthYear})`);
+    console.log(`  • README.md → v${currentVersion} · ${monthYear}`);
+    console.log(`  • CLAUDE.md → v${currentVersion} (${monthYear})`);
     if (testCount) {
       console.log(`  • README.md test counts → ${testCount.toLocaleString('en-US')} tests`);
     }
     console.log();
 
     // Next steps
-    console.log(`${colors.cyan}Next steps:${colors.reset}`);
-    console.log(`  1. Review changes: ${colors.yellow}git diff${colors.reset}`);
-    console.log(`  2. Update CHANGELOG.md with release notes (if needed)`);
-    console.log(`  3. Run tests: ${colors.yellow}npm test${colors.reset}`);
-    console.log(`  4. Commit: ${colors.yellow}git add . && git commit -m "chore: bump version to ${newVersion}"${colors.reset}`);
-    console.log(`  5. Tag: ${colors.yellow}git tag v${newVersion}${colors.reset}`);
-    console.log(`  6. Push: ${colors.yellow}git push && git push --tags${colors.reset}`);
+    console.log(`${colors.cyan}Note:${colors.reset} package.json is the single source of truth`);
+    console.log(`  Use ${colors.yellow}npm version [patch|minor|major]${colors.reset} to bump version`);
     console.log();
 
   } catch (error) {
