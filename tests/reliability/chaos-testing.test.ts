@@ -100,12 +100,15 @@ class ChaosInjector {
   }
 }
 
+// Global chaos configuration map (agent name -> shouldFail)
+const chaosConfigMap = new Map<string, boolean>();
+
 // Test utilities
 const createAgent = (name: string, overrides: Partial<AgentProfile> = {}): AgentProfile => ({
   name,
   role: overrides.role ?? `${name}-role`,
   description: overrides.description ?? `${name} description`,
-  systemPrompt: overrides.systemPrompt ?? 'system prompt',
+  systemPrompt: overrides.systemPrompt ?? `system prompt for ${name}`,  // Make unique
   abilities: overrides.abilities ?? [],
   ...overrides
 } as AgentProfile);
@@ -119,20 +122,27 @@ const createContext = (): ExecutionContext => ({
   memory: [],
   provider: {
     name: 'mock-chaotic-provider',
-    execute: async (context: ExecutionContext) => {
-      // Simulate chaotic behavior - random failures
-      const agent = context.agent as AgentProfile & { shouldFail?: boolean };
+    execute: async (request: { prompt: string; systemPrompt?: string; [key: string]: any }) => {
+      // Extract agent name from systemPrompt (format: "system prompt for {name}")
+      const match = request.systemPrompt?.match(/system prompt for (.+)/);
+      const agentName = match ? match[1] : 'unknown';
 
-      if (agent.shouldFail) {
-        throw new Error(`Chaos injected failure for ${agent.name}`);
+      // Check if this agent should fail based on chaos configuration
+      const shouldFail = chaosConfigMap.get(agentName) || false;
+
+      if (shouldFail) {
+        throw new Error(`Chaos injected failure for ${agentName}`);
       }
 
       // Simulate work
       await new Promise(resolve => setTimeout(resolve, 10));
 
       return {
-        output: `Completed: ${agent.name}`,
-        error: undefined
+        content: `Completed: ${agentName}`,
+        model: 'mock-model',
+        tokensUsed: { prompt: 10, completion: 20, total: 30 },
+        latencyMs: 10,
+        finishReason: 'stop'
       };
     }
   } as any,
@@ -147,12 +157,29 @@ const createContext = (): ExecutionContext => ({
   }
 });
 
+// Helper to configure chaos for agents
+const configureChaos = (agents: Array<AgentProfile & { shouldFail?: boolean }>): AgentProfile[] => {
+  // Clear previous configuration
+  chaosConfigMap.clear();
+
+  // Set chaos configuration for each agent
+  agents.forEach(agent => {
+    if (agent.shouldFail) {
+      chaosConfigMap.set(agent.name, true);
+    }
+  });
+
+  return agents;
+};
+
 describe('Chaos Testing - Reliability Under Random Failures', () => {
   let executor: ParallelAgentExecutor;
   let chaosInjector: ChaosInjector;
 
   beforeEach(() => {
     executor = new ParallelAgentExecutor();
+    // Clear chaos configuration before each test
+    chaosConfigMap.clear();
   });
 
   describe('ChaosInjector - Core Functionality', () => {
@@ -219,28 +246,37 @@ describe('Chaos Testing - Reliability Under Random Failures', () => {
     });
 
     it('handles 30% failure rate with independent agents', async () => {
-      const agents = chaosInjector.injectRandomFailure([
+      const baseAgents = [
         createAgent('agent1'),
         createAgent('agent2'),
         createAgent('agent3'),
         createAgent('agent4'),
-        createAgent('agent5')
-      ], 0.3);
+        createAgent('agent5'),
+        createAgent('agent6'),
+        createAgent('agent7'),
+        createAgent('agent8'),
+        createAgent('agent9'),
+        createAgent('agent10')  // Increased from 5 to 10 agents to reduce probability of all failing
+      ];
+
+      const chaoticAgents = chaosInjector.injectRandomFailure(baseAgents, 0.3);
+      const agents = configureChaos(chaoticAgents);
 
       const context = createContext();
       const result = await executor.execute(agents, context, { continueOnFailure: true });
 
       // System should remain stable
       expect(result).toBeDefined();
-      expect(result.completedAgents.length + result.failedAgents.length + result.skippedAgents.length).toBe(5);
+      expect(result.completedAgents.length + result.failedAgents.length + result.skippedAgents.length).toBe(10);
 
-      // At least some agents should succeed
-      expect(result.completedAgents.length).toBeGreaterThan(0);
+      // With 30% failure rate and 10 agents, expect at least 3 to succeed (probability of all failing is 0.3^10 = 0.0000059%)
+      expect(result.completedAgents.length).toBeGreaterThanOrEqual(3);
 
       console.log('30% Failure Rate Results:', {
         completed: result.completedAgents.length,
         failed: result.failedAgents.length,
-        skipped: result.skippedAgents.length
+        skipped: result.skippedAgents.length,
+        actualFailureRate: result.failedAgents.length / 10
       });
     });
 
@@ -269,20 +305,31 @@ describe('Chaos Testing - Reliability Under Random Failures', () => {
     });
 
     it('maintains error messages clarity under chaos', async () => {
-      const agents = chaosInjector.injectRandomFailure([
+      const baseAgents = [
         createAgent('agent1'),
         createAgent('agent2', { dependencies: ['agent1'] })
-      ], 0.3);
+      ];
+
+      const chaoticAgents = chaosInjector.injectRandomFailure(baseAgents, 0.3);
+      const agents = configureChaos(chaoticAgents);
 
       const context = createContext();
       const result = await executor.execute(agents, context, { continueOnFailure: true });
 
       // Check timeline for error details
       const failedEntries = result.timeline.filter(e => e.status === 'failed');
-      for (const entry of failedEntries) {
-        expect(entry.error).toBeDefined();
-        expect(entry.error).toContain('Chaos injected failure');
+
+      // Only check error messages if there are actual failures (chaos is random)
+      if (failedEntries.length > 0) {
+        for (const entry of failedEntries) {
+          expect(entry.error).toBeDefined();
+          expect(entry.error).toContain('Chaos injected failure');
+        }
       }
+
+      // At minimum, verify timeline exists and is well-formed
+      expect(result.timeline).toBeDefined();
+      expect(result.timeline.length).toBeGreaterThan(0);
     });
   });
 
@@ -509,9 +556,9 @@ describe('Chaos Testing - Reliability Under Random Failures', () => {
     });
 
     it('isolates failures between independent branches', async () => {
-      const chaosInjector = new ChaosInjector(0.0);
+      const localInjector = new ChaosInjector(0.0);
 
-      // Create base agents first (Issue #2 fix: use proper type-safe API)
+      // Create base agents first
       const baseAgents = [
         createAgent('branch-a-root'),
         createAgent('branch-a-child', { dependencies: ['branch-a-root'] }),
@@ -519,9 +566,14 @@ describe('Chaos Testing - Reliability Under Random Failures', () => {
         createAgent('branch-b-child', { dependencies: ['branch-b-root'] })
       ];
 
-      // Inject failures using proper API
-      const agents = chaosInjector.injectRandomFailure(baseAgents, 0.0);
-      agents[1]!.shouldFail = true; // Type-safe assignment to branch-a-child
+      // Inject failures with 0% rate (all should pass)
+      const chaoticAgents = localInjector.injectRandomFailure(baseAgents, 0.0);
+
+      // Manually set branch-a-child to fail
+      chaoticAgents[1]!.shouldFail = true;
+
+      // Configure chaos map
+      const agents = configureChaos(chaoticAgents);
 
       const context = createContext();
       const result = await executor.execute(agents, context, { continueOnFailure: true });
@@ -530,33 +582,40 @@ describe('Chaos Testing - Reliability Under Random Failures', () => {
       expect(result.completedAgents).toContain('branch-b-root');
       expect(result.completedAgents).toContain('branch-b-child');
 
-      // Verify branches are properly isolated
-      expect(result.completedAgents.length).toBeGreaterThanOrEqual(2);
+      // Branch A root should complete, but child should fail
+      expect(result.completedAgents).toContain('branch-a-root');
+      expect(result.failedAgents).toContain('branch-a-child');
+
+      // Verify branches are properly isolated (branch B unaffected by branch A failure)
+      expect(result.completedAgents.length).toBe(3); // branch-a-root, branch-b-root, branch-b-child
+      expect(result.failedAgents.length).toBe(1); // branch-a-child
     });
 
     it('provides clear error messages for chaos-induced failures', async () => {
-      const chaosInjector = new ChaosInjector(1.0); // 100% failure for testing
+      const localInjector = new ChaosInjector(1.0); // 100% failure for testing
 
-      const agents = chaosInjector.injectRandomFailure([
+      const baseAgents = [
         createAgent('error-message-test')
-      ], 1.0);
+      ];
+
+      const chaoticAgents = localInjector.injectRandomFailure(baseAgents, 1.0);
+      const agents = configureChaos(chaoticAgents);
 
       const context = createContext();
       const result = await executor.execute(agents, context, { continueOnFailure: true });
 
-      // Check if there are any failed entries in the timeline
+      // With 100% failure rate, the agent should fail
       const failedEntry = result.timeline.find(e => e.status === 'failed');
 
-      if (failedEntry) {
-        // If there's a failure, verify error message quality
-        expect(failedEntry.error).toBeDefined();
-        expect(failedEntry.error).toContain('Chaos injected failure');
-        expect(failedEntry.error).toContain('error-message-test');
-      } else {
-        // If no failures (unlikely with 100% rate), verify the result is well-formed
-        expect(result.timeline).toBeDefined();
-        expect(result.timeline.length).toBeGreaterThan(0);
-      }
+      expect(failedEntry).toBeDefined();
+      expect(failedEntry!.error).toBeDefined();
+      expect(failedEntry!.error).toContain('Chaos injected failure');
+      expect(failedEntry!.error).toContain('error-message-test');
+
+      // Verify result structure
+      expect(result.timeline).toBeDefined();
+      expect(result.timeline.length).toBeGreaterThan(0);
+      expect(result.failedAgents).toContain('error-message-test');
     });
 
     it('maintains data consistency under chaos', async () => {
