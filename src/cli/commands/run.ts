@@ -137,17 +137,17 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
       .option('parallel', {
         describe: 'Enable parallel execution of independent agent delegations (v5.6.0+)',
         type: 'boolean',
-        default: false
+        default: true
       })
       .option('show-dependency-graph', {
         describe: 'Show agent dependency graph before execution (requires --parallel)',
         type: 'boolean',
-        default: false
+        default: true
       })
       .option('show-timeline', {
         describe: 'Show execution timeline after completion (requires --parallel)',
         type: 'boolean',
-        default: false
+        default: true
       })
   },
 
@@ -726,7 +726,9 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
               signal: controller.signal,
               parallelEnabled: Boolean(argv.parallel),
               maxConcurrentDelegations: config.execution?.maxConcurrentAgents,
-              continueDelegationsOnFailure: true
+              continueDelegationsOnFailure: true,
+              showDependencyGraph: Boolean(argv.showDependencyGraph),
+              showTimeline: Boolean(argv.showTimeline)
             });
           } finally{
             clearTimeout(timeoutId);
@@ -742,7 +744,9 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
             showProgress: !argv.verbose,
             parallelEnabled: Boolean(argv.parallel),
             maxConcurrentDelegations: config.execution?.maxConcurrentAgents,
-            continueDelegationsOnFailure: true
+            continueDelegationsOnFailure: true,
+            showDependencyGraph: Boolean(argv.showDependencyGraph),
+            showTimeline: Boolean(argv.showTimeline)
           });
         }
 

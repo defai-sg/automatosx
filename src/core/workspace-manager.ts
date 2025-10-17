@@ -103,8 +103,10 @@ export class WorkspaceManager {
       return; // Already ensured, skip
     }
 
-    await fs.mkdir(this.prdDir, { recursive: true });
-    await fs.mkdir(this.tmpDir, { recursive: true });
+    // v5.6.0: Use 0o755 permissions for cross-platform compatibility
+    // Prevents "permission denied" errors in multi-user/provider scenarios
+    await fs.mkdir(this.prdDir, { recursive: true, mode: 0o755 });
+    await fs.mkdir(this.tmpDir, { recursive: true, mode: 0o755 });
 
     this.directoriesEnsured = true;
     logger.debug('Workspace directories ensured', {
@@ -199,8 +201,8 @@ export class WorkspaceManager {
 
     const fullPath = this.validatePath(this.prdDir, fileName);
 
-    // Ensure parent directory exists
-    await fs.mkdir(path.dirname(fullPath), { recursive: true });
+    // Ensure parent directory exists (v5.6.0: with 0o755 permissions)
+    await fs.mkdir(path.dirname(fullPath), { recursive: true, mode: 0o755 });
 
     // Write file
     await fs.writeFile(fullPath, content, 'utf-8');
@@ -235,8 +237,8 @@ export class WorkspaceManager {
 
     const fullPath = this.validatePath(this.tmpDir, fileName);
 
-    // Ensure parent directory exists
-    await fs.mkdir(path.dirname(fullPath), { recursive: true });
+    // Ensure parent directory exists (v5.6.0: with 0o755 permissions)
+    await fs.mkdir(path.dirname(fullPath), { recursive: true, mode: 0o755 });
 
     // Write file
     await fs.writeFile(fullPath, content, 'utf-8');

@@ -431,8 +431,8 @@ describe('ParallelAgentExecutor', () => {
       const visualization = executor.visualizeTimeline(result.timeline);
       const stripped = stripAnsi(visualization);
 
-      // Duration should be in milliseconds
-      expect(stripped).toMatch(/\d+ms/);
+      // Duration should be in seconds (changed from ms to s in v5.6.0)
+      expect(stripped).toMatch(/\d+\.\d+s/);
     });
   });
 });

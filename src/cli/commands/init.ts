@@ -234,8 +234,13 @@ async function createDirectoryStructure(baseDir: string): Promise<void> {
     join(baseDir, 'logs')
   ];
 
+  // v5.6.0: Use 0o755 permissions (rwxr-xr-x) for cross-platform compatibility
+  // - Owner: read, write, execute
+  // - Group/Others: read, execute
+  // - Safe on Unix/Linux/macOS, ignored on Windows (uses ACL instead)
+  // - Prevents "permission denied" errors in multi-user/provider scenarios
   for (const dir of dirs) {
-    await mkdir(dir, { recursive: true });
+    await mkdir(dir, { recursive: true, mode: 0o755 });
   }
 }
 

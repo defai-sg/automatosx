@@ -61,8 +61,9 @@ function updateReadme(version, monthYear) {
   let content = readFileSync(readmePath, 'utf8');
 
   // Update status line (e.g., **Status**: ✅ Production Ready · v5.2.0 · October 2025)
-  const statusPattern = /\*\*Status\*\*: ✅ Production Ready · v\d+\.\d+\.\d+ · \w+ \d{4}/;
-  const newStatus = `**Status**: ✅ Production Ready · v${version} · ${monthYear}`;
+  // Also matches beta versions like v5.5.0-beta.0
+  const statusPattern = /\*\*Status\*\*: ✅ Production Ready · \*\*v[\d.]+(?:-[a-z]+\.\d+)?\*\* · \w+ \d{4}/;
+  const newStatus = `**Status**: ✅ Production Ready · **v${version}** · ${monthYear}`;
 
   if (statusPattern.test(content)) {
     content = content.replace(statusPattern, newStatus);

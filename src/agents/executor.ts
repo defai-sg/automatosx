@@ -45,6 +45,8 @@ export interface ExecutionOptions {
   parallelEnabled?: boolean;
   maxConcurrentDelegations?: number;
   continueDelegationsOnFailure?: boolean;
+  showDependencyGraph?: boolean;
+  showTimeline?: boolean;
 }
 
 export interface ExecutionResult {
@@ -420,7 +422,7 @@ export class AgentExecutor {
     options: ExecutionOptions
   ): Promise<DelegationResult[]> {
     // Check if parallel execution is enabled and we have multiple delegations
-    const { parallelEnabled = false } = options;
+    const { parallelEnabled = true } = options;
 
     if (parallelEnabled && delegations.length > 1) {
       return this.executeDelegationsParallel(delegations, context, options);
@@ -514,7 +516,7 @@ export class AgentExecutor {
     context: ExecutionContext,
     options: ExecutionOptions
   ): Promise<DelegationResult[]> {
-    const { verbose = false, maxConcurrentDelegations, continueDelegationsOnFailure = true } = options;
+    const { verbose = false, maxConcurrentDelegations, continueDelegationsOnFailure = true, showDependencyGraph = true, showTimeline = true } = options;
 
     // Validate required dependencies
     if (!this.contextManager || !this.profileLoader || !this.workspaceManager) {
@@ -565,6 +567,11 @@ export class AgentExecutor {
       // Calculate execution levels
       graphBuilder.calculateLevels(graph);
 
+      // Show dependency graph if requested
+      if (showDependencyGraph) {
+        console.log(graphBuilder.visualizeDependencyGraph(graph));
+      }
+
       // 3. Create execution plan
       const planner = new ExecutionPlanner();
       const plan = planner.createExecutionPlan(graph, {
@@ -594,6 +601,11 @@ export class AgentExecutor {
         console.log(chalk.gray(`   Failed: ${result.failedAgents.length}`));
         console.log(chalk.gray(`   Skipped: ${result.skippedAgents.length}`));
         console.log(chalk.gray(`   Duration: ${result.totalDuration}ms`));
+      }
+
+      // Show timeline if requested
+      if (showTimeline) {
+        console.log(parallelExecutor.visualizeTimeline(result.timeline));
       }
 
       // 5. Convert ParallelExecutionResult to DelegationResult[]

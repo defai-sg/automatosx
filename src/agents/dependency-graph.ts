@@ -215,10 +215,23 @@ export class DependencyGraphBuilder {
           ? chalk.green(' [parallel]')
           : chalk.yellow(' [sequential]');
 
-        output += `  ${chalk.cyan('○')} ${agentName}${modeLabel}\n`;
+        // Display as "Name (role)" e.g., "Bob (backend)"
+        const displayText = node.agent.displayName
+          ? `${node.agent.displayName} (${agentName})`
+          : agentName;
+
+        output += `  ${chalk.cyan('○')} ${displayText}${modeLabel}\n`;
 
         if (node.dependencies.length > 0) {
-          output += chalk.gray(`     ↳ depends on: ${node.dependencies.join(', ')}\n`);
+          // Format dependencies with display names too
+          const formattedDeps = node.dependencies.map(dep => {
+            const depNode = graph.nodes.get(dep);
+            if (depNode?.agent.displayName) {
+              return `${depNode.agent.displayName} (${dep})`;
+            }
+            return dep;
+          });
+          output += chalk.gray(`     ↳ depends on: ${formattedDeps.join(', ')}\n`);
         }
       }
 

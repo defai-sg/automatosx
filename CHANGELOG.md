@@ -2,6 +2,62 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.6.0](https://github.com/defai-digital/automatosx/compare/v5.5.2...v5.6.0) (2025-10-17)
+
+
+### Features
+
+* **parallel-execution:** release parallel agent execution with comprehensive testing ([6a7eacb](https://github.com/defai-digital/automatosx/commit/6a7eacb))
+  - Parallel execution of independent agents (40-60% faster workflows)
+  - DependencyGraphBuilder with cycle detection
+  - ExecutionPlanner with batch grouping and resource management
+  - ParallelAgentExecutor with error handling and cancellation
+  - CLI flags: --parallel, --show-dependency-graph, --show-timeline
+  - MetricsCollector for Prometheus-compatible metrics
+  - MemoryProfiler and CPUProfiler for performance analysis
+  - 161/163 parallel execution tests passing (99.0%)
+  - Phase 1-7 complete: Foundation, Engine, Integration, Observability, Testing, Beta, GA
+
+* **claude-code:** fix claude-code provider recursion in Claude Code environment
+  - Prevent infinite recursion when running in Claude Code
+  - Add environment detection and fallback logic
+
+
+### Bug Fixes
+
+* **tests:** resolve 2 flaky timing tests in performance and cpu-profiler modules
+  - tests/unit/performance.test.ts: Report generation sorting
+  - tests/unit/utils/cpu-profiler.test.ts: CPU time measurement tolerance
+
+* **permissions:** fix cross-platform directory permissions (700 → 755)
+  - Fixed init.ts to create directories with 0o755 permissions
+  - Fixed workspace-manager.ts to use 0o755 for automatosx/PRD and automatosx/tmp
+  - Resolves "permission denied" errors in multi-user/provider scenarios
+  - Cross-platform compatible (Unix/Linux/macOS, ignored on Windows)
+
+* **display:** improve agent name display in parallel execution visualizations
+  - Timeline now shows "Name (role)" format (e.g., "Bob (backend)")
+  - Dependency graph shows friendly names alongside roles
+  - Time units changed from milliseconds to seconds (e.g., "24.22s")
+
+
+### Enhancements
+
+* **defaults:** enable parallel execution and visualizations by default
+  - --parallel: default changed from false to true
+  - --show-dependency-graph: default changed from false to true
+  - --show-timeline: default changed from false to true
+  - Users get better performance and visibility out of the box
+
+
+### Documentation
+
+* Update CLAUDE.md with v5.6.0 status and parallel execution details
+* Add known issues section for flaky timing tests
+* Update version references across documentation
+* Add permission fix analysis and troubleshooting guides
+
+
 ## [5.5.2](https://github.com/defai-digital/automatosx/compare/v5.4.2...v5.5.2) (2025-10-16)
 
 

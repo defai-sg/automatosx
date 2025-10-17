@@ -289,7 +289,7 @@ ax list agents
 
 **Expected Output**:
 ```
-🤖 AutomatosX v5.1.0
+🤖 AutomatosX v5.6.0
 
 Agent: backend (Bob)
 Task: Explain TypeScript in one sentence

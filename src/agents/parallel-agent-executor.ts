@@ -16,6 +16,7 @@ import { AgentExecutor } from './executor.js';
 
 export interface TimelineEntry {
   agentName: string;
+  displayName?: string;  // Human-friendly name (e.g., "Bob", "Eric")
   startTime: number;
   endTime: number;
   duration: number;
@@ -196,6 +197,7 @@ export class ParallelAgentExecutor {
         node.status = 'skipped';
         timeline.push({
           agentName,
+          displayName: node.agent.displayName,
           startTime: Date.now(),
           endTime: Date.now(),
           duration: 0,
@@ -254,6 +256,7 @@ export class ParallelAgentExecutor {
         node.status = 'skipped';
         timeline.push({
           agentName,
+          displayName: node.agent.displayName,
           startTime: Date.now(),
           endTime: Date.now(),
           duration: 0,
@@ -348,6 +351,7 @@ export class ParallelAgentExecutor {
 
       timeline.push({
         agentName,
+        displayName: node.agent.displayName,
         startTime,
         endTime,
         duration: endTime - startTime,
@@ -367,6 +371,7 @@ export class ParallelAgentExecutor {
 
       timeline.push({
         agentName,
+        displayName: node.agent.displayName,
         startTime,
         endTime,
         duration: endTime - startTime,
@@ -434,6 +439,7 @@ export class ParallelAgentExecutor {
         node.status = 'skipped';
         timeline.push({
           agentName: node.agentName,
+          displayName: node.agent.displayName,
           startTime: now,
           endTime: now,
           duration: 0,
@@ -461,6 +467,7 @@ export class ParallelAgentExecutor {
         node.status = 'skipped';
         timeline.push({
           agentName,
+          displayName: node.agent.displayName,
           startTime: now,
           endTime: now,
           duration: 0,
@@ -482,6 +489,7 @@ export class ParallelAgentExecutor {
         node.status = 'skipped';
         timeline.push({
           agentName: node.agentName,
+          displayName: node.agent.displayName,
           startTime: now,
           endTime: now,
           duration: 0,
@@ -588,8 +596,13 @@ export class ParallelAgentExecutor {
           statusIcon = '⊗';
         }
 
-        const name = entry.agentName.padEnd(20);
-        const duration = `${entry.duration}ms`;
+        // Display as "Name (role)" e.g., "Bob (backend)"
+        const displayText = entry.displayName
+          ? `${entry.displayName} (${entry.agentName})`
+          : entry.agentName;
+        const name = displayText.padEnd(30);
+        const durationInSeconds = (entry.duration / 1000).toFixed(2);
+        const duration = `${durationInSeconds}s`;
 
         output += `  ${statusIcon} ${name} ${statusColor(bar)} ${duration}\n`;
 
@@ -601,7 +614,8 @@ export class ParallelAgentExecutor {
       output += '\n';
     }
 
-    output += chalk.gray(`Total Duration: ${totalDuration}ms\n\n`);
+    const totalDurationInSeconds = (totalDuration / 1000).toFixed(2);
+    output += chalk.gray(`Total Duration: ${totalDurationInSeconds}s\n\n`);
 
     return output;
   }
