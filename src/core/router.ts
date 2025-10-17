@@ -16,12 +16,14 @@ import type {
 } from '../types/provider.js';
 import { logger } from '../utils/logger.js';
 import { ProviderError, ErrorCode } from '../utils/errors.js';
+import type { ResponseCache } from './response-cache.js';
 
 export interface RouterConfig {
   providers: Provider[];
   fallbackEnabled: boolean;
   healthCheckInterval?: number;
   providerCooldownMs?: number; // Cooldown period for failed providers (default: 30000ms)
+  cache?: ResponseCache; // Optional response cache
 }
 
 export class Router {
@@ -30,6 +32,7 @@ export class Router {
   private healthCheckInterval?: NodeJS.Timeout;
   private penalizedProviders: Map<string, number>; // provider name -> penalty expiry timestamp
   private providerCooldownMs: number;
+  private cache?: ResponseCache;
 
   constructor(config: RouterConfig) {
     // Sort providers by priority (lower number = higher priority)
@@ -39,6 +42,7 @@ export class Router {
     this.fallbackEnabled = config.fallbackEnabled;
     this.penalizedProviders = new Map();
     this.providerCooldownMs = config.providerCooldownMs ?? 30000; // Default: 30 seconds
+    this.cache = config.cache;
 
     // Start health checks if interval is provided
     if (config.healthCheckInterval) {
@@ -60,6 +64,38 @@ export class Router {
 
     for (const provider of availableProviders) {
       try {
+        // Check cache first (if enabled and available)
+        if (this.cache?.isEnabled) {
+          const modelParams = {
+            temperature: request.temperature,
+            maxTokens: request.maxTokens
+          };
+
+          const cachedContent = this.cache.get(
+            provider.name,
+            request.prompt,
+            modelParams
+          );
+
+          if (cachedContent) {
+            logger.info(`Cache hit for provider: ${provider.name}`);
+
+            // Return cached response with minimal latency
+            return {
+              content: cachedContent,
+              model: request.model || 'cached',
+              latencyMs: 0,
+              tokensUsed: {
+                prompt: 0,
+                completion: 0,
+                total: 0
+              },
+              finishReason: 'stop',
+              cached: true
+            };
+          }
+        }
+
         logger.info(`Attempting execution with provider: ${provider.name}`);
 
         const response = await provider.execute(request);
@@ -68,6 +104,21 @@ export class Router {
           latency: response.latencyMs,
           tokens: response.tokensUsed.total
         });
+
+        // Cache successful response (if cache is enabled)
+        if (this.cache?.isEnabled) {
+          const modelParams = {
+            temperature: request.temperature,
+            maxTokens: request.maxTokens
+          };
+
+          this.cache.set(
+            provider.name,
+            request.prompt,
+            response.content,
+            modelParams
+          );
+        }
 
         // Remove provider from penalty list on success
         this.penalizedProviders.delete(provider.name);

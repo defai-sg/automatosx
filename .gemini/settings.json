@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "automatosx": {
+      "command": "ax",
+      "args": [
+        "mcp"
+      ]
+    }
+  }
+}

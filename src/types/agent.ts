@@ -78,6 +78,8 @@ export interface AgentProfile {
   // Behavior
   systemPrompt: string;
   abilities: string[];  // List of ability file names (agent-specific, added to team's sharedAbilities)
+  dependencies?: string[];  // Agent-level dependencies for parallel execution planning
+  parallel?: boolean;       // Whether this agent may run in parallel
 
   // Enhanced v4.1+ features
   stages?: Stage[];              // Workflow stages

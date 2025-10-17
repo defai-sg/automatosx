@@ -2,6 +2,59 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.5.2](https://github.com/defai-digital/automatosx/compare/v5.4.2...v5.5.2) (2025-10-16)
+
+
+### Features
+
+* **release:** enhance release workflow with manual trigger and improved validation ([a52c54f](https://github.com/defai-digital/automatosx/commit/a52c54f))
+  - Add manual workflow_dispatch trigger for flexible deployment
+  - Add version consistency validation between package.json and git tag
+  - Support for alpha pre-release tag in addition to beta/rc
+  - Add package installability verification before publishing
+  - Enhanced release notes generation from CHANGELOG.md
+  - Add npm propagation verification with 30-second wait
+  - Improve error diagnostics and reporting
+  - Add 30-minute job timeout protection
+
+* **gemini-cli:** add Gemini CLI integration with bidirectional command translation ([7893494](https://github.com/defai-digital/automatosx/commit/7893494))
+  - Implement GeminiCLIBridge for MCP server discovery
+  - Add CommandTranslator for TOML ↔ Markdown conversion
+  - Support importing Gemini commands as AutomatosX abilities
+  - Support exporting AutomatosX abilities as Gemini TOML commands
+  - Add `ax gemini` command suite (setup, sync-mcp, import-command, export-ability, status)
+  - Cross-platform file system utilities
+
+
+### Bug Fixes
+
+* **command-manager:** correct function calls in command-manager.ts ([adf3e04](https://github.com/defai-digital/automatosx/commit/adf3e04))
+
+
+### Documentation
+
+* Add comprehensive deployment guides
+  - Complete deployment guide with setup instructions
+  - Quick deployment setup (5-minute guide)
+  - Deployment command cheatsheet
+
+
+## [5.4.3-beta.0](https://github.com/defai-digital/automatosx/compare/v5.4.2...v5.4.3-beta.0) (2025-10-15)
+
+
+### Features (In Development)
+
+* **gemini-cli:** Research and planning for Gemini CLI integration
+* **mcp:** Explore Gemini MCP support and custom commands integration
+
+
+### Development
+
+* Planning phase for Gemini CLI integration with AutomatosX
+* Investigating custom command support for Gemini
+* Researching MCP integration strategies
+
+
 ## [5.4.2](https://github.com/defai-digital/automatosx/compare/v5.4.1...v5.4.2) (2025-10-15)
 
 

@@ -49,6 +49,10 @@ interface RunOptions {
   autoContinue?: boolean;
   streaming?: boolean;
   hybrid?: boolean;
+  // v5.6.0: Parallel execution
+  parallel?: boolean;
+  showDependencyGraph?: boolean;
+  showTimeline?: boolean;
 }
 
 export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
@@ -129,6 +133,21 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
       .option('hybrid', {
         describe: 'Enable both interactive and streaming (shortcut for --interactive --streaming)',
         type: 'boolean'
+      })
+      .option('parallel', {
+        describe: 'Enable parallel execution of independent agent delegations (v5.6.0+)',
+        type: 'boolean',
+        default: false
+      })
+      .option('show-dependency-graph', {
+        describe: 'Show agent dependency graph before execution (requires --parallel)',
+        type: 'boolean',
+        default: false
+      })
+      .option('show-timeline', {
+        describe: 'Show execution timeline after completion (requires --parallel)',
+        type: 'boolean',
+        default: false
       })
   },
 
@@ -704,9 +723,12 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
             result = await executor.execute(context, {
               verbose: argv.verbose,
               showProgress: !argv.verbose,
-              signal: controller.signal
+              signal: controller.signal,
+              parallelEnabled: Boolean(argv.parallel),
+              maxConcurrentDelegations: config.execution?.maxConcurrentAgents,
+              continueDelegationsOnFailure: true
             });
-          } finally {
+          } finally{
             clearTimeout(timeoutId);
           }
 
@@ -717,7 +739,10 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         } else {
           result = await executor.execute(context, {
             verbose: argv.verbose,
-            showProgress: !argv.verbose
+            showProgress: !argv.verbose,
+            parallelEnabled: Boolean(argv.parallel),
+            maxConcurrentDelegations: config.execution?.maxConcurrentAgents,
+            continueDelegationsOnFailure: true
           });
         }
 

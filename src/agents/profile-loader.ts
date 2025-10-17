@@ -12,6 +12,7 @@ import { logger } from '../utils/logger.js';
 import { TTLCache } from '../core/cache.js';
 import type { TeamManager } from '../core/team-manager.js';
 import type { TeamConfig } from '../types/team.js';
+import { isValidName } from '../core/validation-limits.js';
 
 // Get the directory of this file for locating built-in agents
 const __filename = fileURLToPath(import.meta.url);
@@ -477,6 +478,28 @@ export class ProfileLoader {
       throw new AgentValidationError('abilities must be an array');
     }
 
+    if (profile.dependencies !== undefined) {
+      if (!Array.isArray(profile.dependencies)) {
+        throw new AgentValidationError('dependencies must be an array');
+      }
+
+      profile.dependencies.forEach((dep, i) => {
+        if (typeof dep !== 'string' || dep.trim() === '') {
+          throw new AgentValidationError(`dependencies[${i}] must be a non-empty string`);
+        }
+        if (!isValidName(dep)) {
+          throw new AgentValidationError(`dependencies[${i}] must match agent naming rules`);
+        }
+        if (dep === profile.name) {
+          throw new AgentValidationError('dependencies cannot include the agent itself');
+        }
+      });
+    }
+
+    if (profile.parallel !== undefined && typeof profile.parallel !== 'boolean') {
+      throw new AgentValidationError('parallel must be a boolean');
+    }
+
     if (profile.temperature !== undefined) {
       if (typeof profile.temperature !== 'number' || profile.temperature < 0 || profile.temperature > 1) {
         throw new AgentValidationError('temperature must be a number between 0 and 1');
@@ -704,6 +727,8 @@ export class ProfileLoader {
       team: data.team,
       systemPrompt: data.systemPrompt,
       abilities: abilities,
+      dependencies: data.dependencies,
+      parallel: data.parallel,
       // Enhanced v4.1+ features
       stages: data.stages,
       personality: data.personality,

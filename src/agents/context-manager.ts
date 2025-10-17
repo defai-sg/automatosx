@@ -377,6 +377,7 @@ export class ContextManager {
    */
   /**
    * Try to get provider by name, with alias support (v5.0.7+)
+   * v5.6.0: Skip claude-code in Claude Code environment to prevent recursion
    */
   private async tryGetProvider(providerName: string): Promise<Provider | undefined> {
     const availableProviders = await this.config.router.getAvailableProviders();
@@ -384,12 +385,30 @@ export class ContextManager {
     // Try exact match first
     let provider = availableProviders.find(p => p.name === providerName);
     if (provider) {
+      // v5.6.0: Skip claude-code if running in Claude Code environment
+      if (provider.name === 'claude-code' && this.isRunningInClaudeCode()) {
+        logger.warn('Skipping claude-code provider in Claude Code environment', {
+          requested: providerName,
+          reason: 'Prevents recursion - Claude Code cannot call itself'
+        });
+        return undefined;
+      }
       return provider;
     }
 
     // Try alias mapping (e.g., 'claude' → 'claude-code')
     const aliasedName = PROVIDER_ALIASES[providerName];
     if (aliasedName) {
+      // v5.6.0: Skip claude-code if running in Claude Code environment
+      if (aliasedName === 'claude-code' && this.isRunningInClaudeCode()) {
+        logger.warn('Skipping claude-code provider alias in Claude Code environment', {
+          requested: providerName,
+          aliased: aliasedName,
+          reason: 'Prevents recursion - Claude Code cannot call itself'
+        });
+        return undefined;
+      }
+
       provider = availableProviders.find(p => p.name === aliasedName);
       if (provider) {
         logger.debug('Resolved provider via alias', {
@@ -401,6 +420,17 @@ export class ContextManager {
     }
 
     return undefined;
+  }
+
+  /**
+   * Check if running in Claude Code environment (v5.6.0+)
+   */
+  private isRunningInClaudeCode(): boolean {
+    return Boolean(
+      process.env.CLAUDECODE ||
+      process.env.CLAUDE_CODE_SSE_PORT ||
+      process.env.CLAUDE_CODE_ENTRYPOINT
+    );
   }
 
   /**

@@ -6,6 +6,7 @@
 
 import type { AutomatosXConfig, ProviderConfig, MemoryConfig, WorkspaceConfig, LoggingConfig } from '../types/config.js';
 import type { LogLevel } from '../types/logger.js';
+import { VALIDATION_LIMITS } from '../core/validation-limits.js';
 
 export interface ValidationError {
   path: string;
@@ -59,6 +60,10 @@ export function validateConfig(config: any): ValidationResult {
     });
   } else {
     errors.push(...validateLogging(config.logging));
+  }
+
+  if (config.execution) {
+    errors.push(...validateExecution(config.execution));
   }
 
   return {
@@ -379,6 +384,52 @@ function validateLogging(logging: any): ValidationError[] {
       message: 'console must be a boolean',
       value: logging.console
     });
+  }
+
+  return errors;
+}
+
+function validateExecution(execution: any): ValidationError[] {
+  const errors: ValidationError[] = [];
+  const basePath = 'execution';
+
+  if (typeof execution !== 'object' || execution === null) {
+    errors.push({
+      path: basePath,
+      message: 'Execution must be an object',
+      value: execution
+    });
+    return errors;
+  }
+
+  if (execution.maxConcurrentAgents !== undefined) {
+    const value = execution.maxConcurrentAgents;
+
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      errors.push({
+        path: `${basePath}.maxConcurrentAgents`,
+        message: 'maxConcurrentAgents must be a number',
+        value
+      });
+    } else if (!Number.isInteger(value)) {
+      errors.push({
+        path: `${basePath}.maxConcurrentAgents`,
+        message: 'maxConcurrentAgents must be an integer',
+        value
+      });
+    } else if (value < 1) {
+      errors.push({
+        path: `${basePath}.maxConcurrentAgents`,
+        message: 'maxConcurrentAgents must be >= 1',
+        value
+      });
+    } else if (value > VALIDATION_LIMITS.MAX_CONCURRENT_AGENTS) {
+      errors.push({
+        path: `${basePath}.maxConcurrentAgents`,
+        message: `maxConcurrentAgents must be <= ${VALIDATION_LIMITS.MAX_CONCURRENT_AGENTS}`,
+        value
+      });
+    }
   }
 
   return errors;

@@ -87,6 +87,7 @@ export interface ExecutionConfig {
   defaultTimeout: number;  // default execution timeout (ms)
   retry: RetryConfig;
   provider: ExecutionProviderConfig;
+  maxConcurrentAgents?: number;  // max agents allowed to run in parallel
   stages?: StageExecutionConfigOptions;  // v5.3.0: stage-based execution
   timeouts?: TimeoutConfig;  // v5.4.0: layered timeout configuration (optional)
 }
@@ -201,6 +202,18 @@ export interface TeamCacheConfig extends CacheConfig {}
 
 export interface ProviderCacheConfig extends CacheConfig {}
 
+/**
+ * Response Cache Configuration (v5.5.3+)
+ * SQLite-backed response caching for provider calls
+ */
+export interface ResponseCacheConfig {
+  enabled: boolean;
+  ttl: number;                  // Time-to-live in seconds (default: 86400 = 24 hours)
+  maxSize: number;              // Max L2 (SQLite) entries (default: 1000)
+  maxMemorySize: number;        // Max L1 (RAM) entries (default: 100)
+  dbPath: string;               // Path to cache database (default: .automatosx/cache/responses.db)
+}
+
 export interface RateLimitConfig {
   enabled: boolean;
   requestsPerMinute: number;
@@ -211,6 +224,7 @@ export interface PerformanceConfig {
   profileCache: ProfileCacheConfig;
   teamCache: TeamCacheConfig;
   providerCache: ProviderCacheConfig;
+  responseCache?: ResponseCacheConfig;  // v5.5.3: Optional provider response cache
   rateLimit: RateLimitConfig;
 }
 
@@ -366,6 +380,7 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
 
   execution: {
     defaultTimeout: 1500000,  // 25 minutes (v5.1.0: increased from 15 min based on user feedback)
+    maxConcurrentAgents: 4,
     retry: {
       maxAttempts: 3,
       initialDelay: 1000,    // 1 second
@@ -487,6 +502,13 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
       maxEntries: 100,
       ttl: 600000,         // 10 minutes (v5.0: reduced from 1 hour)
       cleanupInterval: 120000  // 2 minutes (v5.0: standardized)
+    },
+    responseCache: {
+      enabled: false,      // v5.5.3: Disabled by default (opt-in feature)
+      ttl: 86400,          // 24 hours
+      maxSize: 1000,       // Max 1000 entries in SQLite
+      maxMemorySize: 100,  // Max 100 entries in RAM
+      dbPath: '.automatosx/cache/responses.db'
     },
     rateLimit: {
       enabled: false,      // Keep disabled by default (opt-in)

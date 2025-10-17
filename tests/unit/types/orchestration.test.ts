@@ -77,7 +77,9 @@ describe('Orchestration Types', () => {
         delegationId: 'del-123',
         fromAgent: 'backend',
         toAgent: 'frontend',
+        task: 'implement feature',
         status: 'success',
+        success: true,
         response: {
           content: 'Task completed',
           tokensUsed: { prompt: 100, completion: 200, total: 300 },
@@ -263,7 +265,9 @@ describe('Orchestration Types', () => {
         delegationId: 'del-123',
         fromAgent: 'backend',
         toAgent: 'frontend',
+        task: 'test task',
         status: 'success',
+        success: true,
         response: {
           content: 'Done',
           tokensUsed: { prompt: 10, completion: 20, total: 30 },

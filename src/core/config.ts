@@ -356,6 +356,14 @@ export function validateConfig(config: AutomatosXConfig): string[] {
         errors.push(`Execution: provider.maxWaitMs must be <= ${VALIDATION_LIMITS.MAX_TIMEOUT}ms`);
       }
     }
+
+    if (config.execution.maxConcurrentAgents !== undefined) {
+      if (!isPositiveInteger(config.execution.maxConcurrentAgents)) {
+        errors.push('Execution: maxConcurrentAgents must be a positive integer');
+      } else if (config.execution.maxConcurrentAgents > VALIDATION_LIMITS.MAX_CONCURRENT_AGENTS) {
+        errors.push(`Execution: maxConcurrentAgents must be <= ${VALIDATION_LIMITS.MAX_CONCURRENT_AGENTS}`);
+      }
+    }
   }
 
   // Validate orchestration
