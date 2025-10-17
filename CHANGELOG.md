@@ -2,6 +2,75 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.6.4](https://github.com/defai-digital/automatosx/compare/v5.6.3...v5.6.4) (2025-10-18)
+
+
+### Bug Fixes
+
+* **release:** fix v5.6.3 missing path-utils module causing runtime errors ([3d0d682](https://github.com/defai-digital/automatosx/commit/3d0d682))
+  - Add missing `src/utils/path-utils.ts` (311 lines)
+  - Add comprehensive path utility functions for cross-platform support
+  - Fix module not found errors when importing path utilities
+  - Add 6 new files (2,556 lines total)
+  - Add 1,314 lines of path-related tests
+
+
+### Features
+
+* **core:** add centralized path utilities for cross-platform support ([3d0d682](https://github.com/defai-digital/automatosx/commit/3d0d682))
+  - Path normalization (forward slashes for display)
+  - Platform-native path conversion (OS-specific separators)
+  - Cross-platform path comparison (case-insensitive on Windows)
+  - Windows short path expansion (8.3 format → full names)
+  - Path containment and relative path utilities
+  - 15 utility functions with comprehensive JSDoc documentation
+
+
+### Security
+
+* **path-validation:** enhance path security across all core modules
+  - Centralized path validation in PathResolver
+  - Block directory traversal attacks (`..`, absolute paths)
+  - Prevent symbolic link exploitation
+  - Workspace isolation (PRD/tmp only)
+  - Updated modules: ConfigManager, MemoryManager, SessionManager, WorkspaceManager
+
+
+### Testing
+
+* **path-utils:** add comprehensive test suite for path utilities
+  - `tests/unit/path-utils.test.ts` - 813 lines, 40+ unit tests
+  - `tests/unit/path-validation-security.test.ts` - 463 lines, security tests
+  - `tests/helpers/path-assertions.ts` - Custom path assertions
+  - `tests/helpers/temp-dir.ts` - Temporary directory management
+  - Total: 2,296 tests passing ✅
+
+
+### Documentation
+
+* **CLAUDE.md:** update version to v5.6.4 and fix markdownlint warnings
+  - Fix duplicate heading warnings (Gemini CLI sections)
+  - Fix blank lines around lists (MD032)
+  - Add path-utils documentation
+  - Update security section with path validation details
+  - Add tmp directory usage guidelines
+
+
+## [5.6.3](https://github.com/defai-digital/automatosx/compare/v5.6.2...v5.6.3) (2025-10-17)
+
+**⚠️ CRITICAL ISSUE**: This version was published with missing files and should not be used. Please upgrade to v5.6.4.
+
+### Issues
+
+* Missing `src/utils/path-utils.ts` causing runtime errors
+* Core modules failed to import path utilities
+* Package was incomplete due to uncommitted files during release
+
+### Resolution
+
+Upgrade to v5.6.4 which includes all necessary files.
+
+
 ## [5.6.0](https://github.com/defai-digital/automatosx/compare/v5.5.2...v5.6.0) (2025-10-17)
 
 
