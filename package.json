@@ -4,7 +4,6 @@
   "description": "AI Agent Orchestration Platform",
   "type": "module",
   "publishConfig": {
-    "provenance": true,
     "access": "public"
   },
   "bin": {
