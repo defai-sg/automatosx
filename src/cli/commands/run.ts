@@ -267,41 +267,68 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
       });
 
       // 4. Initialize providers from config
+      // Phase 2 (v5.6.2): Pass enhanced detection parameters to providers
       const providers = [];
 
       if (config.providers['claude-code']?.enabled) {
+        const claudeConfig = config.providers['claude-code'];
         providers.push(new ClaudeProvider({
           name: 'claude-code',
           enabled: true,
-          priority: config.providers['claude-code'].priority,
-          timeout: config.providers['claude-code'].timeout,
-          command: config.providers['claude-code'].command
+          priority: claudeConfig.priority,
+          timeout: claudeConfig.timeout,
+          command: claudeConfig.command,
+          // Phase 2: Enhanced CLI detection parameters
+          customPath: claudeConfig.customPath,
+          versionArg: claudeConfig.versionArg,
+          minVersion: claudeConfig.minVersion
         }));
       }
 
       if (config.providers['gemini-cli']?.enabled) {
+        const geminiConfig = config.providers['gemini-cli'];
         providers.push(new GeminiProvider({
           name: 'gemini-cli',
           enabled: true,
-          priority: config.providers['gemini-cli'].priority,
-          timeout: config.providers['gemini-cli'].timeout,
-          command: config.providers['gemini-cli'].command
+          priority: geminiConfig.priority,
+          timeout: geminiConfig.timeout,
+          command: geminiConfig.command,
+          // Phase 2: Enhanced CLI detection parameters
+          customPath: geminiConfig.customPath,
+          versionArg: geminiConfig.versionArg,
+          minVersion: geminiConfig.minVersion
         }));
       }
 
       if (config.providers['openai']?.enabled) {
+        const openaiConfig = config.providers['openai'];
         providers.push(new OpenAIProvider({
           name: 'openai',
           enabled: true,
-          priority: config.providers['openai'].priority,
-          timeout: config.providers['openai'].timeout,
-          command: config.providers['openai'].command
+          priority: openaiConfig.priority,
+          timeout: openaiConfig.timeout,
+          command: openaiConfig.command,
+          // Phase 2: Enhanced CLI detection parameters
+          customPath: openaiConfig.customPath,
+          versionArg: openaiConfig.versionArg,
+          minVersion: openaiConfig.minVersion
         }));
       }
 
+      // Phase 2 (v5.6.2): Enable background health checks if configured
+      // Use the minimum health check interval from all enabled providers
+      const healthCheckIntervals = providers
+        .map(p => config.providers[p.name]?.healthCheck?.interval)
+        .filter((interval): interval is number => interval !== undefined && interval > 0);
+
+      const minHealthCheckInterval = healthCheckIntervals.length > 0
+        ? Math.min(...healthCheckIntervals)
+        : undefined;
+
       router = new Router({
         providers,
-        fallbackEnabled: true
+        fallbackEnabled: true,
+        healthCheckInterval: minHealthCheckInterval
       });
 
       // 5. Initialize orchestration managers

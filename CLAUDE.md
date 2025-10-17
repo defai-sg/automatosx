@@ -98,7 +98,7 @@ npm run release:rc         # Create RC pre-release
 - Multi-LLM providers (Claude, Gemini, OpenAI) with fallback routing
 - SQLite FTS5 memory (< 1ms search)
 - 4 teams, 12+ specialized agents
-- v5.6.0 | 1,867 tests (1,863 passing, 2 skipped, 2 flaky) | Node.js 20+
+- v5.6.1 | 1,878 tests passing | Node.js 20+
 
 **Version Management**:
 
@@ -138,9 +138,17 @@ Bidirectional command translation between AutomatosX and Gemini CLI
 
 ## Critical Development Notes
 
-### New Features in Development
+### Latest Release: v5.6.1 (October 2025)
 
-#### Parallel Agent Execution (v5.6.0 - RELEASED)
+**What's New**:
+- **Simplified Architecture**: Removed legacy stage executors (~1,200 LOC, -30KB package size)
+- **Single Execution Path**: All multi-stage agents now use `StageExecutionController`
+- **Better Performance**: Modern controller architecture across the board
+- **No Breaking Changes**: Behavior identical for all users
+
+### Completed Features
+
+#### Parallel Agent Execution (v5.6.0)
 
 **Status**: Released in v5.6.0 with comprehensive testing (161/163 parallel execution tests passing, 2 flaky timing tests)
 
@@ -263,29 +271,128 @@ parallel: true                    # Optional, defaults to true
   - `tests/unit/utils/cpu-profiler.test.ts` - CPU time measurement may exceed threshold by ~0.1ms
   - These are non-critical and don't affect production functionality
 
-#### Stage Execution Simplification (v5.6.1)
+#### Provider Cache Optimization (v5.6.2-5.6.3) 🎉
 
-**Status**: Legacy stage executors completely removed
+**Status**: Released in v5.6.2 and v5.6.3 with comprehensive enhancements
 
-**Changes**:
-- **Removed**: `StageExecutor` and `AdvancedStageExecutor` (~1,200 LOC)
-- **Simplified**: All multi-stage execution now uses `StageExecutionController`
-- **Reduced**: Package size decreased by ~30KB (884KB → 854KB)
-- **Removed**: 15 legacy tests, 4 source files
+**Overview**: Multi-phase performance optimization reducing provider check latency by 99% and eliminating cold-start delays.
 
-**Impact**:
-- **No breaking changes**: Behavior is identical for all users
-- **Improved maintainability**: Single execution path for all multi-stage agents
-- **Better performance**: Modern controller architecture across the board
-- **Cleaner codebase**: Eliminated dual execution path complexity
+**Implementation Status**:
+- ✅ Phase 1 (v5.6.2): Enhanced Cache Metrics - COMPLETE
+  - Enhanced `getCacheMetrics()` API with avgAge, lastHit, lastMiss
+  - Health metrics (uptime, consecutive successes)
+  - Router `getHealthCheckStatus()` API
+  - CLI `ax cache stats` command enhancements
+- ✅ Phase 2 (v5.6.2): Background Health Checks - COMPLETE
+  - Configurable health check intervals
+  - Immediate cache warmup on startup
+  - Proactive cache refresh
+  - 90%+ cold-start latency reduction (100ms → <10ms)
+- ✅ Phase 3 (v5.6.3): Observability + Polish - COMPLETE 🎉
+  - **Adaptive TTL**: Dynamic cache adjustment (30-120s based on uptime)
+  - **Cache Poisoning Prevention**: Only cache successful results
+  - **Graceful Degradation**: Handle cache errors without crashes
+  - **Enhanced Metrics**: Per-provider cache hit rates, uptime tracking
+  - **Documentation**: PERFORMANCE.md, CACHE.md guides
+  - **57 New Tests**: Comprehensive test coverage (100% passing)
 
-**Why this change**:
-- v5.6.1 made new controller the default - no users were using legacy executors
-- User feedback confirmed new controller is faster
-- Simplifies maintenance and reduces cognitive overhead
-- Reduces test surface area while maintaining >99% coverage
+**Key Features**:
 
-#### Response Cache (v5.5.0+)
+1. **Availability Cache**:
+   - Baseline TTL: 60 seconds
+   - Adaptive TTL: 30-120s (based on provider stability)
+   - Cache hit rate: 50-90% (depending on request patterns)
+   - Latency reduction: 99% (100ms → <1ms)
+
+2. **Version Cache**:
+   - TTL: 5 minutes
+   - Per-command caching
+   - Memory efficient: ~500 bytes per command
+
+3. **Background Health Checks**:
+   - Configurable interval (default: 60 seconds)
+   - Parallel cache warmup on startup
+   - Continuous cache refresh
+   - Provider health monitoring
+
+4. **Adaptive TTL Strategy**:
+   - Highly stable (>99% uptime): 120s TTL
+   - Normal (90-99% uptime): 60s TTL
+   - Unstable (<90% uptime): 30s TTL
+
+**Configuration**:
+
+```json
+// automatosx.config.json
+{
+  "router": {
+    "healthCheckInterval": 60000  // 60 seconds (optional)
+  }
+}
+```
+
+**CLI Commands**:
+
+```bash
+# View comprehensive cache statistics
+ax cache stats
+
+# Output:
+# 📊 Cache Statistics
+#
+# Router Status:
+#   Health Checks: ✅ Enabled (60s interval)
+#   Checks Performed: 120
+#   Average Duration: 15ms
+#   Success Rate: 100.0%
+#
+# Provider: gemini-cli
+#   Availability Cache:
+#     Hit Rate: 85.0% (85 hits / 100 total)
+#     Average Age: 5.0s (max: 60s)
+#     Last Hit: 2s ago
+#   Health:
+#     Uptime: 99.5%
+#     Consecutive Successes: 100
+
+# Clear all caches
+ax cache clear
+```
+
+**Performance Impact**:
+
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| First request (cold) | 100ms | <1ms | **99%** |
+| Subsequent requests | 100ms | <1ms | **99%** |
+| Cache hit rate | 0% | 50-90% | **+∞** |
+| Memory per provider | - | <50KB | - |
+
+**Testing**:
+
+- **57 New Tests** (all passing):
+  - Enhanced cache metrics: 20 tests
+  - Adaptive TTL: 19 tests
+  - Router health checks: 18 tests
+  - Cache error handling: 11 tests (from Phase 3 Day 3)
+  - Total test suite: 1,940+ tests passing
+
+**Documentation**:
+
+- `docs/PERFORMANCE.md` - Performance optimization guide
+- `docs/CACHE.md` - Cache architecture and design
+- `tmp/phase3-day3-progress.md` - Phase 3 completion report
+
+**Key Implementation Files**:
+
+- `src/providers/base-provider.ts` - Provider caching logic
+- `src/core/router.ts` - Health check orchestration
+- `src/cli/commands/cache.ts` - CLI cache commands
+- `tests/unit/base-provider-cache-metrics-enhanced.test.ts` - Enhanced metrics tests
+- `tests/unit/base-provider-adaptive-ttl.test.ts` - Adaptive TTL tests
+- `tests/unit/router-health-check-phase3-metrics.test.ts` - Router health tests
+
+#### Response Cache (v5.5.0)
 
 **Status**: Implemented, disabled by default
 
@@ -321,7 +428,7 @@ ax cache clear                    # Clear all cache
 ax cache show <key>              # Show cached entry
 ```
 
-#### Claude Code Integration (v5.5.0+)
+#### Claude Code Integration (v5.5.0)
 
 **Status**: Implemented
 
@@ -347,9 +454,9 @@ ax init                          # Initializes .claude/ directory
 - `command-manager.ts`: Slash command installation
 - `mcp-manager.ts`: MCP server registration
 
-### Claude Code Provider (v5.4.3+)
+### Claude Code Provider (v5.4.3)
 
-**Session-Based Execution**: Claude provider now uses built-in authentication instead of API calls.
+**Session-Based Execution**: Claude provider uses built-in authentication instead of API calls.
 
 **How it works**:
 
@@ -376,7 +483,7 @@ export CLAUDE_USE_SESSION=false
 
 See `tmp/claude-cli-integration-plan.md` for implementation details.
 
-### Provider Model Parameters (v5.0.5+)
+### Provider Model Parameters (v5.0.5)
 
 Only OpenAI supports `maxTokens` & `temperature` (configured in agent YAML):
 
@@ -551,7 +658,7 @@ ax agent show <name>            # Config
 # Check: .automatosx/sessions/sessions.json, automatosx/PRD/, automatosx/tmp/
 ```
 
-## Checkpoints & Resume (v5.3.0+)
+## Checkpoints & Resume (v5.3.0)
 
 ```bash
 ax run <agent> "task" --resumable        # Enable

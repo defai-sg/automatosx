@@ -34,6 +34,14 @@ export interface ProviderConfig {
   command: string;
   healthCheck?: ProviderHealthCheckConfig;
   defaults?: ProviderDefaultsConfig;  // v5.0: Default model parameters
+
+  // Phase 2 (v5.6.2): Enhanced CLI detection
+  /** Custom CLI path override (takes precedence over PATH detection) */
+  customPath?: string;
+  /** Custom version check argument (default: --version) */
+  versionArg?: string;
+  /** Minimum required version (semantic versioning) */
+  minVersion?: string;
 }
 
 // ========================================

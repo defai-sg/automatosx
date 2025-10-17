@@ -203,7 +203,13 @@ describe('AgentExecutor - Delegation', () => {
         errorCount: 0
       }),
       shouldRetry: vi.fn().mockReturnValue(false),
-      getRetryDelay: vi.fn().mockReturnValue(1000)
+      getRetryDelay: vi.fn().mockReturnValue(1000),
+      getCacheMetrics: vi.fn().mockReturnValue({
+        availability: { hits: 0, misses: 0, hitRate: 0, avgAge: 0, maxAge: 60000 },
+        version: { hits: 0, misses: 0, hitRate: 0, size: 0, avgAge: 0, maxAge: 300000 },
+        health: { consecutiveFailures: 0, consecutiveSuccesses: 0, lastCheckDuration: 0, uptime: 100 }
+      }),
+      clearCaches: vi.fn()
     } as Provider;
 
     // Mock ContextManager

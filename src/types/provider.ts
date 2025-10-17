@@ -47,6 +47,7 @@ export interface HealthStatus {
   errorRate: number;
   lastError?: Error;
   consecutiveFailures: number;
+  lastCheckTime?: number; // Phase 3: Timestamp of last health check
 }
 
 export interface RateLimitStatus {
@@ -150,4 +151,33 @@ export interface Provider {
   // Error Handling
   shouldRetry(error: Error): boolean;
   getRetryDelay(attempt: number): number;
+
+  // Phase 3 (v5.6.3): Cache Observability
+  getCacheMetrics(): {
+    availability: {
+      hits: number;
+      misses: number;
+      hitRate: number;
+      avgAge: number;
+      maxAge: number;
+      lastHit?: number;
+      lastMiss?: number;
+    };
+    version: {
+      hits: number;
+      misses: number;
+      hitRate: number;
+      size: number;
+      avgAge: number;
+      maxAge: number;
+    };
+    health: {
+      consecutiveFailures: number;
+      consecutiveSuccesses: number;
+      lastCheckTime?: number;
+      lastCheckDuration: number;
+      uptime: number;
+    };
+  };
+  clearCaches(): void;
 }

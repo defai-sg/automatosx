@@ -29,16 +29,72 @@ import { existsSync } from 'fs';
 import { findOnPath } from '../core/cli-provider-detector.js';
 import { shouldAutoEnableMockProviders } from '../utils/environment.js';
 
+/**
+ * Cache entry for availability check results
+ */
+interface AvailabilityCacheEntry {
+  available: boolean;
+  timestamp: number;
+  path?: string;
+}
+
+/**
+ * Cache entry for version detection results
+ */
+interface VersionCacheEntry {
+  version: string | null;
+  timestamp: number;
+}
+
+/**
+ * Aggregated token bucket for rate limiting
+ */
+interface TokenBucket {
+  timestamp: number;
+  count: number;
+}
+
 export abstract class BaseProvider implements Provider {
   protected config: ProviderConfig;
   protected health: HealthStatus;
   protected usageStats: UsageStats;
   protected rateLimitState: {
     requests: number[];  // timestamps of recent requests
-    tokens: number[];    // token usage with timestamps
+    tokens: number[];    // DEPRECATED: Use tokenBuckets instead
+    tokenBuckets: TokenBucket[]; // NEW: Aggregated token tracking
     concurrentRequests: number;
   };
   protected responseCache: ProviderResponseCache;
+
+  // NEW: Availability caching
+  private availabilityCache?: AvailabilityCacheEntry;
+  private readonly AVAILABILITY_CACHE_TTL = 60000; // 60 seconds (baseline)
+  private readonly ADAPTIVE_CACHE_ENABLED = true; // Phase 3: Enable adaptive TTL
+
+  // NEW: Version detection caching
+  private versionCache = new Map<string, VersionCacheEntry>();
+  private readonly VERSION_CACHE_TTL = 300000; // 5 minutes
+
+  // NEW: Cache metrics for observability
+  private cacheMetrics = {
+    availabilityHits: 0,
+    availabilityMisses: 0,
+    versionHits: 0,
+    versionMisses: 0
+  };
+
+  // Phase 3: Enhanced cache metrics tracking
+  private availabilityCacheMetrics = {
+    lastHit: 0,
+    lastMiss: 0,
+    totalAge: 0,
+    hitCount: 0
+  };
+
+  // Phase 3: Health tracking for uptime calculation
+  private consecutiveSuccesses = 0;
+  private lastCheckDuration = 0;
+  private healthHistory: Array<{ timestamp: number; available: boolean }> = [];
 
   constructor(config: ProviderConfig) {
     this.config = config;
@@ -57,7 +113,8 @@ export abstract class BaseProvider implements Provider {
     };
     this.rateLimitState = {
       requests: [],
-      tokens: [],
+      tokens: [], // DEPRECATED: Kept for backward compatibility
+      tokenBuckets: [], // NEW: Aggregated token tracking
       concurrentRequests: 0
     };
     // Initialize response cache with 5 minute TTL
@@ -133,8 +190,104 @@ export abstract class BaseProvider implements Provider {
       return true;
     }
 
+    // Phase 3 (v5.6.3): Graceful Cache Degradation
+    // Wrap cache read in try-catch to handle corrupted cache gracefully
+    try {
+      // NEW: Check availability cache first
+      if (this.availabilityCache) {
+        const age = Date.now() - this.availabilityCache.timestamp;
+        // Phase 3: Use adaptive TTL instead of fixed TTL
+        const ttl = this.calculateAdaptiveTTL();
+
+        if (age < ttl) {
+          this.cacheMetrics.availabilityHits++;
+          // Phase 3: Track hit metrics
+          this.availabilityCacheMetrics.lastHit = Date.now();
+          this.availabilityCacheMetrics.totalAge += age;
+          this.availabilityCacheMetrics.hitCount++;
+          logger.debug(`Using cached availability for ${this.config.name}`, {
+            provider: this.config.name,
+            available: this.availabilityCache.available,
+            cacheAge: age,
+            cacheTTL: ttl, // Phase 3: Log adaptive TTL
+            uptime: this.calculateUptime().toFixed(1) + '%',
+            cacheHits: this.cacheMetrics.availabilityHits
+          });
+          return this.availabilityCache.available;
+        }
+      }
+    } catch (error) {
+      // Phase 3 (v5.6.3): Graceful Cache Degradation
+      // If cache read fails, log and continue to fresh check
+      logger.warn(`Failed to read availability cache for ${this.config.name}`, {
+        provider: this.config.name,
+        error: (error as Error).message,
+        fallback: 'Fresh availability check'
+      });
+      // Clear corrupted cache
+      this.availabilityCache = undefined;
+    }
+
+    // Cache miss - perform check
+    const checkStartTime = Date.now();
+    this.cacheMetrics.availabilityMisses++;
+    // Phase 3: Track miss metrics
+    this.availabilityCacheMetrics.lastMiss = Date.now();
+    logger.debug(`Availability cache miss for ${this.config.name}`, {
+      provider: this.config.name,
+      cacheMisses: this.cacheMetrics.availabilityMisses
+    });
+
     // Check if CLI command actually exists (with enhanced detection)
-    return this.checkCLIAvailabilityEnhanced();
+    const available = await this.checkCLIAvailabilityEnhanced();
+
+    // Phase 3: Track check duration
+    this.lastCheckDuration = Date.now() - checkStartTime;
+
+    // Phase 3: Track last check timestamp
+    this.health.lastCheckTime = checkStartTime;
+
+    // Phase 3: Update health history for uptime calculation
+    this.healthHistory.push({
+      timestamp: Date.now(),
+      available
+    });
+    // Keep only last 100 checks
+    if (this.healthHistory.length > 100) {
+      this.healthHistory.shift();
+    }
+
+    // Phase 3: Update consecutive counters
+    if (available) {
+      this.consecutiveSuccesses++;
+    } else {
+      this.consecutiveSuccesses = 0;
+    }
+
+    // Phase 3 (v5.6.3): Cache Poisoning Prevention
+    // Only cache successful availability checks to prevent caching failures
+    if (available) {
+      try {
+        this.availabilityCache = {
+          available,
+          timestamp: Date.now()
+        };
+      } catch (error) {
+        // Phase 3 (v5.6.3): Graceful Cache Degradation
+        // Log cache write failures but don't fail the check
+        logger.warn(`Failed to write availability cache for ${this.config.name}`, {
+          provider: this.config.name,
+          error: (error as Error).message
+        });
+      }
+    } else {
+      logger.debug(`Not caching unavailable status for ${this.config.name}`, {
+        provider: this.config.name,
+        reason: 'Cache poisoning prevention'
+      });
+    }
+
+    return available;
   }
 
   /**
@@ -325,30 +478,147 @@ export abstract class BaseProvider implements Provider {
 
   /**
    * Get CLI version by executing --version command.
+   * Uses async spawn with caching to avoid blocking the event loop.
    *
    * @param command CLI command to check
    * @returns Version string or null if detection fails
    */
   private async getProviderVersion(command: string): Promise<string | null> {
+    // Phase 3 (v5.6.3): Graceful Cache Degradation
+    // Wrap cache read in try-catch to handle corrupted cache gracefully
     try {
-      const { spawnSync } = await import('child_process');
+      // NEW: Check version cache first
+      const cached = this.versionCache.get(command);
+      if (cached) {
+        const age = Date.now() - cached.timestamp;
+        if (age < this.VERSION_CACHE_TTL) {
+          this.cacheMetrics.versionHits++;
+          logger.debug(`Using cached version for ${command}`, {
+            command,
+            version: cached.version,
+            cacheAge: age,
+            cacheHits: this.cacheMetrics.versionHits
+          });
+          return cached.version;
+        }
+      }
+    } catch (error) {
+      // Phase 3 (v5.6.3): Graceful Cache Degradation
+      // If cache read fails, log and continue to fresh version check
+      logger.warn(`Failed to read version cache for ${command}`, {
+        command,
+        error: (error as Error).message,
+        fallback: 'Fresh version detection'
+      });
+      // Clear corrupted cache entry
+      try {
+        this.versionCache.delete(command);
+      } catch (deleteError) {
+        // Ignore delete errors
+      }
+    }
 
-      const result = spawnSync(command, ['--version'], {
-        encoding: 'utf8',
-        timeout: 5000,
-        stdio: 'pipe'
+    // Cache miss - perform detection
+    this.cacheMetrics.versionMisses++;
+    logger.debug(`Version cache miss for ${command}`, {
+      command,
+      cacheMisses: this.cacheMetrics.versionMisses
+    });
+
+    try {
+      // NEW: Use async spawn instead of spawnSync to avoid blocking
+      const { spawn } = await import('child_process');
+
+      const version = await new Promise<string | null>((resolve) => {
+        const versionArg = this.config.versionArg || '--version';
+        const proc = spawn(command, [versionArg], {
+          timeout: 5000,
+          stdio: 'pipe'
+        });
+
+        let output = '';
+        let errorOutput = '';
+
+        proc.stdout?.on('data', (data) => {
+          output += data.toString();
+        });
+
+        proc.stderr?.on('data', (data) => {
+          errorOutput += data.toString();
+        });
+
+        proc.on('close', (code) => {
+          if (code === 0 && output) {
+            // Extract version from output (usually first line)
+            const cleanOutput = output.trim();
+            const match = cleanOutput.match(/\d+\.\d+\.\d+/);
+            const detectedVersion = match ? match[0] : (cleanOutput.split('\n')[0] || null);
+
+            logger.debug('Version detection successful', {
+              command,
+              version: detectedVersion,
+              output: cleanOutput.substring(0, 100)
+            });
+
+            resolve(detectedVersion);
+          } else {
+            logger.debug('Version detection failed', {
+              command,
+              code,
+              output,
+              errorOutput
+            });
+            resolve(null);
+          }
+        });
+
+        proc.on('error', (error) => {
+          logger.debug('Version detection spawn error', {
+            command,
+            error: error.message
+          });
+          resolve(null);
+        });
       });
 
-      if (result.status === 0 && result.stdout) {
-        // Extract version from output (usually first line)
-        const output = result.stdout.trim();
-        const match = output.match(/\d+\.\d+\.\d+/);
-        return match ? match[0] : (output.split('\n')[0] || null);
+      // Phase 3 (v5.6.3): Cache Poisoning Prevention
+      // Only cache successful version detection (non-null results)
+      if (version) {
+        try {
+          this.versionCache.set(command, {
+            version,
+            timestamp: Date.now()
+          });
+        } catch (error) {
+          // Phase 3 (v5.6.3): Graceful Cache Degradation
+          // Log cache write failures but don't fail the version check
+          logger.warn(`Failed to write version cache for ${command}`, {
+            command,
+            error: (error as Error).message
+          });
+        }
+      } else {
+        logger.debug(`Not caching null version for ${command}`, {
+          command,
+          reason: 'Cache poisoning prevention'
+        });
       }
 
-      return null;
+      return version;
+
     } catch (error) {
-      logger.debug('Failed to get provider version', { command, error });
+      logger.debug('Failed to get provider version', {
+        command,
+        error: (error as Error).message
+      });
+
+      // Phase 3 (v5.6.3): Cache Poisoning Prevention
+      // Don't cache exceptions - let the next check retry
+      logger.debug(`Not caching version exception for ${command}`, {
+        command,
+        reason: 'Cache poisoning prevention'
+      });
+
       return null;
     }
   }
@@ -498,7 +768,11 @@ export abstract class BaseProvider implements Provider {
 
     // Clean old entries
     this.rateLimitState.requests = this.rateLimitState.requests.filter(t => t > oneMinuteAgo);
-    this.rateLimitState.tokens = this.rateLimitState.tokens.filter(t => t > oneMinuteAgo);
+
+    // NEW: Use aggregated token buckets instead of individual token timestamps
+    this.rateLimitState.tokenBuckets = this.rateLimitState.tokenBuckets.filter(
+      bucket => bucket.timestamp > oneMinuteAgo
+    );
 
     const limits = this.config.rateLimits;
     if (!limits) {
@@ -511,8 +785,24 @@ export abstract class BaseProvider implements Provider {
     }
 
     const requestsRemaining = limits.maxRequestsPerMinute - this.rateLimitState.requests.length;
-    const tokensRemaining = limits.maxTokensPerMinute - this.rateLimitState.tokens.length;
+
+    // NEW: Calculate tokens from aggregated buckets
+    const tokensUsed = this.rateLimitState.tokenBuckets.reduce(
+      (sum, bucket) => sum + bucket.count,
+      0
+    );
+    const tokensRemaining = limits.maxTokensPerMinute - tokensUsed;
+
     const concurrentOk = this.rateLimitState.concurrentRequests < limits.maxConcurrentRequests;
+
+    logger.debug('Rate limit check', {
+      provider: this.config.name,
+      requestsRemaining,
+      tokensUsed,
+      tokensRemaining,
+      concurrentRequests: this.rateLimitState.concurrentRequests,
+      bucketsCount: this.rateLimitState.tokenBuckets.length
+    });
 
     return {
       hasCapacity: requestsRemaining > 0 && tokensRemaining > 0 && concurrentOk,
@@ -555,6 +845,159 @@ export abstract class BaseProvider implements Provider {
 
   async getUsageStats(): Promise<UsageStats> {
     return { ...this.usageStats };
+  }
+
+  /**
+   * Get cache metrics for observability.
+   * Phase 1: Basic metrics (hits, misses, hit rates)
+   * Phase 3: Enhanced metrics (age, timestamps, uptime, health)
+   *
+   * @returns Comprehensive cache and health metrics
+   */
+  getCacheMetrics(): {
+    availability: {
+      hits: number;
+      misses: number;
+      hitRate: number;
+      avgAge: number;
+      maxAge: number;
+      lastHit?: number;
+      lastMiss?: number;
+    };
+    version: {
+      hits: number;
+      misses: number;
+      hitRate: number;
+      size: number;
+      avgAge: number;
+      maxAge: number;
+    };
+    health: {
+      consecutiveFailures: number;
+      consecutiveSuccesses: number;
+      lastCheckTime?: number;
+      lastCheckDuration: number;
+      uptime: number;
+    };
+  } {
+    const availabilityTotal = this.cacheMetrics.availabilityHits + this.cacheMetrics.availabilityMisses;
+    const versionTotal = this.cacheMetrics.versionHits + this.cacheMetrics.versionMisses;
+
+    return {
+      availability: {
+        hits: this.cacheMetrics.availabilityHits,
+        misses: this.cacheMetrics.availabilityMisses,
+        hitRate: availabilityTotal > 0
+          ? this.cacheMetrics.availabilityHits / availabilityTotal
+          : 0,
+        avgAge: this.availabilityCacheMetrics.hitCount > 0
+          ? this.availabilityCacheMetrics.totalAge / this.availabilityCacheMetrics.hitCount
+          : 0,
+        maxAge: this.AVAILABILITY_CACHE_TTL,
+        lastHit: this.availabilityCacheMetrics.lastHit || undefined,
+        lastMiss: this.availabilityCacheMetrics.lastMiss || undefined
+      },
+      version: {
+        hits: this.cacheMetrics.versionHits,
+        misses: this.cacheMetrics.versionMisses,
+        hitRate: versionTotal > 0
+          ? this.cacheMetrics.versionHits / versionTotal
+          : 0,
+        size: this.versionCache.size,
+        avgAge: this.calculateAverageVersionCacheAge(),
+        maxAge: this.VERSION_CACHE_TTL
+      },
+      health: {
+        consecutiveFailures: this.health.consecutiveFailures,
+        consecutiveSuccesses: this.consecutiveSuccesses,
+        lastCheckTime: this.health.lastCheckTime,
+        lastCheckDuration: this.lastCheckDuration,
+        uptime: this.calculateUptime()
+      }
+    };
+  }
+
+  /**
+   * Calculate average age of version cache entries.
+   * Phase 3: New helper method for enhanced metrics.
+   */
+  private calculateAverageVersionCacheAge(): number {
+    if (this.versionCache.size === 0) {
+      return 0;
+    }
+
+    const now = Date.now();
+    let totalAge = 0;
+
+    for (const entry of this.versionCache.values()) {
+      totalAge += now - entry.timestamp;
+    }
+
+    return totalAge / this.versionCache.size;
+  }
+
+  /**
+   * Calculate provider uptime percentage based on health history.
+   * Phase 3: New helper method for enhanced metrics.
+   *
+   * @returns Uptime percentage (0-100)
+   */
+  private calculateUptime(): number {
+    if (this.healthHistory.length === 0) {
+      // No history yet, assume 100% if currently available
+      return this.health.available ? 100 : 0;
+    }
+
+    const availableCount = this.healthHistory.filter(h => h.available).length;
+    return (availableCount / this.healthHistory.length) * 100;
+  }
+
+  /**
+   * Calculate adaptive cache TTL based on provider stability.
+   * Phase 3 (v5.6.3): Dynamic TTL adjustment.
+   *
+   * Strategy:
+   * - Highly stable providers (uptime > 99%) → Longer TTL (120s) to reduce checks
+   * - Unstable providers (uptime < 90%) → Shorter TTL (30s) to detect failures faster
+   * - Normal providers → Baseline TTL (60s)
+   *
+   * @returns TTL in milliseconds
+   */
+  private calculateAdaptiveTTL(): number {
+    if (!this.ADAPTIVE_CACHE_ENABLED) {
+      return this.AVAILABILITY_CACHE_TTL;
+    }
+
+    // Need at least 10 checks for meaningful statistics
+    if (this.healthHistory.length < 10) {
+      return this.AVAILABILITY_CACHE_TTL;
+    }
+
+    const uptime = this.calculateUptime();
+    const baselineTTL = this.AVAILABILITY_CACHE_TTL;
+
+    // Very stable provider → Increase TTL by 2x
+    if (uptime > 99) {
+      return baselineTTL * 2; // 120 seconds
+    }
+
+    // Unstable provider → Decrease TTL by 2x
+    if (uptime < 90) {
+      return baselineTTL / 2; // 30 seconds
+    }
+
+    // Normal provider → Use baseline TTL
+    return baselineTTL;
+  }
+
+  /**
+   * Clear all caches (for testing or manual refresh).
+   * NEW: Added in Phase 1 optimization.
+   */
+  clearCaches(): void {
+    this.availabilityCache = undefined;
+    this.versionCache.clear();
+    logger.info(`Caches cleared for provider ${this.config.name}`);
   }
 
   // Error Handling
@@ -607,9 +1050,24 @@ export abstract class BaseProvider implements Provider {
     this.health.latencyMs = latency;
     this.health.errorRate = this.usageStats.errorCount / this.usageStats.totalRequests;
 
-    // Track tokens for rate limiting
-    for (let i = 0; i < response.tokensUsed.total; i++) {
-      this.rateLimitState.tokens.push(Date.now());
+    // NEW: Track tokens using aggregated buckets (much more efficient)
+    const now = Date.now();
+    this.rateLimitState.tokenBuckets.push({
+      timestamp: now,
+      count: response.tokensUsed.total
+    });
+
+    // Clean up old buckets (> 1 minute)
+    const oneMinuteAgo = now - 60000;
+    this.rateLimitState.tokenBuckets = this.rateLimitState.tokenBuckets.filter(
+      bucket => bucket.timestamp > oneMinuteAgo
+    );
+
+    // DEPRECATED: Keep old array for backward compatibility, but limit size
+    // This prevents memory issues with large responses while maintaining compatibility
+    const tokensToAdd = Math.min(response.tokensUsed.total, 1000); // Cap at 1000 entries
+    for (let i = 0; i < tokensToAdd; i++) {
+      this.rateLimitState.tokens.push(now);
     }
   }
 

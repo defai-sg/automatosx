@@ -34,6 +34,15 @@ export class Router {
   private providerCooldownMs: number;
   private cache?: ResponseCache;
 
+  // Phase 3: Health check metrics tracking
+  private healthCheckIntervalMs?: number;
+  private healthCheckMetrics = {
+    lastCheckTime: 0,
+    checksPerformed: 0,
+    totalDuration: 0,
+    failures: 0
+  };
+
   constructor(config: RouterConfig) {
     // Sort providers by priority (lower number = higher priority)
     this.providers = [...config.providers].sort((a, b) => {
@@ -44,10 +53,52 @@ export class Router {
     this.providerCooldownMs = config.providerCooldownMs ?? 30000; // Default: 30 seconds
     this.cache = config.cache;
 
+    // Phase 3: Store interval value for observability
+    this.healthCheckIntervalMs = config.healthCheckInterval;
+
     // Start health checks if interval is provided
     if (config.healthCheckInterval) {
       this.startHealthChecks(config.healthCheckInterval);
+
+      // Phase 3: Immediate cache warmup on startup (only if health checks enabled)
+      // Warm up caches immediately to eliminate first-request cold start
+      if (this.providers.length > 0) {
+        void this.warmupCaches();
+      }
     }
+  }
+
+  /**
+   * Warm up provider availability caches immediately.
+   * Phase 3 (v5.6.3): Eliminates cold-start latency on first request.
+   *
+   * Runs in background (non-blocking) to avoid delaying router initialization.
+   */
+  private async warmupCaches(): Promise<void> {
+    logger.info('Warming up provider caches...', {
+      providers: this.providers.map(p => p.name)
+    });
+
+    const startTime = Date.now();
+
+    await Promise.allSettled(
+      this.providers.map(async (provider) => {
+        try {
+          await provider.isAvailable();
+          logger.debug(`Cache warmed for ${provider.name}`);
+        } catch (error) {
+          logger.warn(`Failed to warm cache for ${provider.name}`, {
+            error: (error as Error).message
+          });
+        }
+      })
+    );
+
+    const duration = Date.now() - startTime;
+    logger.info('Cache warmup completed', {
+      duration,
+      providers: this.providers.length
+    });
   }
 
   /**
@@ -233,22 +284,83 @@ export class Router {
   }
 
   /**
-   * Start periodic health checks
+   * Start periodic health checks.
+   * Phase 2 (v5.6.2): Enhanced to refresh provider availability cache.
+   *
+   * Background health checks serve two purposes:
+   * 1. Monitor provider health status (latency, errors, failures)
+   * 2. Proactively refresh availability cache to keep it warm
+   *
+   * This eliminates cold-start latency when providers are first used.
    */
   private startHealthChecks(intervalMs: number): void {
     const runHealthChecks = async () => {
+      const checkStartTime = Date.now();
+      this.healthCheckMetrics.checksPerformed++;
+
       try {
+        // Phase 2: Call isAvailable() to refresh cache for all providers
+        // This ensures availability cache is always fresh and reduces
+        // synchronous checks during actual request execution
+        const availabilityResults = await Promise.allSettled(
+          this.providers.map(async (provider) => {
+            const startTime = Date.now();
+            const available = await provider.isAvailable();
+            const duration = Date.now() - startTime;
+
+            return {
+              name: provider.name,
+              available,
+              duration
+            };
+          })
+        );
+
+        // Get detailed health status
         const healthStatus = await this.getHealthStatus();
 
-        logger.debug('Provider health check', {
-          providers: Array.from(healthStatus.entries()).map(([name, health]) => ({
-            name,
-            available: health.available,
-            latency: health.latencyMs,
-            failures: health.consecutiveFailures
-          }))
+        // Phase 3: Track metrics
+        const checkDuration = Date.now() - checkStartTime;
+        this.healthCheckMetrics.lastCheckTime = checkStartTime;
+        this.healthCheckMetrics.totalDuration += checkDuration;
+
+        // Phase 3: Enhanced logging with cache statistics
+        logger.info('Health check completed', {
+          duration: checkDuration,
+          providers: this.providers.map(p => {
+            const metrics = p.getCacheMetrics();
+            return {
+              name: p.name,
+              available: metrics.health.consecutiveFailures === 0,
+              cacheHitRate: (metrics.availability.hitRate * 100).toFixed(1) + '%',
+              avgCacheAge: Math.round(metrics.availability.avgAge) + 'ms',
+              uptime: metrics.health.uptime.toFixed(1) + '%'
+            };
+          })
+        });
+
+        // Original debug logging for detailed inspection
+        logger.debug('Provider health check details', {
+          interval: intervalMs,
+          providers: Array.from(healthStatus.entries()).map(([name, health]) => {
+            const availResult = availabilityResults.find(
+              r => r.status === 'fulfilled' && r.value.name === name
+            );
+            const avail = availResult?.status === 'fulfilled' ? availResult.value : null;
+
+            return {
+              name,
+              available: health.available,
+              latency: health.latencyMs,
+              failures: health.consecutiveFailures,
+              // Phase 2: Include availability check duration
+              availCheckDuration: avail?.duration,
+              availCached: avail?.duration !== undefined && avail.duration < 10 // < 10ms likely cached
+            };
+          })
         });
       } catch (error) {
+        this.healthCheckMetrics.failures++;
         logger.warn('Provider health check failed', {
           error: (error as Error).message
         });
@@ -260,7 +372,11 @@ export class Router {
       void runHealthChecks(); // Explicitly handle promise
     }, intervalMs);
 
-    // Run immediately on start
+    // Run immediately on start to warm up caches
+    logger.info('Starting background health checks', {
+      interval: intervalMs,
+      providers: this.providers.map(p => p.name)
+    });
     void runHealthChecks();
   }
 
@@ -275,5 +391,52 @@ export class Router {
 
     // Clear penalty list
     this.penalizedProviders.clear();
+  }
+
+  /**
+   * Get health check status and metrics.
+   * Phase 2 (v5.6.2): New API for observability.
+   * Phase 3 (v5.6.3): Enhanced with detailed metrics.
+   *
+   * @returns Comprehensive health check configuration and status
+   */
+  getHealthCheckStatus(): {
+    enabled: boolean;
+    interval?: number;
+    lastCheck?: number;
+    checksPerformed: number;
+    avgDuration: number;
+    successRate: number;
+    providersMonitored: number;
+    providers: Array<{
+      name: string;
+      cacheHitRate: number;
+      avgCacheAge: number;
+      uptime: number;
+    }>;
+  } {
+    return {
+      enabled: this.healthCheckInterval !== undefined,
+      interval: this.healthCheckIntervalMs,
+      lastCheck: this.healthCheckMetrics.lastCheckTime || undefined,
+      checksPerformed: this.healthCheckMetrics.checksPerformed,
+      avgDuration: this.healthCheckMetrics.checksPerformed > 0
+        ? this.healthCheckMetrics.totalDuration / this.healthCheckMetrics.checksPerformed
+        : 0,
+      successRate: this.healthCheckMetrics.checksPerformed > 0
+        ? ((this.healthCheckMetrics.checksPerformed - this.healthCheckMetrics.failures) /
+           this.healthCheckMetrics.checksPerformed) * 100
+        : 0,
+      providersMonitored: this.providers.length,
+      providers: this.providers.map(p => {
+        const metrics = p.getCacheMetrics();
+        return {
+          name: p.name,
+          cacheHitRate: metrics.availability.hitRate,
+          avgCacheAge: metrics.availability.avgAge,
+          uptime: metrics.health.uptime
+        };
+      })
+    };
   }
 }
