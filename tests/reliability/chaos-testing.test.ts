@@ -125,7 +125,7 @@ const createContext = (): ExecutionContext => ({
     execute: async (request: { prompt: string; systemPrompt?: string; [key: string]: any }) => {
       // Extract agent name from systemPrompt (format: "system prompt for {name}")
       const match = request.systemPrompt?.match(/system prompt for (.+)/);
-      const agentName = match ? match[1] : 'unknown';
+      const agentName = match?.[1] ?? 'unknown';
 
       // Check if this agent should fail based on chaos configuration
       const shouldFail = chaosConfigMap.get(agentName) || false;
