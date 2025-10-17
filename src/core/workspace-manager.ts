@@ -16,7 +16,15 @@
  */
 
 import { promises as fs } from 'fs';
-import path from 'path';
+import {
+  joinPath,
+  normalizePath,
+  resolvePath,
+  dirname,
+  getRelativePath,
+  isWindows,
+  isAbsolutePath
+} from '../utils/path-utils.js';
 import { logger } from '../utils/logger.js';
 
 /**
@@ -88,8 +96,8 @@ export class WorkspaceManager {
     const prdPath = config?.prdPath ?? 'automatosx/PRD';
     const tmpPath = config?.tmpPath ?? 'automatosx/tmp';
 
-    this.prdDir = path.join(projectDir, prdPath);
-    this.tmpDir = path.join(projectDir, tmpPath);
+    this.prdDir = joinPath(projectDir, prdPath);
+    this.tmpDir = joinPath(projectDir, tmpPath);
   }
 
   /**
@@ -110,8 +118,8 @@ export class WorkspaceManager {
 
     this.directoriesEnsured = true;
     logger.debug('Workspace directories ensured', {
-      prdDir: this.prdDir,
-      tmpDir: this.tmpDir
+      prdDir: normalizePath(this.prdDir),
+      tmpDir: normalizePath(this.tmpDir)
     });
   }
 
@@ -150,15 +158,12 @@ export class WorkspaceManager {
     }
 
     // 1. Reject absolute paths
-    if (path.isAbsolute(filePath)) {
+    if (isAbsolutePath(filePath)) {
       throw new Error(`Absolute paths not allowed: ${filePath}`);
     }
 
-    // 2. Normalize and check for path traversal
-    const normalized = path.normalize(filePath);
-    if (normalized.startsWith('..')) {
-      throw new Error(`Path traversal detected: ${filePath}`);
-    }
+    // 2. Normalize path for further checks
+    const normalized = normalizePath(filePath);
 
     // 3. Reject paths that resolve to base directory itself
     if (normalized === '.' || normalized === './') {
@@ -166,10 +171,16 @@ export class WorkspaceManager {
     }
 
     // 4. Resolve and verify within base directory
-    const resolved = path.resolve(baseDir, normalized);
-    const resolvedBase = path.resolve(baseDir);
+    const resolved = resolvePath(baseDir, normalized);
+    const resolvedBase = resolvePath(baseDir);
 
-    if (!resolved.startsWith(resolvedBase + path.sep) && resolved !== resolvedBase) {
+    // Use normalized path comparison
+    const normalizedResolved = normalizePath(resolved);
+    const normalizedBase = normalizePath(resolvedBase);
+    const separator = '/'; // Always use forward slash for normalized paths
+
+    if (!normalizedResolved.startsWith(normalizedBase + separator) &&
+        normalizedResolved !== normalizedBase) {
       throw new Error(`Path outside workspace: ${filePath}`);
     }
 
@@ -202,7 +213,7 @@ export class WorkspaceManager {
     const fullPath = this.validatePath(this.prdDir, fileName);
 
     // Ensure parent directory exists (v5.6.0: with 0o755 permissions)
-    await fs.mkdir(path.dirname(fullPath), { recursive: true, mode: 0o755 });
+    await fs.mkdir(dirname(fullPath), { recursive: true, mode: 0o755 });
 
     // Write file
     await fs.writeFile(fullPath, content, 'utf-8');
@@ -238,7 +249,7 @@ export class WorkspaceManager {
     const fullPath = this.validatePath(this.tmpDir, fileName);
 
     // Ensure parent directory exists (v5.6.0: with 0o755 permissions)
-    await fs.mkdir(path.dirname(fullPath), { recursive: true, mode: 0o755 });
+    await fs.mkdir(dirname(fullPath), { recursive: true, mode: 0o755 });
 
     // Write file
     await fs.writeFile(fullPath, content, 'utf-8');
@@ -363,7 +374,7 @@ export class WorkspaceManager {
       const entries = await fs.readdir(dir, { withFileTypes: true });
 
       for (const entry of entries) {
-        const filePath = path.join(dir, entry.name);
+        const filePath = joinPath(dir, entry.name);
 
         if (entry.isDirectory()) {
           // Recursively clean subdirectory
@@ -392,7 +403,7 @@ export class WorkspaceManager {
         } catch (rmError) {
           // Log but continue with other files
           logger.warn('Failed to remove temporary file', {
-            path: path.relative(this.tmpDir, filePath),
+            path: normalizePath(getRelativePath(this.tmpDir, filePath)),
             error: (rmError as Error).message
           });
         }
@@ -435,7 +446,7 @@ export class WorkspaceManager {
       let prdSize = 0;
       for (const file of prdFiles) {
         try {
-          const stats = await fs.stat(path.join(this.prdDir, file));
+          const stats = await fs.stat(joinPath(this.prdDir, file));
           prdSize += stats.size;
         } catch {
           // Skip files that can't be stat'd
@@ -446,7 +457,7 @@ export class WorkspaceManager {
       let tmpSize = 0;
       for (const file of tmpFiles) {
         try {
-          const stats = await fs.stat(path.join(this.tmpDir, file));
+          const stats = await fs.stat(joinPath(this.tmpDir, file));
           tmpSize += stats.size;
         } catch {
           // Skip files that can't be stat'd
@@ -479,7 +490,7 @@ export class WorkspaceManager {
    * Helper: List files recursively in a directory
    *
    * @param dir - Directory to scan
-   * @returns Array of relative file paths
+   * @returns Array of relative file paths (normalized with forward slashes)
    */
   private async listFiles(dir: string): Promise<string[]> {
     const files: string[] = [];
@@ -488,14 +499,14 @@ export class WorkspaceManager {
       const entries = await fs.readdir(dir, { withFileTypes: true });
 
       for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-        const relativePath = path.relative(dir, fullPath);
+        const fullPath = joinPath(dir, entry.name);
+        const relativePath = normalizePath(getRelativePath(dir, fullPath));
 
         try {
           if (entry.isDirectory()) {
             // Recursively list subdirectory files
             const subFiles = await this.listFiles(fullPath);
-            files.push(...subFiles.map(f => path.join(relativePath, f)));
+            files.push(...subFiles.map(f => normalizePath(joinPath(relativePath, f))));
           } else {
             files.push(relativePath);
           }
@@ -513,7 +524,7 @@ export class WorkspaceManager {
       // If directory is deleted during traversal, return what we have
       const error = err as NodeJS.ErrnoException;
       if (error.code === 'ENOENT') {
-        logger.debug('Directory removed during traversal', { path: dir });
+        logger.debug('Directory removed during traversal', { path: normalizePath(dir) });
         return files;
       }
       throw err;

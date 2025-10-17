@@ -8,7 +8,6 @@
 import Database from 'better-sqlite3';
 import * as sqliteVec from 'sqlite-vec';
 import { existsSync, mkdirSync } from 'fs';
-import { dirname } from 'path';
 import type {
   IMemoryManager,
   MemoryEntry,
@@ -20,6 +19,7 @@ import type {
 } from '../types/memory.js';
 import { MemoryError } from '../types/memory.js';
 import { logger } from '../utils/logger.js';
+import { dirname, normalizePath } from '../utils/path-utils.js';
 
 // v4.11.0: VECTOR_DIMENSIONS removed (FTS5 only, no vector search)
 
@@ -213,7 +213,7 @@ export class MemoryManager implements IMemoryManager {
 
       this.initialized = true;
       logger.info('MemoryManager initialized successfully', {
-        dbPath: this.config.dbPath,
+        dbPath: normalizePath(this.config.dbPath),
         searchMethod: 'FTS5',
         hasEmbeddingProvider: !!this.embeddingProvider,
         entryCount: this.entryCount
@@ -1048,7 +1048,6 @@ export class MemoryManager implements IMemoryManager {
 
     try {
       // Ensure destination directory exists
-      const { dirname } = await import('path');
       const { mkdir } = await import('fs/promises');
       const destDir = dirname(destPath);
       await mkdir(destDir, { recursive: true });
@@ -1057,7 +1056,7 @@ export class MemoryManager implements IMemoryManager {
       // backup() copies FROM source TO destination path
       await this.db.backup(destPath);
 
-      logger.info('Database backup created', { destPath });
+      logger.info('Database backup created', { destPath: normalizePath(destPath) });
     } catch (error) {
       throw new MemoryError(
         `Failed to create backup: ${(error as Error).message}`,
@@ -1105,7 +1104,7 @@ export class MemoryManager implements IMemoryManager {
       // This ensures prepared statements are bound to the new connection
       await this.initialize();
 
-      logger.info('Database restored successfully', { srcPath });
+      logger.info('Database restored successfully', { srcPath: normalizePath(srcPath) });
     } catch (error) {
       throw new MemoryError(
         `Failed to restore database: ${(error as Error).message}`,
@@ -1242,7 +1241,7 @@ export class MemoryManager implements IMemoryManager {
       const sizeBytes = Buffer.byteLength(json, 'utf-8');
 
       logger.info('Memory exported to JSON', {
-        filePath,
+        filePath: normalizePath(filePath),
         entriesExported: entries.length,
         sizeBytes
       });
@@ -1373,7 +1372,7 @@ export class MemoryManager implements IMemoryManager {
       }
 
       logger.info('Memory imported from JSON', {
-        filePath,
+        filePath: normalizePath(filePath),
         entriesImported,
         entriesSkipped,
         entriesFailed

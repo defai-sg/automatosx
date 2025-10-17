@@ -9,8 +9,12 @@
  */
 
 import { readFile, writeFile } from 'fs/promises';
-import { resolve, join, extname } from 'path';
 import { existsSync } from 'fs';
+import {
+  resolvePath,
+  extname,
+  normalizePath
+} from '../utils/path-utils.js';
 import { load as loadYaml, dump as dumpYaml } from 'js-yaml';
 import type {
   AutomatosXConfig,
@@ -98,15 +102,15 @@ export async function loadConfig(projectDir: string): Promise<AutomatosXConfig> 
 async function loadConfigUncached(projectDir: string): Promise<AutomatosXConfig> {
   // Try project configs in priority order
   const projectConfigs = [
-    resolve(projectDir, '.automatosx', 'config.yaml'),
-    resolve(projectDir, '.automatosx', 'config.json'),
-    resolve(projectDir, 'automatosx.config.yaml'),
-    resolve(projectDir, 'automatosx.config.json')
+    resolvePath(projectDir, '.automatosx', 'config.yaml'),
+    resolvePath(projectDir, '.automatosx', 'config.json'),
+    resolvePath(projectDir, 'automatosx.config.yaml'),
+    resolvePath(projectDir, 'automatosx.config.json')
   ];
 
   for (const configPath of projectConfigs) {
     if (existsSync(configPath)) {
-      logger.debug('Loading config from path', { path: configPath });
+      logger.debug('Loading config from path', { path: normalizePath(configPath) });
       return await loadConfigFile(configPath);
     }
   }
@@ -114,13 +118,13 @@ async function loadConfigUncached(projectDir: string): Promise<AutomatosXConfig>
   // Try user home config
   const homeDir = process.env.HOME || process.env.USERPROFILE || '';
   const userConfigs = [
-    resolve(homeDir, '.automatosx', 'config.yaml'),
-    resolve(homeDir, '.automatosx', 'config.json')
+    resolvePath(homeDir, '.automatosx', 'config.yaml'),
+    resolvePath(homeDir, '.automatosx', 'config.json')
   ];
 
   for (const configPath of userConfigs) {
     if (existsSync(configPath)) {
-      logger.debug('Loading config from path', { path: configPath });
+      logger.debug('Loading config from path', { path: normalizePath(configPath) });
       return await loadConfigFile(configPath);
     }
   }
@@ -177,7 +181,7 @@ export async function loadConfigFile(path: string): Promise<AutomatosXConfig> {
       );
     }
 
-    logger.info('Config loaded successfully', { path, format: ext });
+    logger.info('Config loaded successfully', { path: normalizePath(path), format: ext });
     return config;
   } catch (error) {
     // Re-throw ConfigError as-is
@@ -737,7 +741,7 @@ export async function saveConfigFile(
     // Write to file
     await writeFile(path, content, 'utf-8');
 
-    logger.info('Config saved successfully', { path, format: ext });
+    logger.info('Config saved successfully', { path: normalizePath(path), format: ext });
   } catch (error) {
     // Re-throw ConfigError as-is
     if (error instanceof ConfigError) {

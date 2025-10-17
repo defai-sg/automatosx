@@ -7,10 +7,10 @@
 
 import { randomUUID } from 'crypto';
 import { readFile, writeFile, mkdir, rename, copyFile, unlink } from 'fs/promises';
-import { dirname } from 'path';
 import type { Session } from '../types/orchestration.js';
 import { SessionError } from '../types/orchestration.js';
 import { logger } from '../utils/logger.js';
+import { dirname, normalizePath } from '../utils/path-utils.js';
 
 /**
  * Session Manager
@@ -739,7 +739,7 @@ export class SessionManager {
         await rename(tempPath, this.persistencePath);
 
         logger.debug('Sessions saved to persistence', {
-          path: this.persistencePath,
+          path: normalizePath(this.persistencePath),
           count: sessionsArray.length
         });
       } catch (renameError) {
@@ -753,7 +753,7 @@ export class SessionManager {
       }
     } catch (error) {
       logger.error('Failed to save sessions to persistence', {
-        path: this.persistencePath,
+        path: normalizePath(this.persistencePath),
         error: (error as Error).message
       });
       throw error; // Re-throw for caller to handle
@@ -850,7 +850,7 @@ export class SessionManager {
       }
 
       logger.info('Sessions loaded from persistence', {
-        path: this.persistencePath,
+        path: normalizePath(this.persistencePath),
         loaded: this.activeSessions.size,
         skipped: skippedCount,
         total: sessionsArray.length
@@ -861,7 +861,7 @@ export class SessionManager {
       // File not found is OK (first time initialization)
       if (err.code === 'ENOENT') {
         logger.debug('No existing sessions file, starting fresh', {
-          path: this.persistencePath
+          path: normalizePath(this.persistencePath)
         });
         return;
       }
@@ -873,14 +873,14 @@ export class SessionManager {
         await copyFile(this.persistencePath, backupPath);
 
         logger.error('Corrupted sessions file backed up, starting fresh', {
-          path: this.persistencePath,
-          backupPath,
+          path: normalizePath(this.persistencePath),
+          backupPath: normalizePath(backupPath),
           error: err.message
         });
       } catch (backupError) {
         // If backup fails, just log and continue
         logger.error('Failed to backup corrupted sessions file', {
-          path: this.persistencePath,
+          path: normalizePath(this.persistencePath),
           error: err.message,
           backupError: (backupError as Error).message
         });

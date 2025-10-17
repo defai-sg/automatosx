@@ -98,7 +98,7 @@ npm run release:rc         # Create RC pre-release
 - Multi-LLM providers (Claude, Gemini, OpenAI) with fallback routing
 - SQLite FTS5 memory (< 1ms search)
 - 4 teams, 12+ specialized agents
-- v5.6.1 | 1,878 tests passing | Node.js 20+
+- v5.6.4 | 1,940+ tests passing | Node.js 20+
 
 **Version Management**:
 
@@ -138,9 +138,11 @@ Bidirectional command translation between AutomatosX and Gemini CLI
 
 ## Critical Development Notes
 
-### Latest Release: v5.6.1 (October 2025)
+### Latest Release: v5.6.4 (October 2025)
 
 **What's New**:
+
+- **Path Security Enhancement**: Centralized path validation utilities preventing traversal attacks
 - **Simplified Architecture**: Removed legacy stage executors (~1,200 LOC, -30KB package size)
 - **Single Execution Path**: All multi-stage agents now use `StageExecutionController`
 - **Better Performance**: Modern controller architecture across the board
@@ -155,6 +157,7 @@ Bidirectional command translation between AutomatosX and Gemini CLI
 **Overview**: Major architectural enhancement to support parallel execution of independent agents, reducing complex workflow execution time by 40-60%.
 
 **Implementation Status** (v5.6.0):
+
 - ✅ Phase 1: Foundation (Week 1-2) - COMPLETE
   - DependencyGraphBuilder with cycle detection
   - ExecutionPlanner with batch grouping
@@ -248,6 +251,7 @@ parallel: true                    # Optional, defaults to true
 - Review PRD Section 4.3 (Error Handling & Recovery) for failure scenarios
 
 **Performance Targets** (from PRD):
+
 - P50 execution time: -40% (3 independent agents)
 - P95 execution time: -50% (complex workflows)
 - CPU utilization: +30%
@@ -278,6 +282,7 @@ parallel: true                    # Optional, defaults to true
 **Overview**: Multi-phase performance optimization reducing provider check latency by 99% and eliminating cold-start delays.
 
 **Implementation Status**:
+
 - ✅ Phase 1 (v5.6.2): Enhanced Cache Metrics - COMPLETE
   - Enhanced `getCacheMetrics()` API with avgAge, lastHit, lastMiss
   - Health metrics (uptime, consecutive successes)
@@ -540,7 +545,7 @@ AUTOMATOSX_DEBUG=true npm test   # Debug tests
 
 ### Core Flow
 
-```
+```text
 CLI → Router → TeamManager → ContextManager → AgentExecutor → Provider CLI
 ```
 
@@ -636,6 +641,16 @@ ax agent create <name> --template developer --interactive
 3. Add tests: `tests/unit/` + `tests/integration/`
 4. Follow Conventional Commits for commit messages (see CONTRIBUTING.md)
 
+### Working with tmp Directory
+
+The `/tmp` directory in the project root is used for:
+
+- Temporary test files and scripts
+- Planning documents and implementation reports
+- Analysis and debugging artifacts
+- Should NOT be committed to git (add to `.gitignore` if needed)
+- AutomatosX agents can write to `automatosx/tmp/` (workspace isolation)
+
 ### Commit Changes
 
 ```bash
@@ -671,7 +686,10 @@ ax runs list/show/delete                 # Manage
 
 ## Security
 
-- Path validation (PathResolver) - no traversal
+- **Path validation** (PathResolver + path-utils) - Prevents directory traversal attacks
+  - Centralized path normalization (`src/utils/path-utils.ts`)
+  - Security validation in `PathResolver`, `WorkspaceManager`, `ConfigManager`, `SessionManager`, `MemoryManager`
+  - Blocks `..`, absolute paths outside project, symbolic links
 - Workspace access control (PRD/tmp only)
 - Input sanitization
 - No arbitrary code execution
@@ -682,7 +700,8 @@ ax runs list/show/delete                 # Manage
 **Core**:
 
 - `src/cli/index.ts` - CLI entry
-- `src/core/` - router, team-manager, memory-manager, session-manager, workspace-manager, response-cache (v5.5.0+)
+- `src/core/` - router, team-manager, memory-manager, session-manager, workspace-manager, response-cache (v5.5.0+), path-resolver (v5.6.3+)
+- `src/utils/path-utils.ts` - Path normalization and validation utilities (v5.6.3+)
 - `src/agents/` - executor, delegation-parser, template-engine, context-manager, dependency-graph (v5.6.0), execution-planner (v5.6.0), parallel-agent-executor (v5.6.0)
 - `src/mcp/` - server, types, tools (16 tools)
 - `src/integrations/gemini-cli/` - bridge, command-translator, types, utils (v5.4.3-beta.0)
@@ -757,7 +776,7 @@ TEST_REAL_GEMINI_CLI=true         # Real Gemini CLI (testing)
 
 **NEW in v5.4.3-beta.0**: Bidirectional command translation between AutomatosX and Gemini CLI.
 
-### Quick Start
+### Gemini CLI Quick Start
 
 ```bash
 # Setup (interactive wizard)
@@ -779,7 +798,7 @@ ax gemini list-commands       # List Gemini commands
 ax gemini validate [--fix]    # Validate configuration
 ```
 
-### Architecture
+### Gemini CLI Architecture
 
 **Key Components**:
 

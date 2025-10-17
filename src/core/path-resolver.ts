@@ -9,8 +9,14 @@
  * @see PRD/16-path-resolution-strategy.md
  */
 
-import { resolve, dirname, relative, isAbsolute, sep } from 'path';
 import { findUp } from 'find-up';
+import {
+  resolvePath,
+  dirname,
+  getRelativePath,
+  normalizePath,
+  isAbsolutePath
+} from '../utils/path-utils.js';
 import type { PathResolverConfig, PathType, PathContext } from '../types/path.js';
 import { PathError } from '../types/path.js';
 
@@ -99,14 +105,14 @@ export class PathResolver implements PathContext {
     }
 
     // Handle absolute paths
-    if (isAbsolute(userPath)) {
-      const normalized = resolve(userPath);
+    if (isAbsolutePath(userPath)) {
+      const normalized = resolvePath(userPath);
       this.validateInProject(normalized);
       return normalized;
     }
 
     // Handle relative paths (relative to workingDir)
-    const resolved = resolve(this.config.workingDir, userPath);
+    const resolved = resolvePath(this.config.workingDir, userPath);
     this.validateInProject(resolved);
     return resolved;
   }
@@ -115,7 +121,7 @@ export class PathResolver implements PathContext {
    * Resolve paths relative to project root
    */
   resolveProjectPath(relativePath: string): string {
-    const resolved = resolve(this.config.projectDir, relativePath);
+    const resolved = resolvePath(this.config.projectDir, relativePath);
     this.validateInProject(resolved);
     return resolved;
   }
@@ -124,7 +130,7 @@ export class PathResolver implements PathContext {
    * Resolve paths relative to working directory
    */
   resolveWorkingPath(relativePath: string): string {
-    const resolved = resolve(this.config.workingDir, relativePath);
+    const resolved = resolvePath(this.config.workingDir, relativePath);
     this.validateInProject(resolved);
     return resolved;
   }
@@ -135,20 +141,21 @@ export class PathResolver implements PathContext {
    * - Full read/write access
    */
   resolveWorkspacePath(agentPath: string): string {
-    return resolve(this.config.agentWorkspace, agentPath);
+    return resolvePath(this.config.agentWorkspace, agentPath);
   }
 
   /**
    * Validate path is within allowed base directory
    */
   validatePath(path: string, baseDir: string): boolean {
-    const normalized = resolve(path);
-    const base = resolve(baseDir);
+    const normalized = normalizePath(resolvePath(path));
+    const base = normalizePath(resolvePath(baseDir));
 
     // Check if path starts with baseDir
-    // Use platform-specific separator to ensure correct comparison
-    const pathWithSep = normalized + sep;
-    const baseWithSep = base + sep;
+    // Use forward slash separator after normalization for cross-platform consistency
+    const separator = '/';
+    const pathWithSep = normalized + separator;
+    const baseWithSep = base + separator;
 
     return pathWithSep.startsWith(baseWithSep) || normalized === base;
   }
@@ -165,7 +172,7 @@ export class PathResolver implements PathContext {
    * Check which boundary a path belongs to
    */
   checkBoundaries(path: string): PathType {
-    const normalized = resolve(path);
+    const normalized = resolvePath(path);
 
     // Check agent workspace first (more specific)
     if (this.validatePath(normalized, this.config.agentWorkspace)) {
@@ -192,30 +199,30 @@ export class PathResolver implements PathContext {
    * Get relative path from project root
    */
   getRelativeToProject(path: string): string {
-    const normalized = resolve(path);
-    return relative(this.config.projectDir, normalized);
+    const normalized = resolvePath(path);
+    return normalizePath(getRelativePath(this.config.projectDir, normalized));
   }
 
   /**
    * Get relative path from working directory
    */
   getRelativeToWorking(path: string): string {
-    const normalized = resolve(path);
-    return relative(this.config.workingDir, normalized);
+    const normalized = resolvePath(path);
+    return normalizePath(getRelativePath(this.config.workingDir, normalized));
   }
 
   /**
    * Get agents directory path
    */
   getAgentsDirectory(): string {
-    return resolve(this.config.projectDir, '.automatosx', 'agents');
+    return resolvePath(this.config.projectDir, '.automatosx', 'agents');
   }
 
   /**
    * Get abilities directory path
    */
   getAbilitiesDirectory(): string {
-    return resolve(this.config.projectDir, '.automatosx', 'abilities');
+    return resolvePath(this.config.projectDir, '.automatosx', 'abilities');
   }
 
   /**

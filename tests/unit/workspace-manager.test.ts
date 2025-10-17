@@ -91,7 +91,7 @@ describe('WorkspaceManager (v5.2.0)', () => {
       it('should reject path traversal attempts', async () => {
         await expect(
           workspaceManager.writePRD('../../../etc/passwd', 'malicious')
-        ).rejects.toThrow('Path traversal detected');
+        ).rejects.toThrow('Path outside workspace');
       });
 
       it('should reject absolute paths', async () => {
@@ -103,7 +103,7 @@ describe('WorkspaceManager (v5.2.0)', () => {
       it('should reject complex path traversal with multiple ..', async () => {
         await expect(
           workspaceManager.writePRD('a/../../b/../../../etc/passwd', 'malicious')
-        ).rejects.toThrow('Path traversal detected');
+        ).rejects.toThrow('Path outside workspace');
       });
 
       it('should allow valid nested paths with ./', async () => {
@@ -175,7 +175,7 @@ describe('WorkspaceManager (v5.2.0)', () => {
       it('should reject path traversal in reads', async () => {
         await expect(
           workspaceManager.readPRD('../../../etc/passwd')
-        ).rejects.toThrow('Path traversal detected');
+        ).rejects.toThrow('Path outside workspace');
       });
     });
 
@@ -254,7 +254,7 @@ describe('WorkspaceManager (v5.2.0)', () => {
       it('should reject path traversal attempts', async () => {
         await expect(
           workspaceManager.writeTmp('../../../etc/passwd', 'malicious')
-        ).rejects.toThrow('Path traversal detected');
+        ).rejects.toThrow('Path outside workspace');
       });
 
       it('should reject absolute paths', async () => {
@@ -448,7 +448,7 @@ describe('WorkspaceManager (v5.2.0)', () => {
     it('should provide clear error messages for path traversal', async () => {
       await expect(
         workspaceManager.writePRD('../outside.txt', 'content')
-      ).rejects.toThrow(/Path traversal detected/);
+      ).rejects.toThrow(/Path outside workspace/);
     });
 
     it('should provide clear error messages for absolute paths', async () => {
