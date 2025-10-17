@@ -25,6 +25,10 @@ import { randomUUID } from 'crypto';
 import { logger } from '../utils/logger.js';
 import chalk from 'chalk';
 import ora from 'ora';
+import { DependencyGraphBuilder } from './dependency-graph.js';
+import { ExecutionPlanner } from './execution-planner.js';
+import { ParallelAgentExecutor } from './parallel-agent-executor.js';
+import type { AgentProfile } from '../types/agent.js';
 
 export interface ExecutionOptions {
   verbose?: boolean;
@@ -37,6 +41,10 @@ export interface ExecutionOptions {
     onToken?: (token: string) => void;
     onProgress?: (progress: number) => void;
   };
+  // Parallel execution options (v5.6.0+)
+  parallelEnabled?: boolean;
+  maxConcurrentDelegations?: number;
+  continueDelegationsOnFailure?: boolean;
 }
 
 export interface ExecutionResult {
@@ -411,10 +419,29 @@ export class AgentExecutor {
     context: ExecutionContext,
     options: ExecutionOptions
   ): Promise<DelegationResult[]> {
+    // Check if parallel execution is enabled and we have multiple delegations
+    const { parallelEnabled = false } = options;
+
+    if (parallelEnabled && delegations.length > 1) {
+      return this.executeDelegationsParallel(delegations, context, options);
+    }
+
+    // Sequential execution (existing behavior)
+    return this.executeDelegationsSequential(delegations, context, options);
+  }
+
+  /**
+   * Execute delegations sequentially (original implementation)
+   */
+  private async executeDelegationsSequential(
+    delegations: Array<{ toAgent: string; task: string }>,
+    context: ExecutionContext,
+    options: ExecutionOptions
+  ): Promise<DelegationResult[]> {
     const results: DelegationResult[] = [];
     const { verbose = false } = options;
 
-    for (const { toAgent, task } of delegations) {
+    for (const { toAgent, task} of delegations) {
       if (verbose) {
         console.log(chalk.cyan(`\n📤 Delegating to ${toAgent}...`));
         console.log(chalk.gray(`   Task: ${task.substring(0, 100)}${task.length > 100 ? '...' : ''}`));
@@ -454,10 +481,12 @@ export class AgentExecutor {
           delegationId: randomUUID(),
           fromAgent: context.agent.name,
           toAgent,
+          task,
           startTime: new Date(),
           endTime: new Date(),
           duration: 0,
           status: 'failure',
+          success: false,
           response: {
             content: `Delegation failed: ${err.message}`,
             model: 'error',
@@ -470,11 +499,198 @@ export class AgentExecutor {
             memoryIds: [],
             workspacePath: ''
           }
-        } as DelegationResult);
+        });
       }
     }
 
     return results;
+  }
+
+  /**
+   * Execute delegations in parallel using dependency graph (v5.6.0+)
+   */
+  private async executeDelegationsParallel(
+    delegations: Array<{ toAgent: string; task: string }>,
+    context: ExecutionContext,
+    options: ExecutionOptions
+  ): Promise<DelegationResult[]> {
+    const { verbose = false, maxConcurrentDelegations, continueDelegationsOnFailure = true } = options;
+
+    // Validate required dependencies
+    if (!this.contextManager || !this.profileLoader || !this.workspaceManager) {
+      throw new DelegationError(
+        'Parallel execution requires contextManager, profileLoader, and workspaceManager',
+        context.agent.name,
+        'multiple',
+        'execution_failed'
+      );
+    }
+
+    if (verbose) {
+      console.log(chalk.cyan(`\n🚀 Starting parallel execution of ${delegations.length} delegations...`));
+    }
+
+    try {
+      // 1. Load agent profiles for all delegations
+      const agentProfiles: AgentProfile[] = [];
+      const delegationMap = new Map<string, Array<{ toAgent: string; task: string }>>();
+
+      for (const delegation of delegations) {
+        const profile = await this.profileLoader.loadProfile(delegation.toAgent);
+        agentProfiles.push(profile);
+
+        // Group delegations by agent (in case of multiple tasks to same agent)
+        if (!delegationMap.has(delegation.toAgent)) {
+          delegationMap.set(delegation.toAgent, []);
+        }
+        delegationMap.get(delegation.toAgent)!.push(delegation);
+      }
+
+      // 2. Build dependency graph
+      const graphBuilder = new DependencyGraphBuilder();
+      const graph = graphBuilder.buildGraph(agentProfiles);
+
+      // Detect circular dependencies
+      try {
+        graphBuilder.detectCycles(graph);
+      } catch (error) {
+        throw new DelegationError(
+          `Circular dependency detected: ${(error as Error).message}`,
+          context.agent.name,
+          'multiple',
+          'cycle'
+        );
+      }
+
+      // Calculate execution levels
+      graphBuilder.calculateLevels(graph);
+
+      // 3. Create execution plan
+      const planner = new ExecutionPlanner();
+      const plan = planner.createExecutionPlan(graph, {
+        maxConcurrentAgents: maxConcurrentDelegations || this.config?.execution?.maxConcurrentAgents || 4
+      });
+
+      if (verbose) {
+        console.log(chalk.gray(`   Execution plan: ${plan.levels.length} levels, max concurrency: ${plan.maxConcurrency}`));
+      }
+
+      // 4. Execute using ParallelAgentExecutor
+      const parallelExecutor = new ParallelAgentExecutor();
+      const result = await parallelExecutor.execute(
+        agentProfiles,
+        context,
+        {
+          continueOnFailure: continueDelegationsOnFailure,
+          maxConcurrentAgents: plan.maxConcurrency,
+          signal: options.signal,
+          timeout: options.timeout
+        }
+      );
+
+      if (verbose) {
+        console.log(chalk.green(`\n✅ Parallel execution completed`));
+        console.log(chalk.gray(`   Completed: ${result.completedAgents.length}`));
+        console.log(chalk.gray(`   Failed: ${result.failedAgents.length}`));
+        console.log(chalk.gray(`   Skipped: ${result.skippedAgents.length}`));
+        console.log(chalk.gray(`   Duration: ${result.totalDuration}ms`));
+      }
+
+      // 5. Convert ParallelExecutionResult to DelegationResult[]
+      const delegationResults: DelegationResult[] = [];
+
+      for (const [agentName, node] of result.graph!.nodes) {
+        // Find all delegations for this agent
+        const agentDelegations = delegationMap.get(agentName) || [];
+
+        for (const delegation of agentDelegations) {
+          // Create DelegationResult based on node status
+          const timelineEntry = result.timeline.find(t => t.agentName === agentName);
+          const startTime = timelineEntry ? new Date(timelineEntry.startTime) : new Date();
+          const endTime = timelineEntry ? new Date(timelineEntry.endTime) : new Date();
+
+          if (node.status === 'completed' && node.result) {
+            // Successful execution
+            delegationResults.push({
+              delegationId: randomUUID(),
+              fromAgent: context.agent.name,
+              toAgent: agentName,
+              task: delegation.task,
+              startTime,
+              endTime,
+              duration: timelineEntry?.duration || 0,
+              status: 'success',  // Bug #6 fixed: use 'success' instead of 'completed'
+              success: true,
+              response: {
+                // Bug #7 fixed: use node.result.response.content instead of node.result.output
+                content: typeof node.result.response.content === 'string'
+                  ? node.result.response.content
+                  : JSON.stringify(node.result.response.content),
+                model: node.result.response.model || 'parallel-execution',
+                tokensUsed: node.result.response.tokensUsed || { prompt: 0, completion: 0, total: 0 },
+                latencyMs: timelineEntry?.duration || 0,
+                finishReason: node.result.response.finishReason || 'stop'
+              },
+              outputs: {
+                files: node.result.outputs?.files || [],
+                memoryIds: node.result.outputs?.memoryIds || [],
+                // Bug #8 fixed: WorkspaceManager doesn't have getWorkspace(), use empty string
+                workspacePath: ''
+              }
+            });
+          } else {
+            // Failed or skipped execution
+            // Bug #11 fixed: Map both 'failed' and 'skipped' to 'failure' status
+            // DelegationResult.status only allows: 'success' | 'failure' | 'timeout'
+            delegationResults.push({
+              delegationId: randomUUID(),
+              fromAgent: context.agent.name,
+              toAgent: agentName,
+              task: delegation.task,
+              startTime,
+              endTime,
+              duration: timelineEntry?.duration || 0,
+              status: 'failure',
+              success: false,
+              response: {
+                content: node.status === 'skipped'
+                  ? `Agent skipped due to dependency failure`
+                  : `Agent execution failed`,
+                model: 'error',
+                tokensUsed: { prompt: 0, completion: 0, total: 0 },
+                latencyMs: 0,
+                finishReason: 'error'
+              },
+              outputs: {
+                files: [],
+                memoryIds: [],
+                workspacePath: ''
+              }
+            });
+          }
+        }
+      }
+
+      return delegationResults;
+    } catch (error) {
+      const err = error as Error;
+      logger.error('Parallel delegation execution failed', {
+        fromAgent: context.agent.name,
+        delegationCount: delegations.length,
+        error: err.message
+      });
+
+      if (verbose) {
+        console.log(chalk.red(`\n❌ Parallel execution failed: ${err.message}`));
+      }
+
+      throw new DelegationError(
+        `Parallel execution failed: ${err.message}`,
+        context.agent.name,
+        'multiple',
+        'execution_failed'
+      );
+    }
   }
 
   /**
@@ -858,7 +1074,9 @@ export class AgentExecutor {
         delegationId,
         fromAgent: request.fromAgent,
         toAgent: request.toAgent,
+        task: request.task,
         status: 'success',
+        success: true,
         response: executionResult.response,
         duration,
         outputs: {

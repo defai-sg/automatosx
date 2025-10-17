@@ -87,8 +87,14 @@ export interface DelegationResult {
   /** Agent that executed the task */
   toAgent: string;
 
+  /** Task description */
+  task: string;
+
   /** Delegation status */
   status: 'success' | 'failure' | 'timeout';
+
+  /** Whether the delegation was successful (derived from status) */
+  success: boolean;
 
   /** Response from the delegated agent execution */
   response: ExecutionResponse;

@@ -228,7 +228,8 @@ describe('List Command', () => {
   describe('Builder', () => {
     it('should configure type positional argument', () => {
       const yargsStub = {
-        positional: vi.fn().mockReturnThis()
+        positional: vi.fn().mockReturnThis(),
+        option: vi.fn().mockReturnThis()
       };
 
       listCommand.builder(yargsStub as any);
@@ -237,6 +238,13 @@ describe('List Command', () => {
         describe: expect.any(String),
         type: 'string',
         choices: expect.arrayContaining(['agents', 'abilities', 'providers'])
+      }));
+
+      expect(yargsStub.option).toHaveBeenCalledWith('format', expect.objectContaining({
+        describe: expect.any(String),
+        type: 'string',
+        choices: expect.arrayContaining(['text', 'json']),
+        default: 'text'
       }));
     });
   });

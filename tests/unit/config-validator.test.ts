@@ -405,4 +405,24 @@ describe('Config Validator', () => {
       expect(formatted).toContain('Current value: 50');
     });
   });
+
+  describe('Execution Validation', () => {
+    it('should validate execution.maxConcurrentAgents boundaries', () => {
+      const config = {
+        ...DEFAULT_CONFIG,
+        execution: {
+          ...DEFAULT_CONFIG.execution,
+          maxConcurrentAgents: 0
+        }
+      };
+
+      const result = validateConfig(config);
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContainEqual({
+        path: 'execution.maxConcurrentAgents',
+        message: 'maxConcurrentAgents must be >= 1',
+        value: 0
+      });
+    });
+  });
 });

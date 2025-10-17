@@ -76,6 +76,7 @@ export interface ExecutionResponse {
   };
   latencyMs: number;
   finishReason: 'stop' | 'length' | 'error';
+  cached?: boolean; // Indicates if response came from cache (v5.5.3)
 }
 
 export interface Cost {

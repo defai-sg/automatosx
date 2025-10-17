@@ -11,6 +11,7 @@ import { PathResolver, detectProjectRoot } from '../../core/path-resolver.js';
 
 interface ListOptions {
   type: 'agents' | 'abilities' | 'providers';
+  format?: 'text' | 'json';
 }
 
 export const listCommand: CommandModule<Record<string, unknown>, ListOptions> = {
@@ -24,6 +25,12 @@ export const listCommand: CommandModule<Record<string, unknown>, ListOptions> = 
         type: 'string',
         choices: ['agents', 'abilities', 'providers'] as const,
         demandOption: true
+      })
+      .option('format', {
+        describe: 'Output format',
+        type: 'string',
+        choices: ['text', 'json'] as const,
+        default: 'text'
       }) as any;
   },
 
@@ -39,13 +46,13 @@ export const listCommand: CommandModule<Record<string, unknown>, ListOptions> = 
 
       switch (argv.type) {
         case 'agents':
-          await listAgents(pathResolver);
+          await listAgents(pathResolver, argv.format || 'text');
           break;
         case 'abilities':
-          await listAbilities(pathResolver);
+          await listAbilities(pathResolver, argv.format || 'text');
           break;
         case 'providers':
-          await listProviders();
+          await listProviders(argv.format || 'text');
           break;
       }
 
@@ -61,7 +68,7 @@ export const listCommand: CommandModule<Record<string, unknown>, ListOptions> = 
 /**
  * List available agents
  */
-async function listAgents(pathResolver: PathResolver): Promise<void> {
+async function listAgents(pathResolver: PathResolver, format: 'text' | 'json'): Promise<void> {
   const agentsDir = pathResolver.getAgentsDirectory();
   const { existsSync } = await import('fs');
   const projectDir = await detectProjectRoot();
@@ -104,13 +111,15 @@ async function listAgents(pathResolver: PathResolver): Promise<void> {
     }
 
     if (agentFiles.length === 0) {
-      console.log(chalk.yellow('\n⚠️  No agents found\n'));
-      console.log(chalk.gray('Create agents in: ' + agentsDir));
-      console.log(chalk.gray('Or run: automatosx init\n'));
+      if (format === 'json') {
+        console.log(JSON.stringify({ agents: [], total: 0 }, null, 2));
+      } else {
+        console.log(chalk.yellow('\n⚠️  No agents found\n'));
+        console.log(chalk.gray('Create agents in: ' + agentsDir));
+        console.log(chalk.gray('Or run: automatosx init\n'));
+      }
       return;
     }
-
-    console.log(chalk.blue.bold('\n🤖 Available Agents:\n'));
 
     // Load and display each agent's info
     const { load } = await import('js-yaml');
@@ -118,6 +127,8 @@ async function listAgents(pathResolver: PathResolver): Promise<void> {
 
     // Sort by name
     agentFiles.sort((a, b) => a.file.localeCompare(b.file));
+
+    const agents = [];
 
     for (const { file, path: agentPath, source } of agentFiles) {
       try {
@@ -127,20 +138,36 @@ async function listAgents(pathResolver: PathResolver): Promise<void> {
         const name = agent.displayName || agent.name || file.replace(/\.(yaml|yml)$/, '');
         const description = agent.description || 'No description';
 
-        console.log(chalk.cyan(`  • ${name}`) + chalk.gray(` (${source})`));
-        console.log(chalk.gray(`    ${description}`));
+        const agentInfo = {
+          name,
+          description,
+          abilities: agent.abilities || [],
+          source
+        };
+
+        agents.push(agentInfo);
+      } catch (error) {
+        // Skip agents that fail to load in JSON mode
+      }
+    }
+
+    if (format === 'json') {
+      console.log(JSON.stringify({ agents, total: agents.length }, null, 2));
+    } else {
+      console.log(chalk.blue.bold('\n🤖 Available Agents:\n'));
+
+      for (const agent of agents) {
+        console.log(chalk.cyan(`  • ${agent.name}`) + chalk.gray(` (${agent.source})`));
+        console.log(chalk.gray(`    ${agent.description}`));
 
         if (agent.abilities && agent.abilities.length > 0) {
           console.log(chalk.gray(`    Abilities: ${agent.abilities.join(', ')}`));
         }
         console.log();
-      } catch (error) {
-        console.log(chalk.yellow(`  • ${file} (error loading)`) + chalk.gray(` (${source})`));
-        console.log();
       }
-    }
 
-    console.log(chalk.gray(`Total: ${agentFiles.length} agent(s)\n`));
+      console.log(chalk.gray(`Total: ${agents.length} agent(s)\n`));
+    }
 
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
@@ -155,7 +182,7 @@ async function listAgents(pathResolver: PathResolver): Promise<void> {
 /**
  * List available abilities
  */
-async function listAbilities(pathResolver: PathResolver): Promise<void> {
+async function listAbilities(pathResolver: PathResolver, format: 'text' | 'json'): Promise<void> {
   const abilitiesDir = pathResolver.getAbilitiesDirectory();
 
   try {
@@ -163,15 +190,18 @@ async function listAbilities(pathResolver: PathResolver): Promise<void> {
     const abilityFiles = files.filter(f => f.endsWith('.md'));
 
     if (abilityFiles.length === 0) {
-      console.log(chalk.yellow('\n⚠️  No abilities found\n'));
-      console.log(chalk.gray('Create abilities in: ' + abilitiesDir));
-      console.log(chalk.gray('Or run: automatosx init\n'));
+      if (format === 'json') {
+        console.log(JSON.stringify({ abilities: [], total: 0 }, null, 2));
+      } else {
+        console.log(chalk.yellow('\n⚠️  No abilities found\n'));
+        console.log(chalk.gray('Create abilities in: ' + abilitiesDir));
+        console.log(chalk.gray('Or run: automatosx init\n'));
+      }
       return;
     }
 
-    console.log(chalk.blue.bold('\n⚡ Available Abilities:\n'));
-
     const { readFile } = await import('fs/promises');
+    const abilities = [];
 
     for (const file of abilityFiles.sort()) {
       const abilityPath = join(abilitiesDir, file);
@@ -187,16 +217,25 @@ async function listAbilities(pathResolver: PathResolver): Promise<void> {
         const name = titleLine?.replace('# ', '') || file.replace('.md', '');
         const description = descIndex >= 0 ? lines[descIndex + 1]?.trim() || 'No description' : 'No description';
 
-        console.log(chalk.cyan(`  • ${name}`));
-        console.log(chalk.gray(`    ${description}`));
-        console.log();
+        abilities.push({ name, description });
       } catch (error) {
-        console.log(chalk.yellow(`  • ${file} (error loading)`));
-        console.log();
+        // Skip abilities that fail to load in JSON mode
       }
     }
 
-    console.log(chalk.gray(`Total: ${abilityFiles.length} ability(ies)\n`));
+    if (format === 'json') {
+      console.log(JSON.stringify({ abilities, total: abilities.length }, null, 2));
+    } else {
+      console.log(chalk.blue.bold('\n⚡ Available Abilities:\n'));
+
+      for (const ability of abilities) {
+        console.log(chalk.cyan(`  • ${ability.name}`));
+        console.log(chalk.gray(`    ${ability.description}`));
+        console.log();
+      }
+
+      console.log(chalk.gray(`Total: ${abilities.length} ability(ies)\n`));
+    }
 
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
@@ -211,9 +250,7 @@ async function listAbilities(pathResolver: PathResolver): Promise<void> {
 /**
  * List available providers
  */
-async function listProviders(): Promise<void> {
-  console.log(chalk.blue.bold('\n🔌 Available Providers:\n'));
-
+async function listProviders(format: 'text' | 'json'): Promise<void> {
   const providers = [
     {
       name: 'claude',
@@ -235,13 +272,19 @@ async function listProviders(): Promise<void> {
     }
   ];
 
-  for (const provider of providers) {
-    console.log(chalk.cyan(`  • ${provider.name}`));
-    console.log(chalk.gray(`    ${provider.description}`));
-    console.log(chalk.gray(`    Status: ${provider.status}`));
-    console.log(chalk.gray(`    Capabilities: ${provider.capabilities.join(', ')}`));
-    console.log();
-  }
+  if (format === 'json') {
+    console.log(JSON.stringify({ providers, total: providers.length }, null, 2));
+  } else {
+    console.log(chalk.blue.bold('\n🔌 Available Providers:\n'));
 
-  console.log(chalk.gray(`Total: ${providers.length} provider(s)\n`));
+    for (const provider of providers) {
+      console.log(chalk.cyan(`  • ${provider.name}`));
+      console.log(chalk.gray(`    ${provider.description}`));
+      console.log(chalk.gray(`    Status: ${provider.status}`));
+      console.log(chalk.gray(`    Capabilities: ${provider.capabilities.join(', ')}`));
+      console.log();
+    }
+
+    console.log(chalk.gray(`Total: ${providers.length} provider(s)\n`));
+  }
 }

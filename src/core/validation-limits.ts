@@ -44,7 +44,8 @@ export const VALIDATION_LIMITS = {
 
   // Ratio limits
   MIN_BACKOFF_FACTOR: 1,        // Linear at minimum
-  MAX_BACKOFF_FACTOR: 10        // Reasonable exponential growth
+  MAX_BACKOFF_FACTOR: 10,       // Reasonable exponential growth
+  MAX_CONCURRENT_AGENTS: 32     // Cap parallel agent execution to protect resources
 } as const;
 
 /**

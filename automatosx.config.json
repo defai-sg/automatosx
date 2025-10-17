@@ -36,6 +36,7 @@
   },
   "execution": {
     "defaultTimeout": 1500000,
+    "maxConcurrentAgents": 4,
     "retry": {
       "maxAttempts": 3,
       "initialDelay": 1000,
@@ -150,6 +151,13 @@
       "ttl": 600000,
       "cleanupInterval": 120000
     },
+    "responseCache": {
+      "enabled": false,
+      "ttl": 86400,
+      "maxSize": 1000,
+      "maxMemorySize": 100,
+      "dbPath": ".automatosx/cache/responses.db"
+    },
     "rateLimit": {
       "enabled": false,
       "requestsPerMinute": 60,
@@ -211,5 +219,5 @@
       "defaultLimit": 10
     }
   },
-  "version": "5.5.0-beta.0"
+  "version": "5.5.2"
 }

@@ -8,6 +8,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { loadConfig, validateConfig, clearConfigCache } from '../../src/core/config.js';
 import type { AutomatosXConfig } from '../../src/types/config.js';
+import { DEFAULT_CONFIG } from '../../src/types/config.js';
 
 describe('Config Management', () => {
   let testDir: string;
@@ -385,6 +386,14 @@ describe('Config Management', () => {
 
       const errors = validateConfig(config);
       expect(errors.length).toBeGreaterThan(3); // Multiple errors detected
+    });
+
+    it('should detect invalid execution.maxConcurrentAgents', () => {
+      const config: AutomatosXConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+      config.execution!.maxConcurrentAgents = 0;
+
+      const errors = validateConfig(config);
+      expect(errors.some(error => error.includes('maxConcurrentAgents'))).toBe(true);
     });
   });
 });
