@@ -8,8 +8,8 @@
     "access": "public"
   },
   "bin": {
-    "automatosx": "./dist/index.js",
-    "ax": "./dist/index.js"
+    "automatosx": "dist/index.js",
+    "ax": "dist/index.js"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -104,7 +104,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/defai-digital/automatosx.git"
+    "url": "git+https://github.com/defai-digital/automatosx.git"
   },
   "bugs": {
     "url": "https://github.com/defai-digital/automatosx/issues"
