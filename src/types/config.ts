@@ -401,7 +401,7 @@ export const DEFAULT_CONFIG: AutomatosXConfig = {
     },
     // v5.3.0: Stage-based execution configuration
     stages: {
-      enabled: false,        // Opt-in feature (backward compatible)
+      enabled: true,         // v5.6.1: Always enabled, legacy executors removed (StageExecutionController is the only option)
       defaultTimeout: 1800000,  // 30 minutes per stage
       checkpointPath: '.automatosx/checkpoints',
       autoSaveCheckpoint: true,

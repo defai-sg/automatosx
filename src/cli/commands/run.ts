@@ -7,9 +7,6 @@ import { ContextManager } from '../../agents/context-manager.js';
 import { ProfileLoader } from '../../agents/profile-loader.js';
 import { AbilitiesManager } from '../../agents/abilities-manager.js';
 import { AgentExecutor } from '../../agents/executor.js';
-import { StageExecutor } from '../../agents/stage-executor.js';
-import { AdvancedStageExecutor } from '../../agents/advanced-stage-executor.js';
-import type { MultiStageExecutionResult } from '../../agents/stage-executor.js';
 import type { Stage } from '../../types/agent.js';
 import { AgentNotFoundError } from '../../types/agent.js';
 import { StageExecutionController } from '../../core/stage-execution-controller.js';
@@ -419,286 +416,96 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
       if (hasStages) {
         const stages = context.agent.stages;
 
-        // v5.3.0: Check if interactive mode is requested
-        // Precedence: explicit CLI flags (positive or negative) > config > default (false)
-        //
-        // Detection logic:
-        // 1. Check if user explicitly set ANY CLI flag (including negative flags like --no-interactive)
-        // 2. If ANY flag is explicitly set, use that decision (CLI wins over config)
-        // 3. If NO flags are set, fall back to config.execution.stages.enabled
-        // 4. If config is not set, default to false
-        //
-        // Examples:
-        // - `--interactive` → useInteractiveController = true (explicit positive)
-        // - `--no-interactive --no-streaming --no-hybrid --no-resumable` → useInteractiveController = false (explicit negative)
-        // - No flags + config.enabled=true → useInteractiveController = true (config fallback)
-        // - No flags + config.enabled=false → useInteractiveController = false (config fallback)
-        // - No flags + no config → useInteractiveController = false (default)
-
-        const hasInteractiveFlag = argv.interactive !== undefined;
-        const hasStreamingFlag = argv.streaming !== undefined;
-        const hasHybridFlag = argv.hybrid !== undefined;
-        const hasResumableFlag = argv.resumable !== undefined;
-        const hasAnyExplicitFlag = hasInteractiveFlag || hasStreamingFlag || hasHybridFlag || hasResumableFlag;
-
-        let useInteractiveController: boolean;
-        let enabledVia: 'CLI flag' | 'config';
-
-        if (hasAnyExplicitFlag) {
-          // CLI flags explicitly set - use them (respects both positive and negative flags)
-          const cliRequiresInteractive = argv.interactive === true || argv.streaming === true || argv.hybrid === true || argv.resumable === true;
-          useInteractiveController = cliRequiresInteractive;
-          enabledVia = 'CLI flag';
-        } else {
-          // No CLI flags - fall back to config
-          useInteractiveController = config.execution?.stages?.enabled ?? false;
-          enabledVia = 'config';
+        // v5.7.0: Always use StageExecutionController for multi-stage agents
+        // Legacy StageExecutor and AdvancedStageExecutor have been removed
+        if (argv.verbose) {
+          console.log(chalk.cyan(`\n📋 Multi-stage execution (${context.agent.stages.length} stages)\n`));
         }
 
-        if (useInteractiveController) {
-          // Use StageExecutionController for interactive/resumable execution
-          if (argv.verbose) {
-            console.log(chalk.cyan(`\n📋 Interactive stage execution (${context.agent.stages.length} stages) [enabled via ${enabledVia}]\n`));
-          }
+        // Get stage configuration
+        const stageConfig = config.execution?.stages;
+        const checkpointPath = stageConfig?.checkpointPath || join(projectDir, '.automatosx', 'checkpoints');
+        const cleanupAfterDays = stageConfig?.cleanupAfterDays || 7;
 
-          // Get stage configuration
-          const stageConfig = config.execution?.stages;
-          const checkpointPath = stageConfig?.checkpointPath || join(projectDir, '.automatosx', 'checkpoints');
-          const cleanupAfterDays = stageConfig?.cleanupAfterDays || 7;
+        // Create StageExecutionController
+        const agentExecutor = new AgentExecutor({
+          sessionManager,
+          workspaceManager,
+          contextManager,
+          profileLoader
+        });
 
-          // Create StageExecutionController
-          const agentExecutor = new AgentExecutor({
-            sessionManager,
-            workspaceManager,
-            contextManager,
-            profileLoader
-          });
+        const stageExecutionConfig = {
+          checkpointPath,
+          autoSaveCheckpoint: argv.resumable ?? stageConfig?.autoSaveCheckpoint ?? false,
+          cleanupAfterDays,
+          defaultStageTimeout: argv.timeout ? argv.timeout * 1000 : (stageConfig?.defaultTimeout || 1500000),
+          userDecisionTimeout: stageConfig?.prompts?.timeout || 60000,
+          defaultMaxRetries: stageConfig?.retry?.defaultMaxRetries || 1,
+          defaultRetryDelay: stageConfig?.retry?.defaultRetryDelay || 1000,
+          progressUpdateInterval: stageConfig?.progress?.updateInterval || 1000,
+          syntheticProgress: stageConfig?.progress?.syntheticProgress !== false,
+          promptTimeout: stageConfig?.prompts?.timeout || 60000,
+          autoConfirm: argv.autoContinue ?? stageConfig?.prompts?.autoConfirm ?? false
+        };
 
-          const stageExecutionConfig = {
-            checkpointPath,
-            autoSaveCheckpoint: argv.resumable ?? stageConfig?.autoSaveCheckpoint ?? false,
-            cleanupAfterDays,
-            defaultStageTimeout: argv.timeout ? argv.timeout * 1000 : (stageConfig?.defaultTimeout || 1500000),
-            userDecisionTimeout: stageConfig?.prompts?.timeout || 60000,
-            defaultMaxRetries: stageConfig?.retry?.defaultMaxRetries || 1,
-            defaultRetryDelay: stageConfig?.retry?.defaultRetryDelay || 1000,
-            progressUpdateInterval: stageConfig?.progress?.updateInterval || 1000,
-            syntheticProgress: stageConfig?.progress?.syntheticProgress !== false,
-            promptTimeout: stageConfig?.prompts?.timeout || 60000,
-            autoConfirm: argv.autoContinue ?? stageConfig?.prompts?.autoConfirm ?? false
-          };
+        const controller = new StageExecutionController(
+          agentExecutor,
+          contextManager,
+          profileLoader,
+          stageExecutionConfig,
+          undefined, // hooks
+          memoryManager // memoryManager for stage result persistence
+        );
 
-          const controller = new StageExecutionController(
-            agentExecutor,
-            contextManager,
-            profileLoader,
-            stageExecutionConfig,
-            undefined, // hooks
-            memoryManager // memoryManager for stage result persistence
-          );
+        // Build execution mode
+        const executionMode: ExecutionMode = {
+          interactive: argv.hybrid ? true : (argv.interactive ?? false),
+          streaming: argv.hybrid ? true : (argv.streaming ?? false),
+          resumable: argv.resumable ?? stageConfig?.autoSaveCheckpoint ?? false,
+          autoConfirm: argv.autoContinue ?? stageConfig?.prompts?.autoConfirm ?? false
+        };
 
-          // Build execution mode
-          const executionMode: ExecutionMode = {
-            interactive: argv.hybrid ? true : (argv.interactive ?? false),
-            streaming: argv.hybrid ? true : (argv.streaming ?? false),
-            resumable: argv.resumable ?? stageConfig?.autoSaveCheckpoint ?? false,
-            autoConfirm: argv.autoContinue ?? stageConfig?.prompts?.autoConfirm ?? false
-          };
+        // Execute with controller
+        const result = await controller.execute(
+          context.agent,
+          argv.task as string,
+          executionMode,
+          { showPlan: true, verbose: argv.verbose }
+        );
 
-          // Execute with controller
-          const result = await controller.execute(
-            context.agent,
-            argv.task as string,
-            executionMode,
-            { showPlan: true, verbose: argv.verbose }
-          );
-
-          // Display result
-          console.log(chalk.green('\n✅ Execution completed successfully'));
-          if (result.checkpointPath) {
-            console.log(chalk.gray(`Checkpoint saved: ${result.runId}`));
-            console.log(chalk.gray(`Resume with: ax resume ${result.runId}`));
-          }
-
-          // Save to memory if requested
-          if (argv.saveMemory && memoryManager) {
-            try {
-              const metadata = {
-                type: 'conversation' as const,
-                source: 'agent-execution',
-                agentId: resolvedAgentName,
-                tags: ['agent-execution', resolvedAgentName, 'stage-execution'],
-                provider: context.provider.name,
-                timestamp: new Date().toISOString()
-              };
-
-              const embedding = null;
-              const content = `Agent: ${resolvedAgentName}\nTask: ${argv.task}\n\nResult: ${result.stages.map(s => s.output).join('\n\n')}`;
-              await memoryManager.add(content, embedding, metadata);
-
-              if (argv.verbose) {
-                console.log(chalk.green('✓ Conversation saved to memory'));
-              }
-            } catch (error) {
-              if (argv.verbose) {
-                console.log(chalk.yellow(`⚠ Failed to save to memory: ${(error as Error).message}`));
-              }
-            }
-          }
-
-          // Skip legacy stage execution
-        } else {
-          // Use legacy StageExecutor/AdvancedStageExecutor (backward compatible)
-          // Check if any stages have advanced features (dependencies, parallel, conditions)
-          const hasAdvancedFeatures = stages.filter((s: Stage | undefined): s is Stage => s !== undefined).some((s: Stage) =>
-            (s.dependencies && s.dependencies.length > 0) ||
-            s.parallel ||
-            s.condition
-          );
-
-          // Use StageExecutor for multi-stage execution
-          if (argv.verbose) {
-            console.log(chalk.cyan(`\n📋 Multi-stage execution detected (${context.agent.stages.length} stages)\n`));
-
-            if (hasAdvancedFeatures) {
-              console.log(chalk.cyan('✨ Advanced features enabled (dependencies/parallel/conditions)\n'));
-            }
-          }
-
-        let multiStageResult: MultiStageExecutionResult;
-
-        // v5.0.8: Create AbortController for timeout support
-        let controller: AbortController | undefined;
-        let timeoutId: NodeJS.Timeout | undefined;
-
-        if (argv.timeout) {
-          const timeoutMs = argv.timeout * 1000;
-          controller = new AbortController();
-          timeoutId = setTimeout(() => {
-            controller!.abort();
-          }, timeoutMs);
+        // Display result
+        console.log(chalk.green('\n✅ Execution completed successfully'));
+        if (result.checkpointPath) {
+          console.log(chalk.gray(`Checkpoint saved: ${result.runId}`));
+          console.log(chalk.gray(`Resume with: ax resume ${result.runId}`));
         }
 
-        try {
-          if (hasAdvancedFeatures) {
-            // Use AdvancedStageExecutor for Phase 3 features
-            const advancedExecutor = new AdvancedStageExecutor();
-
-            // Show dependency graph if verbose
-            if (argv.verbose) {
-              console.log(advancedExecutor.visualizeDependencyGraph(stages));
-            }
-
-            multiStageResult = await advancedExecutor.executeAdvanced(context, {
-              verbose: argv.verbose,
-              showProgress: !argv.verbose,
-              continueOnFailure: false,
-              saveToMemory: argv.saveMemory,
-              memoryManager: memoryManager || null,
-              timeout: argv.timeout ? argv.timeout * 1000 : undefined,  // v5.0.8: Pass timeout
-              signal: controller?.signal  // v5.0.8: Pass abort signal
-            });
-
-            // Display multi-stage result
-            advancedExecutor.displayResult(multiStageResult, argv.verbose || false);
-          } else {
-            // Use regular StageExecutor for simple multi-stage
-            const stageExecutor = new StageExecutor();
-            multiStageResult = await stageExecutor.executeStages(context, {
-              verbose: argv.verbose,
-              showProgress: !argv.verbose,
-              continueOnFailure: false,
-              saveToMemory: argv.saveMemory,
-              memoryManager: memoryManager || null,
-              timeout: argv.timeout ? argv.timeout * 1000 : undefined,  // v5.0.8: Pass timeout
-              signal: controller?.signal  // v5.0.8: Pass abort signal
-            });
-
-            // Display multi-stage result
-            stageExecutor.displayResult(multiStageResult, argv.verbose || false);
-          }
-        } finally {
-          if (timeoutId) {
-            clearTimeout(timeoutId);
-          }
-        }
-
-        // Check if execution was aborted (v5.0.8)
-        if (controller?.signal.aborted) {
-          throw new Error(`Multi-stage execution timeout after ${argv.timeout} seconds`);
-        }
-
-        // Save multi-stage result to file if requested
-        if (argv.save) {
-          try {
-            const savePath = argv.save;
-            const saveDir = join(savePath, '..');
-            await mkdir(saveDir, { recursive: true });
-
-            let outputData: string;
-            if (argv.format === 'json') {
-              outputData = JSON.stringify({
-                agent: resolvedAgentName,
-                task: argv.task,
-                stages: multiStageResult.stages.map(s => ({
-                  name: s.stageName,
-                  index: s.stageIndex,
-                  success: s.success,
-                  output: s.output,
-                  duration: s.duration,
-                  tokensUsed: s.tokensUsed,
-                  model: s.model,
-                  error: s.error?.message // Include error message if stage failed
-                })),
-                totalDuration: multiStageResult.totalDuration,
-                totalTokens: multiStageResult.totalTokens,
-                success: multiStageResult.success,
-                failedStage: multiStageResult.failedStage,
-                timestamp: new Date().toISOString()
-              }, null, 2);
-            } else {
-              outputData = multiStageResult.finalOutput;
-            }
-
-            writeFileSync(savePath, outputData, 'utf-8');
-            console.log(chalk.green(`\n✅ Result saved to: ${savePath}\n`));
-          } catch (error) {
-            console.log(chalk.yellow(`⚠ Failed to save result: ${(error as Error).message}\n`));
-          }
-        }
-
-        // Save multi-stage result to memory
+        // Save to memory if requested
         if (argv.saveMemory && memoryManager) {
           try {
             const metadata = {
               type: 'conversation' as const,
               source: 'agent-execution',
               agentId: resolvedAgentName,
-              tags: ['agent-execution', resolvedAgentName, 'multi-stage'],
+              tags: ['agent-execution', resolvedAgentName, 'stage-execution'],
               provider: context.provider.name,
               timestamp: new Date().toISOString()
             };
 
-            // FTS5 doesn't need real embeddings - use null
             const embedding = null;
-
-            // Build content from multi-stage result
-            const content = `Agent: ${resolvedAgentName}\nTask: ${argv.task}\n\nResult: ${multiStageResult.finalOutput}`;
-
-            // Save to memory
+            const content = `Agent: ${resolvedAgentName}\nTask: ${argv.task}\n\nResult: ${result.stages.map(s => s.output).join('\n\n')}`;
             await memoryManager.add(content, embedding, metadata);
 
             if (argv.verbose) {
               console.log(chalk.green('✓ Conversation saved to memory'));
             }
           } catch (error) {
-            // Don't fail the command if memory save fails
             if (argv.verbose) {
               console.log(chalk.yellow(`⚠ Failed to save to memory: ${(error as Error).message}`));
             }
           }
         }
-        } // End of else block for legacy stage execution
 
       } else {
         // Use regular AgentExecutor for single-stage execution
