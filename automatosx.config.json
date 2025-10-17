@@ -5,8 +5,6 @@
       "priority": 3,
       "timeout": 1500000,
       "command": "claude",
-      "useAgentSDK": true,
-      "fallbackToCLI": true,
       "healthCheck": {
         "enabled": true,
         "interval": 300000,
@@ -76,11 +74,6 @@
         "updateInterval": 2000,
         "syntheticProgress": true
       }
-    },
-    "parallel": {
-      "enabled": true,
-      "showDependencyGraph": true,
-      "showTimeline": true
     }
   },
   "orchestration": {
@@ -226,5 +219,5 @@
       "defaultLimit": 10
     }
   },
-  "version": "5.6.1"
+  "version": "5.6.2"
 }
