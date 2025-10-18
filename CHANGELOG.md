@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.6.5](https://github.com/defai-digital/automatosx/compare/v5.6.4...v5.6.5) (2025-10-18)
+
+
+### Bug Fixes
+
+* **providers:** fix read-only sandbox preventing agents from writing files ([#sandbox-fix](https://github.com/defai-digital/automatosx/issues/sandbox-fix))
+  - Add `--sandbox workspace-write` flag to OpenAI provider (codex-cli)
+  - Add `--approval-mode auto_edit` flag to Gemini provider
+  - Fixes "this session is read-only" error reported by users
+  - All agents (Bob, Alice, etc.) can now write files to workspace
+  - Affects: All agents using OpenAI/Gemini providers since v5.6.0
+
+
+### Security
+
+* **providers:** enhance sandbox security configuration
+  - OpenAI: Use `workspace-write` mode (more secure than `danger-full-access`)
+  - Gemini: Use `auto_edit` mode (safer than `yolo` mode)
+  - Maintains workspace isolation while enabling file operations
+  - No breaking changes, fully backward compatible
+
+
+### Testing
+
+* **providers:** update CLI args tests for sandbox permissions
+  - Updated `tests/unit/provider-cli-args.test.ts` expectations
+  - All 2,116 unit tests passing ✅
+  - All 91 integration tests passing ✅
+  - Manual verification: Bob agent write operations confirmed working
+
+
 ## [5.6.4](https://github.com/defai-digital/automatosx/compare/v5.6.3...v5.6.4) (2025-10-18)
 
 

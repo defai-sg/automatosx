@@ -5,6 +5,7 @@
  */
 
 import { BaseProvider } from './base-provider.js';
+import { shouldRetryError } from './retry-errors.js';
 import type {
   ProviderConfig,
   ProviderCapabilities,
@@ -173,7 +174,13 @@ export class OpenAIProvider extends BaseProvider {
 
       // Collect stdout
       child.stdout?.on('data', (data) => {
-        stdout += data.toString();
+        const chunk = data.toString();
+        stdout += chunk;
+
+        // Real-time output if enabled (v5.6.5: UX improvement)
+        if (process.env.AUTOMATOSX_SHOW_PROVIDER_OUTPUT === 'true') {
+          process.stdout.write(chunk);
+        }
       });
 
       // Collect stderr
@@ -223,26 +230,20 @@ export class OpenAIProvider extends BaseProvider {
   }
 
   override shouldRetry(error: Error): boolean {
-    // OpenAI-specific retry logic
-    const openaiRetryableErrors = [
-      'rate_limit',
-      'server_error',
-      'timeout',
-      'connection_error',
-      'service_unavailable',
-      'internal_error'
-    ];
-
-    const message = error.message.toLowerCase();
-    return openaiRetryableErrors.some(err => message.includes(err)) || super.shouldRetry(error);
+    // Use centralized retry logic for consistency
+    return shouldRetryError(error, 'openai');
   }
 
   /**
    * Build CLI arguments for OpenAI Codex CLI
-   * Supports: maxTokens, temperature
+   * Supports: maxTokens, temperature, sandbox mode
    */
   protected buildCLIArgs(request: ExecutionRequest): string[] {
     const args: string[] = ['exec'];
+
+    // Add sandbox mode for write access (v5.6.5: Fix read-only sandbox issue)
+    // workspace-write allows writing to the workspace while maintaining security
+    args.push('--sandbox', 'workspace-write');
 
     // Add model if specified
     if (request.model) {
@@ -406,6 +407,11 @@ export class OpenAIProvider extends BaseProvider {
         const token = chunk.toString();
         fullOutput += token;
         tokenCount++;
+
+        // Real-time output if enabled (v5.6.5: UX improvement)
+        if (process.env.AUTOMATOSX_SHOW_PROVIDER_OUTPUT === 'true') {
+          process.stdout.write(token);
+        }
 
         // Emit token event
         if (options.onToken) {

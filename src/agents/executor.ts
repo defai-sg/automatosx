@@ -421,14 +421,43 @@ export class AgentExecutor {
     context: ExecutionContext,
     options: ExecutionOptions
   ): Promise<DelegationResult[]> {
-    // Check if parallel execution is enabled and we have multiple delegations
-    const { parallelEnabled = true } = options;
+    /**
+     * Parallel vs Sequential Execution Decision Logic (v5.6.5)
+     *
+     * The parallel execution path is used when ANY of these conditions are met:
+     * 1. Multiple delegations (length > 1) - to execute them concurrently
+     * 2. User requested --show-timeline flag - needs parallel executor for timeline data
+     * 3. User requested --show-dependency-graph flag - needs parallel executor for graph data
+     *
+     * Why single delegations may use parallel path:
+     * - Timeline and dependency graph features require execution metadata that only
+     *   the parallel executor generates (ExecutionNode, ExecutionLevel, etc.)
+     * - For single delegations without these flags, sequential path is more efficient
+     *
+     * Default values (v5.6.5+):
+     * - parallelEnabled: true - parallel execution enabled by default
+     * - showTimeline: true - timeline display enabled by default
+     * - showDependencyGraph: true - dependency graph display enabled by default
+     *
+     * These defaults match the CLI defaults (--show-timeline, --show-dependency-graph)
+     */
+    const {
+      parallelEnabled = true,
+      showTimeline = true,
+      showDependencyGraph = true
+    } = options;
 
-    if (parallelEnabled && delegations.length > 1) {
+    const shouldUseParallelPath = parallelEnabled && (
+      delegations.length > 1 ||
+      showTimeline ||
+      showDependencyGraph
+    );
+
+    if (shouldUseParallelPath) {
       return this.executeDelegationsParallel(delegations, context, options);
     }
 
-    // Sequential execution (existing behavior)
+    // Sequential execution for single delegations without visualization flags
     return this.executeDelegationsSequential(delegations, context, options);
   }
 
@@ -631,10 +660,9 @@ export class AgentExecutor {
               startTime,
               endTime,
               duration: timelineEntry?.duration || 0,
-              status: 'success',  // Bug #6 fixed: use 'success' instead of 'completed'
+              status: 'success',
               success: true,
               response: {
-                // Bug #7 fixed: use node.result.response.content instead of node.result.output
                 content: typeof node.result.response.content === 'string'
                   ? node.result.response.content
                   : JSON.stringify(node.result.response.content),
@@ -646,14 +674,11 @@ export class AgentExecutor {
               outputs: {
                 files: node.result.outputs?.files || [],
                 memoryIds: node.result.outputs?.memoryIds || [],
-                // Bug #8 fixed: WorkspaceManager doesn't have getWorkspace(), use empty string
                 workspacePath: ''
               }
             });
           } else {
             // Failed or skipped execution
-            // Bug #11 fixed: Map both 'failed' and 'skipped' to 'failure' status
-            // DelegationResult.status only allows: 'success' | 'failure' | 'timeout'
             delegationResults.push({
               delegationId: randomUUID(),
               fromAgent: context.agent.name,

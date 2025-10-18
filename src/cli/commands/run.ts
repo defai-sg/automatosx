@@ -125,11 +125,13 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
       })
       .option('streaming', {
         describe: 'Enable real-time progress (Phase 2)',
-        type: 'boolean'
+        type: 'boolean',
+        default: true
       })
       .option('hybrid', {
         describe: 'Enable both interactive and streaming (shortcut for --interactive --streaming)',
-        type: 'boolean'
+        type: 'boolean',
+        default: false
       })
       .option('parallel', {
         describe: 'Enable parallel execution of independent agent delegations (v5.6.0+)',
@@ -454,6 +456,11 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         const checkpointPath = stageConfig?.checkpointPath || join(projectDir, '.automatosx', 'checkpoints');
         const cleanupAfterDays = stageConfig?.cleanupAfterDays || 7;
 
+        // Enable real-time provider output if verbose or streaming mode (v5.6.5)
+        if (argv.verbose || argv.streaming || argv.hybrid) {
+          process.env.AUTOMATOSX_SHOW_PROVIDER_OUTPUT = 'true';
+        }
+
         // Create StageExecutionController
         const agentExecutor = new AgentExecutor({
           sessionManager,
@@ -535,6 +542,11 @@ export const runCommand: CommandModule<Record<string, unknown>, RunOptions> = {
         }
 
       } else {
+        // Enable real-time provider output if verbose or streaming mode (v5.6.5)
+        if (argv.verbose || argv.streaming) {
+          process.env.AUTOMATOSX_SHOW_PROVIDER_OUTPUT = 'true';
+        }
+
         // Use regular AgentExecutor for single-stage execution
         // Configure with orchestration support if managers are available
         const executor = new AgentExecutor({

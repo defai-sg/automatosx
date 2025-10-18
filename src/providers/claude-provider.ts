@@ -5,6 +5,7 @@
  */
 
 import { BaseProvider } from './base-provider.js';
+import { shouldRetryError } from './retry-errors.js';
 import type {
   ProviderConfig,
   ProviderCapabilities,
@@ -192,7 +193,13 @@ export class ClaudeProvider extends BaseProvider {
 
       // Collect stdout
       child.stdout?.on('data', (data) => {
-        stdout += data.toString();
+        const chunk = data.toString();
+        stdout += chunk;
+
+        // Real-time output if enabled (v5.6.5: UX improvement)
+        if (process.env.AUTOMATOSX_SHOW_PROVIDER_OUTPUT === 'true') {
+          process.stdout.write(chunk);
+        }
       });
 
       // Collect stderr
@@ -246,6 +253,10 @@ export class ClaudeProvider extends BaseProvider {
 
       // Handle process errors
       child.on('error', (error) => {
+        if (hasTimedOut) {
+          return; // Timeout already handled
+        }
+
         const err = error as NodeJS.ErrnoException;
 
         if (err.code === 'ENOENT') {
@@ -293,32 +304,8 @@ export class ClaudeProvider extends BaseProvider {
   }
 
   override shouldRetry(error: Error): boolean {
-    // Claude-specific retry logic
-    const claudeRetryableErrors = [
-      'overloaded_error',
-      'rate_limit_error',
-      'timeout',
-      'connection_error',
-      'internal_server_error',
-      'network connection error',
-      'econnrefused',
-      'econnreset',
-      'etimedout',
-      'enotfound'
-    ];
-
-    const message = error.message.toLowerCase();
-    const isRetryable = claudeRetryableErrors.some(err => message.includes(err)) || super.shouldRetry(error);
-
-    // Don't retry authentication errors or missing CLI
-    if (message.includes('authentication') ||
-        message.includes('api key') ||
-        message.includes('not found') ||
-        message.includes('permission denied')) {
-      return false;
-    }
-
-    return isRetryable;
+    // Use centralized retry logic for consistency
+    return shouldRetryError(error, 'claude');
   }
 
   /**
@@ -366,40 +353,11 @@ export class ClaudeProvider extends BaseProvider {
   /**
    * Check if provider supports streaming
    * Claude CLI doesn't support native streaming
+   *
+   * Note: Real-time output is still available via AUTOMATOSX_SHOW_PROVIDER_OUTPUT
+   * environment variable, which displays CLI output as it's generated.
    */
   override supportsStreaming(): boolean {
     return false;
-  }
-
-  /**
-   * Execute with synthetic progress simulation
-   *
-   * Claude CLI doesn't support streaming, so we simulate progress updates.
-   */
-  override async executeStreaming(
-    request: ExecutionRequest,
-    options: StreamingOptions
-  ): Promise<ExecutionResponse> {
-    // Start synthetic progress simulation
-    const progressInterval = setInterval(() => {
-      const progress = Math.min(95, Math.random() * 90 + 5); // 5-95%
-      if (options.onProgress) {
-        options.onProgress(progress);
-      }
-    }, 1000); // Update every second
-
-    try {
-      // Execute normally (no real streaming)
-      const result = await this.execute(request);
-
-      // Complete progress
-      if (options.onProgress) {
-        options.onProgress(100);
-      }
-
-      return result;
-    } finally {
-      clearInterval(progressInterval);
-    }
   }
 }

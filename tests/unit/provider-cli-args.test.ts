@@ -21,14 +21,14 @@ describe('Provider CLI Arguments (Phase 2)', () => {
     });
 
     describe('buildCLIArgs', () => {
-      it('should build basic args without parameters', () => {
+      it('should build basic args with sandbox mode (v5.6.5: sandbox write fix)', () => {
         const request: ExecutionRequest = {
           prompt: 'test prompt'
         };
 
         const args = (provider as any).buildCLIArgs(request);
 
-        expect(args).toEqual(['exec']);
+        expect(args).toEqual(['exec', '--sandbox', 'workspace-write']);
       });
 
       it('should include model if specified', () => {
@@ -110,17 +110,17 @@ describe('Provider CLI Arguments (Phase 2)', () => {
     });
 
     describe('buildCLIArgs', () => {
-      it('should return empty array (no parameter support)', () => {
+      it('should include auto_edit approval mode (v5.6.5: sandbox write fix)', () => {
         const request: ExecutionRequest = {
           prompt: 'test prompt'
         };
 
         const args = (provider as any).buildCLIArgs(request);
 
-        expect(args).toEqual([]);
+        expect(args).toEqual(['--approval-mode', 'auto_edit']);
       });
 
-      it('should ignore maxTokens parameter', () => {
+      it('should include approval mode even with maxTokens parameter', () => {
         const request: ExecutionRequest = {
           prompt: 'test prompt',
           maxTokens: 2048
@@ -128,10 +128,10 @@ describe('Provider CLI Arguments (Phase 2)', () => {
 
         const args = (provider as any).buildCLIArgs(request);
 
-        expect(args).toEqual([]);
+        expect(args).toEqual(['--approval-mode', 'auto_edit']);
       });
 
-      it('should ignore temperature parameter', () => {
+      it('should include approval mode even with temperature parameter', () => {
         const request: ExecutionRequest = {
           prompt: 'test prompt',
           temperature: 0.7
@@ -139,10 +139,10 @@ describe('Provider CLI Arguments (Phase 2)', () => {
 
         const args = (provider as any).buildCLIArgs(request);
 
-        expect(args).toEqual([]);
+        expect(args).toEqual(['--approval-mode', 'auto_edit']);
       });
 
-      it('should ignore all parameters', () => {
+      it('should include approval mode with all parameters', () => {
         const request: ExecutionRequest = {
           prompt: 'test prompt',
           maxTokens: 4096,
@@ -151,7 +151,7 @@ describe('Provider CLI Arguments (Phase 2)', () => {
 
         const args = (provider as any).buildCLIArgs(request);
 
-        expect(args).toEqual([]);
+        expect(args).toEqual(['--approval-mode', 'auto_edit']);
       });
     });
 

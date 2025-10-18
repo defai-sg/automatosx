@@ -781,7 +781,7 @@ describe('AgentExecutor - Parallel Delegation', () => {
       const result = await (executor as any).executeDelegations(
         [{ toAgent: 'frontend', task: 'implement login UI' }],
         context,
-        { parallelEnabled: true }
+        { parallelEnabled: true, showTimeline: false, showDependencyGraph: false }
       );
 
       expect(result).toBeDefined();

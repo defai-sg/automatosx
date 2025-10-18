@@ -25,6 +25,7 @@ import type {
 } from '../types/provider.js';
 import { logger } from '../utils/logger.js';
 import { ProviderResponseCache } from '../core/cache.js';
+import { shouldRetryError } from './retry-errors.js';
 import { existsSync } from 'fs';
 import { findOnPath } from '../core/cli-provider-detector.js';
 import { shouldAutoEnableMockProviders } from '../utils/environment.js';
@@ -1002,18 +1003,8 @@ export abstract class BaseProvider implements Provider {
 
   // Error Handling
   shouldRetry(error: Error): boolean {
-    // Default: retry on network errors, rate limits, timeouts
-    const retryableErrors = [
-      'ECONNRESET',
-      'ETIMEDOUT',
-      'ENOTFOUND',
-      'rate_limit',
-      'timeout'
-    ];
-
-    return retryableErrors.some(msg =>
-      error.message.toLowerCase().includes(msg.toLowerCase())
-    );
+    // Use centralized retry logic for consistency
+    return shouldRetryError(error, 'base');
   }
 
   getRetryDelay(attempt: number): number {

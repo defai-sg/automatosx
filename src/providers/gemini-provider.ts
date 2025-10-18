@@ -5,6 +5,7 @@
  */
 
 import { BaseProvider } from './base-provider.js';
+import { shouldRetryError } from './retry-errors.js';
 import type {
   ProviderConfig,
   ProviderCapabilities,
@@ -176,7 +177,13 @@ export class GeminiProvider extends BaseProvider {
 
       // Collect stdout
       child.stdout?.on('data', (data) => {
-        stdout += data.toString();
+        const chunk = data.toString();
+        stdout += chunk;
+
+        // Real-time output if enabled (v5.6.5: UX improvement)
+        if (process.env.AUTOMATOSX_SHOW_PROVIDER_OUTPUT === 'true') {
+          process.stdout.write(chunk);
+        }
       });
 
       // Collect stderr
@@ -198,13 +205,24 @@ export class GeminiProvider extends BaseProvider {
 
       // Handle process errors
       child.on('error', (error) => {
-        reject(new Error(`Failed to spawn Gemini CLI: ${error.message}`));
+        if (!hasTimedOut) {
+          reject(new Error(`Failed to spawn Gemini CLI: ${error.message}`));
+        }
       });
 
       // Set timeout
       const timeout = setTimeout(() => {
+        hasTimedOut = true;
         child.kill('SIGTERM');
-        reject(new Error('Gemini CLI execution timeout'));
+
+        // Give it a moment to terminate gracefully
+        setTimeout(() => {
+          if (!child.killed) {
+            child.kill('SIGKILL');
+          }
+        }, 1000);
+
+        reject(new Error(`Gemini CLI execution timeout after ${this.config.timeout}ms`));
       }, this.config.timeout);
 
       child.on('close', () => {
@@ -214,17 +232,8 @@ export class GeminiProvider extends BaseProvider {
   }
 
   override shouldRetry(error: Error): boolean {
-    // Gemini-specific retry logic
-    const geminiRetryableErrors = [
-      'resource_exhausted',
-      'unavailable',
-      'deadline_exceeded',
-      'internal',
-      'rate_limit'
-    ];
-
-    const message = error.message.toLowerCase();
-    return geminiRetryableErrors.some(err => message.includes(err)) || super.shouldRetry(error);
+    // Use centralized retry logic for consistency
+    return shouldRetryError(error, 'gemini');
   }
 
   /**
@@ -237,6 +246,10 @@ export class GeminiProvider extends BaseProvider {
    */
   protected buildCLIArgs(_request: ExecutionRequest): string[] {
     const args: string[] = [];
+
+    // Enable auto-edit mode for file operations (v5.6.5: Fix read-only sandbox issue)
+    // auto_edit mode automatically approves edit tools while maintaining safety
+    args.push('--approval-mode', 'auto_edit');
 
     // Gemini CLI currently does not support parameter passing
     // Parameters would need to be configured in ~/.gemini/settings.json
@@ -271,40 +284,11 @@ export class GeminiProvider extends BaseProvider {
   /**
    * Check if provider supports streaming
    * Gemini CLI doesn't support native streaming
+   *
+   * Note: Real-time output is still available via AUTOMATOSX_SHOW_PROVIDER_OUTPUT
+   * environment variable, which displays CLI output as it's generated.
    */
   override supportsStreaming(): boolean {
     return false;
-  }
-
-  /**
-   * Execute with synthetic progress simulation
-   *
-   * Gemini CLI doesn't support streaming, so we simulate progress updates.
-   */
-  override async executeStreaming(
-    request: ExecutionRequest,
-    options: StreamingOptions
-  ): Promise<ExecutionResponse> {
-    // Start synthetic progress simulation
-    const progressInterval = setInterval(() => {
-      const progress = Math.min(95, Math.random() * 90 + 5); // 5-95%
-      if (options.onProgress) {
-        options.onProgress(progress);
-      }
-    }, 1000); // Update every second
-
-    try {
-      // Execute normally (no real streaming)
-      const result = await this.execute(request);
-
-      // Complete progress
-      if (options.onProgress) {
-        options.onProgress(100);
-      }
-
-      return result;
-    } finally {
-      clearInterval(progressInterval);
-    }
   }
 }

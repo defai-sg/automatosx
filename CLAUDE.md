@@ -23,6 +23,8 @@ npm run tools:check        # Validate shell scripts syntax
 # Agent Operations
 ax run <agent-name> "task"              # Execute agent
 ax run <agent-name> "task" --parallel   # Execute with parallel delegations (v5.6.0+)
+ax run <agent-name> "task" --streaming  # Real-time provider output (v5.6.5+)
+ax run <agent-name> "task" --verbose    # Verbose output with real-time feedback (v5.6.5+)
 ax run <agent-name> "task" --show-dependency-graph # Show dependency graph
 ax run <agent-name> "task" --show-timeline         # Show execution timeline
 ax agent create <name> --template dev   # Create agent
@@ -97,8 +99,8 @@ npm run release:rc         # Create RC pre-release
 
 - Multi-LLM providers (Claude, Gemini, OpenAI) with fallback routing
 - SQLite FTS5 memory (< 1ms search)
-- 4 teams, 12+ specialized agents
-- v5.6.4 | 1,940+ tests passing | Node.js 20+
+- 4 teams, 16+ specialized agents
+- v5.6.4 | 2,116 tests passing (12 skipped) | Node.js 20+
 
 **Version Management**:
 
@@ -143,10 +145,15 @@ Bidirectional command translation between AutomatosX and Gemini CLI
 **What's New**:
 
 - **Path Security Enhancement**: Centralized path validation utilities preventing traversal attacks
+  - New `src/utils/path-utils.ts` module for cross-platform path normalization
+  - Security validation in all managers (PathResolver, WorkspaceManager, ConfigManager, SessionManager, MemoryManager)
+  - Blocks `..`, absolute paths outside project, symbolic links
 - **Simplified Architecture**: Removed legacy stage executors (~1,200 LOC, -30KB package size)
 - **Single Execution Path**: All multi-stage agents now use `StageExecutionController`
-- **Better Performance**: Modern controller architecture across the board
-- **No Breaking Changes**: Behavior identical for all users
+- **Centralized Retry Logic**: New `src/providers/retry-errors.ts` for consistent error handling
+  - Provider-specific retryable errors (Claude, Gemini, OpenAI)
+  - Common network, rate limit, and server error patterns
+  - Non-retryable error detection (authentication, configuration)
 
 ### Completed Features
 
@@ -215,7 +222,7 @@ Bidirectional command translation between AutomatosX and Gemini CLI
   - `tests/reliability/chaos-testing.test.ts` (24 tests - 30%/50%/70% failure rates)
   - `tests/reliability/concurrency.test.ts` (14 tests - race conditions, workspace isolation)
 - **Total Parallel Execution Tests**: 161/163 tests passing (2 flaky timing tests)
-- **Overall Test Suite**: 1,863 passing / 1,867 total (99.79%)
+- **Overall Test Suite**: 2,116 tests passing (12 skipped) across 101 test files
 - **Key Scenarios Tested**:
   - Circular dependency detection ✅
   - Partial failure handling ✅
@@ -227,6 +234,8 @@ Bidirectional command translation between AutomatosX and Gemini CLI
   - CPU profiling ✅
   - Chaos testing (random failures) ✅
   - Concurrency & data consistency ✅
+  - Single delegation timeline (`tests/unit/test-single-delegation-timeline.test.ts`) ✅
+  - Provider streaming (`tests/unit/provider-streaming.test.ts`, `tests/integration/streaming-workflow.test.ts`) ✅
 
 **Configuration**:
 
@@ -380,7 +389,7 @@ ax cache clear
   - Adaptive TTL: 19 tests
   - Router health checks: 18 tests
   - Cache error handling: 11 tests (from Phase 3 Day 3)
-  - Total test suite: 1,940+ tests passing
+  - Total test suite: 2,116 tests passing (12 skipped)
 
 **Documentation**:
 
@@ -391,6 +400,7 @@ ax cache clear
 **Key Implementation Files**:
 
 - `src/providers/base-provider.ts` - Provider caching logic
+- `src/providers/retry-errors.ts` - Centralized retry error patterns (v5.6.4+)
 - `src/core/router.ts` - Health check orchestration
 - `src/cli/commands/cache.ts` - CLI cache commands
 - `tests/unit/base-provider-cache-metrics-enhanced.test.ts` - Enhanced metrics tests
@@ -488,6 +498,37 @@ export CLAUDE_USE_SESSION=false
 
 See `tmp/claude-cli-integration-plan.md` for implementation details.
 
+### Provider Retry Logic (v5.6.4)
+
+**Centralized Error Handling**: All providers now use consistent retry logic from `src/providers/retry-errors.ts`.
+
+**Retryable Errors**:
+
+- **Common**: Network errors (ECONNRESET, ETIMEDOUT), rate limits, server errors (500, 503)
+- **Claude**: overloaded_error, internal_server_error
+- **Gemini**: resource_exhausted, deadline_exceeded, internal
+- **OpenAI**: internal_error
+
+**Non-Retryable Errors** (fail immediately):
+
+- Authentication errors (invalid_api_key, unauthorized)
+- Configuration errors (invalid_request, permission denied)
+- Not found errors
+
+**Usage in Custom Providers**:
+
+```typescript
+import { shouldRetryError, getRetryableErrors } from '@/providers/retry-errors.js';
+
+// Check if error should be retried
+if (shouldRetryError(error, 'gemini')) {
+  // Retry logic
+}
+
+// Get all retryable errors for a provider
+const errors = getRetryableErrors('claude');
+```
+
 ### Provider Model Parameters (v5.0.5)
 
 Only OpenAI supports `maxTokens` & `temperature` (configured in agent YAML):
@@ -518,18 +559,28 @@ maxTokens: 2048       # Limit tokens (OpenAI only)
 ### Testing
 
 ```bash
-npm test                   # All tests (mock providers)
-npm run test:coverage      # Coverage report (current: ~56%, target: 70%)
+npm test                   # All tests: unit + integration + smoke (2,116 passing)
+npm run test:unit          # Unit tests only (101 test files)
+npm run test:integration   # Integration tests only
+npm run test:smoke         # Smoke tests (package verification)
+npm run test:coverage      # Coverage report
 npm run test:watch         # Watch mode
 
-# E2E (isolated temp dirs, see docs/E2E-TESTING.md)
+# Single test file
+npx vitest run tests/unit/router.test.ts
+npx vitest run tests/unit/provider-streaming.test.ts
+
+# Pattern matching
 npx vitest run tests/e2e/ -t "provider fallback"
-export TEST_REAL_PROVIDERS=true  # Use real providers
+
+# Real providers (for integration/E2E testing)
+export TEST_REAL_PROVIDERS=true
+export TEST_REAL_GEMINI_CLI=true
 ```
 
 **Timeouts** (vitest.config.ts): Test 30s, Hook 30s, Teardown 10s
 
-**Test Coverage**: Current ~56%, target 70%. See CONTRIBUTING.md for test requirements.
+**Test Coverage**: 2,116 tests passing (12 skipped) across 101 test files. See CONTRIBUTING.md for test requirements.
 
 ### Debugging
 
@@ -701,8 +752,9 @@ ax runs list/show/delete                 # Manage
 
 - `src/cli/index.ts` - CLI entry
 - `src/core/` - router, team-manager, memory-manager, session-manager, workspace-manager, response-cache (v5.5.0+), path-resolver (v5.6.3+)
-- `src/utils/path-utils.ts` - Path normalization and validation utilities (v5.6.3+)
+- `src/utils/path-utils.ts` - Path normalization and validation utilities (v5.6.4+)
 - `src/agents/` - executor, delegation-parser, template-engine, context-manager, dependency-graph (v5.6.0), execution-planner (v5.6.0), parallel-agent-executor (v5.6.0)
+- `src/providers/` - base-provider, claude-provider, gemini-provider, openai-provider, retry-errors (v5.6.4+)
 - `src/mcp/` - server, types, tools (16 tools)
 - `src/integrations/gemini-cli/` - bridge, command-translator, types, utils (v5.4.3-beta.0)
 - `src/integrations/claude-code/` - bridge, config-manager, command-manager, mcp-manager (v5.5.0+)

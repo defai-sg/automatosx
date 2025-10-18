@@ -50,8 +50,9 @@ export const resumeCommand: CommandModule<Record<string, unknown>, ResumeOptions
       })
       .option('streaming', {
         alias: 's',
-        describe: 'Resume in streaming mode',
+        describe: 'Resume in streaming mode (overrides checkpoint value)',
         type: 'boolean'
+        // No default - inherit from checkpoint if not specified
       })
       .option('verbose', {
         alias: 'v',
@@ -247,7 +248,8 @@ export const resumeCommand: CommandModule<Record<string, unknown>, ResumeOptions
       // 10. Determine execution mode (use checkpoint mode or override)
       const mode: ExecutionMode = {
         interactive: argv.hybrid ? true : (argv.interactive ?? checkpoint.mode.interactive),
-        streaming: argv.hybrid ? true : (argv.streaming ?? checkpoint.mode.streaming),
+        // Streaming: user flag > checkpoint value > default true (v5.6.5+)
+        streaming: argv.hybrid ? true : (argv.streaming ?? checkpoint.mode.streaming ?? true),
         resumable: true,
         autoConfirm: argv.autoContinue ?? checkpoint.mode.autoConfirm ?? stageConfig?.prompts?.autoConfirm ?? false
       };
